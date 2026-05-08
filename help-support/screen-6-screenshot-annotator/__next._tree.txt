@@ -1,0 +1,3 @@
+:HL["/silq-prototypes/help-support/_next/static/chunks/0zypk5af3m3zi.css","style"]
+:HL["/silq-prototypes/help-support/_next/static/media/83afe278b6a6bb3c-s.p.0q-301v4kxxnr.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"screen-6-screenshot-annotator","param":null,"prefetchHints":0,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}}}},"staleTime":300,"buildId":"PbsdJTpONlMbnSb1zS9K5"}
