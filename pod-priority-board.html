@@ -2243,43 +2243,37 @@ function getNextAction(rfq) {
   switch (rfq.stage) {
     case "unquoted": {
       const d = diffDays(rfq.stageDate);
-      if (d >= 5) { text = "Quote overdue"; level = "danger"; }
-      else if (d >= 3) { text = "Quote needed"; level = "warn"; }
-      else { text = "Prepare quote"; level = "ok"; }
+      text = "Prepare quote";
+      level = d >= 5 ? "danger" : d >= 2 ? "warn" : "ok";
       break;
     }
     case "awaiting": {
       const remain = -diffDays(rfq.stageDate);
-      if (remain < 0) { text = "Re-engage client"; level = "danger"; }
-      else if (remain <= 2) { text = "Urgent: follow up"; level = "danger"; }
-      else if (remain <= 5) { text = "Follow up"; level = "warn"; }
-      else { text = "Await response"; level = "ok"; }
+      text = "Follow up";
+      level = remain <= 0 ? "danger" : remain <= 2 ? "danger" : remain <= 5 ? "warn" : "ok";
       break;
     }
     case "expired": {
       const d = diffDays(rfq.stageDate);
-      if (d >= 8) { text = "Re-quote or close"; level = "danger"; }
-      else if (d >= 4) { text = "Win back"; level = "warn"; }
-      else { text = "Re-quote"; level = "ok"; }
+      text = "Re-quote";
+      level = d >= 8 ? "danger" : d >= 4 ? "warn" : "ok";
       break;
     }
     case "transit": {
-      if (rfq.delayed) { text = "Escalate delay"; level = "danger"; }
-      else { text = "Monitor shipment"; level = "ok"; }
+      text = "Monitor shipment";
+      level = rfq.delayed ? "danger" : "ok";
       break;
     }
     case "arriving": {
       const d = diffDays(rfq.stageDate);
-      if (d > 0) { text = "Chase delivery"; level = "danger"; }
-      else if (d === 0) { text = "Confirm delivery"; level = "warn"; }
-      else { text = "Prep for delivery"; level = "ok"; }
+      text = "Confirm delivery";
+      level = d > 0 ? "danger" : d === 0 ? "warn" : "ok";
       break;
     }
     case "delivered": {
       const d = diffDays(rfq.stageDate);
-      if (d >= 7) { text = "Invoice overdue"; level = "danger"; }
-      else if (d >= 3) { text = "Invoice now"; level = "warn"; }
-      else { text = "Send invoice"; level = "ok"; }
+      text = "Send invoice";
+      level = d >= 7 ? "danger" : d >= 3 ? "warn" : "ok";
       break;
     }
   }
