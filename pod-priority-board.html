@@ -1370,7 +1370,7 @@
         <option value="">All Trade Lanes</option>
       </select>
       <div class="filter-divider"></div>
-      <input type="text" class="search-input-sm" placeholder="Search RFQs..." id="searchInput" oninput="applyFilters()">
+      <input type="text" class="search-input-sm" placeholder="Search by RFQ ID, client, route..." id="searchInput" oninput="applyFilters()">
       <button class="clear-filters-btn" id="clearBtn" onclick="clearFilters()">Clear all</button>
     </div>
 
@@ -1392,6 +1392,9 @@
       <select class="filter-select" id="tvFilterTeam" onchange="renderTableView()">
         <option value="">All Team Members</option>
       </select>
+      <select class="filter-select" id="tvFilterClient" onchange="renderTableView()">
+        <option value="">All Clients</option>
+      </select>
       <select class="filter-select" id="tvFilterMode" onchange="renderTableView()">
         <option value="">All Modes</option>
         <option value="FCL">FCL</option>
@@ -1402,7 +1405,7 @@
         <option value="">All Stages</option>
       </select>
       <div class="filter-divider"></div>
-      <input type="text" class="search-input-sm" placeholder="Search..." id="tvSearch" oninput="renderTableView()">
+      <input type="text" class="search-input-sm" placeholder="Search by RFQ ID, client, route..." id="tvSearch" oninput="renderTableView()">
     </div>
     <div class="tv-table-wrap">
       <table class="tv-table">
@@ -1441,6 +1444,14 @@
         <input type="date" id="customTo" value="2026-04-01">
         <button class="custom-date-apply" onclick="applyCustomDate()">Apply</button>
       </div>
+    </div>
+    <div class="table-view-filters" style="padding:8px 0 14px;">
+      <label>Filters</label>
+      <select class="filter-select" id="healthFilterClient" onchange="renderHealthView()">
+        <option value="">All Clients</option>
+      </select>
+      <div class="filter-divider"></div>
+      <input type="text" class="search-input-sm" placeholder="Search by RFQ ID..." id="healthSearch" oninput="renderHealthView()">
     </div>
 
     <div class="health-section-title">Performance Summary</div>
@@ -1814,7 +1825,14 @@ function setShippingMode(mode, el) {
 
 function renderHealthView() {
   const range = getTimelineRange(healthTimelineRange);
-  const inPeriod = HEALTH_DATA.filter(r => inRange(r.submittedDate, range));
+  const healthClientF = document.getElementById("healthFilterClient").value;
+  const healthSearchF = document.getElementById("healthSearch").value.toLowerCase().trim();
+  const inPeriod = HEALTH_DATA.filter(r => {
+    if (!inRange(r.submittedDate, range)) return false;
+    if (healthClientF && r.client !== healthClientF) return false;
+    if (healthSearchF && !r.id.toLowerCase().includes(healthSearchF)) return false;
+    return true;
+  });
   const quoted = inPeriod.filter(r => r.quotedDate);
   const approved = inPeriod.filter(r => r.approvedDate);
   const invoiced = inPeriod.filter(r => r.invoicedDate);
@@ -2198,12 +2216,25 @@ function clearFilters() {
 function populateTableFilters() {
   const teamSel = document.getElementById("tvFilterTeam");
   const stageSel = document.getElementById("tvFilterStage");
+  const tvClientSel = document.getElementById("tvFilterClient");
+  const healthClientSel = document.getElementById("healthFilterClient");
+
   const existingTeam = new Set();
-  RFQS.forEach(r => existingTeam.add(r.assignee));
+  const existingClients = new Set();
+  RFQS.forEach(r => { existingTeam.add(r.assignee); existingClients.add(r.client); });
+  HEALTH_DATA.forEach(r => existingClients.add(r.client));
+
   [...existingTeam].sort().forEach(name => {
     const o = document.createElement("option");
     o.value = name; o.textContent = name;
     teamSel.appendChild(o);
+  });
+  [...existingClients].sort().forEach(name => {
+    [tvClientSel, healthClientSel].forEach(sel => {
+      const o = document.createElement("option");
+      o.value = name; o.textContent = name;
+      sel.appendChild(o);
+    });
   });
   STAGES.forEach(s => {
     const o = document.createElement("option");
@@ -2282,6 +2313,7 @@ function getNextAction(rfq) {
 
 function renderTableView() {
   const teamF = document.getElementById("tvFilterTeam").value;
+  const clientF = document.getElementById("tvFilterClient").value;
   const modeF = document.getElementById("tvFilterMode").value;
   const stageF = document.getElementById("tvFilterStage").value;
   const searchF = document.getElementById("tvSearch").value.toLowerCase().trim();
@@ -2290,6 +2322,7 @@ function renderTableView() {
   RFQS.forEach(rfq => {
     let pass = true;
     if (teamF && rfq.assignee !== teamF) pass = false;
+    if (clientF && rfq.client !== clientF) pass = false;
     if (modeF && rfq.mode !== modeF) pass = false;
     if (stageF && rfq.stage !== stageF) pass = false;
     if (searchF) {
