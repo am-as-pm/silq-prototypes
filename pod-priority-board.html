@@ -723,6 +723,92 @@
   .action-view.hidden { display: none; }
 
 
+  /* Table view */
+  .table-view { display: none; flex-direction: column; flex: 1; padding: 0 0 28px; }
+  .table-view.visible { display: flex; }
+
+  .table-view-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 0 12px; gap: 12px;
+  }
+  .table-view-header .table-count { font-size: 13px; color: var(--text-secondary); }
+
+  .table-view-filters {
+    display: flex; align-items: center; gap: 10px; padding: 0 0 14px; flex-wrap: wrap;
+  }
+  .table-view-filters label { font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .4px; }
+
+  .tv-table-wrap {
+    overflow-x: auto; border: 1px solid var(--border); border-radius: 10px;
+    background: var(--card);
+  }
+
+  .tv-table {
+    width: 100%; border-collapse: collapse; font-size: 13px;
+  }
+  .tv-table thead { position: sticky; top: 0; z-index: 2; }
+  .tv-table th {
+    text-align: left; padding: 10px 14px; font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .4px; color: var(--text-secondary);
+    background: var(--gray-bg); border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .tv-table th.col-value,
+  .tv-table td.col-value { text-align: right; }
+  .tv-table th.col-shipments,
+  .tv-table td.col-shipments { text-align: center; }
+
+  .tv-table td {
+    padding: 10px 14px; border-bottom: 1px solid var(--border-light);
+    vertical-align: middle;
+  }
+  .tv-table tbody tr { cursor: pointer; transition: background .12s; }
+  .tv-table tbody tr:hover { background: var(--primary-lighter); }
+  .tv-table tbody tr:last-child td { border-bottom: none; }
+
+  .tv-id { font-weight: 600; color: var(--primary-dark); }
+  .tv-client { font-weight: 500; }
+  .tv-route { color: var(--text-secondary); }
+  .tv-mode-chip {
+    display: inline-block; padding: 2px 8px; border-radius: 6px;
+    font-size: 11px; font-weight: 600; background: var(--gray-bg); color: var(--text);
+  }
+  .tv-mode-chip.air { background: var(--blue-bg); color: var(--blue); }
+  .tv-mode-chip.ocean { background: #e0f2fe; color: #0369a1; }
+  .tv-mode-chip.trucking { background: var(--orange-bg); color: var(--orange); }
+
+  .tv-stages { display: flex; gap: 4px; flex-wrap: wrap; }
+  .tv-stage-pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 500;
+    white-space: nowrap;
+  }
+  .tv-stage-pill.unquoted { background: #e8eeff; color: #3b5bdb; }
+  .tv-stage-pill.awaiting { background: #fef9e7; color: #b8860b; }
+  .tv-stage-pill.expired { background: #fde8e8; color: #c44b3f; }
+  .tv-stage-pill.transit { background: #e6f7ed; color: #1e7a42; }
+  .tv-stage-pill.arriving { background: #e0ecff; color: #1d4ed8; }
+  .tv-stage-pill.delivered { background: #f3e8ff; color: #7c3aed; }
+
+  .tv-stage-dot {
+    width: 6px; height: 6px; border-radius: 50%; display: inline-block;
+  }
+  .tv-stage-dot.unquoted { background: #3b5bdb; }
+  .tv-stage-dot.awaiting { background: #b8860b; }
+  .tv-stage-dot.expired { background: #c44b3f; }
+  .tv-stage-dot.transit { background: #1e7a42; }
+  .tv-stage-dot.arriving { background: #1d4ed8; }
+  .tv-stage-dot.delivered { background: #7c3aed; }
+
+  .tv-flag { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; padding: 2px 7px; border-radius: 6px; font-weight: 500; }
+  .tv-flag.first-time { background: var(--purple-bg); color: var(--purple); }
+  .tv-flag.delayed { background: var(--red-bg); color: var(--red); }
+  .tv-flag.arriving-today { background: var(--blue-bg); color: var(--blue); }
+
+  .tv-assignee { display: flex; align-items: center; gap: 6px; }
+  .tv-assignee-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .tv-value { font-weight: 600; font-variant-numeric: tabular-nums; }
+
   /* Health view */
   .health-view { display: none; flex-direction: column; flex: 1; padding: 0 0 28px; }
   .health-view.visible { display: flex; }
@@ -1237,6 +1323,7 @@
     <div class="header-actions">
       <div class="view-toggle">
         <button class="toggle-option active" id="toggleAction" onclick="switchView('action')">Action</button>
+        <button class="toggle-option" id="toggleTable" onclick="switchView('table')">Table View</button>
         <button class="toggle-option" id="toggleHealth" onclick="switchView('health')">Pod Health</button>
       </div>
       <span class="live-badge"><span class="live-dot"></span> Live</span>
@@ -1275,6 +1362,52 @@
 
     <div class="board-container">
       <div class="board" id="board"></div>
+    </div>
+  </div>
+
+  <!-- TABLE VIEW -->
+  <div class="table-view" id="tableView">
+    <div class="table-view-header">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <h2 style="font-size:16px;font-weight:600;">All RFQs / Projects</h2>
+        <span class="table-count" id="tableCount"></span>
+      </div>
+    </div>
+    <div class="table-view-filters">
+      <label>Filters</label>
+      <select class="filter-select" id="tvFilterTeam" onchange="renderTableView()">
+        <option value="">All Team Members</option>
+      </select>
+      <select class="filter-select" id="tvFilterMode" onchange="renderTableView()">
+        <option value="">All Modes</option>
+        <option value="FCL">FCL</option>
+        <option value="LCL">LCL</option>
+        <option value="Air">Air</option>
+      </select>
+      <select class="filter-select" id="tvFilterStage" onchange="renderTableView()">
+        <option value="">All Stages</option>
+      </select>
+      <div class="filter-divider"></div>
+      <input type="text" class="search-input-sm" placeholder="Search..." id="tvSearch" oninput="renderTableView()">
+    </div>
+    <div class="tv-table-wrap">
+      <table class="tv-table">
+        <thead>
+          <tr>
+            <th>RFQ / Project</th>
+            <th>Client</th>
+            <th>Route</th>
+            <th>Mode</th>
+            <th class="col-shipments">Shipments</th>
+            <th class="col-value">Value ($)</th>
+            <th>Assignee</th>
+            <th>Stage(s)</th>
+            <th>Key Date</th>
+            <th>Flags</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
     </div>
   </div>
 
@@ -1630,9 +1763,12 @@ function inRange(dateStr, range) {
 function switchView(view) {
   currentBoardView = view;
   document.getElementById("toggleAction").classList.toggle("active", view === "action");
+  document.getElementById("toggleTable").classList.toggle("active", view === "table");
   document.getElementById("toggleHealth").classList.toggle("active", view === "health");
-  document.getElementById("actionView").classList.toggle("hidden", view === "health");
+  document.getElementById("actionView").classList.toggle("hidden", view !== "action");
+  document.getElementById("tableView").classList.toggle("visible", view === "table");
   document.getElementById("healthView").classList.toggle("visible", view === "health");
+  if (view === "table") renderTableView();
   if (view === "health") renderHealthView();
 }
 
@@ -2038,6 +2174,138 @@ function clearFilters() {
   renderSummary(RFQS);
 }
 
+/* ── Table View ────────────────────────────── */
+
+function populateTableFilters() {
+  const teamSel = document.getElementById("tvFilterTeam");
+  const stageSel = document.getElementById("tvFilterStage");
+  const existingTeam = new Set();
+  RFQS.forEach(r => existingTeam.add(r.assignee));
+  [...existingTeam].sort().forEach(name => {
+    const o = document.createElement("option");
+    o.value = name; o.textContent = name;
+    teamSel.appendChild(o);
+  });
+  STAGES.forEach(s => {
+    const o = document.createElement("option");
+    o.value = s.key; o.textContent = s.label;
+    stageSel.appendChild(o);
+  });
+}
+
+function getStageLabel(key) {
+  const s = STAGES.find(st => st.key === key);
+  return s ? s.label : key;
+}
+
+function getStageDateLabel(rfq) {
+  switch (rfq.stage) {
+    case "unquoted": return `Rcvd ${formatDate(rfq.stageDate)}`;
+    case "awaiting": return `Valid til ${formatDate(rfq.stageDate)}`;
+    case "expired": return `Exp ${diffDays(rfq.stageDate)}d ago`;
+    case "transit": return rfq.delayed ? `ETA was ${formatDate(rfq.stageDate)}` : `ETA ${formatDate(rfq.stageDate)}`;
+    case "arriving": {
+      const d = diffDays(rfq.stageDate);
+      if (d > 0) return `Due was ${formatDate(rfq.stageDate)}`;
+      if (d === 0) return `Arriving today`;
+      return `Arrives ${formatDate(rfq.stageDate)}`;
+    }
+    case "delivered": return `Dlvd ${diffDays(rfq.stageDate)}d ago`;
+  }
+  return "";
+}
+
+function renderTableView() {
+  const teamF = document.getElementById("tvFilterTeam").value;
+  const modeF = document.getElementById("tvFilterMode").value;
+  const stageF = document.getElementById("tvFilterStage").value;
+  const searchF = document.getElementById("tvSearch").value.toLowerCase().trim();
+
+  const grouped = {};
+  RFQS.forEach(rfq => {
+    let pass = true;
+    if (teamF && rfq.assignee !== teamF) pass = false;
+    if (modeF && rfq.mode !== modeF) pass = false;
+    if (stageF && rfq.stage !== stageF) pass = false;
+    if (searchF) {
+      const blob = `${rfq.id} ${rfq.client} ${rfq.origin} ${rfq.destination} ${rfq.assignee}`.toLowerCase();
+      if (!blob.includes(searchF)) pass = false;
+    }
+    if (!pass) return;
+
+    if (!grouped[rfq.id]) {
+      grouped[rfq.id] = {
+        id: rfq.id,
+        client: rfq.client,
+        origin: rfq.origin,
+        destination: rfq.destination,
+        mode: rfq.mode,
+        shipments: rfq.shipments,
+        quotedValue: rfq.quotedValue,
+        assignee: rfq.assignee,
+        firstTime: rfq.firstTime,
+        delayed: rfq.delayed || false,
+        stages: [],
+        stageDates: []
+      };
+    }
+    grouped[rfq.id].stages.push(rfq.stage);
+    grouped[rfq.id].stageDates.push(getStageDateLabel(rfq));
+    if (rfq.delayed) grouped[rfq.id].delayed = true;
+    if (rfq.quotedValue > grouped[rfq.id].quotedValue) grouped[rfq.id].quotedValue = rfq.quotedValue;
+    grouped[rfq.id].shipments = Math.max(grouped[rfq.id].shipments, rfq.shipments);
+  });
+
+  const rows = Object.values(grouped);
+  const stageOrder = STAGES.map(s => s.key);
+  rows.sort((a, b) => {
+    const aMin = Math.min(...a.stages.map(s => stageOrder.indexOf(s)));
+    const bMin = Math.min(...b.stages.map(s => stageOrder.indexOf(s)));
+    return aMin - bMin;
+  });
+
+  const teamColor = (name) => {
+    const t = TEAM.find(m => m.name === name);
+    return t ? t.color : "#999";
+  };
+
+  const modeClass = (m) => {
+    if (m === "Air") return "air";
+    if (m === "FCL" || m === "LCL") return "ocean";
+    return "trucking";
+  };
+
+  const tbody = document.getElementById("tableBody");
+  tbody.innerHTML = rows.map(r => {
+    const stagePills = r.stages.map(s =>
+      `<span class="tv-stage-pill ${s}"><span class="tv-stage-dot ${s}"></span>${getStageLabel(s)}</span>`
+    ).join("");
+
+    const dateStr = r.stageDates.join(" | ");
+
+    const flags = [];
+    const isArrivingToday = r.stages.includes("arriving") && r.stageDates.some(d => d.includes("today"));
+    if (r.firstTime) flags.push(`<span class="tv-flag first-time">1st client</span>`);
+    if (r.delayed) flags.push(`<span class="tv-flag delayed">Delayed</span>`);
+    if (isArrivingToday) flags.push(`<span class="tv-flag arriving-today">Today</span>`);
+
+    return `<tr onclick="openRfq('${r.id}')">
+      <td><span class="tv-id">${r.id}</span></td>
+      <td><span class="tv-client">${r.client}</span></td>
+      <td><span class="tv-route">${r.origin} → ${r.destination}</span></td>
+      <td><span class="tv-mode-chip ${modeClass(r.mode)}">${r.mode}</span></td>
+      <td class="col-shipments">${r.shipments}</td>
+      <td class="col-value"><span class="tv-value">$${(r.quotedValue || 0).toLocaleString()}</span></td>
+      <td><span class="tv-assignee"><span class="tv-assignee-dot" style="background:${teamColor(r.assignee)}"></span>${r.assignee}</span></td>
+      <td><div class="tv-stages">${stagePills}</div></td>
+      <td><span class="tv-route">${dateStr}</span></td>
+      <td>${flags.join(" ") || "—"}</td>
+    </tr>`;
+  }).join("");
+
+  document.getElementById("tableCount").textContent = `${rows.length} unique RFQs`;
+}
+
 function openRfq(id) {
   const rfq = RFQS.find(r => r.id === id);
   if (!rfq) return;
@@ -2045,6 +2313,7 @@ function openRfq(id) {
 }
 
 populateFilters();
+populateTableFilters();
 renderBoard(RFQS);
 renderSummary(RFQS);
 document.getElementById("totalRfqBadge").textContent = RFQS.length;
