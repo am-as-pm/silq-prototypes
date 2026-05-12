@@ -809,15 +809,15 @@
   .tv-assignee-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
   .tv-value { font-weight: 600; font-variant-numeric: tabular-nums; }
 
-  .tv-urgency { display: flex; flex-direction: column; gap: 3px; }
-  .tv-urgency-badge {
+  .tv-action { display: flex; flex-direction: column; gap: 3px; }
+  .tv-action-badge {
     display: inline-flex; align-items: center; gap: 3px;
     padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 600;
     white-space: nowrap;
   }
-  .tv-urgency-badge.ok { background: var(--green-bg); color: var(--green); }
-  .tv-urgency-badge.warn { background: var(--yellow-bg); color: #92610e; }
-  .tv-urgency-badge.danger { background: var(--red-bg); color: var(--red); }
+  .tv-action-badge.ok { background: var(--green-bg); color: var(--green); }
+  .tv-action-badge.warn { background: var(--yellow-bg); color: #92610e; }
+  .tv-action-badge.danger { background: var(--red-bg); color: var(--red); }
 
   .tv-detail { display: flex; flex-direction: column; gap: 2px; }
   .tv-detail-line { font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
@@ -1417,7 +1417,7 @@
             <th>Assignee</th>
             <th>Stage(s)</th>
             <th>Stage Detail</th>
-            <th>Urgency</th>
+            <th>Next Action</th>
             <th>Flags</th>
           </tr>
         </thead>
@@ -2237,44 +2237,49 @@ function getStageDetailLine(rfq) {
   return "";
 }
 
-function getUrgencyBadge(rfq) {
+function getNextAction(rfq) {
   let text = "";
   let level = "ok";
   switch (rfq.stage) {
     case "unquoted": {
       const d = diffDays(rfq.stageDate);
-      text = `${d}d waiting`;
-      level = d >= 5 ? "danger" : d >= 2 ? "warn" : "ok";
+      if (d >= 5) { text = "Quote overdue"; level = "danger"; }
+      else if (d >= 3) { text = "Quote needed"; level = "warn"; }
+      else { text = "Prepare quote"; level = "ok"; }
       break;
     }
     case "awaiting": {
       const remain = -diffDays(rfq.stageDate);
-      if (remain < 0) { text = `Expired ${-remain}d ago`; level = "danger"; }
-      else { text = `${remain}d left`; level = remain <= 2 ? "danger" : remain <= 5 ? "warn" : "ok"; }
+      if (remain < 0) { text = "Re-engage client"; level = "danger"; }
+      else if (remain <= 2) { text = "Urgent: follow up"; level = "danger"; }
+      else if (remain <= 5) { text = "Follow up"; level = "warn"; }
+      else { text = "Await response"; level = "ok"; }
       break;
     }
     case "expired": {
       const d = diffDays(rfq.stageDate);
-      text = `${d}d expired`;
-      level = d >= 5 ? "danger" : d >= 2 ? "warn" : "ok";
+      if (d >= 8) { text = "Re-quote or close"; level = "danger"; }
+      else if (d >= 4) { text = "Win back"; level = "warn"; }
+      else { text = "Re-quote"; level = "ok"; }
       break;
     }
     case "transit": {
-      if (rfq.delayed) { text = "Delayed"; level = "danger"; }
-      else { const eta = -diffDays(rfq.stageDate); text = `${eta}d to ETA`; level = eta <= 2 ? "warn" : "ok"; }
+      if (rfq.delayed) { text = "Escalate delay"; level = "danger"; }
+      else { text = "Monitor shipment"; level = "ok"; }
       break;
     }
     case "arriving": {
       const d = diffDays(rfq.stageDate);
-      if (d > 0) { text = `${d}d overdue`; level = "danger"; }
-      else if (d === 0) { text = "Today"; level = "warn"; }
-      else { text = "Tomorrow"; level = "ok"; }
+      if (d > 0) { text = "Chase delivery"; level = "danger"; }
+      else if (d === 0) { text = "Confirm delivery"; level = "warn"; }
+      else { text = "Prep for delivery"; level = "ok"; }
       break;
     }
     case "delivered": {
       const d = diffDays(rfq.stageDate);
-      text = `${d}d uninvoiced`;
-      level = d >= 7 ? "danger" : d >= 3 ? "warn" : "ok";
+      if (d >= 7) { text = "Invoice overdue"; level = "danger"; }
+      else if (d >= 3) { text = "Invoice now"; level = "warn"; }
+      else { text = "Send invoice"; level = "ok"; }
       break;
     }
   }
@@ -2313,14 +2318,14 @@ function renderTableView() {
         delayed: rfq.delayed || false,
         stages: [],
         stageDetails: [],
-        urgencies: []
+        actions: []
       };
     }
     const stageKey = rfq.stage;
     if (!grouped[rfq.id].stages.includes(stageKey)) {
       grouped[rfq.id].stages.push(stageKey);
       grouped[rfq.id].stageDetails.push(getStageDetailLine(rfq));
-      grouped[rfq.id].urgencies.push(getUrgencyBadge(rfq));
+      grouped[rfq.id].actions.push(getNextAction(rfq));
     }
     if (rfq.delayed) grouped[rfq.id].delayed = true;
     if (rfq.quotedValue > grouped[rfq.id].quotedValue) grouped[rfq.id].quotedValue = rfq.quotedValue;
@@ -2354,12 +2359,12 @@ function renderTableView() {
 
     const detailHtml = r.stageDetails.map(d => `<div class="tv-detail-line">${d}</div>`).join("");
 
-    const urgencyHtml = r.urgencies.map(u =>
-      `<span class="tv-urgency-badge ${u.level}">${u.text}</span>`
+    const actionHtml = r.actions.map(a =>
+      `<span class="tv-action-badge ${a.level}">${a.text}</span>`
     ).join("");
 
     const flags = [];
-    const isArrivingToday = r.stages.includes("arriving") && r.urgencies.some(u => u.text === "Today");
+    const isArrivingToday = r.stages.includes("arriving") && r.actions.some(a => a.text === "Confirm delivery");
     if (r.firstTime) flags.push(`<span class="tv-flag first-time">1st client</span>`);
     if (r.delayed) flags.push(`<span class="tv-flag delayed">Delayed</span>`);
     if (isArrivingToday) flags.push(`<span class="tv-flag arriving-today">Today</span>`);
@@ -2376,7 +2381,7 @@ function renderTableView() {
       <td><span class="tv-assignee"><span class="tv-assignee-dot" style="background:${teamColor(r.assignee)}"></span>${r.assignee}</span></td>
       <td><div class="tv-stages">${stagePills}</div></td>
       <td><div class="tv-detail">${detailHtml}</div></td>
-      <td><div class="tv-urgency">${urgencyHtml}</div></td>
+      <td><div class="tv-action">${actionHtml}</div></td>
       <td>${flags.join(" ") || "—"}</td>
     </tr>`;
   }).join("");
