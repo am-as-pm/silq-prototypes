@@ -809,6 +809,20 @@
   .tv-assignee-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
   .tv-value { font-weight: 600; font-variant-numeric: tabular-nums; }
 
+  .tv-urgency { display: flex; flex-direction: column; gap: 3px; }
+  .tv-urgency-badge {
+    display: inline-flex; align-items: center; gap: 3px;
+    padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 600;
+    white-space: nowrap;
+  }
+  .tv-urgency-badge.ok { background: var(--green-bg); color: var(--green); }
+  .tv-urgency-badge.warn { background: var(--yellow-bg); color: #92610e; }
+  .tv-urgency-badge.danger { background: var(--red-bg); color: var(--red); }
+
+  .tv-detail { display: flex; flex-direction: column; gap: 2px; }
+  .tv-detail-line { font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
+  .tv-detail-line strong { color: var(--text); font-weight: 600; }
+
   /* Health view */
   .health-view { display: none; flex-direction: column; flex: 1; padding: 0 0 28px; }
   .health-view.visible { display: flex; }
@@ -1322,8 +1336,8 @@
     </div>
     <div class="header-actions">
       <div class="view-toggle">
-        <button class="toggle-option active" id="toggleAction" onclick="switchView('action')">Action</button>
         <button class="toggle-option" id="toggleTable" onclick="switchView('table')">Table View</button>
+        <button class="toggle-option active" id="toggleAction" onclick="switchView('action')">Action</button>
         <button class="toggle-option" id="toggleHealth" onclick="switchView('health')">Pod Health</button>
       </div>
       <span class="live-badge"><span class="live-dot"></span> Live</span>
@@ -1402,7 +1416,8 @@
             <th class="col-value">Value ($)</th>
             <th>Assignee</th>
             <th>Stage(s)</th>
-            <th>Key Date</th>
+            <th>Stage Detail</th>
+            <th>Urgency</th>
             <th>Flags</th>
           </tr>
         </thead>
@@ -1542,6 +1557,10 @@ const RFQS = [
   { id: "RFQ-3910", client: "Global Freight Solutions", origin: "Shanghai", destination: "Los Angeles", mode: "FCL", shipments: 3, quotedValue: 31500, assignee: "James Chen", stage: "delivered", stageDate: daysAgo(7), firstTime: false, carrier: "Maersk", opsBooking: "done", opsOriginCX: "done", opsPickup: "done", opsDestCX: "done", opsDelivery: "done", opsStage: null, opsAssignee: "James Chen" },
   { id: "RFQ-3920", client: "Pacific Cargo Lines", origin: "Kaohsiung", destination: "Oakland", mode: "LCL", shipments: 1, quotedValue: 3800, assignee: "David Park", stage: "delivered", stageDate: daysAgo(1), firstTime: false, carrier: "Evergreen", opsBooking: "done", opsOriginCX: "done", opsPickup: "done", opsDestCX: "done", opsDelivery: "done", opsStage: null, opsAssignee: "Maria Lopez" },
   { id: "RFQ-3925", client: "Caspian Freight Co.", origin: "Mersin", destination: "Miami", mode: "FCL", shipments: 2, quotedValue: 16200, assignee: "Maria Lopez", stage: "delivered", stageDate: daysAgo(10), firstTime: true, carrier: "ZIM", opsBooking: "done", opsOriginCX: "done", opsPickup: "done", opsDestCX: "done", opsDelivery: "done", opsStage: null, opsAssignee: "James Chen" },
+
+  // Multi-stage: RFQs appearing in more than one swimlane
+  { id: "RFQ-3990", client: "TransAtlantic Logistics", origin: "Ningbo", destination: "Los Angeles", mode: "FCL", shipments: 2, quotedValue: 19200, assignee: "James Chen", stage: "delivered", stageDate: daysAgo(2), firstTime: false, carrier: "ONE", opsBooking: "done", opsOriginCX: "done", opsPickup: "done", opsDestCX: "done", opsDelivery: "done", opsStage: null, opsAssignee: "Maria Lopez" },
+  { id: "RFQ-4050", client: "Global Freight Solutions", origin: "Yantian", destination: "Long Beach", mode: "FCL", shipments: 2, quotedValue: 22000, assignee: "David Park", stage: "arriving", stageDate: daysFromNow(1), firstTime: false, carrier: "Maersk", opsBooking: "done", opsOriginCX: "done", opsPickup: "done", opsDestCX: "done", opsDelivery: "pending", opsStage: "ops-delivery", opsAssignee: "James Chen" },
 
 ];
 
@@ -2198,21 +2217,68 @@ function getStageLabel(key) {
   return s ? s.label : key;
 }
 
-function getStageDateLabel(rfq) {
+function getStageDetailLine(rfq) {
   switch (rfq.stage) {
-    case "unquoted": return `Rcvd ${formatDate(rfq.stageDate)}`;
-    case "awaiting": return `Valid til ${formatDate(rfq.stageDate)}`;
-    case "expired": return `Exp ${diffDays(rfq.stageDate)}d ago`;
-    case "transit": return rfq.delayed ? `ETA was ${formatDate(rfq.stageDate)}` : `ETA ${formatDate(rfq.stageDate)}`;
+    case "unquoted": return `Received: <strong>${formatDate(rfq.stageDate)}</strong>`;
+    case "awaiting": return `Valid until: <strong>${formatDate(rfq.stageDate)}</strong>`;
+    case "expired": return `Expired: <strong>${formatDate(rfq.stageDate)}</strong> (${diffDays(rfq.stageDate)}d ago)`;
+    case "transit": {
+      if (rfq.delayed) return `ETA was: <strong>${formatDate(rfq.stageDate)}</strong> — delayed`;
+      return `ETA: <strong>${formatDate(rfq.stageDate)}</strong>`;
+    }
     case "arriving": {
       const d = diffDays(rfq.stageDate);
-      if (d > 0) return `Due was ${formatDate(rfq.stageDate)}`;
-      if (d === 0) return `Arriving today`;
-      return `Arrives ${formatDate(rfq.stageDate)}`;
+      if (d > 0) return `Was due: <strong>${formatDate(rfq.stageDate)}</strong> (${d}d overdue)`;
+      if (d === 0) return `Arriving: <strong>Today</strong>`;
+      return `Arriving: <strong>${formatDate(rfq.stageDate)}</strong>`;
     }
-    case "delivered": return `Dlvd ${diffDays(rfq.stageDate)}d ago`;
+    case "delivered": return `Delivered: <strong>${formatDate(rfq.stageDate)}</strong> (${diffDays(rfq.stageDate)}d ago, uninvoiced)`;
   }
   return "";
+}
+
+function getUrgencyBadge(rfq) {
+  let text = "";
+  let level = "ok";
+  switch (rfq.stage) {
+    case "unquoted": {
+      const d = diffDays(rfq.stageDate);
+      text = `${d}d waiting`;
+      level = d >= 5 ? "danger" : d >= 2 ? "warn" : "ok";
+      break;
+    }
+    case "awaiting": {
+      const remain = -diffDays(rfq.stageDate);
+      if (remain < 0) { text = `Expired ${-remain}d ago`; level = "danger"; }
+      else { text = `${remain}d left`; level = remain <= 2 ? "danger" : remain <= 5 ? "warn" : "ok"; }
+      break;
+    }
+    case "expired": {
+      const d = diffDays(rfq.stageDate);
+      text = `${d}d expired`;
+      level = d >= 5 ? "danger" : d >= 2 ? "warn" : "ok";
+      break;
+    }
+    case "transit": {
+      if (rfq.delayed) { text = "Delayed"; level = "danger"; }
+      else { const eta = -diffDays(rfq.stageDate); text = `${eta}d to ETA`; level = eta <= 2 ? "warn" : "ok"; }
+      break;
+    }
+    case "arriving": {
+      const d = diffDays(rfq.stageDate);
+      if (d > 0) { text = `${d}d overdue`; level = "danger"; }
+      else if (d === 0) { text = "Today"; level = "warn"; }
+      else { text = "Tomorrow"; level = "ok"; }
+      break;
+    }
+    case "delivered": {
+      const d = diffDays(rfq.stageDate);
+      text = `${d}d uninvoiced`;
+      level = d >= 7 ? "danger" : d >= 3 ? "warn" : "ok";
+      break;
+    }
+  }
+  return { text, level };
 }
 
 function renderTableView() {
@@ -2246,11 +2312,16 @@ function renderTableView() {
         firstTime: rfq.firstTime,
         delayed: rfq.delayed || false,
         stages: [],
-        stageDates: []
+        stageDetails: [],
+        urgencies: []
       };
     }
-    grouped[rfq.id].stages.push(rfq.stage);
-    grouped[rfq.id].stageDates.push(getStageDateLabel(rfq));
+    const stageKey = rfq.stage;
+    if (!grouped[rfq.id].stages.includes(stageKey)) {
+      grouped[rfq.id].stages.push(stageKey);
+      grouped[rfq.id].stageDetails.push(getStageDetailLine(rfq));
+      grouped[rfq.id].urgencies.push(getUrgencyBadge(rfq));
+    }
     if (rfq.delayed) grouped[rfq.id].delayed = true;
     if (rfq.quotedValue > grouped[rfq.id].quotedValue) grouped[rfq.id].quotedValue = rfq.quotedValue;
     grouped[rfq.id].shipments = Math.max(grouped[rfq.id].shipments, rfq.shipments);
@@ -2269,7 +2340,7 @@ function renderTableView() {
     return t ? t.color : "#999";
   };
 
-  const modeClass = (m) => {
+  const tvModeClass = (m) => {
     if (m === "Air") return "air";
     if (m === "FCL" || m === "LCL") return "ocean";
     return "trucking";
@@ -2281,29 +2352,36 @@ function renderTableView() {
       `<span class="tv-stage-pill ${s}"><span class="tv-stage-dot ${s}"></span>${getStageLabel(s)}</span>`
     ).join("");
 
-    const dateStr = r.stageDates.join(" | ");
+    const detailHtml = r.stageDetails.map(d => `<div class="tv-detail-line">${d}</div>`).join("");
+
+    const urgencyHtml = r.urgencies.map(u =>
+      `<span class="tv-urgency-badge ${u.level}">${u.text}</span>`
+    ).join("");
 
     const flags = [];
-    const isArrivingToday = r.stages.includes("arriving") && r.stageDates.some(d => d.includes("today"));
+    const isArrivingToday = r.stages.includes("arriving") && r.urgencies.some(u => u.text === "Today");
     if (r.firstTime) flags.push(`<span class="tv-flag first-time">1st client</span>`);
     if (r.delayed) flags.push(`<span class="tv-flag delayed">Delayed</span>`);
     if (isArrivingToday) flags.push(`<span class="tv-flag arriving-today">Today</span>`);
 
-    return `<tr onclick="openRfq('${r.id}')">
+    const multiTag = r.stages.length > 1 ? ' style="background:#fffbeb;"' : '';
+
+    return `<tr onclick="openRfq('${r.id}')"${multiTag}>
       <td><span class="tv-id">${r.id}</span></td>
       <td><span class="tv-client">${r.client}</span></td>
       <td><span class="tv-route">${r.origin} → ${r.destination}</span></td>
-      <td><span class="tv-mode-chip ${modeClass(r.mode)}">${r.mode}</span></td>
+      <td><span class="tv-mode-chip ${tvModeClass(r.mode)}">${r.mode}</span></td>
       <td class="col-shipments">${r.shipments}</td>
       <td class="col-value"><span class="tv-value">$${(r.quotedValue || 0).toLocaleString()}</span></td>
       <td><span class="tv-assignee"><span class="tv-assignee-dot" style="background:${teamColor(r.assignee)}"></span>${r.assignee}</span></td>
       <td><div class="tv-stages">${stagePills}</div></td>
-      <td><span class="tv-route">${dateStr}</span></td>
+      <td><div class="tv-detail">${detailHtml}</div></td>
+      <td><div class="tv-urgency">${urgencyHtml}</div></td>
       <td>${flags.join(" ") || "—"}</td>
     </tr>`;
   }).join("");
 
-  document.getElementById("tableCount").textContent = `${rows.length} unique RFQs`;
+  document.getElementById("tableCount").textContent = `${rows.length} unique RFQs` + (rows.some(r => r.stages.length > 1) ? ` (${rows.filter(r => r.stages.length > 1).length} multi-stage)` : '');
 }
 
 function openRfq(id) {
