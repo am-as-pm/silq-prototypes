@@ -845,10 +845,19 @@
   .tv-contact { font-size: 12px; color: var(--text-secondary); }
   .tv-date { font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
   .tv-shipper { font-size: 12px; color: var(--text); font-weight: 500; }
-  .tv-approval { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
-  .tv-approval.approved { background: var(--green-bg); color: var(--green); }
-  .tv-approval.expired { background: var(--red-bg); color: var(--red); }
-  .tv-approval.pending { background: var(--gray-bg); color: var(--text-secondary); }
+  .col-attn { width: 44px; text-align: center; }
+  .tv-attn-btn {
+    width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border);
+    background: transparent; cursor: pointer; display: inline-flex;
+    align-items: center; justify-content: center; transition: all .15s;
+    font-size: 14px; line-height: 1; color: var(--border);
+  }
+  .tv-attn-btn:hover { border-color: var(--red); color: var(--red); }
+  .tv-attn-btn.active {
+    border-color: var(--red); background: var(--red); color: #fff;
+  }
+  .tv-table tbody tr.needs-attention { background: #fff5f5; }
+  .tv-table tbody tr.needs-attention:hover { background: #fee2e2; }
 
   /* Health view */
   .health-view { display: none; flex-direction: column; flex: 1; padding: 0 0 28px; }
@@ -1450,9 +1459,7 @@
             <th>CRD</th>
             <th>Quote Sent</th>
             <th class="col-value">Total $</th>
-            <th>Approved?</th>
-            <th>Next Action</th>
-            <th>Flags</th>
+            <th class="col-attn">Attn</th>
             <th class="col-notes">Notes</th>
           </tr>
         </thead>
@@ -2344,7 +2351,14 @@ function getNextAction(rfq) {
 }
 
 const rfqNotes = {};
+const rfqAttention = {};
 RFQS.forEach(r => { if (r.notes) rfqNotes[r.id] = r.notes; });
+
+function toggleAttention(id) {
+  event.stopPropagation();
+  rfqAttention[id] = !rfqAttention[id];
+  renderTableView();
+}
 
 function startEditNote(id, el) {
   event.stopPropagation();
@@ -2455,17 +2469,15 @@ function renderTableView() {
 
     const multiTag = r.stages.length > 1 ? ' style="background:#fffbeb;"' : '';
 
-    const approvalBadge = r.approvalStatus === "Approved"
-      ? `<span class="tv-approval approved">Approved</span>`
-      : r.approvalStatus === "Expired"
-      ? `<span class="tv-approval expired">Expired</span>`
-      : `<span class="tv-approval pending">Pending</span>`;
-
     const noteDisplay = r.notes
       ? `<div class="tv-notes-text">${r.notes}</div>`
       : `<div class="tv-notes-text"></div>`;
 
-    return `<tr${multiTag}>
+    const isAttn = rfqAttention[r.id];
+    const attnClass = isAttn ? " needs-attention" : "";
+    const attnBtn = `<button class="tv-attn-btn${isAttn ? " active" : ""}" onclick="toggleAttention('${r.id}')" title="${isAttn ? "Remove attention flag" : "Flag as needs attention"}">!</button>`;
+
+    return `<tr class="${attnClass}"${multiTag}>
       <td onclick="openRfq('${r.id}')"><span class="tv-assignee"><span class="tv-assignee-dot" style="background:${teamColor(r.assignee)}"></span>${r.assignee}</span></td>
       <td onclick="openRfq('${r.id}')"><span class="tv-client">${r.client}</span></td>
       <td onclick="openRfq('${r.id}')"><span class="tv-contact">${r.contact}</span></td>
@@ -2478,9 +2490,7 @@ function renderTableView() {
       <td onclick="openRfq('${r.id}')"><span class="tv-date">${r.crd ? formatDate(r.crd) : "—"}</span></td>
       <td onclick="openRfq('${r.id}')"><span class="tv-date">${r.quoteSentDate ? formatDate(r.quoteSentDate) : "—"}</span></td>
       <td onclick="openRfq('${r.id}')" class="col-value"><span class="tv-value">$${(r.quotedValue || 0).toLocaleString()}</span></td>
-      <td onclick="openRfq('${r.id}')">${approvalBadge}</td>
-      <td onclick="openRfq('${r.id}')"><div class="tv-action">${actionHtml}</div></td>
-      <td onclick="openRfq('${r.id}')">${flags.join(" ") || "—"}</td>
+      <td class="col-attn">${attnBtn}</td>
       <td class="col-notes"><div class="tv-notes-cell" onclick="startEditNote('${r.id}', this)">${noteDisplay}</div></td>
     </tr>`;
   }).join("");
