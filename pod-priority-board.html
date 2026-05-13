@@ -2407,7 +2407,7 @@ function buildQuoteSentCell(r) {
   if (!h || h.length <= 1) return `<span class="tv-date">${formatDate(r.quoteSentDate)}</span>`;
   const revNum = h.length;
   const historyTip = h.map((q, i) => `Q${i+1}: ${formatDate(q.date)}`).join(" | ");
-  return `<div class="tv-quote-cell"><span class="tv-date">${formatDate(r.quoteSentDate)}<span class="tv-rev-badge" title="${historyTip}">Rev ${revNum}</span></span></div>`;
+  return `<div class="tv-quote-cell"><span class="tv-date">${formatDate(r.quoteSentDate)}<span class="tv-rev-badge" title="${historyTip}">Q${revNum}</span></span></div>`;
 }
 
 function buildQuoteValueCell(r) {
