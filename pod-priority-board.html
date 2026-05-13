@@ -842,6 +842,16 @@
   }
   .tv-notes-input:focus { box-shadow: 0 0 0 3px rgba(200,132,46,.15); }
 
+  .tv-id-cell { display: flex; flex-direction: column; gap: 1px; }
+  .tv-id-date { font-size: 11px; color: var(--text-secondary); }
+
+  .tv-assignee-select {
+    padding: 3px 6px; border: 1px solid var(--border); border-radius: 6px;
+    font-size: 12px; font-family: inherit; background: var(--card);
+    color: var(--text); cursor: pointer; min-width: 110px;
+  }
+  .tv-assignee-select:focus { border-color: var(--primary); outline: none; }
+
   .tv-contact { font-size: 12px; color: var(--text-secondary); }
   .tv-date { font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
   .tv-shipper { font-size: 12px; color: var(--text); font-weight: 500; }
@@ -1447,11 +1457,10 @@
       <table class="tv-table">
         <thead>
           <tr>
-            <th>AAM</th>
+            <th>Assignee</th>
             <th>Client</th>
             <th>Contact</th>
             <th>Silq ID</th>
-            <th>RFQ Date</th>
             <th>Shipper / PO #</th>
             <th>Route</th>
             <th>Mode</th>
@@ -2354,6 +2363,15 @@ const rfqNotes = {};
 const rfqAttention = {};
 RFQS.forEach(r => { if (r.notes) rfqNotes[r.id] = r.notes; });
 
+const rfqAssigneeOverrides = {};
+
+function changeAssignee(id, el) {
+  event.stopPropagation();
+  rfqAssigneeOverrides[id] = el.value;
+  RFQS.forEach(r => { if (r.id === id) r.assignee = el.value; });
+  renderTableView();
+}
+
 function toggleAttention(id) {
   event.stopPropagation();
   rfqAttention[id] = !rfqAttention[id];
@@ -2477,12 +2495,15 @@ function renderTableView() {
     const attnClass = isAttn ? " needs-attention" : "";
     const attnBtn = `<button class="tv-attn-btn${isAttn ? " active" : ""}" onclick="toggleAttention('${r.id}')" title="${isAttn ? "Remove attention flag" : "Flag as needs attention"}">!</button>`;
 
+    const teamOptions = TEAM.map(t =>
+      `<option value="${t.name}"${t.name === r.assignee ? " selected" : ""}>${t.name}</option>`
+    ).join("");
+
     return `<tr class="${attnClass}"${multiTag}>
-      <td onclick="openRfq('${r.id}')"><span class="tv-assignee"><span class="tv-assignee-dot" style="background:${teamColor(r.assignee)}"></span>${r.assignee}</span></td>
+      <td><select class="tv-assignee-select" onchange="changeAssignee('${r.id}', this)">${teamOptions}</select></td>
       <td onclick="openRfq('${r.id}')"><span class="tv-client">${r.client}</span></td>
       <td onclick="openRfq('${r.id}')"><span class="tv-contact">${r.contact}</span></td>
-      <td onclick="openRfq('${r.id}')"><span class="tv-id">${r.id}</span></td>
-      <td onclick="openRfq('${r.id}')"><span class="tv-date">${r.rfqDate ? formatDate(r.rfqDate) : "—"}</span></td>
+      <td onclick="openRfq('${r.id}')"><div class="tv-id-cell"><span class="tv-id">${r.id}</span><span class="tv-id-date">${r.rfqDate ? formatDate(r.rfqDate) : ""}</span></div></td>
       <td onclick="openRfq('${r.id}')"><span class="tv-shipper">${r.shipperPo || "—"}</span></td>
       <td onclick="openRfq('${r.id}')"><span class="tv-route">${r.origin} → ${r.destination}</span></td>
       <td onclick="openRfq('${r.id}')"><span class="tv-mode-chip ${tvModeClass(r.mode)}">${r.mode}</span></td>
