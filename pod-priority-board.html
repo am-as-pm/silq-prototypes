@@ -877,6 +877,112 @@
   .tv-table tbody tr.needs-attention { background: #fff5f5; }
   .tv-table tbody tr.needs-attention:hover { background: #fee2e2; }
 
+  /* Custom views toolbar */
+  .cv-toolbar {
+    display: flex; align-items: center; gap: 8px; padding: 0 0 10px; flex-wrap: wrap;
+  }
+  .cv-tabs {
+    display: flex; align-items: center; gap: 4px; flex-wrap: wrap;
+  }
+  .cv-tab {
+    padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 500;
+    cursor: pointer; border: 1px solid var(--border); background: var(--card);
+    color: var(--text-secondary); transition: all .15s; display: flex;
+    align-items: center; gap: 6px; font-family: inherit; white-space: nowrap;
+  }
+  .cv-tab:hover { background: var(--gray-bg); color: var(--text); }
+  .cv-tab.active {
+    background: var(--primary-light); color: var(--primary-dark);
+    border-color: var(--primary); font-weight: 600;
+  }
+  .cv-tab-delete {
+    width: 14px; height: 14px; border-radius: 50%; display: inline-flex;
+    align-items: center; justify-content: center; font-size: 11px;
+    color: var(--text-secondary); cursor: pointer; line-height: 1;
+    transition: all .12s; background: transparent; border: none;
+    font-family: inherit; padding: 0;
+  }
+  .cv-tab-delete:hover { background: var(--red-bg); color: var(--red); }
+
+  .cv-actions {
+    display: flex; align-items: center; gap: 6px; margin-left: auto;
+  }
+  .cv-btn {
+    padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 500;
+    cursor: pointer; border: 1px solid var(--border); background: var(--card);
+    color: var(--text); transition: all .15s; font-family: inherit;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .cv-btn:hover { background: var(--gray-bg); }
+  .cv-btn svg { width: 14px; height: 14px; }
+
+  .cv-col-picker {
+    position: absolute; top: 100%; right: 0; margin-top: 4px; z-index: 100;
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.12); width: 260px;
+    max-height: 420px; overflow-y: auto;
+  }
+  .cv-col-picker-header {
+    padding: 10px 14px; font-size: 12px; font-weight: 600;
+    color: var(--text-secondary); text-transform: uppercase; letter-spacing: .4px;
+    border-bottom: 1px solid var(--border-light);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .cv-col-picker-header button {
+    font-size: 11px; font-weight: 500; color: var(--primary);
+    cursor: pointer; background: none; border: none; font-family: inherit;
+  }
+  .cv-col-picker-header button:hover { text-decoration: underline; }
+  .cv-col-item {
+    display: flex; align-items: center; gap: 10px; padding: 8px 14px;
+    cursor: pointer; transition: background .1s; font-size: 13px;
+  }
+  .cv-col-item:hover { background: var(--gray-bg); }
+  .cv-col-item input[type="checkbox"] {
+    width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer;
+  }
+  .cv-col-item label { cursor: pointer; flex: 1; user-select: none; }
+
+  .cv-save-modal {
+    position: fixed; inset: 0; z-index: 200; display: flex;
+    align-items: center; justify-content: center;
+    background: rgba(0,0,0,.35);
+  }
+  .cv-save-modal-inner {
+    background: var(--card); border-radius: 12px; padding: 24px;
+    width: 360px; box-shadow: 0 12px 40px rgba(0,0,0,.2);
+  }
+  .cv-save-modal-inner h3 {
+    font-size: 16px; font-weight: 600; margin-bottom: 14px;
+  }
+  .cv-save-modal-inner input {
+    width: 100%; padding: 8px 12px; border: 1px solid var(--border);
+    border-radius: 8px; font-size: 14px; font-family: inherit;
+    margin-bottom: 16px;
+  }
+  .cv-save-modal-inner input:focus {
+    outline: none; border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(200,132,46,.15);
+  }
+  .cv-save-modal-btns {
+    display: flex; gap: 8px; justify-content: flex-end;
+  }
+  .cv-save-modal-btns button {
+    padding: 7px 16px; border-radius: 8px; font-size: 13px; font-weight: 500;
+    cursor: pointer; border: 1px solid var(--border); background: var(--card);
+    color: var(--text); font-family: inherit; transition: all .15s;
+  }
+  .cv-save-modal-btns .cv-save-confirm {
+    background: var(--primary); color: #fff; border-color: var(--primary);
+  }
+  .cv-save-modal-btns .cv-save-confirm:hover {
+    background: var(--primary-dark);
+  }
+  .cv-save-modal-btns button:not(.cv-save-confirm):hover {
+    background: var(--gray-bg);
+  }
+  .cv-picker-anchor { position: relative; }
+
   /* Health view */
   .health-view { display: none; flex-direction: column; flex: 1; padding: 0 0 28px; }
   .health-view.visible { display: flex; }
@@ -1441,6 +1547,22 @@
         <span class="table-count" id="tableCount"></span>
       </div>
     </div>
+    <div class="cv-toolbar" id="cvToolbar">
+      <div class="cv-tabs" id="cvTabs"></div>
+      <div class="cv-actions">
+        <div class="cv-picker-anchor">
+          <button class="cv-btn" onclick="toggleColumnPicker()" title="Show/hide columns">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+            Columns
+          </button>
+          <div class="cv-col-picker" id="cvColPicker" style="display:none;"></div>
+        </div>
+        <button class="cv-btn" onclick="openSaveViewModal()" title="Save current view">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Save View
+        </button>
+      </div>
+    </div>
     <div class="table-view-filters">
       <label>Filters</label>
       <select class="filter-select" id="tvFilterTeam" onchange="renderTableView()">
@@ -1465,23 +1587,35 @@
       <table class="tv-table">
         <thead>
           <tr>
-            <th>Assignee</th>
-            <th>Client</th>
-            <th>Contact</th>
-            <th>Silq ID</th>
-            <th>Shipper / PO #</th>
-            <th>Route</th>
-            <th>Mode</th>
-            <th>Stage(s)</th>
-            <th>CRD</th>
-            <th>Quote Sent</th>
-            <th class="col-value">Total $</th>
-            <th class="col-attn">Attn</th>
-            <th class="col-notes">Notes</th>
+            <th data-col="assignee">Assignee</th>
+            <th data-col="client">Client</th>
+            <th data-col="contact">Contact</th>
+            <th data-col="silqId">Silq ID</th>
+            <th data-col="shipperPo">Shipper / PO #</th>
+            <th data-col="route">Route</th>
+            <th data-col="mode">Mode</th>
+            <th data-col="stages">Stage(s)</th>
+            <th data-col="crd">CRD</th>
+            <th data-col="quoteSent">Quote Sent</th>
+            <th data-col="totalVal" class="col-value">Total $</th>
+            <th data-col="attn" class="col-attn">Attn</th>
+            <th data-col="notes" class="col-notes">Notes</th>
           </tr>
         </thead>
         <tbody id="tableBody"></tbody>
       </table>
+    </div>
+  </div>
+
+  <!-- Save View Modal -->
+  <div class="cv-save-modal" id="cvSaveModal" style="display:none;" onclick="if(event.target===this)closeSaveViewModal()">
+    <div class="cv-save-modal-inner">
+      <h3>Save Custom View</h3>
+      <input type="text" id="cvViewName" placeholder="e.g. My Sales View, Ops Summary..." onkeydown="if(event.key==='Enter')confirmSaveView()">
+      <div class="cv-save-modal-btns">
+        <button onclick="closeSaveViewModal()">Cancel</button>
+        <button class="cv-save-confirm" onclick="confirmSaveView()">Save</button>
+      </div>
     </div>
   </div>
 
@@ -2373,6 +2507,217 @@ RFQS.forEach(r => { if (r.notes) rfqNotes[r.id] = r.notes; });
 
 const rfqAssigneeOverrides = {};
 
+const TABLE_COLUMNS = [
+  { key: "assignee",  label: "Assignee",      defaultOn: true },
+  { key: "client",    label: "Client",         defaultOn: true },
+  { key: "contact",   label: "Contact",        defaultOn: true },
+  { key: "silqId",    label: "Silq ID",        defaultOn: true },
+  { key: "shipperPo", label: "Shipper / PO #", defaultOn: true },
+  { key: "route",     label: "Route",          defaultOn: true },
+  { key: "mode",      label: "Mode",           defaultOn: true },
+  { key: "stages",    label: "Stage(s)",       defaultOn: true },
+  { key: "crd",       label: "CRD",            defaultOn: true },
+  { key: "quoteSent", label: "Quote Sent",     defaultOn: true },
+  { key: "totalVal",  label: "Total $",        defaultOn: true },
+  { key: "attn",      label: "Attn",           defaultOn: true },
+  { key: "notes",     label: "Notes",          defaultOn: true }
+];
+
+const STORAGE_KEY = "podBoard_customViews";
+let activeViewId = "__default__";
+let visibleColumns = TABLE_COLUMNS.map(c => c.key);
+
+function loadSavedViews() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch(e) { return {}; }
+}
+function persistViews(views) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(views));
+}
+
+function getDefaultColumnSet() { return TABLE_COLUMNS.map(c => c.key); }
+
+function setActiveView(viewId) {
+  activeViewId = viewId;
+  if (viewId === "__default__") {
+    visibleColumns = getDefaultColumnSet();
+    resetTableFilters();
+  } else {
+    const views = loadSavedViews();
+    const v = views[viewId];
+    if (!v) { activeViewId = "__default__"; visibleColumns = getDefaultColumnSet(); return; }
+    visibleColumns = v.columns.slice();
+    applyViewFilters(v.filters || {});
+  }
+  renderViewTabs();
+  applyColumnVisibility();
+  renderTableView();
+}
+
+function resetTableFilters() {
+  document.getElementById("tvFilterTeam").value = "";
+  document.getElementById("tvFilterClient").value = "";
+  document.getElementById("tvFilterMode").value = "";
+  document.getElementById("tvFilterStage").value = "";
+  document.getElementById("tvSearch").value = "";
+}
+
+function applyViewFilters(filters) {
+  document.getElementById("tvFilterTeam").value = filters.team || "";
+  document.getElementById("tvFilterClient").value = filters.client || "";
+  document.getElementById("tvFilterMode").value = filters.mode || "";
+  document.getElementById("tvFilterStage").value = filters.stage || "";
+  document.getElementById("tvSearch").value = filters.search || "";
+}
+
+function getCurrentFilters() {
+  return {
+    team: document.getElementById("tvFilterTeam").value,
+    client: document.getElementById("tvFilterClient").value,
+    mode: document.getElementById("tvFilterMode").value,
+    stage: document.getElementById("tvFilterStage").value,
+    search: document.getElementById("tvSearch").value
+  };
+}
+
+function renderViewTabs() {
+  const container = document.getElementById("cvTabs");
+  const views = loadSavedViews();
+  const viewIds = Object.keys(views);
+
+  let html = `<button class="cv-tab${activeViewId === "__default__" ? " active" : ""}" onclick="setActiveView('__default__')">All Columns</button>`;
+
+  viewIds.forEach(id => {
+    const v = views[id];
+    const isActive = activeViewId === id;
+    html += `<button class="cv-tab${isActive ? " active" : ""}" onclick="setActiveView('${id}')">
+      ${v.name}
+      <span class="cv-tab-delete" onclick="event.stopPropagation();deleteCustomView('${id}')" title="Delete view">&times;</span>
+    </button>`;
+  });
+
+  container.innerHTML = html;
+}
+
+function toggleColumnPicker() {
+  const picker = document.getElementById("cvColPicker");
+  if (picker.style.display === "none") {
+    renderColumnPicker();
+    picker.style.display = "block";
+    setTimeout(() => document.addEventListener("click", closePickerOutside), 0);
+  } else {
+    picker.style.display = "none";
+    document.removeEventListener("click", closePickerOutside);
+  }
+}
+
+function closePickerOutside(e) {
+  const picker = document.getElementById("cvColPicker");
+  const anchor = picker.closest(".cv-picker-anchor");
+  if (!anchor.contains(e.target)) {
+    picker.style.display = "none";
+    document.removeEventListener("click", closePickerOutside);
+  }
+}
+
+function renderColumnPicker() {
+  const picker = document.getElementById("cvColPicker");
+  const allOn = visibleColumns.length === TABLE_COLUMNS.length;
+  let html = `<div class="cv-col-picker-header"><span>Columns</span><button onclick="${allOn ? "deselectAllColumns()" : "selectAllColumns()"}">${allOn ? "Deselect All" : "Select All"}</button></div>`;
+
+  TABLE_COLUMNS.forEach(col => {
+    const checked = visibleColumns.includes(col.key) ? "checked" : "";
+    html += `<div class="cv-col-item" onclick="toggleColumn('${col.key}')">
+      <input type="checkbox" ${checked} tabindex="-1">
+      <label>${col.label}</label>
+    </div>`;
+  });
+
+  picker.innerHTML = html;
+}
+
+function toggleColumn(key) {
+  const idx = visibleColumns.indexOf(key);
+  if (idx > -1) {
+    if (visibleColumns.length <= 1) return;
+    visibleColumns.splice(idx, 1);
+  } else {
+    const orderedPos = TABLE_COLUMNS.findIndex(c => c.key === key);
+    let insertAt = visibleColumns.length;
+    for (let i = 0; i < visibleColumns.length; i++) {
+      if (TABLE_COLUMNS.findIndex(c => c.key === visibleColumns[i]) > orderedPos) { insertAt = i; break; }
+    }
+    visibleColumns.splice(insertAt, 0, key);
+  }
+  if (activeViewId !== "__default__") activeViewId = "__default__";
+  renderViewTabs();
+  renderColumnPicker();
+  applyColumnVisibility();
+  renderTableView();
+}
+
+function selectAllColumns() {
+  visibleColumns = getDefaultColumnSet();
+  renderColumnPicker();
+  applyColumnVisibility();
+  renderTableView();
+}
+
+function deselectAllColumns() {
+  visibleColumns = [TABLE_COLUMNS[0].key];
+  renderColumnPicker();
+  applyColumnVisibility();
+  renderTableView();
+}
+
+function applyColumnVisibility() {
+  const table = document.querySelector(".tv-table");
+  if (!table) return;
+  table.querySelectorAll("thead th[data-col]").forEach(th => {
+    th.style.display = visibleColumns.includes(th.dataset.col) ? "" : "none";
+  });
+}
+
+function openSaveViewModal() {
+  document.getElementById("cvSaveModal").style.display = "flex";
+  const inp = document.getElementById("cvViewName");
+  inp.value = "";
+  inp.focus();
+}
+
+function closeSaveViewModal() {
+  document.getElementById("cvSaveModal").style.display = "none";
+}
+
+function confirmSaveView() {
+  const name = document.getElementById("cvViewName").value.trim();
+  if (!name) return;
+  const views = loadSavedViews();
+  const id = "cv_" + Date.now();
+  views[id] = {
+    name: name,
+    columns: visibleColumns.slice(),
+    filters: getCurrentFilters()
+  };
+  persistViews(views);
+  activeViewId = id;
+  closeSaveViewModal();
+  renderViewTabs();
+}
+
+function deleteCustomView(id) {
+  const views = loadSavedViews();
+  delete views[id];
+  persistViews(views);
+  if (activeViewId === id) {
+    activeViewId = "__default__";
+    visibleColumns = getDefaultColumnSet();
+    resetTableFilters();
+    applyColumnVisibility();
+    renderTableView();
+  }
+  renderViewTabs();
+}
+
 function changeAssignee(id, el) {
   event.stopPropagation();
   rfqAssigneeOverrides[id] = el.value;
@@ -2528,21 +2873,26 @@ function renderTableView() {
     ).join("");
 
     return `<tr class="${attnClass}"${multiTag}>
-      <td><select class="tv-assignee-select" onchange="changeAssignee('${r.id}', this)">${teamOptions}</select></td>
-      <td onclick="openRfq('${r.id}')"><span class="tv-client">${r.client}</span></td>
-      <td onclick="openRfq('${r.id}')"><span class="tv-contact">${r.contact}</span></td>
-      <td onclick="openRfq('${r.id}')"><div class="tv-id-cell"><span class="tv-id">${r.id}</span><span class="tv-id-date">${r.rfqDate ? formatDate(r.rfqDate) : ""}</span></div></td>
-      <td onclick="openRfq('${r.id}')"><span class="tv-shipper">${r.shipperPo || "—"}</span></td>
-      <td onclick="openRfq('${r.id}')"><span class="tv-route">${r.origin} → ${r.destination}</span></td>
-      <td onclick="openRfq('${r.id}')"><span class="tv-mode-chip ${tvModeClass(r.mode)}">${r.mode}</span></td>
-      <td onclick="openRfq('${r.id}')"><div class="tv-stages">${stagePills}</div></td>
-      <td onclick="openRfq('${r.id}')"><span class="tv-date">${r.crd ? formatDate(r.crd) : "—"}</span></td>
-      <td onclick="openRfq('${r.id}')">${buildQuoteSentCell(r)}</td>
-      <td onclick="openRfq('${r.id}')" class="col-value">${buildQuoteValueCell(r)}</td>
-      <td class="col-attn">${attnBtn}</td>
-      <td class="col-notes"><div class="tv-notes-cell" onclick="startEditNote('${r.id}', this)">${noteDisplay}</div></td>
+      <td data-col="assignee"><select class="tv-assignee-select" onchange="changeAssignee('${r.id}', this)">${teamOptions}</select></td>
+      <td data-col="client" onclick="openRfq('${r.id}')"><span class="tv-client">${r.client}</span></td>
+      <td data-col="contact" onclick="openRfq('${r.id}')"><span class="tv-contact">${r.contact}</span></td>
+      <td data-col="silqId" onclick="openRfq('${r.id}')"><div class="tv-id-cell"><span class="tv-id">${r.id}</span><span class="tv-id-date">${r.rfqDate ? formatDate(r.rfqDate) : ""}</span></div></td>
+      <td data-col="shipperPo" onclick="openRfq('${r.id}')"><span class="tv-shipper">${r.shipperPo || "—"}</span></td>
+      <td data-col="route" onclick="openRfq('${r.id}')"><span class="tv-route">${r.origin} → ${r.destination}</span></td>
+      <td data-col="mode" onclick="openRfq('${r.id}')"><span class="tv-mode-chip ${tvModeClass(r.mode)}">${r.mode}</span></td>
+      <td data-col="stages" onclick="openRfq('${r.id}')"><div class="tv-stages">${stagePills}</div></td>
+      <td data-col="crd" onclick="openRfq('${r.id}')"><span class="tv-date">${r.crd ? formatDate(r.crd) : "—"}</span></td>
+      <td data-col="quoteSent" onclick="openRfq('${r.id}')">${buildQuoteSentCell(r)}</td>
+      <td data-col="totalVal" onclick="openRfq('${r.id}')" class="col-value">${buildQuoteValueCell(r)}</td>
+      <td data-col="attn" class="col-attn">${attnBtn}</td>
+      <td data-col="notes" class="col-notes"><div class="tv-notes-cell" onclick="startEditNote('${r.id}', this)">${noteDisplay}</div></td>
     </tr>`;
   }).join("");
+
+  applyColumnVisibility();
+  document.querySelectorAll(".tv-table tbody td[data-col]").forEach(td => {
+    td.style.display = visibleColumns.includes(td.dataset.col) ? "" : "none";
+  });
 
   document.getElementById("tableCount").textContent = `${rows.length} unique RFQs` + (rows.some(r => r.stages.length > 1) ? ` (${rows.filter(r => r.stages.length > 1).length} multi-stage)` : '');
 }
@@ -2555,6 +2905,7 @@ function openRfq(id) {
 
 populateFilters();
 populateTableFilters();
+renderViewTabs();
 renderBoard(RFQS);
 renderSummary(RFQS);
 document.getElementById("totalRfqBadge").textContent = RFQS.length;
