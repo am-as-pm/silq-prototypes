@@ -837,6 +837,23 @@
   }
   .tv-notes-input:focus { box-shadow: 0 0 0 3px rgba(200,132,46,.15); }
 
+  .tv-shipper-cell {
+    position: relative; min-height: 24px; cursor: text;
+  }
+  .tv-shipper-text {
+    font-size: 12px; color: var(--text); line-height: 1.4;
+  }
+  .tv-shipper-text:empty::before {
+    content: "—";
+    color: var(--border);
+  }
+  .tv-shipper-input {
+    width: 100%; padding: 4px 6px; border: 1.5px solid var(--primary);
+    border-radius: 6px; font-size: 12px; font-family: inherit;
+    outline: none; background: #fffdf8; color: var(--text);
+  }
+  .tv-shipper-input:focus { box-shadow: 0 0 0 3px rgba(200,132,46,.15); }
+
   .tv-id-cell { display: flex; flex-direction: column; gap: 1px; }
   .tv-id-date { font-size: 11px; color: var(--text-secondary); }
 
@@ -2948,6 +2965,24 @@ function saveDeadline(id, el) {
   renderTableView();
 }
 
+const rfqShipperPoOverrides = {};
+RFQS.forEach(r => { if (r.shipperPo) rfqShipperPoOverrides[r.id] = r.shipperPo; });
+
+function startEditShipperPo(id, el) {
+  event.stopPropagation();
+  const cell = el.closest('.tv-shipper-cell');
+  const current = rfqShipperPoOverrides[id] || "";
+  cell.innerHTML = `<input type="text" class="tv-shipper-input" value="${current}" placeholder="PO / Shipper #" onblur="saveShipperPo('${id}', this)" onkeydown="if(event.key==='Enter'||event.key==='Escape'){saveShipperPo('${id}',this)}">`;
+  const inp = cell.querySelector("input");
+  inp.focus();
+  inp.setSelectionRange(inp.value.length, inp.value.length);
+}
+
+function saveShipperPo(id, el) {
+  rfqShipperPoOverrides[id] = el.value.trim();
+  renderTableView();
+}
+
 function buildQuoteSentCell(r) {
   if (!r.quoteSentDate) return `<span class="tv-date">—</span>`;
   const h = r.quoteHistory;
@@ -2999,7 +3034,7 @@ function renderTableView() {
         assignee: rfq.assignee,
         contact: rfq.contact || "",
         rfqDate: rfq.rfqDate || "",
-        shipperPo: rfq.shipperPo || "",
+        shipperPo: rfqShipperPoOverrides[rfq.id] || rfq.shipperPo || "",
         crd: rfq.crd || "",
         quoteSentDate: rfq.quoteSentDate || "",
         quoteHistory: rfq.quoteHistory || [],
@@ -3084,7 +3119,7 @@ function renderTableView() {
       <td data-col="assignee"><select class="tv-assignee-select" onchange="changeAssignee('${r.id}', this)">${teamOptions}</select></td>
       <td data-col="client" onclick="openRfq('${r.id}')"><div class="tv-client-cell"><span class="tv-client">${r.client}</span>${r.contact ? `<span class="tv-client-contact">${r.contact}</span>` : ""}</div></td>
       <td data-col="silqId" onclick="openRfq('${r.id}')"><div class="tv-id-cell"><span class="tv-id">${r.id}</span><span class="tv-id-date">${r.rfqDate ? formatDate(r.rfqDate) : ""}</span></div></td>
-      <td data-col="shipperPo" onclick="openRfq('${r.id}')"><span class="tv-shipper">${r.shipperPo || "—"}</span></td>
+      <td data-col="shipperPo"><div class="tv-shipper-cell" onclick="startEditShipperPo('${r.id}', this)"><div class="tv-shipper-text">${rfqShipperPoOverrides[r.id] || r.shipperPo || ""}</div></div></td>
       <td data-col="route" onclick="openRfq('${r.id}')"><span class="tv-route">${r.origin} → ${r.destination}</span></td>
       <td data-col="mode" onclick="openRfq('${r.id}')"><span class="tv-mode-chip ${tvModeClass(r.mode)}">${r.mode}</span></td>
       <td data-col="stages" onclick="openRfq('${r.id}')"><div class="tv-stages">${stagePills}</div></td>
