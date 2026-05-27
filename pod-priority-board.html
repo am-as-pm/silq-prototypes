@@ -36,7 +36,8 @@
     --lane-submitted: #f0f4ff;
     --lane-awaiting: #fefce8;
     --lane-expired: #fef2f2;
-    --lane-requoting: #f0fdf4;
+    --lane-rejected: #fdf2f8;
+    --lane-accepted: #f0fdf4;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -607,8 +608,10 @@
   .lane[data-stage="awaiting"] .lane-dot { background: #ca8a04; }
   .lane[data-stage="expired"] .lane-header { background: var(--lane-expired); }
   .lane[data-stage="expired"] .lane-dot { background: var(--red); }
-  .lane[data-stage="requoting"] .lane-header { background: var(--lane-requoting); }
-  .lane[data-stage="requoting"] .lane-dot { background: var(--green); }
+  .lane[data-stage="rejected"] .lane-header { background: var(--lane-rejected); }
+  .lane[data-stage="rejected"] .lane-dot { background: #be185d; }
+  .lane[data-stage="accepted"] .lane-header { background: var(--lane-accepted); }
+  .lane[data-stage="accepted"] .lane-dot { background: var(--green); }
 
   .empty-lane {
     padding: 24px 16px;
@@ -780,7 +783,8 @@
   .tv-stage-pill.submitted { background: #e8eeff; color: #3b5bdb; }
   .tv-stage-pill.awaiting { background: #fef9e7; color: #b8860b; }
   .tv-stage-pill.expired { background: #fde8e8; color: #c44b3f; }
-  .tv-stage-pill.requoting { background: #e6f7ed; color: #1e7a42; }
+  .tv-stage-pill.rejected { background: #fce7f3; color: #be185d; }
+  .tv-stage-pill.accepted { background: #e6f7ed; color: #1e7a42; }
 
   .tv-stage-dot {
     width: 6px; height: 6px; border-radius: 50%; display: inline-block;
@@ -788,7 +792,8 @@
   .tv-stage-dot.submitted { background: #3b5bdb; }
   .tv-stage-dot.awaiting { background: #b8860b; }
   .tv-stage-dot.expired { background: #c44b3f; }
-  .tv-stage-dot.requoting { background: #1e7a42; }
+  .tv-stage-dot.rejected { background: #be185d; }
+  .tv-stage-dot.accepted { background: #1e7a42; }
 
   .tv-flag { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; padding: 2px 7px; border-radius: 6px; font-weight: 500; }
   .tv-flag.first-time { background: var(--purple-bg); color: var(--purple); }
@@ -1884,7 +1889,8 @@ const STAGES = [
   { key: "submitted", label: "Submitted for Quote", stageDataLabel: "Received" },
   { key: "awaiting", label: "Awaiting Client Response", stageDataLabel: "Validity" },
   { key: "expired", label: "Quote Expired", stageDataLabel: "Expired" },
-  { key: "requoting", label: "Accepted Requoting", stageDataLabel: "Accepted" }
+  { key: "rejected", label: "Rejected", stageDataLabel: "Rejected" },
+  { key: "accepted", label: "Accepted", stageDataLabel: "Accepted" }
 ];
 
 const TEAM = [
@@ -1941,9 +1947,15 @@ const RFQS = [
   { id: "RFQ-4125", client: "Pacific Cargo Lines", contact: "Amy Zhao", origin: "Taipei", destination: "Newark", mode: "LCL", shipments: 1, quotedValue: 2800, assignee: "Sarah Kim", stage: "expired", stageDate: daysAgo(8), rfqDate: daysAgo(22), shipperPo: "PCL-8905", crd: daysAgo(6), quoteSentDate: daysAgo(18), approvalStatus: null, notes: "", firstTime: false, quoteHistory: [{date: daysAgo(18), value: 2800}] },
   { id: "RFQ-4130", client: "Caspian Freight Co.", contact: "Leila Mammadova", origin: "Istanbul", destination: "Houston", mode: "Air", shipments: 1, quotedValue: 7400, assignee: "James Chen", stage: "expired", stageDate: daysAgo(2), rfqDate: daysAgo(12), shipperPo: "CSP-2201", crd: daysAgo(1), quoteSentDate: daysAgo(9), approvalStatus: null, notes: "New client — follow up for relationship", firstTime: true, quoteHistory: [{date: daysAgo(20), value: 8100}, {date: daysAgo(9), value: 7400}] },
 
-  // Re-quoting (ACCEPTED_REQUOTING) — original quote accepted, but client/ops requested requote
-  { id: "RFQ-4050", client: "Global Freight Solutions", contact: "John Mitchell", origin: "Yantian", destination: "Long Beach", mode: "FCL", shipments: 2, quotedValue: 22000, assignee: "David Park", stage: "requoting", stageDate: daysAgo(3), rfqDate: daysAgo(30), shipperPo: "GFS-PO-2185", crd: daysAgo(16), quoteSentDate: daysAgo(28), approvalStatus: null, notes: "Scope change — client added 1 container", firstTime: false, quoteHistory: [{date: daysAgo(28), value: 19500}, {date: daysAgo(20), value: 22000}] },
-  { id: "RFQ-3990", client: "TransAtlantic Logistics", contact: "Sofia Petrov", origin: "Ningbo", destination: "Los Angeles", mode: "FCL", shipments: 2, quotedValue: 19200, assignee: "James Chen", stage: "requoting", stageDate: daysAgo(5), rfqDate: daysAgo(35), shipperPo: "TAL-3280", crd: daysAgo(20), quoteSentDate: daysAgo(32), approvalStatus: null, notes: "Rate change from carrier — requoting", firstTime: false, quoteHistory: [{date: daysAgo(32), value: 20500}, {date: daysAgo(25), value: 19200}] },
+  // Rejected — client declined quote, RFQ stays on board until explicitly cancelled
+  { id: "RFQ-4050", client: "Global Freight Solutions", contact: "John Mitchell", origin: "Yantian", destination: "Long Beach", mode: "FCL", shipments: 2, quotedValue: 22000, assignee: "David Park", stage: "rejected", stageDate: daysAgo(3), rfqDate: daysAgo(30), shipperPo: "GFS-PO-2185", crd: daysAgo(16), quoteSentDate: daysAgo(28), approvalStatus: null, notes: "Client chose competitor — try to win back", firstTime: false, quoteHistory: [{date: daysAgo(28), value: 19500}, {date: daysAgo(20), value: 22000}] },
+  { id: "RFQ-3990", client: "TransAtlantic Logistics", contact: "Sofia Petrov", origin: "Ningbo", destination: "Los Angeles", mode: "FCL", shipments: 2, quotedValue: 19200, assignee: "James Chen", stage: "rejected", stageDate: daysAgo(5), rfqDate: daysAgo(35), shipperPo: "TAL-3280", crd: daysAgo(20), quoteSentDate: daysAgo(32), approvalStatus: null, notes: "Rate too high — may re-quote if carrier adjusts", firstTime: false, quoteHistory: [{date: daysAgo(32), value: 20500}, {date: daysAgo(25), value: 19200}] },
+  { id: "RFQ-4100", client: "Maple Leaf Imports", contact: "Diane Tremblay", origin: "Ho Chi Minh", destination: "Vancouver", mode: "Air", shipments: 1, quotedValue: 9500, assignee: "Maria Lopez", stage: "rejected", stageDate: daysAgo(1), rfqDate: daysAgo(10), shipperPo: "MLI-8830", crd: daysFromNow(3), quoteSentDate: daysAgo(6), approvalStatus: null, notes: "Wants ocean instead — check feasibility", firstTime: true, quoteHistory: [{date: daysAgo(6), value: 9500}] },
+
+  // Accepted — quote accepted, stays until booking email is sent
+  { id: "RFQ-4170", client: "Nordic Supply Chain AB", contact: "Erik Lindgren", origin: "Rotterdam", destination: "Miami", mode: "FCL", shipments: 2, quotedValue: 18400, assignee: "Sarah Kim", stage: "accepted", stageDate: daysAgo(1), rfqDate: daysAgo(12), shipperPo: "NSC-1102", crd: daysFromNow(4), quoteSentDate: daysAgo(8), approvalStatus: null, notes: "Awaiting booking confirmation from ops", firstTime: false, quoteHistory: [{date: daysAgo(14), value: 19200}, {date: daysAgo(8), value: 18400}] },
+  { id: "RFQ-4175", client: "Summit Intermodal", contact: "Carlos Reyes", origin: "Busan", destination: "Long Beach", mode: "FCL", shipments: 4, quotedValue: 34000, assignee: "Lisa Wang", stage: "accepted", stageDate: daysAgo(0), rfqDate: daysAgo(6), shipperPo: "SMT-6625", crd: daysFromNow(8), quoteSentDate: daysAgo(4), approvalStatus: null, notes: "", firstTime: false },
+  { id: "RFQ-4178", client: "Caspian Freight Co.", contact: "Leila Mammadova", origin: "Istanbul", destination: "Houston", mode: "Air", shipments: 1, quotedValue: 7400, assignee: "James Chen", stage: "accepted", stageDate: daysAgo(2), rfqDate: daysAgo(14), shipperPo: "CSP-2210", crd: daysAgo(1), quoteSentDate: daysAgo(10), approvalStatus: null, notes: "Booking email pending — ops to confirm space", firstTime: true, quoteHistory: [{date: daysAgo(20), value: 8100}, {date: daysAgo(10), value: 7400}] },
 
 ];
 
@@ -1952,7 +1964,8 @@ function getStageDataDisplay(rfq) {
     case "submitted": return `Received: <strong>${formatDate(rfq.stageDate)}</strong>`;
     case "awaiting": return `Valid until: <strong>${formatDate(rfq.stageDate)}</strong>`;
     case "expired": return `Expired: <strong>${diffDays(rfq.stageDate)}d ago</strong>`;
-    case "requoting": return `Accepted: <strong>${formatDate(rfq.stageDate)}</strong> — requoting`;
+    case "rejected": return `Rejected: <strong>${diffDays(rfq.stageDate)}d ago</strong>`;
+    case "accepted": return `Accepted: <strong>${formatDate(rfq.stageDate)}</strong> — awaiting booking`;
   }
   return "";
 }
@@ -1968,10 +1981,16 @@ function getDaysClass(rfq) {
       return "days-ok";
     }
     case "expired": days = diffDays(rfq.stageDate); break;
-    case "requoting": {
+    case "rejected": {
       days = diffDays(rfq.stageDate);
       if (days >= 7) return "days-danger";
       if (days >= 3) return "days-warn";
+      return "days-ok";
+    }
+    case "accepted": {
+      days = diffDays(rfq.stageDate);
+      if (days >= 3) return "days-danger";
+      if (days >= 1) return "days-warn";
       return "days-ok";
     }
     default: days = 0;
@@ -1990,7 +2009,11 @@ function getDaysBadgeText(rfq) {
       return `${remain}d left`;
     }
     case "expired": return `${diffDays(rfq.stageDate)}d expired`;
-    case "requoting": return `${diffDays(rfq.stageDate)}d in requote`;
+    case "rejected": return `${diffDays(rfq.stageDate)}d since rejected`;
+    case "accepted": {
+      const d = diffDays(rfq.stageDate);
+      return d === 0 ? "Today" : `${d}d no booking`;
+    }
   }
   return "";
 }
@@ -2044,13 +2067,15 @@ function buildCardHTML(rfq) {
   const tm = getTeamMember(rfq.assignee);
   const initials = rfq.assignee.split(" ").map(w => w[0]).join("");
   const isFirstTime = rfq.firstTime;
-  const isRequoting = rfq.stage === "requoting";
+  const isRejected = rfq.stage === "rejected";
+  const isAccepted = rfq.stage === "accepted";
   const crdPassed = rfq.crd && diffDays(rfq.crd) > 0;
   const shipLabel = rfq.shipments === 1 ? "1 shipment" : `${rfq.shipments} shipments`;
 
   let flags = "";
   if (crdPassed) flags += `<span class="flag flag-arriving" title="CRD has passed">⚡</span>`;
-  if (isRequoting) flags += `<span class="flag flag-delayed" title="Re-quoting in progress">↻</span>`;
+  if (isRejected) flags += `<span class="flag flag-delayed" title="Quote rejected">✗</span>`;
+  if (isAccepted) flags += `<span class="flag flag-arriving" title="Accepted — send booking">✓</span>`;
   if (isFirstTime) flags += `<span class="flag flag-first-time" title="First-time client">★</span>`;
 
   return `
@@ -2464,6 +2489,8 @@ function renderSummary(rfqs) {
   const totalRfqs = rfqs.length;
   const totalValue = rfqs.reduce((sum, r) => sum + r.quotedValue, 0);
   const expiredCount = rfqs.filter(r => r.stage === "expired").length;
+  const rejectedCount = rfqs.filter(r => r.stage === "rejected").length;
+  const acceptedCount = rfqs.filter(r => r.stage === "accepted").length;
   const crdPassedCount = rfqs.filter(r => r.crd && diffDays(r.crd) > 0 && r.stage === "submitted").length;
   const firstTimeCount = rfqs.filter(r => r.firstTime).length;
 
@@ -2481,6 +2508,18 @@ function renderSummary(rfqs) {
     html += `<div class="summary-pill" style="border-color:#fcd5d2;background:var(--red-bg)">
       <span class="pill-count" style="color:var(--red)">${expiredCount}</span>
       <span class="pill-label">Expired</span>
+    </div>`;
+  }
+  if (rejectedCount > 0) {
+    html += `<div class="summary-pill" style="border-color:#fbcfe8;background:#fdf2f8">
+      <span class="pill-count" style="color:#be185d">${rejectedCount}</span>
+      <span class="pill-label">Rejected</span>
+    </div>`;
+  }
+  if (acceptedCount > 0) {
+    html += `<div class="summary-pill" style="border-color:#bbf7d0;background:#f0fdf4">
+      <span class="pill-count" style="color:#1e7a42">${acceptedCount}</span>
+      <span class="pill-label">Accepted</span>
     </div>`;
   }
   if (crdPassedCount > 0) {
@@ -2604,7 +2643,8 @@ function getStageDetailLine(rfq) {
     case "submitted": return `Received: <strong>${formatDate(rfq.stageDate)}</strong>`;
     case "awaiting": return `Valid until: <strong>${formatDate(rfq.stageDate)}</strong>`;
     case "expired": return `Expired: <strong>${formatDate(rfq.stageDate)}</strong> (${diffDays(rfq.stageDate)}d ago)`;
-    case "requoting": return `Accepted: <strong>${formatDate(rfq.stageDate)}</strong> — requoting (${diffDays(rfq.stageDate)}d)`;
+    case "rejected": return `Rejected: <strong>${formatDate(rfq.stageDate)}</strong> (${diffDays(rfq.stageDate)}d ago)`;
+    case "accepted": return `Accepted: <strong>${formatDate(rfq.stageDate)}</strong> — awaiting booking (${diffDays(rfq.stageDate)}d)`;
   }
   return "";
 }
@@ -2631,10 +2671,16 @@ function getNextAction(rfq) {
       level = d >= 8 ? "danger" : d >= 4 ? "warn" : "ok";
       break;
     }
-    case "requoting": {
+    case "rejected": {
       const d = diffDays(rfq.stageDate);
-      text = "Finalize requote";
+      text = "Re-quote or cancel";
       level = d >= 7 ? "danger" : d >= 3 ? "warn" : "ok";
+      break;
+    }
+    case "accepted": {
+      const d = diffDays(rfq.stageDate);
+      text = "Send booking email";
+      level = d >= 3 ? "danger" : d >= 1 ? "warn" : "ok";
       break;
     }
   }
@@ -3012,6 +3058,8 @@ function renderTableView() {
     const hasCrdPassed = r.crd && diffDays(r.crd) > 0 && r.stages.includes("submitted");
     if (r.firstTime) flags.push(`<span class="tv-flag first-time">1st client</span>`);
     if (hasCrdPassed) flags.push(`<span class="tv-flag delayed">CRD passed</span>`);
+    if (r.stages.includes("rejected")) flags.push(`<span class="tv-flag delayed">Rejected</span>`);
+    if (r.stages.includes("accepted")) flags.push(`<span class="tv-flag first-time">Accepted</span>`);
 
     const multiTag = r.stages.length > 1 ? ' style="background:#fffbeb;"' : '';
 
