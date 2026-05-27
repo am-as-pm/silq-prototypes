@@ -842,7 +842,27 @@
   }
   .tv-assignee-select:focus { border-color: var(--primary); outline: none; }
 
-  .tv-contact { font-size: 12px; color: var(--text-secondary); }
+  .tv-client-cell { display: flex; flex-direction: column; gap: 1px; }
+  .tv-client-contact { font-size: 11px; color: var(--text-secondary); font-weight: 400; }
+
+  .col-deadline { min-width: 120px; }
+  .tv-deadline-cell {
+    position: relative; min-height: 28px; cursor: text;
+  }
+  .tv-deadline-text {
+    font-size: 12px; color: var(--text-secondary); line-height: 1.4;
+    max-width: 140px; word-wrap: break-word;
+  }
+  .tv-deadline-text:empty::before {
+    content: "Set deadline...";
+    color: var(--border); font-style: italic;
+  }
+  .tv-deadline-input {
+    width: 100%; padding: 6px 8px; border: 1.5px solid var(--primary);
+    border-radius: 6px; font-size: 12px; font-family: inherit;
+    outline: none; background: #fffdf8; color: var(--text); line-height: 1.4;
+  }
+  .tv-deadline-input:focus { box-shadow: 0 0 0 3px rgba(200,132,46,.15); }
   .tv-date { font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
   .tv-shipper { font-size: 12px; color: var(--text); font-weight: 500; }
 
@@ -1742,13 +1762,13 @@
           <tr>
             <th data-col="assignee">Assignee</th>
             <th data-col="client">Client</th>
-            <th data-col="contact">Contact</th>
             <th data-col="silqId">Silq ID</th>
             <th data-col="shipperPo">Shipper / PO #</th>
             <th data-col="route">Route</th>
             <th data-col="mode">Mode</th>
             <th data-col="stages">Stage(s)</th>
             <th data-col="crd">CRD</th>
+            <th data-col="deadline" class="col-deadline">Deadline</th>
             <th data-col="quoteSent">Quote Sent</th>
             <th data-col="totalVal" class="col-value">Total $</th>
             <th data-col="attn" class="col-attn">Attn</th>
@@ -2623,6 +2643,7 @@ function getNextAction(rfq) {
 
 const rfqNotes = {};
 const rfqAttention = {};
+const rfqDeadlines = {};
 RFQS.forEach(r => { if (r.notes) rfqNotes[r.id] = r.notes; });
 
 const rfqAssigneeOverrides = {};
@@ -2630,13 +2651,13 @@ const rfqAssigneeOverrides = {};
 const TABLE_COLUMNS = [
   { key: "assignee",  label: "Assignee",      defaultOn: true },
   { key: "client",    label: "Client",         defaultOn: true },
-  { key: "contact",   label: "Contact",        defaultOn: true },
   { key: "silqId",    label: "Silq ID",        defaultOn: true },
   { key: "shipperPo", label: "Shipper / PO #", defaultOn: true },
   { key: "route",     label: "Route",          defaultOn: true },
   { key: "mode",      label: "Mode",           defaultOn: true },
   { key: "stages",    label: "Stage(s)",       defaultOn: true },
   { key: "crd",       label: "CRD",            defaultOn: true },
+  { key: "deadline",  label: "Deadline",       defaultOn: true },
   { key: "quoteSent", label: "Quote Sent",     defaultOn: true },
   { key: "totalVal",  label: "Total $",        defaultOn: true },
   { key: "attn",      label: "Attn",           defaultOn: true },
@@ -2866,6 +2887,21 @@ function saveNote(id, el) {
   renderTableView();
 }
 
+function startEditDeadline(id, el) {
+  event.stopPropagation();
+  const cell = el.closest('.tv-deadline-cell');
+  const current = rfqDeadlines[id] || "";
+  cell.innerHTML = `<input type="text" class="tv-deadline-input" value="${current}" placeholder="e.g. May 30, ASAP..." onblur="saveDeadline('${id}', this)" onkeydown="if(event.key==='Enter'||event.key==='Escape'){saveDeadline('${id}',this)}">`;
+  const inp = cell.querySelector("input");
+  inp.focus();
+  inp.setSelectionRange(inp.value.length, inp.value.length);
+}
+
+function saveDeadline(id, el) {
+  rfqDeadlines[id] = el.value.trim();
+  renderTableView();
+}
+
 function buildQuoteSentCell(r) {
   if (!r.quoteSentDate) return `<span class="tv-date">—</span>`;
   const h = r.quoteHistory;
@@ -2983,6 +3019,11 @@ function renderTableView() {
       ? `<div class="tv-notes-text">${r.notes}</div>`
       : `<div class="tv-notes-text"></div>`;
 
+    const deadlineVal = rfqDeadlines[r.id] || "";
+    const deadlineDisplay = deadlineVal
+      ? `<div class="tv-deadline-text">${deadlineVal}</div>`
+      : `<div class="tv-deadline-text"></div>`;
+
     const isAttn = rfqAttention[r.id];
     const attnClass = isAttn ? " needs-attention" : "";
     const attnBtn = `<button class="tv-attn-btn${isAttn ? " active" : ""}" onclick="toggleAttention('${r.id}')" title="${isAttn ? "Remove attention flag" : "Flag as needs attention"}">!</button>`;
@@ -2993,14 +3034,14 @@ function renderTableView() {
 
     return `<tr class="${attnClass}"${multiTag}>
       <td data-col="assignee"><select class="tv-assignee-select" onchange="changeAssignee('${r.id}', this)">${teamOptions}</select></td>
-      <td data-col="client" onclick="openRfq('${r.id}')"><span class="tv-client">${r.client}</span></td>
-      <td data-col="contact" onclick="openRfq('${r.id}')"><span class="tv-contact">${r.contact}</span></td>
+      <td data-col="client" onclick="openRfq('${r.id}')"><div class="tv-client-cell"><span class="tv-client">${r.client}</span>${r.contact ? `<span class="tv-client-contact">${r.contact}</span>` : ""}</div></td>
       <td data-col="silqId" onclick="openRfq('${r.id}')"><div class="tv-id-cell"><span class="tv-id">${r.id}</span><span class="tv-id-date">${r.rfqDate ? formatDate(r.rfqDate) : ""}</span></div></td>
       <td data-col="shipperPo" onclick="openRfq('${r.id}')"><span class="tv-shipper">${r.shipperPo || "—"}</span></td>
       <td data-col="route" onclick="openRfq('${r.id}')"><span class="tv-route">${r.origin} → ${r.destination}</span></td>
       <td data-col="mode" onclick="openRfq('${r.id}')"><span class="tv-mode-chip ${tvModeClass(r.mode)}">${r.mode}</span></td>
       <td data-col="stages" onclick="openRfq('${r.id}')"><div class="tv-stages">${stagePills}</div></td>
       <td data-col="crd" onclick="openRfq('${r.id}')"><span class="tv-date">${r.crd ? formatDate(r.crd) : "—"}</span></td>
+      <td data-col="deadline" class="col-deadline"><div class="tv-deadline-cell" onclick="startEditDeadline('${r.id}', this)">${deadlineDisplay}</div></td>
       <td data-col="quoteSent" onclick="openRfq('${r.id}')">${buildQuoteSentCell(r)}</td>
       <td data-col="totalVal" onclick="openRfq('${r.id}')" class="col-value">${buildQuoteValueCell(r)}</td>
       <td data-col="attn" class="col-attn">${attnBtn}</td>
