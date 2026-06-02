@@ -586,6 +586,16 @@
     color: var(--text);
     font-weight: 600;
   }
+  .rfq-rejection-reason {
+    font-size: 10px;
+    color: #be185d;
+    margin-bottom: 6px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+    cursor: help;
+  }
 
   .link-icon {
     width: 14px; height: 14px;
@@ -785,7 +795,7 @@
   .tv-stage-pill.submitted { background: #e8eeff; color: #3b5bdb; }
   .tv-stage-pill.awaiting { background: #fef9e7; color: #b8860b; }
   .tv-stage-pill.expired { background: #fde8e8; color: #c44b3f; }
-  .tv-stage-pill.rejected { background: #fce7f3; color: #be185d; }
+  .tv-stage-pill.rejected { background: #fce7f3; color: #be185d; cursor: help; }
   .tv-stage-pill.accepted { background: #e6f7ed; color: #1e7a42; }
 
   .tv-stage-dot {
@@ -1969,9 +1979,9 @@ const RFQS = [
   { id: "RFQ-4130", client: "Caspian Freight Co.", contact: "Leila Mammadova", origin: "Istanbul", destination: "Houston", mode: "Air", shipments: 1, quotedValue: 7400, assignee: "James Chen", stage: "expired", stageDate: daysAgo(2), rfqDate: daysAgo(12), shipperPo: "CSP-2201", crd: daysAgo(1), quoteSentDate: daysAgo(9), approvalStatus: null, notes: "New client — follow up for relationship", firstTime: true, quoteHistory: [{date: daysAgo(20), value: 8100}, {date: daysAgo(9), value: 7400}] },
 
   // Rejected — client declined quote, RFQ stays on board until explicitly cancelled
-  { id: "RFQ-4050", client: "Global Freight Solutions", contact: "John Mitchell", origin: "Yantian", destination: "Long Beach", mode: "FCL", shipments: 2, quotedValue: 22000, assignee: "David Park", stage: "rejected", stageDate: daysAgo(3), rfqDate: daysAgo(30), shipperPo: "GFS-PO-2185", crd: daysAgo(16), quoteSentDate: daysAgo(28), approvalStatus: null, notes: "Client chose competitor — try to win back", firstTime: false, quoteHistory: [{date: daysAgo(28), value: 19500}, {date: daysAgo(20), value: 22000}] },
-  { id: "RFQ-3990", client: "TransAtlantic Logistics", contact: "Sofia Petrov", origin: "Ningbo", destination: "Los Angeles", mode: "FCL", shipments: 2, quotedValue: 19200, assignee: "James Chen", stage: "rejected", stageDate: daysAgo(5), rfqDate: daysAgo(35), shipperPo: "TAL-3280", crd: daysAgo(20), quoteSentDate: daysAgo(32), approvalStatus: null, notes: "Rate too high — may re-quote if carrier adjusts", firstTime: false, quoteHistory: [{date: daysAgo(32), value: 20500}, {date: daysAgo(25), value: 19200}] },
-  { id: "RFQ-4100", client: "Maple Leaf Imports", contact: "Diane Tremblay", origin: "Ho Chi Minh", destination: "Vancouver", mode: "Air", shipments: 1, quotedValue: 9500, assignee: "Maria Lopez", stage: "rejected", stageDate: daysAgo(1), rfqDate: daysAgo(10), shipperPo: "MLI-8830", crd: daysFromNow(3), quoteSentDate: daysAgo(6), approvalStatus: null, notes: "Wants ocean instead — check feasibility", firstTime: true, quoteHistory: [{date: daysAgo(6), value: 9500}] },
+  { id: "RFQ-4050", client: "Global Freight Solutions", contact: "John Mitchell", origin: "Yantian", destination: "Long Beach", mode: "FCL", shipments: 2, quotedValue: 22000, assignee: "David Park", stage: "rejected", stageDate: daysAgo(3), rfqDate: daysAgo(30), shipperPo: "GFS-PO-2185", crd: daysAgo(16), quoteSentDate: daysAgo(28), approvalStatus: null, notes: "Client chose competitor — try to win back", firstTime: false, rejectionReason: "Went with a competitor — lower rate offered", quoteHistory: [{date: daysAgo(28), value: 19500}, {date: daysAgo(20), value: 22000}] },
+  { id: "RFQ-3990", client: "TransAtlantic Logistics", contact: "Sofia Petrov", origin: "Ningbo", destination: "Los Angeles", mode: "FCL", shipments: 2, quotedValue: 19200, assignee: "James Chen", stage: "rejected", stageDate: daysAgo(5), rfqDate: daysAgo(35), shipperPo: "TAL-3280", crd: daysAgo(20), quoteSentDate: daysAgo(32), approvalStatus: null, notes: "Rate too high — may re-quote if carrier adjusts", firstTime: false, rejectionReason: "Rate too high compared to budget", quoteHistory: [{date: daysAgo(32), value: 20500}, {date: daysAgo(25), value: 19200}] },
+  { id: "RFQ-4100", client: "Maple Leaf Imports", contact: "Diane Tremblay", origin: "Ho Chi Minh", destination: "Vancouver", mode: "Air", shipments: 1, quotedValue: 9500, assignee: "Maria Lopez", stage: "rejected", stageDate: daysAgo(1), rfqDate: daysAgo(10), shipperPo: "MLI-8830", crd: daysFromNow(3), quoteSentDate: daysAgo(6), approvalStatus: null, notes: "Wants ocean instead — check feasibility", firstTime: true, rejectionReason: "Client prefers ocean freight — air too expensive", quoteHistory: [{date: daysAgo(6), value: 9500}] },
 
   // Accepted — quote accepted, stays until booking email is sent
   { id: "RFQ-4170", client: "Nordic Supply Chain AB", contact: "Erik Lindgren", origin: "Rotterdam", destination: "Miami", mode: "FCL", shipments: 2, quotedValue: 18400, assignee: "Sarah Kim", stage: "accepted", stageDate: daysAgo(1), rfqDate: daysAgo(12), shipperPo: "NSC-1102", crd: daysFromNow(4), quoteSentDate: daysAgo(8), approvalStatus: null, notes: "Awaiting booking confirmation from ops", firstTime: false, quoteHistory: [{date: daysAgo(14), value: 19200}, {date: daysAgo(8), value: 18400}] },
@@ -2122,7 +2132,7 @@ function buildCardHTML(rfq) {
         <span class="meta-chip ${modeClass(rfq.mode)}">${rfq.mode}</span>
         <span class="shipment-count">${shipLabel}</span>
       </div>
-      <div class="rfq-stage-data">${getStageDataDisplay(rfq)}</div>${buildOpsTracker(rfq)}
+      <div class="rfq-stage-data">${getStageDataDisplay(rfq)}</div>${rfq.rejectionReason ? `<div class="rfq-rejection-reason" title="${rfq.rejectionReason}">↳ ${rfq.rejectionReason}</div>` : ""}${buildOpsTracker(rfq)}
       <div class="rfq-footer">
         <div class="rfq-assignee">
           <div class="avatar-xs" style="background:${tm.color}">${initials}</div>
@@ -3049,6 +3059,7 @@ function renderTableView() {
         notes: rfqNotes[rfq.id] !== undefined ? rfqNotes[rfq.id] : (rfq.notes || ""),
         firstTime: rfq.firstTime,
         delayed: rfq.delayed || false,
+        rejectionReason: rfq.rejectionReason || "",
         stages: [],
         stageDetails: [],
         actions: []
@@ -3087,9 +3098,10 @@ function renderTableView() {
 
   const tbody = document.getElementById("tableBody");
   tbody.innerHTML = rows.map(r => {
-    const stagePills = r.stages.map(s =>
-      `<span class="tv-stage-pill ${s}"><span class="tv-stage-dot ${s}"></span>${getStageLabel(s)}</span>`
-    ).join("");
+    const stagePills = r.stages.map(s => {
+      const tooltip = (s === "rejected" && r.rejectionReason) ? ` title="${r.rejectionReason}"` : "";
+      return `<span class="tv-stage-pill ${s}"${tooltip}><span class="tv-stage-dot ${s}"></span>${getStageLabel(s)}</span>`;
+    }).join("");
 
     const detailHtml = r.stageDetails.map(d => `<div class="tv-detail-line">${d}</div>`).join("");
 
