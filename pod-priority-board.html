@@ -1756,7 +1756,7 @@
       <h1>Pod Priority Board</h1>
       <div class="header-pod-info">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" style="opacity:0.5"><path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path fill-rule="evenodd" d="M5.216 14A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216z"/><path d="M4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/></svg>
-        Revenue AM: <strong>Sarah Kim</strong>
+        Revenue AM: <strong>Kathy Simmons</strong>
       </div>
     </div>
     <div class="header-actions">
@@ -1975,10 +1975,10 @@ const STAGES = [
 ];
 
 const TEAM = [
-  { name: "Sarah Kim", role: "AM", color: "#6366f1" },
+  { name: "Kathy Simmons", role: "AM", color: "#6366f1" },
   { name: "James Chen", role: "Origin Ops", color: "#0891b2" },
   { name: "Maria Lopez", role: "Dest Ops", color: "#db2777" },
-  { name: "David Park", role: "AM", color: "#059669" },
+  { name: "Jessica Park", role: "AM", color: "#059669" },
   { name: "Lisa Wang", role: "Origin Ops", color: "#d97706" }
 ];
 
@@ -2008,33 +2008,33 @@ function diffDays(dateStr) {
 
 const RFQS = [
   // Submitted (SUBMITTED_FOR_QUOTE) — fresh RFQs awaiting quote preparation
-  { id: "RFQ-4201", client: "Global Freight Solutions", contact: "John Mitchell", origin: "Shanghai", destination: "Los Angeles", mode: "FCL", shipments: 3, quotedValue: 28500, assignee: "Sarah Kim", stage: "submitted", stageDate: daysAgo(1), rfqDate: daysAgo(1), shipperPo: "GFS-PO-2290", crd: daysFromNow(10), quoteSentDate: null, approvalStatus: null, notes: "", firstTime: false },
+  { id: "RFQ-4201", client: "Global Freight Solutions", contact: "John Mitchell", origin: "Shanghai", destination: "Los Angeles", mode: "FCL", shipments: 3, quotedValue: 28500, assignee: "Kathy Simmons", stage: "submitted", stageDate: daysAgo(1), rfqDate: daysAgo(1), shipperPo: "GFS-PO-2290", crd: daysFromNow(10), quoteSentDate: null, approvalStatus: null, notes: "", firstTime: false },
   { id: "RFQ-4205", client: "Pacific Cargo Lines", contact: "Amy Zhao", origin: "Shenzhen", destination: "Newark", mode: "FCL", shipments: 1, quotedValue: 8200, assignee: "James Chen", stage: "submitted", stageDate: daysAgo(3), rfqDate: daysAgo(3), shipperPo: "PCL-8871", crd: daysFromNow(7), quoteSentDate: null, approvalStatus: null, notes: "", firstTime: false },
   { id: "RFQ-4210", client: "Horizon Shipping Co.", contact: "Derek Müller", origin: "Hamburg", destination: "Savannah", mode: "Inspections", shipments: 2, quotedValue: 4750, assignee: "Maria Lopez", stage: "submitted", stageDate: daysAgo(0), rfqDate: daysAgo(0), shipperPo: "", crd: daysFromNow(14), quoteSentDate: null, approvalStatus: null, notes: "", firstTime: false },
-  { id: "RFQ-4212", client: "Vertex Trading LLC", contact: "Priya Sharma", origin: "Mumbai", destination: "Houston", mode: "Air", shipments: 1, quotedValue: 12300, assignee: "David Park", stage: "submitted", stageDate: daysAgo(5), rfqDate: daysAgo(5), shipperPo: "VTX-443", crd: daysAgo(1), quoteSentDate: null, approvalStatus: null, notes: "Urgent — cargo ready, waiting on rates from carrier", firstTime: true },
+  { id: "RFQ-4212", client: "Vertex Trading LLC", contact: "Priya Sharma", origin: "Mumbai", destination: "Houston", mode: "Air", shipments: 1, quotedValue: 12300, assignee: "Jessica Park", stage: "submitted", stageDate: daysAgo(5), rfqDate: daysAgo(5), shipperPo: "VTX-443", crd: daysAgo(1), quoteSentDate: null, approvalStatus: null, notes: "Urgent — cargo ready, waiting on rates from carrier", firstTime: true },
   { id: "RFQ-4215", client: "Summit Intermodal", contact: "Carlos Reyes", origin: "Busan", destination: "Long Beach", mode: "FCL", shipments: 4, quotedValue: 34000, assignee: "Lisa Wang", stage: "submitted", stageDate: daysAgo(2), rfqDate: daysAgo(2), shipperPo: "SMT-6620", crd: daysFromNow(5), quoteSentDate: null, approvalStatus: null, notes: "", firstTime: false },
   // Submitted — looped back after client declined all quotes (CRD stays SUBMITTED_FOR_QUOTE)
   { id: "RFQ-4160", client: "Eagle Express Freight", contact: "Tom Bradley", origin: "Hong Kong", destination: "JFK", mode: "Air", shipments: 1, quotedValue: 14200, assignee: "Lisa Wang", stage: "submitted", stageDate: daysAgo(6), rfqDate: daysAgo(20), shipperPo: "EEF-5540", crd: daysAgo(3), quoteSentDate: daysAgo(15), approvalStatus: null, notes: "Client declined Q1 — preparing revised quote", firstTime: false, quoteHistory: [{date: daysAgo(15), value: 15800}] },
 
   // Awaiting Client (AWAITING_CLIENT_RESPONSE) — quote sent, waiting on client decision
-  { id: "RFQ-4180", client: "Nordic Supply Chain AB", contact: "Erik Lindgren", origin: "Rotterdam", destination: "Miami", mode: "FCL", shipments: 2, quotedValue: 18400, assignee: "Sarah Kim", stage: "awaiting", stageDate: daysFromNow(3), rfqDate: daysAgo(8), shipperPo: "NSC-1102", crd: daysFromNow(6), quoteSentDate: daysAgo(5), approvalStatus: null, notes: "Client comparing with competitor quote", firstTime: false, quoteHistory: [{date: daysAgo(14), value: 19200}, {date: daysAgo(5), value: 18400}] },
+  { id: "RFQ-4180", client: "Nordic Supply Chain AB", contact: "Erik Lindgren", origin: "Rotterdam", destination: "Miami", mode: "FCL", shipments: 2, quotedValue: 18400, assignee: "Kathy Simmons", stage: "awaiting", stageDate: daysFromNow(3), rfqDate: daysAgo(8), shipperPo: "NSC-1102", crd: daysFromNow(6), quoteSentDate: daysAgo(5), approvalStatus: null, notes: "Client comparing with competitor quote", firstTime: false, quoteHistory: [{date: daysAgo(14), value: 19200}, {date: daysAgo(5), value: 18400}] },
   { id: "RFQ-4182", client: "Eagle Express Freight", contact: "Tom Bradley", origin: "Shanghai", destination: "Seattle", mode: "Inspections", shipments: 1, quotedValue: 3200, assignee: "James Chen", stage: "awaiting", stageDate: daysFromNow(7), rfqDate: daysAgo(6), shipperPo: "EEF-5591", crd: daysFromNow(12), quoteSentDate: daysAgo(4), approvalStatus: null, notes: "", firstTime: false },
-  { id: "RFQ-4188", client: "TransAtlantic Logistics", contact: "Sofia Petrov", origin: "Ningbo", destination: "Charleston", mode: "FCL", shipments: 3, quotedValue: 26800, assignee: "David Park", stage: "awaiting", stageDate: daysFromNow(1), rfqDate: daysAgo(10), shipperPo: "TAL-3304", crd: daysFromNow(3), quoteSentDate: daysAgo(7), approvalStatus: null, notes: "Sent 2 options — air + ocean", firstTime: false, quoteHistory: [{date: daysAgo(18), value: 28500}, {date: daysAgo(12), value: 27200}, {date: daysAgo(7), value: 26800}] },
+  { id: "RFQ-4188", client: "TransAtlantic Logistics", contact: "Sofia Petrov", origin: "Ningbo", destination: "Charleston", mode: "FCL", shipments: 3, quotedValue: 26800, assignee: "Jessica Park", stage: "awaiting", stageDate: daysFromNow(1), rfqDate: daysAgo(10), shipperPo: "TAL-3304", crd: daysFromNow(3), quoteSentDate: daysAgo(7), approvalStatus: null, notes: "Sent 2 options — air + ocean", firstTime: false, quoteHistory: [{date: daysAgo(18), value: 28500}, {date: daysAgo(12), value: 27200}, {date: daysAgo(7), value: 26800}] },
   { id: "RFQ-4190", client: "Maple Leaf Imports", contact: "Diane Tremblay", origin: "Ho Chi Minh", destination: "Vancouver", mode: "Air", shipments: 1, quotedValue: 9500, assignee: "Maria Lopez", stage: "awaiting", stageDate: daysFromNow(12), rfqDate: daysAgo(4), shipperPo: "MLI-8823", crd: daysFromNow(8), quoteSentDate: daysAgo(2), approvalStatus: null, notes: "", firstTime: true },
-  { id: "RFQ-4195", client: "Global Freight Solutions", contact: "John Mitchell", origin: "Yantian", destination: "Long Beach", mode: "FCL", shipments: 2, quotedValue: 22000, assignee: "David Park", stage: "awaiting", stageDate: daysFromNow(0), rfqDate: daysAgo(14), shipperPo: "GFS-PO-2185", crd: daysAgo(2), quoteSentDate: daysAgo(10), approvalStatus: null, notes: "Validity expiring today — follow up", firstTime: false },
+  { id: "RFQ-4195", client: "Global Freight Solutions", contact: "John Mitchell", origin: "Yantian", destination: "Long Beach", mode: "FCL", shipments: 2, quotedValue: 22000, assignee: "Jessica Park", stage: "awaiting", stageDate: daysFromNow(0), rfqDate: daysAgo(14), shipperPo: "GFS-PO-2185", crd: daysAgo(2), quoteSentDate: daysAgo(10), approvalStatus: null, notes: "Validity expiring today — follow up", firstTime: false },
 
   // Quote Expired (derived: QRD expired while CRD loops back to SUBMITTED_FOR_QUOTE)
   { id: "RFQ-4120", client: "Silk Road Logistics", contact: "Wei Zhang", origin: "Qingdao", destination: "Oakland", mode: "FCL", shipments: 2, quotedValue: 15600, assignee: "Lisa Wang", stage: "expired", stageDate: daysAgo(4), rfqDate: daysAgo(18), shipperPo: "SRL-7710", crd: daysAgo(2), quoteSentDate: daysAgo(14), approvalStatus: null, notes: "Client went silent — try calling", firstTime: false, quoteHistory: [{date: daysAgo(25), value: 16800}, {date: daysAgo(14), value: 15600}] },
-  { id: "RFQ-4125", client: "Pacific Cargo Lines", contact: "Amy Zhao", origin: "Taipei", destination: "Newark", mode: "Inspections", shipments: 1, quotedValue: 2800, assignee: "Sarah Kim", stage: "expired", stageDate: daysAgo(8), rfqDate: daysAgo(22), shipperPo: "PCL-8905", crd: daysAgo(6), quoteSentDate: daysAgo(18), approvalStatus: null, notes: "", firstTime: false, quoteHistory: [{date: daysAgo(18), value: 2800}] },
+  { id: "RFQ-4125", client: "Pacific Cargo Lines", contact: "Amy Zhao", origin: "Taipei", destination: "Newark", mode: "Inspections", shipments: 1, quotedValue: 2800, assignee: "Kathy Simmons", stage: "expired", stageDate: daysAgo(8), rfqDate: daysAgo(22), shipperPo: "PCL-8905", crd: daysAgo(6), quoteSentDate: daysAgo(18), approvalStatus: null, notes: "", firstTime: false, quoteHistory: [{date: daysAgo(18), value: 2800}] },
   { id: "RFQ-4130", client: "Caspian Freight Co.", contact: "Leila Mammadova", origin: "Istanbul", destination: "Houston", mode: "Air", shipments: 1, quotedValue: 7400, assignee: "James Chen", stage: "expired", stageDate: daysAgo(2), rfqDate: daysAgo(12), shipperPo: "CSP-2201", crd: daysAgo(1), quoteSentDate: daysAgo(9), approvalStatus: null, notes: "New client — follow up for relationship", firstTime: true, quoteHistory: [{date: daysAgo(20), value: 8100}, {date: daysAgo(9), value: 7400}] },
 
   // Rejected — client declined quote, RFQ stays on board until explicitly cancelled
-  { id: "RFQ-4050", client: "Global Freight Solutions", contact: "John Mitchell", origin: "Yantian", destination: "Long Beach", mode: "FCL", shipments: 2, quotedValue: 22000, assignee: "David Park", stage: "rejected", stageDate: daysAgo(3), rfqDate: daysAgo(30), shipperPo: "GFS-PO-2185", crd: daysAgo(16), quoteSentDate: daysAgo(28), approvalStatus: null, notes: "Client chose competitor — try to win back", firstTime: false, rejectionReason: "Went with a competitor — lower rate offered", quoteHistory: [{date: daysAgo(28), value: 19500}, {date: daysAgo(20), value: 22000}] },
+  { id: "RFQ-4050", client: "Global Freight Solutions", contact: "John Mitchell", origin: "Yantian", destination: "Long Beach", mode: "FCL", shipments: 2, quotedValue: 22000, assignee: "Jessica Park", stage: "rejected", stageDate: daysAgo(3), rfqDate: daysAgo(30), shipperPo: "GFS-PO-2185", crd: daysAgo(16), quoteSentDate: daysAgo(28), approvalStatus: null, notes: "Client chose competitor — try to win back", firstTime: false, rejectionReason: "Went with a competitor — lower rate offered", quoteHistory: [{date: daysAgo(28), value: 19500}, {date: daysAgo(20), value: 22000}] },
   { id: "RFQ-3990", client: "TransAtlantic Logistics", contact: "Sofia Petrov", origin: "Ningbo", destination: "Los Angeles", mode: "FCL", shipments: 2, quotedValue: 19200, assignee: "James Chen", stage: "rejected", stageDate: daysAgo(5), rfqDate: daysAgo(35), shipperPo: "TAL-3280", crd: daysAgo(20), quoteSentDate: daysAgo(32), approvalStatus: null, notes: "Rate too high — may re-quote if carrier adjusts", firstTime: false, rejectionReason: "Rate too high compared to budget", quoteHistory: [{date: daysAgo(32), value: 20500}, {date: daysAgo(25), value: 19200}] },
   { id: "RFQ-4100", client: "Maple Leaf Imports", contact: "Diane Tremblay", origin: "Ho Chi Minh", destination: "Vancouver", mode: "Air", shipments: 1, quotedValue: 9500, assignee: "Maria Lopez", stage: "rejected", stageDate: daysAgo(1), rfqDate: daysAgo(10), shipperPo: "MLI-8830", crd: daysFromNow(3), quoteSentDate: daysAgo(6), approvalStatus: null, notes: "Wants ocean instead — check feasibility", firstTime: true, rejectionReason: "Client prefers ocean freight — air too expensive", quoteHistory: [{date: daysAgo(6), value: 9500}] },
 
   // Accepted — quote accepted, stays until booking email is sent
-  { id: "RFQ-4170", client: "Nordic Supply Chain AB", contact: "Erik Lindgren", origin: "Rotterdam", destination: "Miami", mode: "FCL", shipments: 2, quotedValue: 18400, assignee: "Sarah Kim", stage: "accepted", stageDate: daysAgo(1), rfqDate: daysAgo(12), shipperPo: "NSC-1102", crd: daysFromNow(4), quoteSentDate: daysAgo(8), approvalStatus: null, notes: "Awaiting booking confirmation from ops", firstTime: false, quoteHistory: [{date: daysAgo(14), value: 19200}, {date: daysAgo(8), value: 18400}] },
+  { id: "RFQ-4170", client: "Nordic Supply Chain AB", contact: "Erik Lindgren", origin: "Rotterdam", destination: "Miami", mode: "FCL", shipments: 2, quotedValue: 18400, assignee: "Kathy Simmons", stage: "accepted", stageDate: daysAgo(1), rfqDate: daysAgo(12), shipperPo: "NSC-1102", crd: daysFromNow(4), quoteSentDate: daysAgo(8), approvalStatus: null, notes: "Awaiting booking confirmation from ops", firstTime: false, quoteHistory: [{date: daysAgo(14), value: 19200}, {date: daysAgo(8), value: 18400}] },
   { id: "RFQ-4175", client: "Summit Intermodal", contact: "Carlos Reyes", origin: "Busan", destination: "Long Beach", mode: "Inspections", shipments: 4, quotedValue: 34000, assignee: "Lisa Wang", stage: "accepted", stageDate: daysAgo(0), rfqDate: daysAgo(6), shipperPo: "SMT-6625", crd: daysFromNow(8), quoteSentDate: daysAgo(4), approvalStatus: null, notes: "", firstTime: false },
   { id: "RFQ-4178", client: "Caspian Freight Co.", contact: "Leila Mammadova", origin: "Istanbul", destination: "Houston", mode: "Air", shipments: 1, quotedValue: 7400, assignee: "James Chen", stage: "accepted", stageDate: daysAgo(2), rfqDate: daysAgo(14), shipperPo: "CSP-2210", crd: daysAgo(1), quoteSentDate: daysAgo(10), approvalStatus: null, notes: "Booking email pending — ops to confirm space", firstTime: true, quoteHistory: [{date: daysAgo(20), value: 8100}, {date: daysAgo(10), value: 7400}] },
 
@@ -3234,12 +3234,12 @@ const POD_ROLES = [
 ];
 
 const ALL_USERS = [
-  { id: "u1", name: "Sarah Kim", color: "#6366f1" },
+  { id: "u1", name: "Kathy Simmons", color: "#6366f1" },
   { id: "u2", name: "James Chen", color: "#0891b2" },
   { id: "u3", name: "Maria Lopez", color: "#db2777" },
-  { id: "u4", name: "David Park", color: "#059669" },
+  { id: "u4", name: "Jessica Park", color: "#059669" },
   { id: "u5", name: "Lisa Wang", color: "#d97706" },
-  { id: "u6", name: "Alex Rivera", color: "#7c3aed" },
+  { id: "u6", name: "Christine Rivera", color: "#7c3aed" },
   { id: "u7", name: "Rachel Tan", color: "#0d9488" },
   { id: "u8", name: "Omar Farouk", color: "#be185d" },
   { id: "u9", name: "Nina Patel", color: "#ca8a04" },
@@ -3268,9 +3268,9 @@ const POD_STORAGE_KEY = "podBoard_pods_v2";
 
 function defaultPods() {
   return [
-    { id: "pod1", name: "East Asia Pod", description: "Covers CN, KR, JP origins", roles: { accountManager: "u1", associateAM: "u7", accountExecutive: "u11", projectOwner: "u5", dataOps: ["u10"], originCoord: ["u2", "u5"], destCoord: ["u3"], financeOps: ["u10"] }, orgs: ["org1", "org2", "org5", "org10"] },
-    { id: "pod2", name: "South Asia Pod", description: "IN, BD, VN origins", roles: { accountManager: "u4", associateAM: "u12", projectOwner: "u8", originCoord: ["u8"], destCoord: ["u3"], dataOps: ["u13"] }, orgs: ["org3", "org6", "org8"] },
-    { id: "pod3", name: "Americas Pod", description: "", roles: { accountManager: "u6", accountExecutive: "u14", projectOwner: "u9", financeOps: ["u10", "u15"], destCoord: ["u15"] }, orgs: ["org4", "org7", "org9"] }
+    { id: "pod1", name: "Pod 1", description: "Covers CN, KR, JP origins", roles: { accountManager: "u1", associateAM: "u7", accountExecutive: "u11", projectOwner: "u5", dataOps: ["u10"], originCoord: ["u2", "u5"], destCoord: ["u3"], financeOps: ["u10"] }, orgs: ["org1", "org2", "org5", "org10"] },
+    { id: "pod2", name: "Pod 2", description: "IN, BD, VN origins", roles: { accountManager: "u4", associateAM: "u12", projectOwner: "u8", originCoord: ["u8"], destCoord: ["u3"], dataOps: ["u13"] }, orgs: ["org3", "org6", "org8"] },
+    { id: "pod3", name: "Pod 3", description: "", roles: { accountManager: "u6", accountExecutive: "u14", projectOwner: "u9", financeOps: ["u10", "u15"], destCoord: ["u15"] }, orgs: ["org4", "org7", "org9"] }
   ];
 }
 
