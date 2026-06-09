@@ -1499,7 +1499,7 @@
   .pod-setup-header .pod-count { font-size: 13px; color: var(--text-secondary); margin-left: 10px; }
 
   .pod-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
     gap: 16px;
   }
 
@@ -1510,64 +1510,120 @@
   .pod-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.06); }
 
   .pod-card-header {
-    padding: 16px 18px; display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 18px; display: flex; align-items: flex-start; justify-content: space-between;
     border-bottom: 1px solid var(--border-light); background: var(--gray-bg);
   }
-  .pod-card-header h3 { font-size: 15px; font-weight: 600; }
-  .pod-card-header .pod-meta {
-    font-size: 11px; color: var(--text-secondary); display: flex; gap: 10px;
-  }
+  .pod-card-header h3 { font-size: 15px; font-weight: 600; margin: 0; }
+  .pod-card-desc { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
   .pod-card-header .pod-lead-badge {
     font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px;
-    background: var(--primary-light); color: var(--primary-dark);
+    background: var(--primary-light); color: var(--primary-dark); white-space: nowrap;
   }
 
-  .pod-member-list { padding: 12px 18px; display: flex; flex-direction: column; gap: 6px; }
-
-  .pod-member-row {
-    display: flex; align-items: center; gap: 10px; padding: 8px 10px;
-    border-radius: 8px; transition: background .1s; font-size: 13px;
+  .pod-stats-row {
+    display: flex; gap: 16px; font-size: 12px; color: var(--text-secondary);
+    padding: 10px 18px; border-bottom: 1px solid var(--border-light);
   }
-  .pod-member-row:hover { background: var(--gray-bg); }
+  .pod-stats-row strong { color: var(--text); font-weight: 600; }
 
-  .pod-member-avatar {
-    width: 30px; height: 30px; border-radius: 50%; display: flex;
-    align-items: center; justify-content: center; font-size: 11px;
+  /* Role template section */
+  .pod-section-label {
+    font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px;
+    color: var(--text-secondary); padding: 12px 18px 4px;
+  }
+  .pod-role-list { padding: 4px 18px 8px; display: flex; flex-direction: column; gap: 2px; }
+
+  .pod-role-slot {
+    display: flex; align-items: center; gap: 8px; padding: 6px 10px;
+    border-radius: 8px; font-size: 13px; transition: background .1s;
+  }
+  .pod-role-slot:hover { background: var(--gray-bg); }
+
+  .pod-role-label {
+    width: 180px; flex-shrink: 0; font-size: 12px; color: var(--text-secondary);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .pod-role-label .pod-lead-tag {
+    font-size: 9px; font-weight: 700; color: var(--primary-dark); background: var(--primary-light);
+    padding: 1px 5px; border-radius: 4px; margin-left: 4px; vertical-align: middle;
+  }
+  .pod-role-value {
+    flex: 1; display: flex; align-items: center; gap: 6px; min-width: 0;
+  }
+  .pod-role-avatar {
+    width: 24px; height: 24px; border-radius: 50%; display: flex;
+    align-items: center; justify-content: center; font-size: 9px;
     font-weight: 600; color: #fff; flex-shrink: 0;
   }
-  .pod-member-info { flex: 1; min-width: 0; }
-  .pod-member-name { font-weight: 500; }
-  .pod-member-role { font-size: 11px; color: var(--text-secondary); }
+  .pod-role-name { font-size: 12px; font-weight: 500; }
+  .pod-role-multi-list { display: flex; flex-wrap: wrap; gap: 4px; }
+  .pod-role-multi-chip {
+    display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px 2px 2px;
+    border-radius: 12px; background: var(--gray-bg); font-size: 11px;
+  }
+  .pod-role-multi-chip .pod-role-avatar { width: 20px; height: 20px; font-size: 8px; }
+  .pod-role-remove {
+    cursor: pointer; font-size: 11px; color: var(--text-secondary);
+    margin-left: 2px; line-height: 1;
+  }
+  .pod-role-remove:hover { color: var(--red); }
+  .pod-role-empty {
+    font-size: 11px; color: var(--border); font-style: italic;
+  }
+  .pod-role-assign {
+    padding: 3px 8px; border: 1px dashed var(--border); border-radius: 6px;
+    font-size: 11px; color: var(--text-secondary); cursor: pointer;
+    background: none; font-family: inherit; transition: all .12s;
+  }
+  .pod-role-assign:hover { border-color: var(--primary); color: var(--primary); }
 
-  .pod-member-actions { display: flex; gap: 4px; opacity: 0; transition: opacity .15s; }
-  .pod-member-row:hover .pod-member-actions { opacity: 1; }
+  .pod-role-actions { display: flex; gap: 3px; opacity: 0; transition: opacity .15s; }
+  .pod-role-slot:hover .pod-role-actions { opacity: 1; }
 
-  .pod-member-btn {
-    width: 26px; height: 26px; border-radius: 6px; border: 1px solid var(--border);
+  .pod-role-btn {
+    width: 22px; height: 22px; border-radius: 5px; border: 1px solid var(--border);
     background: var(--card); cursor: pointer; display: flex;
-    align-items: center; justify-content: center; font-size: 12px;
+    align-items: center; justify-content: center; font-size: 11px;
     color: var(--text-secondary); transition: all .12s;
   }
-  .pod-member-btn:hover { background: var(--gray-bg); color: var(--text); }
-  .pod-member-btn.danger:hover { background: var(--red-bg); color: var(--red); border-color: var(--red); }
+  .pod-role-btn:hover { background: var(--gray-bg); color: var(--text); }
+  .pod-role-btn.danger:hover { background: var(--red-bg); color: var(--red); border-color: var(--red); }
+
+  /* Org assignment section */
+  .pod-org-list { padding: 4px 18px 8px; display: flex; flex-direction: column; gap: 3px; }
+  .pod-org-row {
+    display: flex; align-items: center; gap: 8px; padding: 5px 10px;
+    border-radius: 6px; font-size: 12px; transition: background .1s;
+  }
+  .pod-org-row:hover { background: var(--gray-bg); }
+  .pod-org-name { flex: 1; font-weight: 500; }
+  .pod-org-remove {
+    opacity: 0; cursor: pointer; font-size: 11px; color: var(--text-secondary);
+    width: 20px; height: 20px; border-radius: 4px; border: 1px solid var(--border);
+    background: var(--card); display: flex; align-items: center; justify-content: center;
+    transition: all .12s;
+  }
+  .pod-org-row:hover .pod-org-remove { opacity: 1; }
+  .pod-org-remove:hover { background: var(--red-bg); color: var(--red); border-color: var(--red); }
+  .pod-org-icon { color: var(--text-secondary); font-size: 13px; }
 
   .pod-card-footer {
     padding: 10px 18px; border-top: 1px solid var(--border-light);
     display: flex; align-items: center; gap: 8px;
   }
-  .pod-add-member-input {
-    flex: 1; padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px;
-    font-size: 12px; font-family: inherit;
+  .pod-add-input {
+    flex: 1; padding: 5px 10px; border: 1px solid var(--border); border-radius: 6px;
+    font-size: 11px; font-family: inherit;
   }
-  .pod-add-member-input:focus {
+  .pod-add-input:focus {
     outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(200,132,46,.12);
   }
-  .pod-add-member-btn {
-    padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 500;
+  .pod-add-btn {
+    padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 500;
     cursor: pointer; border: 1px solid var(--primary); background: var(--primary);
     color: #fff; font-family: inherit; transition: background .15s;
   }
-  .pod-add-member-btn:hover { background: var(--primary-dark); }
+  .pod-add-btn:hover { background: var(--primary-dark); }
 
   /* Create pod form */
   .pod-create-card {
@@ -1582,14 +1638,15 @@
 
   .pod-create-form {
     background: var(--card); border: 2px solid var(--primary); border-radius: 12px;
-    padding: 20px; display: flex; flex-direction: column; gap: 12px;
+    padding: 20px; display: flex; flex-direction: column; gap: 10px;
   }
   .pod-create-form h3 { font-size: 15px; font-weight: 600; }
-  .pod-create-form input {
+  .pod-create-form input, .pod-create-form textarea {
     padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px;
     font-size: 13px; font-family: inherit;
   }
-  .pod-create-form input:focus {
+  .pod-create-form textarea { resize: vertical; min-height: 40px; }
+  .pod-create-form input:focus, .pod-create-form textarea:focus {
     outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(200,132,46,.12);
   }
   .pod-create-form-btns { display: flex; gap: 8px; justify-content: flex-end; }
@@ -1603,51 +1660,53 @@
   }
   .pod-create-form-btns .pod-create-confirm:hover { background: var(--primary-dark); }
 
-  /* Move member modal */
-  .pod-move-modal {
-    position: fixed; inset: 0; z-index: 200; display: flex;
+  /* Pod modal (move / assign / cascade) */
+  .pod-modal {
+    position: fixed; inset: 0; z-index: 200; display: none;
     align-items: center; justify-content: center; background: rgba(0,0,0,.35);
   }
-  .pod-move-inner {
+  .pod-modal.visible { display: flex; }
+  .pod-modal-inner {
     background: var(--card); border-radius: 12px; padding: 24px;
-    width: 400px; box-shadow: 0 12px 40px rgba(0,0,0,.2);
+    width: 440px; max-width: 95vw; box-shadow: 0 12px 40px rgba(0,0,0,.2);
   }
-  .pod-move-inner h3 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
-  .pod-move-inner .pod-move-desc {
+  .pod-modal-inner h3 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+  .pod-modal-desc {
     font-size: 13px; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.5;
   }
-  .pod-move-inner select {
+  .pod-modal-inner select {
     width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px;
-    font-size: 14px; font-family: inherit; margin-bottom: 16px;
+    font-size: 13px; font-family: inherit; margin-bottom: 12px;
   }
-  .pod-move-inner select:focus {
+  .pod-modal-inner select:focus {
     outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(200,132,46,.12);
   }
-  .pod-move-warning {
+  .pod-modal-warning {
     background: var(--yellow-bg); border: 1px solid #f0d9a8; border-radius: 8px;
-    padding: 10px 14px; font-size: 12px; color: #92640d; margin-bottom: 16px;
+    padding: 10px 14px; font-size: 12px; color: #92640d; margin-bottom: 14px;
     line-height: 1.5;
   }
-  .pod-move-btns { display: flex; gap: 8px; justify-content: flex-end; }
-  .pod-move-btns button {
+  .pod-modal-options { margin-bottom: 14px; display: flex; flex-direction: column; gap: 6px; }
+  .pod-modal-option {
+    display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+    border: 1px solid var(--border); border-radius: 8px; cursor: pointer;
+    font-size: 12px; transition: all .12s;
+  }
+  .pod-modal-option:hover { border-color: var(--primary); background: var(--primary-lighter); }
+  .pod-modal-option.selected { border-color: var(--primary); background: var(--primary-light); }
+  .pod-modal-option input[type="radio"] { accent-color: var(--primary); }
+  .pod-modal-btns { display: flex; gap: 8px; justify-content: flex-end; }
+  .pod-modal-btns button {
     padding: 7px 16px; border-radius: 8px; font-size: 13px; font-weight: 500;
     cursor: pointer; border: 1px solid var(--border); background: var(--card);
     color: var(--text); font-family: inherit; transition: all .15s;
   }
-  .pod-move-btns .pod-move-confirm {
+  .pod-modal-btns .pod-modal-confirm {
     background: var(--primary); color: #fff; border-color: var(--primary);
   }
-  .pod-move-btns .pod-move-confirm:hover { background: var(--primary-dark); }
+  .pod-modal-btns .pod-modal-confirm:hover { background: var(--primary-dark); }
 
-  .pod-empty-members {
-    padding: 20px; text-align: center; color: var(--text-secondary); font-size: 13px;
-  }
-
-  .pod-stats-row {
-    display: flex; gap: 16px; font-size: 12px; color: var(--text-secondary);
-    padding: 0 18px 12px;
-  }
-  .pod-stats-row strong { color: var(--text); font-weight: 600; }
+  .pod-empty { padding: 16px; text-align: center; color: var(--text-secondary); font-size: 12px; font-style: italic; }
 </style>
 </head>
 <body>
@@ -1899,18 +1958,9 @@
     <div class="pod-grid" id="podGrid"></div>
   </div>
 
-  <!-- Move Member Modal -->
-  <div class="pod-move-modal" id="podMoveModal" style="display:none;" onclick="if(event.target===this)closeMoveModal()">
-    <div class="pod-move-inner">
-      <h3 id="moveModalTitle">Move Member</h3>
-      <div class="pod-move-desc" id="moveModalDesc"></div>
-      <select id="moveTargetPod"></select>
-      <div class="pod-move-warning">All projects, RFQs, shipments, and tasks associated with this member will move to the target pod's view.</div>
-      <div class="pod-move-btns">
-        <button onclick="closeMoveModal()">Cancel</button>
-        <button class="pod-move-confirm" onclick="confirmMoveMember()">Move</button>
-      </div>
-    </div>
+  <!-- Pod Modal (assignment, cascade, warnings) -->
+  <div class="pod-modal" id="podModal" onclick="if(event.target===this)closePodModal()">
+    <div class="pod-modal-inner" id="podModalContent"></div>
   </div>
 
 </div>
@@ -3168,120 +3218,211 @@ function openRfq(id) {
 
 /* ── Pod Setup ────────────────────────────── */
 
-const ALL_USERS = [
-  { id: "u1", name: "Sarah Kim", role: "Account Manager", color: "#6366f1" },
-  { id: "u2", name: "James Chen", role: "Origin Shipping Coordinator", color: "#0891b2" },
-  { id: "u3", name: "Maria Lopez", role: "Destination Shipping Coordinator", color: "#db2777" },
-  { id: "u4", name: "David Park", role: "Account Manager", color: "#059669" },
-  { id: "u5", name: "Lisa Wang", role: "Origin Shipping Coordinator", color: "#d97706" },
-  { id: "u6", name: "Alex Rivera", role: "Account Manager", color: "#7c3aed" },
-  { id: "u7", name: "Rachel Tan", role: "Associate Account Manager", color: "#0d9488" },
-  { id: "u8", name: "Omar Farouk", role: "Destination Shipping Coordinator", color: "#be185d" },
-  { id: "u9", name: "Nina Patel", role: "Account Manager", color: "#ca8a04" },
-  { id: "u10", name: "Kevin Wu", role: "Finance Operations", color: "#4f46e5" }
+const POD_ROLES = [
+  { key: "accountManager", label: "Account Manager", multi: false },
+  { key: "associateAM", label: "Associate Account Manager", multi: false },
+  { key: "accountExecutive", label: "Account Executive", multi: false },
+  { key: "projectOwner", label: "Project Owner", multi: false },
+  { key: "productOwner", label: "Product Owner", multi: false },
+  { key: "dataOps", label: "Data Operations", multi: true },
+  { key: "financeOps", label: "Finance Operations", multi: true },
+  { key: "originCoord", label: "Origin Shipping Coord.", multi: true },
+  { key: "destCoord", label: "Dest. Shipping Coord.", multi: true },
+  { key: "importBroker", label: "Import Customs Broker", multi: true },
+  { key: "exportBroker", label: "Export Customs Broker", multi: false },
+  { key: "internalFinance", label: "Internal Finance Admin", multi: true }
 ];
 
-const POD_STORAGE_KEY = "podBoard_pods";
+const ALL_USERS = [
+  { id: "u1", name: "Sarah Kim", color: "#6366f1" },
+  { id: "u2", name: "James Chen", color: "#0891b2" },
+  { id: "u3", name: "Maria Lopez", color: "#db2777" },
+  { id: "u4", name: "David Park", color: "#059669" },
+  { id: "u5", name: "Lisa Wang", color: "#d97706" },
+  { id: "u6", name: "Alex Rivera", color: "#7c3aed" },
+  { id: "u7", name: "Rachel Tan", color: "#0d9488" },
+  { id: "u8", name: "Omar Farouk", color: "#be185d" },
+  { id: "u9", name: "Nina Patel", color: "#ca8a04" },
+  { id: "u10", name: "Kevin Wu", color: "#4f46e5" },
+  { id: "u11", name: "Tom Bradley", color: "#0369a1" },
+  { id: "u12", name: "Priya Sharma", color: "#9333ea" },
+  { id: "u13", name: "Carlos Reyes", color: "#dc2626" },
+  { id: "u14", name: "Diane Tremblay", color: "#16a34a" },
+  { id: "u15", name: "Erik Lindgren", color: "#ea580c" }
+];
+
+const ALL_ORGS = [
+  { id: "org1", name: "Global Freight Solutions" },
+  { id: "org2", name: "Pacific Cargo Lines" },
+  { id: "org3", name: "Horizon Shipping Co." },
+  { id: "org4", name: "Nordic Supply Chain AB" },
+  { id: "org5", name: "Eagle Express Freight" },
+  { id: "org6", name: "TransAtlantic Logistics" },
+  { id: "org7", name: "Summit Intermodal" },
+  { id: "org8", name: "Vertex Trading LLC" },
+  { id: "org9", name: "Maple Leaf Imports" },
+  { id: "org10", name: "Caspian Freight Co." }
+];
+
+const POD_STORAGE_KEY = "podBoard_pods_v2";
+
+function defaultPods() {
+  return [
+    { id: "pod1", name: "East Asia Pod", description: "Covers CN, KR, JP origins", roles: { accountManager: "u1", associateAM: "u7", accountExecutive: "u11", projectOwner: "u5", dataOps: ["u10"], originCoord: ["u2", "u5"], destCoord: ["u3"], financeOps: ["u10"] }, orgs: ["org1", "org2", "org5", "org10"] },
+    { id: "pod2", name: "South Asia Pod", description: "IN, BD, VN origins", roles: { accountManager: "u4", associateAM: "u12", projectOwner: "u8", originCoord: ["u8"], destCoord: ["u3"], dataOps: ["u13"] }, orgs: ["org3", "org6", "org8"] },
+    { id: "pod3", name: "Americas Pod", description: "", roles: { accountManager: "u6", accountExecutive: "u14", projectOwner: "u9", financeOps: ["u10", "u15"], destCoord: ["u15"] }, orgs: ["org4", "org7", "org9"] }
+  ];
+}
 
 function loadPods() {
   try {
     const stored = JSON.parse(localStorage.getItem(POD_STORAGE_KEY));
-    if (stored && stored.length > 0) return stored;
+    if (stored && stored.length > 0 && stored[0].roles) return stored;
   } catch(e) {}
-  return [
-    { id: "pod1", name: "East Asia Pod", lead: "u1", members: ["u1", "u2", "u5", "u7"] },
-    { id: "pod2", name: "South Asia Pod", lead: "u4", members: ["u4", "u3", "u8"] },
-    { id: "pod3", name: "Americas Pod", lead: "u6", members: ["u6", "u9", "u10"] }
-  ];
+  return defaultPods();
 }
-
-function savePods(pods) {
-  localStorage.setItem(POD_STORAGE_KEY, JSON.stringify(pods));
-}
+function savePods(p) { localStorage.setItem(POD_STORAGE_KEY, JSON.stringify(p)); }
 
 let pods = loadPods();
 let podCreateMode = false;
-let moveMemberData = null;
 
 function getUser(id) { return ALL_USERS.find(u => u.id === id); }
 function getUserInitials(name) { return name.split(" ").map(w => w[0]).join(""); }
+function getOrg(id) { return ALL_ORGS.find(o => o.id === id); }
 
-function getUnassignedUsers() {
-  const assigned = new Set();
-  pods.forEach(p => p.members.forEach(m => assigned.add(m)));
-  return ALL_USERS.filter(u => !assigned.has(u.id));
+function getPodMembers(pod) {
+  const ids = new Set();
+  POD_ROLES.forEach(r => {
+    const val = pod.roles[r.key];
+    if (!val) return;
+    if (Array.isArray(val)) val.forEach(v => ids.add(v));
+    else ids.add(val);
+  });
+  return ids;
+}
+
+function findUserInRole(userId, excludePodId) {
+  const results = [];
+  pods.forEach(p => {
+    if (p.id === excludePodId) return;
+    POD_ROLES.forEach(r => {
+      const val = p.roles[r.key];
+      if (!val) return;
+      if (Array.isArray(val) && val.includes(userId)) results.push({ pod: p, role: r });
+      else if (val === userId) results.push({ pod: p, role: r });
+    });
+  });
+  return results;
+}
+
+function getOrgPod(orgId) {
+  return pods.find(p => p.orgs && p.orgs.includes(orgId));
 }
 
 function renderPodSetup() {
   const grid = document.getElementById("podGrid");
-  const unassigned = getUnassignedUsers();
-
   let html = "";
 
   pods.forEach(pod => {
-    const lead = pod.lead ? getUser(pod.lead) : null;
-    const memberCount = pod.members.length;
+    const members = getPodMembers(pod);
+    const am = pod.roles.accountManager ? getUser(pod.roles.accountManager) : null;
+    const orgCount = (pod.orgs || []).length;
     const rfqCount = RFQS.filter(r => {
-      const member = pod.members.map(m => getUser(m)).find(u => u && u.name === r.assignee);
-      return !!member;
+      const mArr = [...members].map(m => getUser(m));
+      return mArr.find(u => u && u.name === r.assignee);
     }).length;
 
     html += `<div class="pod-card">
       <div class="pod-card-header">
         <div>
           <h3>${pod.name}</h3>
+          ${pod.description ? `<div class="pod-card-desc">${pod.description}</div>` : ""}
         </div>
-        <div class="pod-meta">
-          ${lead ? `<span class="pod-lead-badge">Lead: ${lead.name}</span>` : ""}
-        </div>
+        ${am ? `<span class="pod-lead-badge">Lead: ${am.name}</span>` : ""}
       </div>
       <div class="pod-stats-row">
-        <span><strong>${memberCount}</strong> members</span>
+        <span><strong>${members.size}</strong> members</span>
+        <span><strong>${orgCount}</strong> orgs</span>
         <span><strong>${rfqCount}</strong> active RFQs</span>
-      </div>
-      <div class="pod-member-list">`;
+      </div>`;
 
-    if (pod.members.length === 0) {
-      html += `<div class="pod-empty-members">No members yet. Add members below.</div>`;
-    } else {
-      pod.members.forEach(mId => {
-        const u = getUser(mId);
-        if (!u) return;
-        const isLead = pod.lead === mId;
-        html += `<div class="pod-member-row">
-          <div class="pod-member-avatar" style="background:${u.color}">${getUserInitials(u.name)}</div>
-          <div class="pod-member-info">
-            <div class="pod-member-name">${u.name}${isLead ? ' <span style="font-size:10px;color:var(--primary);font-weight:600;">LEAD</span>' : ""}</div>
-            <div class="pod-member-role">${u.role}</div>
-          </div>
-          <div class="pod-member-actions">
-            <button class="pod-member-btn" onclick="openMoveModal('${pod.id}','${mId}')" title="Move to another pod">↗</button>
-            ${!isLead ? `<button class="pod-member-btn" onclick="setAsLead('${pod.id}','${mId}')" title="Set as lead">★</button>` : ""}
-            <button class="pod-member-btn danger" onclick="removeMember('${pod.id}','${mId}')" title="Remove from pod">×</button>
-          </div>
-        </div>`;
-      });
-    }
+    html += `<div class="pod-section-label">Role Template</div>
+      <div class="pod-role-list">`;
+
+    POD_ROLES.forEach(roleDef => {
+      const val = pod.roles[roleDef.key];
+      const isAM = roleDef.key === "accountManager";
+
+      html += `<div class="pod-role-slot">
+        <div class="pod-role-label">${roleDef.label}${isAM ? ' <span class="pod-lead-tag">LEAD</span>' : ""}</div>
+        <div class="pod-role-value">`;
+
+      if (roleDef.multi) {
+        const arr = val || [];
+        if (arr.length > 0) {
+          html += `<div class="pod-role-multi-list">`;
+          arr.forEach(uid => {
+            const u = getUser(uid);
+            if (!u) return;
+            html += `<span class="pod-role-multi-chip">
+              <span class="pod-role-avatar" style="background:${u.color}">${getUserInitials(u.name)}</span>
+              ${u.name}
+              <span class="pod-role-remove" onclick="removeFromRole('${pod.id}','${roleDef.key}','${uid}')" title="Remove">×</span>
+            </span>`;
+          });
+          html += `</div>`;
+        }
+        html += ` <button class="pod-role-assign" onclick="openAssignModal('${pod.id}','${roleDef.key}')">+ Add</button>`;
+      } else {
+        if (val) {
+          const u = getUser(val);
+          if (u) {
+            html += `<span class="pod-role-avatar" style="background:${u.color}">${getUserInitials(u.name)}</span>
+              <span class="pod-role-name">${u.name}</span>`;
+            html += `<div class="pod-role-actions">
+              <button class="pod-role-btn" onclick="openAssignModal('${pod.id}','${roleDef.key}')" title="Change">✎</button>
+              <button class="pod-role-btn danger" onclick="removeFromRole('${pod.id}','${roleDef.key}','${val}')" title="Remove">×</button>
+            </div>`;
+          }
+        } else {
+          html += `<button class="pod-role-assign" onclick="openAssignModal('${pod.id}','${roleDef.key}')">Assign person</button>`;
+        }
+      }
+
+      html += `</div></div>`;
+    });
 
     html += `</div>`;
 
-    const availableForPod = unassigned.concat(
-      ALL_USERS.filter(u => !pod.members.includes(u.id) && !unassigned.find(un => un.id === u.id))
-    ).filter(u => !pod.members.includes(u.id));
+    html += `<div class="pod-section-label">Organizations (${orgCount})</div>
+      <div class="pod-org-list">`;
+    if (orgCount === 0) {
+      html += `<div class="pod-empty">No organizations assigned yet.</div>`;
+    } else {
+      (pod.orgs || []).forEach(oid => {
+        const o = getOrg(oid);
+        if (!o) return;
+        html += `<div class="pod-org-row">
+          <span class="pod-org-icon">◆</span>
+          <span class="pod-org-name">${o.name}</span>
+          <button class="pod-org-remove" onclick="removeOrgFromPod('${pod.id}','${oid}')" title="Remove org">×</button>
+        </div>`;
+      });
+    }
+    html += `</div>`;
 
-    if (unassigned.length > 0 || availableForPod.length > 0) {
+    const availOrgs = ALL_ORGS.filter(o => !(pod.orgs || []).includes(o.id));
+    if (availOrgs.length > 0) {
       html += `<div class="pod-card-footer">
-        <select class="pod-add-member-input" id="addMember_${pod.id}">
-          <option value="">Add a member...</option>`;
-      if (unassigned.length > 0) {
-        html += `<optgroup label="Unassigned">`;
-        unassigned.forEach(u => {
-          html += `<option value="${u.id}">${u.name} — ${u.role}</option>`;
-        });
-        html += `</optgroup>`;
-      }
+        <select class="pod-add-input" id="addOrg_${pod.id}">
+          <option value="">Add organization...</option>`;
+      availOrgs.forEach(o => {
+        const curPod = getOrgPod(o.id);
+        const tag = curPod ? ` (currently: ${curPod.name})` : "";
+        html += `<option value="${o.id}">${o.name}${tag}</option>`;
+      });
       html += `</select>
-        <button class="pod-add-member-btn" onclick="addMemberToPod('${pod.id}')">Add</button>
+        <button class="pod-add-btn" onclick="addOrgToPod('${pod.id}')">Add</button>
       </div>`;
     }
 
@@ -3292,6 +3433,7 @@ function renderPodSetup() {
     html += `<div class="pod-create-form">
       <h3>Create New Pod</h3>
       <input type="text" id="newPodName" placeholder="Pod name (e.g., Europe Pod)" onkeydown="if(event.key==='Enter')createPod()">
+      <textarea id="newPodDesc" placeholder="Description (optional)"></textarea>
       <div class="pod-create-form-btns">
         <button onclick="podCreateMode=false;renderPodSetup()">Cancel</button>
         <button class="pod-create-confirm" onclick="createPod()">Create</button>
@@ -3305,113 +3447,194 @@ function renderPodSetup() {
   }
 
   grid.innerHTML = html;
-  document.getElementById("podCount").textContent = `${pods.length} pod${pods.length !== 1 ? "s" : ""} · ${ALL_USERS.length} users`;
+  const totalMembers = new Set();
+  pods.forEach(p => getPodMembers(p).forEach(m => totalMembers.add(m)));
+  document.getElementById("podCount").textContent = `${pods.length} pod${pods.length !== 1 ? "s" : ""} · ${totalMembers.size} members · ${ALL_ORGS.length} orgs`;
 }
 
 function createPod() {
   const name = document.getElementById("newPodName").value.trim();
   if (!name) return;
-  const existing = pods.find(p => p.name.toLowerCase() === name.toLowerCase());
-  if (existing) { alert("A pod with this name already exists."); return; }
-  pods.push({ id: "pod_" + Date.now(), name, lead: null, members: [] });
+  if (pods.find(p => p.name.toLowerCase() === name.toLowerCase())) { alert("A pod with this name already exists."); return; }
+  const desc = document.getElementById("newPodDesc").value.trim();
+  pods.push({ id: "pod_" + Date.now(), name, description: desc, roles: {}, orgs: [] });
   savePods(pods);
   podCreateMode = false;
   renderPodSetup();
 }
 
-function addMemberToPod(podId) {
-  const sel = document.getElementById("addMember_" + podId);
-  const userId = sel.value;
-  if (!userId) return;
+function closePodModal() {
+  document.getElementById("podModal").classList.remove("visible");
+}
 
-  const currentPod = pods.find(p => p.members.includes(userId));
+function openAssignModal(podId, roleKey) {
+  const pod = pods.find(p => p.id === podId);
+  const roleDef = POD_ROLES.find(r => r.key === roleKey);
+  if (!pod || !roleDef) return;
+
+  const currentVal = pod.roles[roleKey];
+  const excluded = new Set();
+  if (roleDef.multi && Array.isArray(currentVal)) currentVal.forEach(v => excluded.add(v));
+  else if (!roleDef.multi && currentVal) excluded.add(currentVal);
+
+  const available = ALL_USERS.filter(u => !excluded.has(u.id));
+
+  let html = `<h3>Assign ${roleDef.label}</h3>
+    <div class="pod-modal-desc">Select a person for the <strong>${roleDef.label}</strong> role in <strong>${pod.name}</strong>.</div>
+    <select id="modalAssignUser">
+      <option value="">Select a person...</option>`;
+  available.forEach(u => {
+    const otherRoles = findUserInRole(u.id, podId);
+    const sameRoles = [];
+    POD_ROLES.forEach(r => {
+      const v = pod.roles[r.key];
+      if (!v) return;
+      if (Array.isArray(v) && v.includes(u.id)) sameRoles.push(r.label);
+      else if (v === u.id) sameRoles.push(r.label);
+    });
+    let tag = "";
+    if (otherRoles.length > 0) tag = ` — in ${otherRoles.map(r => r.pod.name).join(", ")}`;
+    if (sameRoles.length > 0) tag += ` — also ${sameRoles.join(", ")} here`;
+    html += `<option value="${u.id}">${u.name}${tag}</option>`;
+  });
+  html += `</select>
+    <div id="modalAssignWarning"></div>
+    <div class="pod-modal-btns">
+      <button onclick="closePodModal()">Cancel</button>
+      <button class="pod-modal-confirm" onclick="confirmAssign('${podId}','${roleKey}')">Assign</button>
+    </div>`;
+
+  document.getElementById("podModalContent").innerHTML = html;
+  document.getElementById("podModal").classList.add("visible");
+
+  document.getElementById("modalAssignUser").addEventListener("change", function() {
+    const uid = this.value;
+    const warnEl = document.getElementById("modalAssignWarning");
+    if (!uid) { warnEl.innerHTML = ""; return; }
+
+    const isAM = roleKey === "accountManager";
+    const otherRoles = findUserInRole(uid, podId);
+    const sameRoles = [];
+    POD_ROLES.forEach(r => {
+      const v = pod.roles[r.key];
+      if (!v) return;
+      if (Array.isArray(v) && v.includes(uid)) sameRoles.push(r.label);
+      else if (v === uid) sameRoles.push(r.label);
+    });
+
+    let warn = "";
+    if (isAM && otherRoles.find(r => r.role.key === "accountManager")) {
+      const otherPod = otherRoles.find(r => r.role.key === "accountManager").pod;
+      warn = `<div class="pod-modal-warning">⚠ ${getUser(uid).name} is currently the Account Manager of <strong>${otherPod.name}</strong>. They will be removed from that pod's AM role.</div>`;
+    } else if (otherRoles.length > 0) {
+      warn = `<div class="pod-modal-warning">ℹ ${getUser(uid).name} is assigned in ${otherRoles.map(r => `<strong>${r.pod.name}</strong> (${r.role.label})`).join(", ")}. They can be kept in both pods.</div>`;
+    }
+    if (sameRoles.length > 0) {
+      warn += `<div class="pod-modal-warning">ℹ ${getUser(uid).name} already holds <strong>${sameRoles.join(", ")}</strong> in this pod. They will hold both roles.</div>`;
+    }
+    warnEl.innerHTML = warn;
+  });
+}
+
+function confirmAssign(podId, roleKey) {
+  const uid = document.getElementById("modalAssignUser").value;
+  if (!uid) { alert("Please select a person."); return; }
+
+  const pod = pods.find(p => p.id === podId);
+  const roleDef = POD_ROLES.find(r => r.key === roleKey);
+  const isAM = roleKey === "accountManager";
+
+  if (isAM) {
+    pods.forEach(p => {
+      if (p.id !== podId && p.roles.accountManager === uid) {
+        p.roles.accountManager = null;
+      }
+    });
+  }
+
+  if (roleDef.multi) {
+    if (!pod.roles[roleKey]) pod.roles[roleKey] = [];
+    if (!pod.roles[roleKey].includes(uid)) pod.roles[roleKey].push(uid);
+  } else {
+    pod.roles[roleKey] = uid;
+  }
+
+  savePods(pods);
+  closePodModal();
+  renderPodSetup();
+}
+
+function removeFromRole(podId, roleKey, userId) {
+  const pod = pods.find(p => p.id === podId);
+  if (!pod) return;
+  const roleDef = POD_ROLES.find(r => r.key === roleKey);
+  const user = getUser(userId);
+  if (!confirm(`Remove ${user.name} from ${roleDef.label} in ${pod.name}?`)) return;
+
+  if (roleDef.multi) {
+    pod.roles[roleKey] = (pod.roles[roleKey] || []).filter(u => u !== userId);
+    if (pod.roles[roleKey].length === 0) delete pod.roles[roleKey];
+  } else {
+    delete pod.roles[roleKey];
+  }
+  savePods(pods);
+  renderPodSetup();
+}
+
+function addOrgToPod(podId) {
+  const sel = document.getElementById("addOrg_" + podId);
+  const orgId = sel.value;
+  if (!orgId) return;
+
+  const currentPod = getOrgPod(orgId);
+  const targetPod = pods.find(p => p.id === podId);
+  const org = getOrg(orgId);
+
   if (currentPod && currentPod.id !== podId) {
-    moveMemberData = { userId, fromPodId: currentPod.id, toPodId: podId };
-    showMoveConfirmation();
+    const html = `<h3>Move Organization</h3>
+      <div class="pod-modal-desc"><strong>${org.name}</strong> is currently in <strong>${currentPod.name}</strong>. Moving to <strong>${targetPod.name}</strong>.</div>
+      <div class="pod-modal-warning">Org-level assignees will be updated to ${targetPod.name}'s role template.</div>
+      <div class="pod-section-label" style="padding:0 0 6px;">Cascade to existing projects?</div>
+      <div class="pod-modal-options">
+        <label class="pod-modal-option" onclick="this.querySelector('input').checked=true">
+          <input type="radio" name="cascadeChoice" value="yes"> Update active projects now
+        </label>
+        <label class="pod-modal-option" onclick="this.querySelector('input').checked=true">
+          <input type="radio" name="cascadeChoice" value="no" checked> Apply to new projects only
+        </label>
+      </div>
+      <div class="pod-modal-btns">
+        <button onclick="closePodModal()">Cancel</button>
+        <button class="pod-modal-confirm" onclick="confirmMoveOrg('${currentPod.id}','${podId}','${orgId}')">Move Organization</button>
+      </div>`;
+    document.getElementById("podModalContent").innerHTML = html;
+    document.getElementById("podModal").classList.add("visible");
     return;
   }
 
-  const pod = pods.find(p => p.id === podId);
-  if (!pod || pod.members.includes(userId)) return;
-  pod.members.push(userId);
+  if (!targetPod.orgs) targetPod.orgs = [];
+  if (!targetPod.orgs.includes(orgId)) targetPod.orgs.push(orgId);
   savePods(pods);
   renderPodSetup();
 }
 
-function removeMember(podId, userId) {
-  const pod = pods.find(p => p.id === podId);
-  if (!pod) return;
-  const user = getUser(userId);
-  if (!confirm(`Remove ${user.name} from ${pod.name}? Their projects will no longer appear in this pod's view.`)) return;
-  pod.members = pod.members.filter(m => m !== userId);
-  if (pod.lead === userId) pod.lead = null;
-  savePods(pods);
-  renderPodSetup();
-}
-
-function setAsLead(podId, userId) {
-  const pod = pods.find(p => p.id === podId);
-  if (!pod) return;
-  pod.lead = userId;
-  savePods(pods);
-  renderPodSetup();
-}
-
-function openMoveModal(fromPodId, userId) {
-  const user = getUser(userId);
+function confirmMoveOrg(fromPodId, toPodId, orgId) {
   const fromPod = pods.find(p => p.id === fromPodId);
-  moveMemberData = { userId, fromPodId, toPodId: null };
-
-  document.getElementById("moveModalTitle").textContent = `Move ${user.name}`;
-  document.getElementById("moveModalDesc").textContent = `Currently in ${fromPod.name}. Select a destination pod:`;
-
-  const sel = document.getElementById("moveTargetPod");
-  sel.innerHTML = `<option value="">Select a pod...</option>` +
-    pods.filter(p => p.id !== fromPodId).map(p =>
-      `<option value="${p.id}">${p.name} (${p.members.length} members)</option>`
-    ).join("");
-
-  document.getElementById("podMoveModal").style.display = "flex";
-}
-
-function showMoveConfirmation() {
-  const user = getUser(moveMemberData.userId);
-  const fromPod = pods.find(p => p.id === moveMemberData.fromPodId);
-  const toPod = pods.find(p => p.id === moveMemberData.toPodId);
-
-  document.getElementById("moveModalTitle").textContent = `Move ${user.name}`;
-  document.getElementById("moveModalDesc").textContent = `${user.name} is currently in ${fromPod.name}. Moving to ${toPod.name}.`;
-
-  const sel = document.getElementById("moveTargetPod");
-  sel.innerHTML = `<option value="${toPod.id}" selected>${toPod.name}</option>`;
-
-  document.getElementById("podMoveModal").style.display = "flex";
-}
-
-function closeMoveModal() {
-  document.getElementById("podMoveModal").style.display = "none";
-  moveMemberData = null;
-}
-
-function confirmMoveMember() {
-  if (!moveMemberData) return;
-  const targetId = moveMemberData.toPodId || document.getElementById("moveTargetPod").value;
-  if (!targetId) { alert("Please select a target pod."); return; }
-
-  const fromPod = pods.find(p => p.id === moveMemberData.fromPodId);
-  const toPod = pods.find(p => p.id === targetId);
-  const userId = moveMemberData.userId;
-
-  if (fromPod) {
-    fromPod.members = fromPod.members.filter(m => m !== userId);
-    if (fromPod.lead === userId) fromPod.lead = null;
-  }
-  if (toPod && !toPod.members.includes(userId)) {
-    toPod.members.push(userId);
-  }
-
+  const toPod = pods.find(p => p.id === toPodId);
+  if (fromPod) fromPod.orgs = (fromPod.orgs || []).filter(o => o !== orgId);
+  if (!toPod.orgs) toPod.orgs = [];
+  if (!toPod.orgs.includes(orgId)) toPod.orgs.push(orgId);
   savePods(pods);
-  closeMoveModal();
+  closePodModal();
+  renderPodSetup();
+}
+
+function removeOrgFromPod(podId, orgId) {
+  const pod = pods.find(p => p.id === podId);
+  const org = getOrg(orgId);
+  if (!confirm(`Remove ${org.name} from ${pod.name}? The org will need to be reassigned to another pod.`)) return;
+  pod.orgs = (pod.orgs || []).filter(o => o !== orgId);
+  savePods(pods);
   renderPodSetup();
 }
 
