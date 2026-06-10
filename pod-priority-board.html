@@ -38,6 +38,10 @@
     --lane-expired: #fef2f2;
     --lane-rejected: #fdf2f8;
     --lane-accepted: #f0fdf4;
+    --lane-booked: #eff6ff;
+    --lane-inTransit: #ecfdf5;
+    --lane-arrivingSoon: #fffbeb;
+    --lane-delivered: #f0fdf4;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -623,6 +627,82 @@
   .lane[data-stage="rejected"] .lane-dot { background: #be185d; }
   .lane[data-stage="accepted"] .lane-header { background: var(--lane-accepted); }
   .lane[data-stage="accepted"] .lane-dot { background: var(--green); }
+
+  .lane[data-stage="booked"] .lane-header { background: var(--lane-booked); }
+  .lane[data-stage="booked"] .lane-dot { background: #3b82f6; }
+  .lane[data-stage="inTransit"] .lane-header { background: var(--lane-inTransit); }
+  .lane[data-stage="inTransit"] .lane-dot { background: #059669; }
+  .lane[data-stage="arrivingSoon"] .lane-header { background: var(--lane-arrivingSoon); }
+  .lane[data-stage="arrivingSoon"] .lane-dot { background: #d97706; }
+  .lane[data-stage="delivered"] .lane-header { background: var(--lane-delivered); }
+  .lane[data-stage="delivered"] .lane-dot { background: #16a34a; }
+
+  /* Pipeline toggle */
+  .pipeline-toggle {
+    display: inline-flex; background: var(--gray-bg); border-radius: 8px;
+    padding: 3px; gap: 2px; margin-bottom: 8px;
+  }
+  .pipeline-btn {
+    padding: 6px 16px; border-radius: 6px; font-size: 12px; font-weight: 600;
+    border: none; background: none; color: var(--text-secondary);
+    cursor: pointer; font-family: inherit; transition: all .15s;
+  }
+  .pipeline-btn.active {
+    background: var(--card); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.1);
+  }
+  .pipeline-btn:hover:not(.active) { color: var(--text); }
+
+  /* Ops card elements */
+  .shipment-progress {
+    display: flex; align-items: center; gap: 0; margin: 8px 0 4px; padding: 0 2px;
+  }
+  .shipment-node {
+    display: flex; flex-direction: column; align-items: center; gap: 2px; position: relative;
+  }
+  .shipment-dot {
+    width: 10px; height: 10px; border-radius: 50%; border: 2px solid #d1d5db;
+    background: #fff; flex-shrink: 0; transition: all .15s;
+  }
+  .shipment-dot.done { background: #059669; border-color: #059669; }
+  .shipment-dot.active { background: #fff; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,.2); }
+  .shipment-dot.active::after {
+    content: ""; position: absolute; width: 5px; height: 5px; border-radius: 50%;
+    background: #3b82f6; top: 2px; left: 2px;
+  }
+  .shipment-line {
+    flex: 1; height: 2px; background: #e5e7eb; min-width: 8px;
+  }
+  .shipment-line.done { background: #059669; }
+  .shipment-label {
+    font-size: 8px; color: var(--text-secondary); white-space: nowrap; margin-top: 1px;
+  }
+
+  .milestone-bar {
+    display: flex; gap: 4px; flex-wrap: wrap; margin: 6px 0 2px;
+  }
+  .milestone-item {
+    display: inline-flex; align-items: center; gap: 2px;
+    font-size: 9px; font-weight: 500; color: var(--text-secondary);
+  }
+  .ms-icon {
+    width: 12px; height: 12px; border-radius: 50%; display: flex;
+    align-items: center; justify-content: center; font-size: 7px; font-weight: 700;
+  }
+  .ms-icon.done { background: #dcfce7; color: #16a34a; }
+  .ms-icon.active { background: #dbeafe; color: #3b82f6; }
+  .ms-icon.pending { background: #f3f4f6; color: #9ca3af; }
+
+  .eta-badge {
+    font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px;
+  }
+  .eta-badge.on-time { background: #dcfce7; color: #16a34a; }
+  .eta-badge.arriving { background: #fef3c7; color: #d97706; }
+  .eta-badge.delayed { background: #fee2e2; color: #dc2626; }
+
+  .ops-multi-badge {
+    font-size: 9px; font-weight: 600; padding: 1px 6px; border-radius: 8px;
+    background: #dbeafe; color: #1d4ed8;
+  }
 
   .empty-lane {
     padding: 24px 16px;
@@ -1801,6 +1881,10 @@
       <button class="clear-filters-btn" id="clearBtn" onclick="clearFilters()">Clear all</button>
     </div>
 
+    <div class="pipeline-toggle" id="pipelineToggle">
+      <button class="pipeline-btn active" id="pipelineQuoting" onclick="setPipeline('quoting')">Quoting</button>
+      <button class="pipeline-btn" id="pipelineOps" onclick="setPipeline('ops')">Operations</button>
+    </div>
     <div class="board-container">
       <div class="board" id="board"></div>
     </div>
@@ -2193,6 +2277,154 @@ function buildCardHTML(rfq) {
     </div>`;
 }
 
+/* ── Ops Card Builder ────────────────── */
+
+function buildShipmentProgress(rfq) {
+  const steps = [
+    { val: 2, label: "Factory" },
+    { val: 6, label: "Origin" },
+    { val: 8, label: "Transit" },
+    { val: 10, label: "Dest" },
+    { val: 14, label: "Consignee" }
+  ];
+  const loc = rfq.shipmentLocation;
+  let html = '<div class="shipment-progress">';
+  steps.forEach((s, i) => {
+    if (i > 0) {
+      const prevDone = loc >= s.val;
+      html += `<span class="shipment-line${loc >= s.val ? " done" : ""}"></span>`;
+    }
+    let cls = "pending";
+    if (loc > s.val) cls = "done";
+    else if (loc >= s.val) cls = "active";
+    html += `<span class="shipment-node"><span class="shipment-dot ${cls}"></span><span class="shipment-label">${s.label}</span></span>`;
+  });
+  html += '</div>';
+  return html;
+}
+
+function buildMilestoneBar(ms) {
+  const items = [
+    { key: "booking", label: "Bkg" },
+    { key: "originCX", label: "OCX" },
+    { key: "pickup", label: "Pkp" },
+    { key: "destCX", label: "DCX" },
+    { key: "delivery", label: "Dlv" },
+    { key: "invoicing", label: "Inv" }
+  ];
+  let html = '<div class="milestone-bar">';
+  items.forEach(it => {
+    const st = ms[it.key] || "pending";
+    const icon = st === "done" ? "✓" : st === "in_progress" ? "●" : "○";
+    html += `<span class="milestone-item"><span class="ms-icon ${st}">${icon}</span>${it.label}</span>`;
+  });
+  html += '</div>';
+  return html;
+}
+
+function getEtaBadge(rfq) {
+  if (rfq.stage === "delivered") {
+    return `<span class="eta-badge on-time">Delivered</span>`;
+  }
+  const etaDays = -diffDays(rfq.eta);
+  const delayed = rfq.eta && rfq.plannedArrival && new Date(rfq.eta).getTime() > new Date(rfq.plannedArrival).getTime();
+  if (delayed) {
+    const delayAmt = Math.round((new Date(rfq.eta).getTime() - new Date(rfq.plannedArrival).getTime()) / 86400000);
+    return `<span class="eta-badge delayed" title="Was ${formatDate(rfq.plannedArrival)}">Delayed ${delayAmt}d</span>`;
+  }
+  if (etaDays <= 0) return `<span class="eta-badge arriving">Arriving today</span>`;
+  if (etaDays <= 3) return `<span class="eta-badge arriving">ETA ${etaDays}d</span>`;
+  return `<span class="eta-badge on-time">ETA ${formatDate(rfq.eta)}</span>`;
+}
+
+function buildOpsCardHTML(rfq) {
+  const tm = getTeamMember(rfq.assignee);
+  const initials = rfq.assignee.split(" ").map(w => w[0]).join("");
+  const delayed = rfq.eta && rfq.plannedArrival && new Date(rfq.eta).getTime() > new Date(rfq.plannedArrival).getTime();
+  const multiShip = rfq.shipments > 1;
+
+  let flags = "";
+  if (delayed) flags += `<span class="flag flag-delayed" title="Shipment delayed">⚠</span>`;
+  if (rfq.firstTime) flags += `<span class="flag flag-first-time" title="First-time client">★</span>`;
+
+  const multiInfo = multiShip ? `<span class="ops-multi-badge">${rfq.shipmentsDelivered}/${rfq.shipments} delivered</span>` : "";
+
+  return `
+    <div class="rfq-card" onclick="openRfq('${rfq.id}')" data-client="${rfq.client}" data-assignee="${rfq.assignee}" data-mode="${rfq.mode}" data-lane="${rfq.origin}-${rfq.destination}" data-search="${rfq.id} ${rfq.client} ${rfq.origin} ${rfq.destination} ${rfq.assignee}">
+      <svg class="link-icon" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z"/><path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z"/></svg>
+      <div class="rfq-card-header">
+        <div>
+          <div class="rfq-client">${rfq.client}</div>
+          <div class="rfq-id">${rfq.id} ${multiInfo}</div>
+        </div>
+        <div class="rfq-flags">${flags}</div>
+      </div>
+      <div class="rfq-route">
+        ${transportIcon(rfq.mode)}
+        <span>${rfq.origin}</span>
+        <span class="route-arrow">→</span>
+        <span>${rfq.destination}</span>
+      </div>
+      ${buildShipmentProgress(rfq)}
+      ${buildMilestoneBar(rfq.milestones)}
+      <div class="rfq-footer">
+        <div class="rfq-assignee">
+          <div class="avatar-xs" style="background:${tm.color}">${initials}</div>
+          ${rfq.assignee}
+        </div>
+        ${getEtaBadge(rfq)}
+      </div>
+    </div>`;
+}
+
+/* ── Operations Pipeline Data ────────────────── */
+
+const OPS_STAGES = [
+  { key: "booked", label: "Booked", stageDataLabel: "Booked" },
+  { key: "inTransit", label: "In Transit", stageDataLabel: "In Transit" },
+  { key: "arrivingSoon", label: "Arriving Soon", stageDataLabel: "Arriving" },
+  { key: "delivered", label: "Delivered", stageDataLabel: "Delivered" }
+];
+
+const SHIPMENT_LOCATIONS = [
+  { value: 0, label: "Unknown", short: "?" },
+  { value: 2, label: "Factory", short: "Factory" },
+  { value: 4, label: "To Origin", short: "To Orig" },
+  { value: 6, label: "Origin Port", short: "Origin" },
+  { value: 8, label: "In Transit", short: "Transit" },
+  { value: 10, label: "Dest Port", short: "Dest" },
+  { value: 12, label: "Final Mile", short: "Final" },
+  { value: 14, label: "Delivered", short: "Consignee" }
+];
+
+const OPS_RFQS = [
+  { id: "RFQ-3850", client: "Global Freight Solutions", contact: "John Mitchell", origin: "Yantian", destination: "Long Beach", mode: "FCL", shipments: 3, shipmentsDelivered: 0, quotedValue: 28500, assignee: "Kathy Simmons", stage: "booked", stageDate: daysAgo(1), shipmentLocation: 2, eta: daysFromNow(18), plannedArrival: daysFromNow(18), milestones: { booking: "done", originCX: "in_progress", pickup: "pending", destCX: "pending", delivery: "pending", invoicing: "pending" }, firstTime: false },
+  { id: "RFQ-3855", client: "Vertex Trading LLC", contact: "Priya Sharma", origin: "Mumbai", destination: "Houston", mode: "Air", shipments: 1, shipmentsDelivered: 0, quotedValue: 12300, assignee: "Jessica Park", stage: "booked", stageDate: daysAgo(2), shipmentLocation: 2, eta: daysFromNow(5), plannedArrival: daysFromNow(5), milestones: { booking: "done", originCX: "pending", pickup: "pending", destCX: "pending", delivery: "pending", invoicing: "pending" }, firstTime: true },
+  { id: "RFQ-3860", client: "Maple Leaf Imports", contact: "Diane Tremblay", origin: "Ho Chi Minh", destination: "Vancouver", mode: "FCL", shipments: 2, shipmentsDelivered: 0, quotedValue: 19500, assignee: "Christine Rivera", stage: "booked", stageDate: daysAgo(0), shipmentLocation: 0, eta: daysFromNow(22), plannedArrival: daysFromNow(22), milestones: { booking: "done", originCX: "pending", pickup: "pending", destCX: "pending", delivery: "pending", invoicing: "pending" }, firstTime: false },
+
+  { id: "RFQ-3800", client: "Pacific Cargo Lines", contact: "Amy Zhao", origin: "Shenzhen", destination: "Newark", mode: "FCL", shipments: 4, shipmentsDelivered: 0, quotedValue: 34000, assignee: "Kathy Simmons", stage: "inTransit", stageDate: daysAgo(8), shipmentLocation: 8, eta: daysFromNow(6), plannedArrival: daysFromNow(6), milestones: { booking: "done", originCX: "done", pickup: "done", destCX: "pending", delivery: "pending", invoicing: "pending" }, firstTime: false },
+  { id: "RFQ-3805", client: "TransAtlantic Logistics", contact: "Sofia Petrov", origin: "Ningbo", destination: "Charleston", mode: "FCL", shipments: 2, shipmentsDelivered: 0, quotedValue: 26800, assignee: "Jessica Park", stage: "inTransit", stageDate: daysAgo(12), shipmentLocation: 8, eta: daysFromNow(4), plannedArrival: daysFromNow(1), milestones: { booking: "done", originCX: "done", pickup: "done", destCX: "in_progress", delivery: "pending", invoicing: "pending" }, firstTime: false },
+  { id: "RFQ-3810", client: "Eagle Express Freight", contact: "Tom Bradley", origin: "Hong Kong", destination: "JFK", mode: "Air", shipments: 1, shipmentsDelivered: 0, quotedValue: 14800, assignee: "Lisa Wang", stage: "inTransit", stageDate: daysAgo(3), shipmentLocation: 8, eta: daysFromNow(1), plannedArrival: daysFromNow(1), milestones: { booking: "done", originCX: "done", pickup: "done", destCX: "pending", delivery: "pending", invoicing: "pending" }, firstTime: false },
+  { id: "RFQ-3812", client: "Caspian Freight Co.", contact: "Leila Mammadova", origin: "Istanbul", destination: "Houston", mode: "FCL", shipments: 2, shipmentsDelivered: 0, quotedValue: 18200, assignee: "James Chen", stage: "inTransit", stageDate: daysAgo(15), shipmentLocation: 10, eta: daysAgo(2), plannedArrival: daysAgo(5), milestones: { booking: "done", originCX: "done", pickup: "done", destCX: "done", delivery: "in_progress", invoicing: "pending" }, firstTime: false },
+
+  { id: "RFQ-3820", client: "Nordic Supply Chain AB", contact: "Erik Lindgren", origin: "Rotterdam", destination: "Miami", mode: "FCL", shipments: 2, shipmentsDelivered: 1, quotedValue: 19600, assignee: "Kathy Simmons", stage: "arrivingSoon", stageDate: daysAgo(18), shipmentLocation: 10, eta: daysFromNow(2), plannedArrival: daysFromNow(2), milestones: { booking: "done", originCX: "done", pickup: "done", destCX: "done", delivery: "in_progress", invoicing: "pending" }, firstTime: false },
+  { id: "RFQ-3825", client: "Summit Intermodal", contact: "Carlos Reyes", origin: "Busan", destination: "Long Beach", mode: "FCL", shipments: 4, shipmentsDelivered: 2, quotedValue: 42000, assignee: "Lisa Wang", stage: "arrivingSoon", stageDate: daysAgo(20), shipmentLocation: 12, eta: daysFromNow(1), plannedArrival: daysFromNow(0), milestones: { booking: "done", originCX: "done", pickup: "done", destCX: "done", delivery: "in_progress", invoicing: "pending" }, firstTime: false },
+  { id: "RFQ-3828", client: "Horizon Shipping Co.", contact: "Derek Müller", origin: "Hamburg", destination: "Savannah", mode: "Inspections", shipments: 1, shipmentsDelivered: 0, quotedValue: 6200, assignee: "Maria Lopez", stage: "arrivingSoon", stageDate: daysAgo(10), shipmentLocation: 12, eta: daysFromNow(0), plannedArrival: daysAgo(1), milestones: { booking: "done", originCX: "done", pickup: "done", destCX: "done", delivery: "in_progress", invoicing: "pending" }, firstTime: false },
+
+  { id: "RFQ-3830", client: "Silk Road Logistics", contact: "Wei Zhang", origin: "Qingdao", destination: "Oakland", mode: "FCL", shipments: 2, shipmentsDelivered: 2, quotedValue: 15600, assignee: "Lisa Wang", stage: "delivered", stageDate: daysAgo(1), shipmentLocation: 14, eta: daysAgo(1), plannedArrival: daysAgo(1), milestones: { booking: "done", originCX: "done", pickup: "done", destCX: "done", delivery: "done", invoicing: "in_progress" }, firstTime: false },
+  { id: "RFQ-3835", client: "Global Freight Solutions", contact: "John Mitchell", origin: "Shanghai", destination: "Los Angeles", mode: "FCL", shipments: 3, shipmentsDelivered: 3, quotedValue: 31000, assignee: "Kathy Simmons", stage: "delivered", stageDate: daysAgo(3), shipmentLocation: 14, eta: daysAgo(3), plannedArrival: daysAgo(5), milestones: { booking: "done", originCX: "done", pickup: "done", destCX: "done", delivery: "done", invoicing: "in_progress" }, firstTime: false },
+  { id: "RFQ-3838", client: "Pacific Cargo Lines", contact: "Amy Zhao", origin: "Taipei", destination: "Newark", mode: "LCL", shipments: 1, shipmentsDelivered: 1, quotedValue: 4200, assignee: "James Chen", stage: "delivered", stageDate: daysAgo(0), shipmentLocation: 14, eta: daysAgo(0), plannedArrival: daysFromNow(1), milestones: { booking: "done", originCX: "done", pickup: "done", destCX: "done", delivery: "done", invoicing: "pending" }, firstTime: false }
+];
+
+function getOpsDelayDays(rfq) {
+  return diffDays(rfq.plannedArrival) - diffDays(rfq.eta);
+}
+
+function isOpsDelayed(rfq) {
+  if (rfq.stage === "delivered") return diffDays(rfq.plannedArrival) > diffDays(rfq.eta);
+  return rfq.eta && rfq.plannedArrival && new Date(rfq.eta) > new Date(rfq.plannedArrival);
+}
+
 // Historical RFQs for health view (full lifecycle: submitted → quoted → approved → delivered → invoiced)
 const HEALTH_DATA = [
   { id: "RFQ-3800", client: "Global Freight Solutions", submittedDate: "2026-03-02", quotedDate: "2026-03-04", approvedDate: "2026-03-06", invoicedDate: "2026-03-28", quotedValue: 24500, invoicedValue: 25200, mode: "Ocean", shippingStatus: "delivered", inspectionRequired: true, inspectionStatus: "passed" },
@@ -2222,6 +2454,14 @@ let healthTimelineRange = "month";
 let healthCustomFrom = "2026-03-01";
 let healthCustomTo = "2026-04-01";
 let shippingModeFilter = "all";
+let activePipeline = "quoting";
+
+function setPipeline(mode) {
+  activePipeline = mode;
+  document.getElementById("pipelineQuoting").classList.toggle("active", mode === "quoting");
+  document.getElementById("pipelineOps").classList.toggle("active", mode === "ops");
+  applyFilters();
+}
 
 function getTimelineRange(range) {
   if (range === "custom") return { from: new Date(healthCustomFrom + "T00:00:00"), to: new Date(healthCustomTo + "T23:59:59") };
@@ -2252,6 +2492,7 @@ function switchView(view) {
   document.getElementById("tableView").classList.toggle("visible", view === "table");
   document.getElementById("healthView").classList.toggle("visible", view === "health");
   document.getElementById("podSetupView").classList.toggle("visible", view === "podsetup");
+  document.getElementById("pipelineToggle").style.display = view === "action" ? "inline-flex" : "none";
   if (view === "table") renderTableView();
   if (view === "health") renderHealthView();
   if (view === "podsetup") renderPodSetup();
@@ -2526,10 +2767,13 @@ function renderBoard(rfqs) {
   const board = document.getElementById("board");
   board.innerHTML = "";
 
-  STAGES.forEach(stage => {
+  const isOps = activePipeline === "ops";
+  const stages = isOps ? OPS_STAGES : STAGES;
+
+  stages.forEach(stage => {
     const stageRfqs = rfqs.filter(r => r.stage === stage.key);
     const totalValue = stageRfqs.reduce((sum, r) => sum + r.quotedValue, 0);
-    const totalShipments = stageRfqs.reduce((sum, r) => sum + r.shipments, 0);
+    const totalShipments = stageRfqs.reduce((sum, r) => sum + (r.shipments || 0), 0);
     const lane = document.createElement("div");
     lane.className = "lane";
     lane.dataset.stage = stage.key;
@@ -2538,12 +2782,13 @@ function renderBoard(rfqs) {
     if (stageRfqs.length === 0) {
       cardsHTML = `<div class="empty-lane">
         <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 3a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2H5zm9 4a1 1 0 10-2 0v6a1 1 0 102 0V7zm-3 2a1 1 0 10-2 0v4a1 1 0 102 0V9zm-3 3a1 1 0 10-2 0v1a1 1 0 102 0v-1z" clip-rule="evenodd"/></svg>
-        <div>No RFQs in this stage</div>
+        <div>No ${isOps ? "shipments" : "RFQs"} in this stage</div>
       </div>`;
     } else {
-      cardsHTML = stageRfqs.map(r => buildCardHTML(r)).join("");
+      cardsHTML = stageRfqs.map(r => isOps ? buildOpsCardHTML(r) : buildCardHTML(r)).join("");
     }
 
+    const valueLabel = isOps ? "Value" : "Quoted Value";
     lane.innerHTML = `
       <div class="lane-header">
         <div class="lane-header-left">
@@ -2559,7 +2804,7 @@ function renderBoard(rfqs) {
         </div>
         <div class="lane-stat">
           <span class="lane-stat-value">${fmtK(totalValue)}</span>
-          <span class="lane-stat-label">Quoted Value</span>
+          <span class="lane-stat-label">${valueLabel}</span>
         </div>
       </div>
       <div class="lane-cards">${cardsHTML}</div>`;
@@ -2570,6 +2815,8 @@ function renderBoard(rfqs) {
 
 function renderSummary(rfqs) {
   const strip = document.getElementById("summaryStrip");
+  if (activePipeline === "ops") return renderOpsSummary(rfqs, strip);
+
   const totalRfqs = rfqs.length;
   const totalValue = rfqs.reduce((sum, r) => sum + r.quotedValue, 0);
   const expiredCount = rfqs.filter(r => r.stage === "expired").length;
@@ -2622,6 +2869,40 @@ function renderSummary(rfqs) {
   strip.innerHTML = html;
 }
 
+function renderOpsSummary(rfqs, strip) {
+  const total = rfqs.length;
+  const inTransitValue = rfqs.filter(r => r.stage === "inTransit").reduce((s, r) => s + r.quotedValue, 0);
+  const delayedCount = rfqs.filter(r => r.eta && r.plannedArrival && new Date(r.eta).getTime() > new Date(r.plannedArrival).getTime() && r.stage !== "delivered").length;
+  const arrivingSoon = rfqs.filter(r => {
+    if (r.stage === "delivered") return false;
+    const d = -diffDays(r.eta);
+    return d >= 0 && d <= 3;
+  }).length;
+  const deliveredCount = rfqs.filter(r => r.stage === "delivered").length;
+
+  strip.innerHTML = `
+    <div class="summary-pill" onclick="clearFilters()">
+      <span class="pill-count" style="color:var(--text)">${total}</span>
+      <span class="pill-label">Active Shipments</span>
+    </div>
+    <div class="summary-pill">
+      <span class="pill-count" style="color:var(--text-secondary)">${fmtK(inTransitValue)}</span>
+      <span class="pill-label">In-Transit Value</span>
+    </div>
+    ${delayedCount > 0 ? `<div class="summary-pill" style="border-color:#fcd5d2;background:var(--red-bg)">
+      <span class="pill-count" style="color:var(--red)">${delayedCount}</span>
+      <span class="pill-label">Delayed</span>
+    </div>` : ""}
+    ${arrivingSoon > 0 ? `<div class="summary-pill" style="border-color:#fde68a;background:var(--yellow-bg)">
+      <span class="pill-count" style="color:var(--yellow)">${arrivingSoon}</span>
+      <span class="pill-label">Arriving Soon</span>
+    </div>` : ""}
+    ${deliveredCount > 0 ? `<div class="summary-pill" style="border-color:#bbf7d0;background:#f0fdf4">
+      <span class="pill-count" style="color:#16a34a">${deliveredCount}</span>
+      <span class="pill-label">Delivered</span>
+    </div>` : ""}`;
+}
+
 function populateFilters() {
   const teamSelect = document.getElementById("filterTeam");
   TEAM.forEach(t => {
@@ -2631,7 +2912,8 @@ function populateFilters() {
     teamSelect.appendChild(opt);
   });
 
-  const clients = [...new Set(RFQS.map(r => r.client))].sort();
+  const allRfqs = [...RFQS, ...OPS_RFQS];
+  const clients = [...new Set(allRfqs.map(r => r.client))].sort();
   const clientSelect = document.getElementById("filterClient");
   clients.forEach(c => {
     const opt = document.createElement("option");
@@ -2640,7 +2922,7 @@ function populateFilters() {
     clientSelect.appendChild(opt);
   });
 
-  const lanes = [...new Set(RFQS.map(r => `${r.origin} → ${r.destination}`))].sort();
+  const lanes = [...new Set(allRfqs.map(r => `${r.origin} → ${r.destination}`))].sort();
   const laneSelect = document.getElementById("filterLane");
   lanes.forEach(l => {
     const opt = document.createElement("option");
@@ -2660,7 +2942,8 @@ function applyFilters() {
   const hasFilters = team || client || mode || lane || search;
   document.getElementById("clearBtn").classList.toggle("visible", hasFilters);
 
-  let filtered = RFQS;
+  const source = activePipeline === "ops" ? OPS_RFQS : RFQS;
+  let filtered = source;
 
   if (team) filtered = filtered.filter(r => r.assignee === team);
   if (client) filtered = filtered.filter(r => r.client === client);
@@ -2681,8 +2964,9 @@ function clearFilters() {
   document.getElementById("filterLane").value = "";
   document.getElementById("searchInput").value = "";
   document.getElementById("clearBtn").classList.remove("visible");
-  renderBoard(RFQS);
-  renderSummary(RFQS);
+  const source = activePipeline === "ops" ? OPS_RFQS : RFQS;
+  renderBoard(source);
+  renderSummary(source);
 }
 
 /* ── Table View ────────────────────────────── */
