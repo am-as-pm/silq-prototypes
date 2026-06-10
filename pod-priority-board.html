@@ -737,6 +737,15 @@
   .ops-filter-bar {
     display: flex; align-items: center; gap: 6px; margin-bottom: 6px; flex-wrap: wrap;
   }
+  .rfq-card.card-attention { border-left: 3px solid #dc2626; background: #fff5f5; }
+  .card-attn-btn {
+    width: 20px; height: 20px; border-radius: 4px; border: 1.5px solid #e5e7eb;
+    background: #fff; color: #9ca3af; font-size: 11px; font-weight: 700;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: all .15s; flex-shrink: 0;
+  }
+  .card-attn-btn:hover { border-color: #dc2626; color: #dc2626; background: #fee2e2; }
+  .card-attn-btn.active { border-color: #dc2626; color: #fff; background: #dc2626; }
   .ops-priority-icon {
     display: inline-flex; align-items: center; justify-content: center;
     width: 18px; height: 18px; border-radius: 4px; flex-shrink: 0;
@@ -2285,14 +2294,16 @@ function buildCardHTML(rfq) {
   const crdPassed = rfq.crd && diffDays(rfq.crd) > 0;
   const shipLabel = rfq.shipments === 1 ? "1 shipment" : `${rfq.shipments} shipments`;
 
+  const isAttn = rfqAttention[rfq.id];
   let flags = "";
+  flags += `<button class="card-attn-btn${isAttn ? " active" : ""}" onclick="event.stopPropagation();toggleAttention('${rfq.id}',true)" title="${isAttn ? "Remove attention flag" : "Flag as needs attention"}">!</button>`;
   if (crdPassed) flags += `<span class="flag flag-arriving" title="CRD has passed">⚡</span>`;
   if (isRejected) flags += `<span class="flag flag-delayed" title="Quote rejected">✗</span>`;
   if (isAccepted) flags += `<span class="flag flag-arriving" title="Accepted — send booking">✓</span>`;
   if (isFirstTime) flags += `<span class="flag flag-first-time" title="First-time client">★</span>`;
 
   return `
-    <div class="rfq-card" onclick="openRfq('${rfq.id}')" data-client="${rfq.client}" data-assignee="${rfq.assignee}" data-mode="${rfq.mode}" data-lane="${rfq.origin}-${rfq.destination}" data-search="${rfq.id} ${rfq.client} ${rfq.origin} ${rfq.destination} ${rfq.assignee}">
+    <div class="rfq-card${isAttn ? " card-attention" : ""}" onclick="openRfq('${rfq.id}')" data-client="${rfq.client}" data-assignee="${rfq.assignee}" data-mode="${rfq.mode}" data-lane="${rfq.origin}-${rfq.destination}" data-search="${rfq.id} ${rfq.client} ${rfq.origin} ${rfq.destination} ${rfq.assignee}">
       <svg class="link-icon" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z"/><path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z"/></svg>
       <div class="rfq-card-header">
         <div>
@@ -3402,10 +3413,10 @@ function changeAssignee(id, el) {
   renderTableView();
 }
 
-function toggleAttention(id) {
-  event.stopPropagation();
+function toggleAttention(id, fromBoard) {
+  if (event) event.stopPropagation();
   rfqAttention[id] = !rfqAttention[id];
-  renderTableView();
+  if (fromBoard) { applyFilters(); } else { renderTableView(); }
 }
 
 function startEditNote(id, el) {
