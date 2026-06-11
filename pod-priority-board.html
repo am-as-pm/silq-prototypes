@@ -43,6 +43,7 @@
     --lane-inTransit: #ecfdf5;
     --lane-destination: #fff7ed;
     --lane-delivered: #f0fdf4;
+    --lane-inspections: #eef2ff;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -609,7 +610,7 @@
     transition: opacity 0.15s;
     position: absolute;
     top: 14px;
-    right: 14px;
+    left: 14px;
   }
 
   .rfq-card:hover .link-icon { opacity: 1; }
@@ -639,6 +640,8 @@
   .lane[data-stage="destination"] .lane-dot { background: #ea580c; }
   .lane[data-stage="delivered"] .lane-header { background: var(--lane-delivered); }
   .lane[data-stage="delivered"] .lane-dot { background: #16a34a; }
+  .lane[data-stage="inspections"] .lane-header { background: var(--lane-inspections); }
+  .lane[data-stage="inspections"] .lane-dot { background: #4f46e5; }
 
   /* Pipeline toggle */
   .pipeline-toggle {
@@ -753,6 +756,42 @@
   .ops-priority-icon.highest { background: #fee2e2; color: #dc2626; }
   .ops-priority-icon.high { background: #fef3c7; color: #d97706; }
   .ops-priority-icon svg { width: 12px; height: 12px; }
+
+  /* Task-delayed card (amber tint, task overdue but milestone still on track) */
+  .rfq-card.ops-task-delayed { border-left: 3px solid #d97706; background: #fffbeb; }
+  .flag-task-delayed { color: #d97706; }
+
+  /* Task info block on ops cards */
+  .task-info-block {
+    margin: 6px 0 4px; padding: 6px 8px; border-radius: 6px;
+    background: var(--gray-bg); font-size: 11px; line-height: 1.5;
+  }
+  .task-info-block.task-delay-block { background: #fef3c7; }
+  .task-info-block.ms-delay-block { background: #fee2e2; }
+  .task-line { display: flex; align-items: center; gap: 4px; }
+  .task-line .task-dot { color: var(--text-secondary); font-size: 10px; flex-shrink: 0; }
+  .task-line .task-dot.amber { color: #d97706; }
+  .task-line .task-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
+  .task-line .task-due { color: var(--text-secondary); flex-shrink: 0; font-size: 10px; }
+  .task-line .task-due-badge { flex-shrink: 0; font-size: 10px; font-weight: 600; padding: 1px 5px; border-radius: 4px; }
+  .task-due-badge.amber { background: #fde68a; color: #92400e; }
+  .task-due-badge.red { background: #fecaca; color: #991b1b; }
+  .task-line.task-overdue .task-name { color: #92400e; }
+  .ms-line { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
+  .ms-line .ms-line-label { font-weight: 600; }
+  .ms-line.ms-overdue { color: #991b1b; }
+  .ms-line.ms-overdue .ms-line-label { color: #991b1b; }
+
+  /* Inspection card styles */
+  .inspection-card .rfq-route { font-size: 12px; }
+  .insp-details { margin: 6px 0 4px; font-size: 11px; color: var(--text-secondary); }
+  .insp-detail-row { display: flex; align-items: center; gap: 6px; margin-bottom: 2px; }
+  .insp-label { font-weight: 600; color: var(--text); }
+  .insp-result { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; }
+  .insp-result.pass { background: #dcfce7; color: #166534; }
+  .insp-result.fail { background: #fee2e2; color: #991b1b; }
+  .insp-result.conditional { background: #fef3c7; color: #92400e; }
+  .insp-result.pending-result { background: #e5e7eb; color: #6b7280; }
 
   .empty-lane {
     padding: 24px 16px;
@@ -2340,17 +2379,54 @@ const OPS_STAGES = [
   { key: "origin", label: "Origin" },
   { key: "inTransit", label: "In Transit" },
   { key: "destination", label: "Destination" },
-  { key: "delivered", label: "Delivered" }
+  { key: "delivered", label: "Delivered" },
+  { key: "inspections", label: "Inspections" }
 ];
 
-const MILESTONE_DEFS = [
-  { key: "booking", label: "Bkg", full: "Booking Confirmation" },
-  { key: "originCX", label: "OCX", full: "Origin Customs Clearance" },
-  { key: "pickup", label: "Pkp", full: "Pickup / Origin Departure" },
-  { key: "destCX", label: "DCX", full: "Destination Customs Clearance" },
-  { key: "delivery", label: "Dlv", full: "Final Delivery" },
-  { key: "invoicing", label: "Inv", full: "Customer Invoicing" }
-];
+const MILESTONE_LABELS = {
+  ocean: [
+    { key: "booking", label: "Bkg", full: "Booking Confirmation" },
+    { key: "originCX", label: "OCX", full: "Origin Customs Clearance" },
+    { key: "pickup", label: "Pkp", full: "Pickup / Vessel Departure" },
+    { key: "destCX", label: "DCX", full: "Dest Customs Clearance" },
+    { key: "delivery", label: "Dlv", full: "Final Delivery" },
+    { key: "invoicing", label: "Inv", full: "Customer Invoicing" }
+  ],
+  air: [
+    { key: "booking", label: "Bkg", full: "Booking Confirmation" },
+    { key: "originCX", label: "Export", full: "Export Clearance" },
+    { key: "pickup", label: "Depart", full: "Flight Departure" },
+    { key: "destCX", label: "Import", full: "Import Clearance" },
+    { key: "delivery", label: "Dlv", full: "Final Delivery" },
+    { key: "invoicing", label: "Inv", full: "Customer Invoicing" }
+  ]
+};
+
+const PROGRESS_NODES = {
+  ocean: [
+    { val: 2, label: "Factory" },
+    { val: 6, label: "Origin Port" },
+    { val: 8, label: "Vessel" },
+    { val: 10, label: "Dest Port" },
+    { val: 14, label: "Consignee" }
+  ],
+  air: [
+    { val: 2, label: "Factory" },
+    { val: 6, label: "Origin Apt" },
+    { val: 8, label: "Flight" },
+    { val: 10, label: "Dest Apt" },
+    { val: 14, label: "Consignee" }
+  ]
+};
+
+function getModeGroup(mode) {
+  if (mode === "Air") return "air";
+  return "ocean";
+}
+
+function getMilestoneDefs(mode) {
+  return MILESTONE_LABELS[getModeGroup(mode)] || MILESTONE_LABELS.ocean;
+}
 
 function deriveOpsStage(loc) {
   if (loc <= 2) return "booked";
@@ -2361,13 +2437,15 @@ function deriveOpsStage(loc) {
 }
 
 function getOpsLead(shp) {
+  if (shp.type === "inspection") return shp.inspector;
   const stage = shp.stage;
   if (stage === "booked" || stage === "origin" || stage === "inTransit") return shp.originOps;
   return shp.destOps;
 }
 
 function getNextMilestone(shp) {
-  for (const m of MILESTONE_DEFS) {
+  const defs = getMilestoneDefs(shp.mode);
+  for (const m of defs) {
     const ms = shp.milestones[m.key];
     if (ms && ms.status !== "done") return { ...m, ...ms };
   }
@@ -2375,7 +2453,9 @@ function getNextMilestone(shp) {
 }
 
 function isShipmentDelayed(shp) {
-  for (const m of MILESTONE_DEFS) {
+  if (shp.type === "inspection") return shp.scheduledDate && diffDays(shp.scheduledDate) > 0 && shp.inspectionStatus !== "completed";
+  const defs = getMilestoneDefs(shp.mode);
+  for (const m of defs) {
     const ms = shp.milestones[m.key];
     if (ms && ms.status !== "done" && ms.due && diffDays(ms.due) > 0) return true;
   }
@@ -2383,8 +2463,10 @@ function isShipmentDelayed(shp) {
 }
 
 function getDelayDays(shp) {
+  if (shp.type === "inspection") return shp.scheduledDate ? Math.max(0, diffDays(shp.scheduledDate)) : 0;
   let worst = 0;
-  for (const m of MILESTONE_DEFS) {
+  const defs = getMilestoneDefs(shp.mode);
+  for (const m of defs) {
     const ms = shp.milestones[m.key];
     if (ms && ms.status !== "done" && ms.due) {
       const d = diffDays(ms.due);
@@ -2394,23 +2476,15 @@ function getDelayDays(shp) {
   return worst;
 }
 
-function getNextMilestoneEta(shp) {
-  const nm = getNextMilestone(shp);
-  if (!nm) return null;
-  return nm.eta || nm.due || null;
+function isTaskDelayed(shp) {
+  return shp.nextTask && shp.nextTask.due && diffDays(shp.nextTask.due) > 0 && shp.nextTask.status !== "done";
 }
 
 function buildShipmentProgress(shp) {
-  const steps = [
-    { val: 2, label: "Factory" },
-    { val: 6, label: "Origin" },
-    { val: 8, label: "Transit" },
-    { val: 10, label: "Dest" },
-    { val: 14, label: "Consignee" }
-  ];
+  const nodes = PROGRESS_NODES[getModeGroup(shp.mode)] || PROGRESS_NODES.ocean;
   const loc = shp.shipmentLocation;
   let html = '<div class="shipment-progress">';
-  steps.forEach((s, i) => {
+  nodes.forEach((s, i) => {
     if (i > 0) html += `<span class="shipment-line${loc >= s.val ? " done" : ""}"></span>`;
     let cls = "pending";
     if (loc > s.val) cls = "done";
@@ -2422,8 +2496,9 @@ function buildShipmentProgress(shp) {
 }
 
 function buildMilestoneBar(shp) {
+  const defs = getMilestoneDefs(shp.mode);
   let html = '<div class="milestone-bar">';
-  MILESTONE_DEFS.forEach(m => {
+  defs.forEach(m => {
     const ms = shp.milestones[m.key];
     if (!ms) return;
     const st = ms.status || "pending";
@@ -2439,28 +2514,46 @@ function buildMilestoneBar(shp) {
   return html;
 }
 
-function getNextMilestoneEtaBadge(shp) {
-  if (shp.stage === "delivered") return `<span class="eta-badge on-time">Delivered</span>`;
+function buildTaskInfoBlock(shp) {
+  if (shp.stage === "delivered" && !shp.nextTask) return "";
   const nm = getNextMilestone(shp);
-  if (!nm) return "";
-  const isDelayed = nm.due && diffDays(nm.due) > 0;
-  if (isDelayed) {
-    const d = diffDays(nm.due);
-    return `<span class="eta-badge delayed" title="${nm.full}: due ${formatDate(nm.due)}">⚠ ${nm.label} +${d}d late</span>`;
+  const task = shp.nextTask;
+  if (!task && !nm) return "";
+
+  const taskDelayed = task && task.due && diffDays(task.due) > 0 && task.status !== "done";
+  const msDelayed = nm && nm.due && diffDays(nm.due) > 0;
+  const blockCls = msDelayed ? "task-info-block ms-delay-block" : taskDelayed ? "task-info-block task-delay-block" : "task-info-block";
+
+  let html = `<div class="${blockCls}">`;
+  if (task) {
+    const taskDueStr = task.due ? formatDate(task.due) : "";
+    if (taskDelayed) {
+      html += `<div class="task-line task-overdue"><span class="task-dot amber">●</span><span class="task-name">${task.name}</span><span class="task-due-badge amber">+${diffDays(task.due)}d</span></div>`;
+    } else {
+      html += `<div class="task-line"><span class="task-dot">○</span><span class="task-name">${task.name}</span>${taskDueStr ? `<span class="task-due">${taskDueStr}</span>` : ""}</div>`;
+    }
   }
-  const etaDate = nm.eta || nm.due;
-  if (!etaDate) return "";
-  const daysLeft = -diffDays(etaDate);
-  if (daysLeft <= 0) return `<span class="eta-badge arriving">${nm.label} due today</span>`;
-  if (daysLeft <= 3) return `<span class="eta-badge arriving">${nm.label} in ${daysLeft}d</span>`;
-  return `<span class="eta-badge on-time">${nm.label}: ${formatDate(etaDate)}</span>`;
+  if (nm) {
+    const msEta = nm.eta || nm.due;
+    const msLabel = nm.label || nm.key;
+    if (msDelayed) {
+      html += `<div class="ms-line ms-overdue"><span class="ms-line-label">Milestone:</span> ${nm.full || msLabel} <span class="task-due-badge red">+${diffDays(nm.due)}d late</span></div>`;
+    } else {
+      html += `<div class="ms-line"><span class="ms-line-label">Milestone:</span> ${nm.full || msLabel}${msEta ? ` · ${formatDate(msEta)}` : ""}</div>`;
+    }
+  }
+  html += '</div>';
+  return html;
 }
 
 function buildOpsCardHTML(shp) {
   const leadName = getOpsLead(shp);
   const tm = getTeamMember(leadName);
   const initials = leadName.split(" ").map(w => w[0]).join("");
-  const delayed = isShipmentDelayed(shp);
+  const msDelayed = isShipmentDelayed(shp);
+  const taskDel = isTaskDelayed(shp);
+  const delayed = msDelayed || taskDel;
+  const cardCls = msDelayed ? " ops-delayed" : taskDel ? " ops-task-delayed" : "";
   const leadLabel = (shp.stage === "booked" || shp.stage === "origin" || shp.stage === "inTransit") ? "Origin Ops" : "Dest Ops";
 
   const prio = shp.priority || null;
@@ -2470,10 +2563,11 @@ function buildOpsCardHTML(shp) {
     const prioLabel = prio === "HIGHEST" ? "Highest Priority" : "High Priority";
     flags += `<span class="ops-priority-icon ${prioCls}" title="${prioLabel}"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></span>`;
   }
-  if (delayed) flags += `<span class="flag flag-delayed" title="${getDelayDays(shp)}d delayed">⚠</span>`;
+  if (msDelayed) flags += `<span class="flag flag-delayed" title="${getDelayDays(shp)}d delayed">⚠</span>`;
+  else if (taskDel) flags += `<span class="flag flag-task-delayed" title="Task overdue">⏳</span>`;
 
   return `
-    <div class="rfq-card${delayed ? " ops-delayed" : ""}" onclick="openRfq('${shp.silqId}')" data-client="${shp.client}" data-assignee="${leadName}" data-mode="${shp.mode}" data-lane="${shp.origin}-${shp.destination}" data-search="${shp.id} ${shp.silqId} ${shp.client} ${shp.origin} ${shp.destination} ${leadName}" data-delayed="${delayed}">
+    <div class="rfq-card${cardCls}" onclick="openRfq('${shp.silqId}')" data-client="${shp.client}" data-assignee="${leadName}" data-mode="${shp.mode}" data-lane="${shp.origin}-${shp.destination}" data-search="${shp.id} ${shp.silqId} ${shp.client} ${shp.origin} ${shp.destination} ${leadName}" data-delayed="${delayed}">
       <svg class="link-icon" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z"/><path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z"/></svg>
       <div class="rfq-card-header">
         <div>
@@ -2490,12 +2584,85 @@ function buildOpsCardHTML(shp) {
       </div>
       ${buildShipmentProgress(shp)}
       ${buildMilestoneBar(shp)}
+      ${buildTaskInfoBlock(shp)}
       <div class="rfq-footer">
         <div class="rfq-assignee">
           <div class="avatar-xs" style="background:${tm.color}">${initials}</div>
           <div><div class="ops-lead-label">${leadLabel}</div>${leadName}</div>
         </div>
-        ${getNextMilestoneEtaBadge(shp)}
+      </div>
+    </div>`;
+}
+
+function buildInspectionProgress(shp) {
+  const steps = ["Scheduled", "In Progress", "Complete"];
+  const stMap = { scheduled: 0, in_progress: 1, completed: 2 };
+  const cur = stMap[shp.inspectionStatus] || 0;
+  let html = '<div class="shipment-progress">';
+  steps.forEach((s, i) => {
+    if (i > 0) html += `<span class="shipment-line${cur >= i ? " done" : ""}"></span>`;
+    let cls = cur > i ? "done" : cur === i ? "active" : "pending";
+    html += `<span class="shipment-node"><span class="shipment-dot ${cls}"></span><span class="shipment-label">${s}</span></span>`;
+  });
+  html += '</div>';
+  return html;
+}
+
+function buildInspectionCardHTML(shp) {
+  const leadName = shp.inspector;
+  const tm = getTeamMember(leadName);
+  const initials = leadName.split(" ").map(w => w[0]).join("");
+  const delayed = isShipmentDelayed(shp);
+  const taskDel = isTaskDelayed(shp);
+  const cardCls = delayed ? " ops-delayed" : taskDel ? " ops-task-delayed" : "";
+
+  const resultBadge = shp.result === "pass" ? `<span class="insp-result pass">Pass</span>`
+    : shp.result === "fail" ? `<span class="insp-result fail">Fail</span>`
+    : shp.result === "conditional" ? `<span class="insp-result conditional">Conditional</span>`
+    : `<span class="insp-result pending-result">Pending</span>`;
+
+  let flags = "";
+  if (delayed) flags += `<span class="flag flag-delayed" title="Overdue">⚠</span>`;
+  else if (taskDel) flags += `<span class="flag flag-task-delayed" title="Task overdue">⏳</span>`;
+
+  let taskBlock = "";
+  if (shp.nextTask) {
+    const td = shp.nextTask.due && diffDays(shp.nextTask.due) > 0 && shp.nextTask.status !== "done";
+    if (td) {
+      taskBlock = `<div class="task-info-block task-delay-block"><div class="task-line task-overdue"><span class="task-dot amber">●</span><span class="task-name">${shp.nextTask.name}</span><span class="task-due-badge amber">+${diffDays(shp.nextTask.due)}d</span></div></div>`;
+    } else {
+      const dueStr = shp.nextTask.due ? formatDate(shp.nextTask.due) : "";
+      taskBlock = `<div class="task-info-block"><div class="task-line"><span class="task-dot">○</span><span class="task-name">${shp.nextTask.name}</span>${dueStr ? `<span class="task-due">${dueStr}</span>` : ""}</div></div>`;
+    }
+  }
+
+  return `
+    <div class="rfq-card inspection-card${cardCls}" onclick="openRfq('${shp.silqId}')" data-client="${shp.client}" data-assignee="${leadName}" data-mode="Inspections" data-lane="" data-search="${shp.id} ${shp.silqId} ${shp.client} ${shp.location} ${leadName}" data-delayed="${delayed || taskDel}">
+      <svg class="link-icon" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z"/><path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z"/></svg>
+      <div class="rfq-card-header">
+        <div>
+          <div class="rfq-client">${shp.client}</div>
+          <div class="rfq-id"><span class="ops-shipment-id">${shp.id}</span> <span class="ops-silq-id">· ${shp.silqId}</span></div>
+        </div>
+        <div class="rfq-flags">${flags}</div>
+      </div>
+      <div class="rfq-route">
+        ${transportIcon("Inspections")}
+        <span>${shp.inspectionType}</span>
+        <span class="route-arrow">·</span>
+        <span>${shp.location}</span>
+      </div>
+      ${buildInspectionProgress(shp)}
+      <div class="insp-details">
+        <div class="insp-detail-row"><span class="insp-label">Scheduled:</span> ${shp.scheduledDate ? formatDate(shp.scheduledDate) : "TBD"}</div>
+        <div class="insp-detail-row"><span class="insp-label">Result:</span> ${resultBadge}</div>
+      </div>
+      ${taskBlock}
+      <div class="rfq-footer">
+        <div class="rfq-assignee">
+          <div class="avatar-xs" style="background:${tm.color}">${initials}</div>
+          <div><div class="ops-lead-label">Inspector</div>${leadName}</div>
+        </div>
       </div>
     </div>`;
 }
@@ -2505,32 +2672,37 @@ let opsDelayedFilter = false;
 /* ── Operations Pipeline Data ────────────────── */
 
 const OPS_SHIPMENTS = [
-  { id: "SHP-5001", silqId: "SILQ-3850", client: "Global Freight Solutions", origin: "Yantian", destination: "Long Beach", mode: "FCL", quotedValue: 9500, originOps: "James Chen", destOps: "Maria Lopez", shipmentLocation: 2, milestones: { booking: { status: "done", due: daysAgo(3), eta: null }, originCX: { status: "in_progress", due: daysFromNow(2), eta: daysFromNow(2) }, pickup: { status: "pending", due: daysFromNow(5), eta: daysFromNow(5) }, destCX: { status: "pending", due: daysFromNow(14), eta: daysFromNow(14) }, delivery: { status: "pending", due: daysFromNow(18), eta: daysFromNow(18) }, invoicing: { status: "pending", due: null, eta: null } } },
-  { id: "SHP-5002", silqId: "SILQ-3850", client: "Global Freight Solutions", origin: "Yantian", destination: "Long Beach", mode: "FCL", quotedValue: 9500, originOps: "James Chen", destOps: "Maria Lopez", shipmentLocation: 0, milestones: { booking: { status: "done", due: daysAgo(3), eta: null }, originCX: { status: "pending", due: daysFromNow(4), eta: daysFromNow(4) }, pickup: { status: "pending", due: daysFromNow(7), eta: daysFromNow(7) }, destCX: { status: "pending", due: daysFromNow(16), eta: daysFromNow(16) }, delivery: { status: "pending", due: daysFromNow(20), eta: daysFromNow(20) }, invoicing: { status: "pending", due: null, eta: null } } },
-  { id: "SHP-5003", silqId: "SILQ-3855", client: "Vertex Trading LLC", origin: "Mumbai", destination: "Houston", mode: "Air", quotedValue: 12300, originOps: "Lisa Wang", destOps: "Maria Lopez", priority: "HIGH", shipmentLocation: 2, milestones: { booking: { status: "done", due: daysAgo(2), eta: null }, originCX: { status: "pending", due: daysFromNow(1), eta: daysFromNow(1) }, pickup: { status: "pending", due: daysFromNow(2), eta: daysFromNow(2) }, destCX: { status: "pending", due: daysFromNow(4), eta: daysFromNow(4) }, delivery: { status: "pending", due: daysFromNow(5), eta: daysFromNow(5) }, invoicing: { status: "pending", due: null, eta: null } } },
+  { id: "SHP-5001", silqId: "SILQ-3850", client: "Global Freight Solutions", origin: "Yantian", destination: "Long Beach", mode: "FCL", quotedValue: 9500, originOps: "James Chen", destOps: "Maria Lopez", shipmentLocation: 2, nextTask: { name: "Submit customs declaration", milestone: "originCX", due: daysFromNow(1), status: "in_progress" }, milestones: { booking: { status: "done", due: daysAgo(3), eta: null }, originCX: { status: "in_progress", due: daysFromNow(2), eta: daysFromNow(2) }, pickup: { status: "pending", due: daysFromNow(5), eta: daysFromNow(5) }, destCX: { status: "pending", due: daysFromNow(14), eta: daysFromNow(14) }, delivery: { status: "pending", due: daysFromNow(18), eta: daysFromNow(18) }, invoicing: { status: "pending", due: null, eta: null } } },
+  { id: "SHP-5002", silqId: "SILQ-3850", client: "Global Freight Solutions", origin: "Yantian", destination: "Long Beach", mode: "FCL", quotedValue: 9500, originOps: "James Chen", destOps: "Maria Lopez", shipmentLocation: 0, nextTask: { name: "Confirm container allocation", milestone: "originCX", due: daysFromNow(3), status: "pending" }, milestones: { booking: { status: "done", due: daysAgo(3), eta: null }, originCX: { status: "pending", due: daysFromNow(4), eta: daysFromNow(4) }, pickup: { status: "pending", due: daysFromNow(7), eta: daysFromNow(7) }, destCX: { status: "pending", due: daysFromNow(16), eta: daysFromNow(16) }, delivery: { status: "pending", due: daysFromNow(20), eta: daysFromNow(20) }, invoicing: { status: "pending", due: null, eta: null } } },
+  { id: "SHP-5003", silqId: "SILQ-3855", client: "Vertex Trading LLC", origin: "Mumbai", destination: "Houston", mode: "Air", quotedValue: 12300, originOps: "Lisa Wang", destOps: "Maria Lopez", priority: "HIGH", shipmentLocation: 2, nextTask: { name: "Prepare export clearance docs", milestone: "originCX", due: daysFromNow(0), status: "in_progress" }, milestones: { booking: { status: "done", due: daysAgo(2), eta: null }, originCX: { status: "pending", due: daysFromNow(1), eta: daysFromNow(1) }, pickup: { status: "pending", due: daysFromNow(2), eta: daysFromNow(2) }, destCX: { status: "pending", due: daysFromNow(4), eta: daysFromNow(4) }, delivery: { status: "pending", due: daysFromNow(5), eta: daysFromNow(5) }, invoicing: { status: "pending", due: null, eta: null } } },
 
-  { id: "SHP-5010", silqId: "SILQ-3860", client: "Maple Leaf Imports", origin: "Ho Chi Minh", destination: "Vancouver", mode: "FCL", quotedValue: 9750, originOps: "James Chen", destOps: "Maria Lopez", shipmentLocation: 4, milestones: { booking: { status: "done", due: daysAgo(5), eta: null }, originCX: { status: "in_progress", due: daysAgo(1), eta: daysFromNow(1) }, pickup: { status: "pending", due: daysFromNow(3), eta: daysFromNow(3) }, destCX: { status: "pending", due: daysFromNow(15), eta: daysFromNow(15) }, delivery: { status: "pending", due: daysFromNow(20), eta: daysFromNow(20) }, invoicing: { status: "pending", due: null, eta: null } } },
-  { id: "SHP-5011", silqId: "SILQ-3860", client: "Maple Leaf Imports", origin: "Ho Chi Minh", destination: "Vancouver", mode: "FCL", quotedValue: 9750, originOps: "James Chen", destOps: "Maria Lopez", shipmentLocation: 6, milestones: { booking: { status: "done", due: daysAgo(6), eta: null }, originCX: { status: "done", due: daysAgo(2), eta: null }, pickup: { status: "in_progress", due: daysAgo(1), eta: daysFromNow(0) }, destCX: { status: "pending", due: daysFromNow(12), eta: daysFromNow(12) }, delivery: { status: "pending", due: daysFromNow(18), eta: daysFromNow(18) }, invoicing: { status: "pending", due: null, eta: null } } },
-  { id: "SHP-5012", silqId: "SILQ-4205", client: "Pacific Cargo Lines", origin: "Shenzhen", destination: "Newark", mode: "FCL", quotedValue: 8200, originOps: "Lisa Wang", destOps: "Maria Lopez", shipmentLocation: 6, milestones: { booking: { status: "done", due: daysAgo(8), eta: null }, originCX: { status: "done", due: daysAgo(4), eta: null }, pickup: { status: "in_progress", due: daysAgo(2), eta: daysFromNow(1) }, destCX: { status: "pending", due: daysFromNow(10), eta: daysFromNow(10) }, delivery: { status: "pending", due: daysFromNow(16), eta: daysFromNow(16) }, invoicing: { status: "pending", due: null, eta: null } } },
+  { id: "SHP-5010", silqId: "SILQ-3860", client: "Maple Leaf Imports", origin: "Ho Chi Minh", destination: "Vancouver", mode: "FCL", quotedValue: 9750, originOps: "James Chen", destOps: "Maria Lopez", shipmentLocation: 4, nextTask: { name: "Upload Bill of Lading", milestone: "originCX", due: daysAgo(1), status: "in_progress" }, milestones: { booking: { status: "done", due: daysAgo(5), eta: null }, originCX: { status: "in_progress", due: daysAgo(1), eta: daysFromNow(1) }, pickup: { status: "pending", due: daysFromNow(3), eta: daysFromNow(3) }, destCX: { status: "pending", due: daysFromNow(15), eta: daysFromNow(15) }, delivery: { status: "pending", due: daysFromNow(20), eta: daysFromNow(20) }, invoicing: { status: "pending", due: null, eta: null } } },
+  { id: "SHP-5011", silqId: "SILQ-3860", client: "Maple Leaf Imports", origin: "Ho Chi Minh", destination: "Vancouver", mode: "FCL", quotedValue: 9750, originOps: "James Chen", destOps: "Maria Lopez", shipmentLocation: 6, nextTask: { name: "Confirm vessel loading", milestone: "pickup", due: daysAgo(1), status: "in_progress" }, milestones: { booking: { status: "done", due: daysAgo(6), eta: null }, originCX: { status: "done", due: daysAgo(2), eta: null }, pickup: { status: "in_progress", due: daysAgo(1), eta: daysFromNow(0) }, destCX: { status: "pending", due: daysFromNow(12), eta: daysFromNow(12) }, delivery: { status: "pending", due: daysFromNow(18), eta: daysFromNow(18) }, invoicing: { status: "pending", due: null, eta: null } } },
+  { id: "SHP-5012", silqId: "SILQ-4205", client: "Pacific Cargo Lines", origin: "Shenzhen", destination: "Newark", mode: "FCL", quotedValue: 8200, originOps: "Lisa Wang", destOps: "Maria Lopez", shipmentLocation: 6, nextTask: { name: "Coordinate container pickup", milestone: "pickup", due: daysFromNow(0), status: "in_progress" }, milestones: { booking: { status: "done", due: daysAgo(8), eta: null }, originCX: { status: "done", due: daysAgo(4), eta: null }, pickup: { status: "in_progress", due: daysAgo(2), eta: daysFromNow(1) }, destCX: { status: "pending", due: daysFromNow(10), eta: daysFromNow(10) }, delivery: { status: "pending", due: daysFromNow(16), eta: daysFromNow(16) }, invoicing: { status: "pending", due: null, eta: null } } },
 
-  { id: "SHP-5020", silqId: "SILQ-3800", client: "Pacific Cargo Lines", origin: "Shenzhen", destination: "Newark", mode: "FCL", quotedValue: 8500, originOps: "James Chen", destOps: "Maria Lopez", shipmentLocation: 8, milestones: { booking: { status: "done", due: daysAgo(15), eta: null }, originCX: { status: "done", due: daysAgo(10), eta: null }, pickup: { status: "done", due: daysAgo(8), eta: null }, destCX: { status: "pending", due: daysFromNow(4), eta: daysFromNow(4) }, delivery: { status: "pending", due: daysFromNow(8), eta: daysFromNow(8) }, invoicing: { status: "pending", due: null, eta: null } } },
-  { id: "SHP-5021", silqId: "SILQ-3800", client: "Pacific Cargo Lines", origin: "Shenzhen", destination: "Newark", mode: "FCL", quotedValue: 8500, originOps: "James Chen", destOps: "Maria Lopez", shipmentLocation: 8, milestones: { booking: { status: "done", due: daysAgo(15), eta: null }, originCX: { status: "done", due: daysAgo(10), eta: null }, pickup: { status: "done", due: daysAgo(8), eta: null }, destCX: { status: "pending", due: daysFromNow(4), eta: daysFromNow(5) }, delivery: { status: "pending", due: daysFromNow(8), eta: daysFromNow(9) }, invoicing: { status: "pending", due: null, eta: null } } },
-  { id: "SHP-5022", silqId: "SILQ-3805", client: "TransAtlantic Logistics", origin: "Ningbo", destination: "Charleston", mode: "FCL", quotedValue: 13400, originOps: "Lisa Wang", destOps: "Maria Lopez", priority: "HIGHEST", shipmentLocation: 8, milestones: { booking: { status: "done", due: daysAgo(18), eta: null }, originCX: { status: "done", due: daysAgo(14), eta: null }, pickup: { status: "done", due: daysAgo(12), eta: null }, destCX: { status: "in_progress", due: daysAgo(3), eta: daysFromNow(1) }, delivery: { status: "pending", due: daysFromNow(4), eta: daysFromNow(6) }, invoicing: { status: "pending", due: null, eta: null } } },
-  { id: "SHP-5023", silqId: "SILQ-3810", client: "Eagle Express Freight", origin: "Hong Kong", destination: "JFK", mode: "Air", quotedValue: 14800, originOps: "Lisa Wang", destOps: "Rachel Torres", priority: "HIGH", shipmentLocation: 8, milestones: { booking: { status: "done", due: daysAgo(5), eta: null }, originCX: { status: "done", due: daysAgo(3), eta: null }, pickup: { status: "done", due: daysAgo(3), eta: null }, destCX: { status: "pending", due: daysFromNow(1), eta: daysFromNow(1) }, delivery: { status: "pending", due: daysFromNow(2), eta: daysFromNow(2) }, invoicing: { status: "pending", due: null, eta: null } } },
+  { id: "SHP-5020", silqId: "SILQ-3800", client: "Pacific Cargo Lines", origin: "Shenzhen", destination: "Newark", mode: "FCL", quotedValue: 8500, originOps: "James Chen", destOps: "Maria Lopez", shipmentLocation: 8, nextTask: { name: "Track vessel position", milestone: "destCX", due: daysFromNow(3), status: "pending" }, milestones: { booking: { status: "done", due: daysAgo(15), eta: null }, originCX: { status: "done", due: daysAgo(10), eta: null }, pickup: { status: "done", due: daysAgo(8), eta: null }, destCX: { status: "pending", due: daysFromNow(4), eta: daysFromNow(4) }, delivery: { status: "pending", due: daysFromNow(8), eta: daysFromNow(8) }, invoicing: { status: "pending", due: null, eta: null } } },
+  { id: "SHP-5021", silqId: "SILQ-3800", client: "Pacific Cargo Lines", origin: "Shenzhen", destination: "Newark", mode: "FCL", quotedValue: 8500, originOps: "James Chen", destOps: "Maria Lopez", shipmentLocation: 8, nextTask: { name: "Prepare import filing", milestone: "destCX", due: daysFromNow(2), status: "in_progress" }, milestones: { booking: { status: "done", due: daysAgo(15), eta: null }, originCX: { status: "done", due: daysAgo(10), eta: null }, pickup: { status: "done", due: daysAgo(8), eta: null }, destCX: { status: "pending", due: daysFromNow(4), eta: daysFromNow(5) }, delivery: { status: "pending", due: daysFromNow(8), eta: daysFromNow(9) }, invoicing: { status: "pending", due: null, eta: null } } },
+  { id: "SHP-5022", silqId: "SILQ-3805", client: "TransAtlantic Logistics", origin: "Ningbo", destination: "Charleston", mode: "FCL", quotedValue: 13400, originOps: "Lisa Wang", destOps: "Maria Lopez", priority: "HIGHEST", shipmentLocation: 8, nextTask: { name: "Submit ISF filing", milestone: "destCX", due: daysAgo(2), status: "in_progress" }, milestones: { booking: { status: "done", due: daysAgo(18), eta: null }, originCX: { status: "done", due: daysAgo(14), eta: null }, pickup: { status: "done", due: daysAgo(12), eta: null }, destCX: { status: "in_progress", due: daysAgo(3), eta: daysFromNow(1) }, delivery: { status: "pending", due: daysFromNow(4), eta: daysFromNow(6) }, invoicing: { status: "pending", due: null, eta: null } } },
+  { id: "SHP-5023", silqId: "SILQ-3810", client: "Eagle Express Freight", origin: "Hong Kong", destination: "JFK", mode: "Air", quotedValue: 14800, originOps: "Lisa Wang", destOps: "Rachel Torres", priority: "HIGH", shipmentLocation: 8, nextTask: { name: "Confirm AWB handoff", milestone: "destCX", due: daysFromNow(0), status: "in_progress" }, milestones: { booking: { status: "done", due: daysAgo(5), eta: null }, originCX: { status: "done", due: daysAgo(3), eta: null }, pickup: { status: "done", due: daysAgo(3), eta: null }, destCX: { status: "pending", due: daysFromNow(1), eta: daysFromNow(1) }, delivery: { status: "pending", due: daysFromNow(2), eta: daysFromNow(2) }, invoicing: { status: "pending", due: null, eta: null } } },
 
-  { id: "SHP-5030", silqId: "SILQ-3812", client: "Caspian Freight Co.", origin: "Istanbul", destination: "Houston", mode: "FCL", quotedValue: 9100, originOps: "Lisa Wang", destOps: "Rachel Torres", priority: "HIGHEST", shipmentLocation: 10, milestones: { booking: { status: "done", due: daysAgo(20), eta: null }, originCX: { status: "done", due: daysAgo(16), eta: null }, pickup: { status: "done", due: daysAgo(15), eta: null }, destCX: { status: "done", due: daysAgo(2), eta: null }, delivery: { status: "in_progress", due: daysAgo(1), eta: daysFromNow(2) }, invoicing: { status: "pending", due: null, eta: null } } },
-  { id: "SHP-5031", silqId: "SILQ-3812", client: "Caspian Freight Co.", origin: "Istanbul", destination: "Houston", mode: "FCL", quotedValue: 9100, originOps: "Lisa Wang", destOps: "Rachel Torres", shipmentLocation: 10, milestones: { booking: { status: "done", due: daysAgo(20), eta: null }, originCX: { status: "done", due: daysAgo(16), eta: null }, pickup: { status: "done", due: daysAgo(15), eta: null }, destCX: { status: "in_progress", due: daysAgo(4), eta: daysFromNow(0) }, delivery: { status: "pending", due: daysFromNow(3), eta: daysFromNow(5) }, invoicing: { status: "pending", due: null, eta: null } } },
-  { id: "SHP-5032", silqId: "SILQ-3820", client: "Nordic Supply Chain AB", origin: "Rotterdam", destination: "Miami", mode: "FCL", quotedValue: 9800, originOps: "James Chen", destOps: "Maria Lopez", shipmentLocation: 12, milestones: { booking: { status: "done", due: daysAgo(22), eta: null }, originCX: { status: "done", due: daysAgo(18), eta: null }, pickup: { status: "done", due: daysAgo(18), eta: null }, destCX: { status: "done", due: daysAgo(3), eta: null }, delivery: { status: "in_progress", due: daysFromNow(1), eta: daysFromNow(1) }, invoicing: { status: "pending", due: null, eta: null } } },
-  { id: "SHP-5033", silqId: "SILQ-3825", client: "Summit Intermodal", origin: "Busan", destination: "Long Beach", mode: "FCL", quotedValue: 10500, originOps: "Lisa Wang", destOps: "Maria Lopez", priority: "HIGH", shipmentLocation: 12, milestones: { booking: { status: "done", due: daysAgo(25), eta: null }, originCX: { status: "done", due: daysAgo(20), eta: null }, pickup: { status: "done", due: daysAgo(20), eta: null }, destCX: { status: "done", due: daysAgo(2), eta: null }, delivery: { status: "in_progress", due: daysAgo(1), eta: daysFromNow(0) }, invoicing: { status: "pending", due: null, eta: null } } },
-  { id: "SHP-5034", silqId: "SILQ-3828", client: "Horizon Shipping Co.", origin: "Hamburg", destination: "Savannah", mode: "Inspections", quotedValue: 6200, originOps: "James Chen", destOps: "Maria Lopez", shipmentLocation: 10, milestones: { booking: { status: "done", due: daysAgo(14), eta: null }, originCX: { status: "done", due: daysAgo(10), eta: null }, pickup: { status: "done", due: daysAgo(10), eta: null }, destCX: { status: "in_progress", due: daysAgo(3), eta: daysFromNow(1) }, delivery: { status: "pending", due: daysFromNow(4), eta: daysFromNow(5) }, invoicing: { status: "pending", due: null, eta: null } } },
+  { id: "SHP-5030", silqId: "SILQ-3812", client: "Caspian Freight Co.", origin: "Istanbul", destination: "Houston", mode: "FCL", quotedValue: 9100, originOps: "Lisa Wang", destOps: "Rachel Torres", priority: "HIGHEST", shipmentLocation: 10, nextTask: { name: "Schedule drayage pickup", milestone: "delivery", due: daysAgo(1), status: "in_progress" }, milestones: { booking: { status: "done", due: daysAgo(20), eta: null }, originCX: { status: "done", due: daysAgo(16), eta: null }, pickup: { status: "done", due: daysAgo(15), eta: null }, destCX: { status: "done", due: daysAgo(2), eta: null }, delivery: { status: "in_progress", due: daysAgo(1), eta: daysFromNow(2) }, invoicing: { status: "pending", due: null, eta: null } } },
+  { id: "SHP-5031", silqId: "SILQ-3812", client: "Caspian Freight Co.", origin: "Istanbul", destination: "Houston", mode: "FCL", quotedValue: 9100, originOps: "Lisa Wang", destOps: "Rachel Torres", shipmentLocation: 10, nextTask: { name: "Clear customs exam hold", milestone: "destCX", due: daysAgo(3), status: "in_progress" }, milestones: { booking: { status: "done", due: daysAgo(20), eta: null }, originCX: { status: "done", due: daysAgo(16), eta: null }, pickup: { status: "done", due: daysAgo(15), eta: null }, destCX: { status: "in_progress", due: daysAgo(4), eta: daysFromNow(0) }, delivery: { status: "pending", due: daysFromNow(3), eta: daysFromNow(5) }, invoicing: { status: "pending", due: null, eta: null } } },
+  { id: "SHP-5032", silqId: "SILQ-3820", client: "Nordic Supply Chain AB", origin: "Rotterdam", destination: "Miami", mode: "FCL", quotedValue: 9800, originOps: "James Chen", destOps: "Maria Lopez", shipmentLocation: 12, nextTask: { name: "Confirm delivery appointment", milestone: "delivery", due: daysFromNow(0), status: "in_progress" }, milestones: { booking: { status: "done", due: daysAgo(22), eta: null }, originCX: { status: "done", due: daysAgo(18), eta: null }, pickup: { status: "done", due: daysAgo(18), eta: null }, destCX: { status: "done", due: daysAgo(3), eta: null }, delivery: { status: "in_progress", due: daysFromNow(1), eta: daysFromNow(1) }, invoicing: { status: "pending", due: null, eta: null } } },
+  { id: "SHP-5033", silqId: "SILQ-3825", client: "Summit Intermodal", origin: "Busan", destination: "Long Beach", mode: "FCL", quotedValue: 10500, originOps: "Lisa Wang", destOps: "Maria Lopez", priority: "HIGH", shipmentLocation: 12, nextTask: { name: "Arrange final mile trucking", milestone: "delivery", due: daysAgo(2), status: "in_progress" }, milestones: { booking: { status: "done", due: daysAgo(25), eta: null }, originCX: { status: "done", due: daysAgo(20), eta: null }, pickup: { status: "done", due: daysAgo(20), eta: null }, destCX: { status: "done", due: daysAgo(2), eta: null }, delivery: { status: "in_progress", due: daysAgo(1), eta: daysFromNow(0) }, invoicing: { status: "pending", due: null, eta: null } } },
 
-  { id: "SHP-5040", silqId: "SILQ-3830", client: "Silk Road Logistics", origin: "Qingdao", destination: "Oakland", mode: "FCL", quotedValue: 7800, originOps: "Lisa Wang", destOps: "Maria Lopez", shipmentLocation: 14, milestones: { booking: { status: "done", due: daysAgo(30), eta: null }, originCX: { status: "done", due: daysAgo(25), eta: null }, pickup: { status: "done", due: daysAgo(25), eta: null }, destCX: { status: "done", due: daysAgo(5), eta: null }, delivery: { status: "done", due: daysAgo(1), eta: null }, invoicing: { status: "in_progress", due: daysFromNow(5), eta: daysFromNow(5) } } },
-  { id: "SHP-5041", silqId: "SILQ-3830", client: "Silk Road Logistics", origin: "Qingdao", destination: "Oakland", mode: "FCL", quotedValue: 7800, originOps: "Lisa Wang", destOps: "Maria Lopez", shipmentLocation: 14, milestones: { booking: { status: "done", due: daysAgo(30), eta: null }, originCX: { status: "done", due: daysAgo(25), eta: null }, pickup: { status: "done", due: daysAgo(25), eta: null }, destCX: { status: "done", due: daysAgo(5), eta: null }, delivery: { status: "done", due: daysAgo(1), eta: null }, invoicing: { status: "in_progress", due: daysFromNow(5), eta: daysFromNow(5) } } },
-  { id: "SHP-5042", silqId: "SILQ-3835", client: "Global Freight Solutions", origin: "Shanghai", destination: "Los Angeles", mode: "FCL", quotedValue: 10333, originOps: "James Chen", destOps: "Rachel Torres", shipmentLocation: 14, milestones: { booking: { status: "done", due: daysAgo(35), eta: null }, originCX: { status: "done", due: daysAgo(30), eta: null }, pickup: { status: "done", due: daysAgo(30), eta: null }, destCX: { status: "done", due: daysAgo(8), eta: null }, delivery: { status: "done", due: daysAgo(3), eta: null }, invoicing: { status: "in_progress", due: daysAgo(2), eta: daysFromNow(3) } } },
-  { id: "SHP-5043", silqId: "SILQ-3838", client: "Pacific Cargo Lines", origin: "Taipei", destination: "Newark", mode: "LCL", quotedValue: 4200, originOps: "Lisa Wang", destOps: "Rachel Torres", shipmentLocation: 14, milestones: { booking: { status: "done", due: daysAgo(28), eta: null }, originCX: { status: "done", due: daysAgo(22), eta: null }, pickup: { status: "done", due: daysAgo(22), eta: null }, destCX: { status: "done", due: daysAgo(4), eta: null }, delivery: { status: "done", due: daysAgo(0), eta: null }, invoicing: { status: "pending", due: daysFromNow(7), eta: daysFromNow(7) } } }
+  { id: "SHP-5040", silqId: "SILQ-3830", client: "Silk Road Logistics", origin: "Qingdao", destination: "Oakland", mode: "FCL", quotedValue: 7800, originOps: "Lisa Wang", destOps: "Maria Lopez", shipmentLocation: 14, nextTask: { name: "Send invoice to client", milestone: "invoicing", due: daysFromNow(3), status: "in_progress" }, milestones: { booking: { status: "done", due: daysAgo(30), eta: null }, originCX: { status: "done", due: daysAgo(25), eta: null }, pickup: { status: "done", due: daysAgo(25), eta: null }, destCX: { status: "done", due: daysAgo(5), eta: null }, delivery: { status: "done", due: daysAgo(1), eta: null }, invoicing: { status: "in_progress", due: daysFromNow(5), eta: daysFromNow(5) } } },
+  { id: "SHP-5041", silqId: "SILQ-3830", client: "Silk Road Logistics", origin: "Qingdao", destination: "Oakland", mode: "FCL", quotedValue: 7800, originOps: "Lisa Wang", destOps: "Maria Lopez", shipmentLocation: 14, nextTask: { name: "Reconcile freight charges", milestone: "invoicing", due: daysFromNow(4), status: "pending" }, milestones: { booking: { status: "done", due: daysAgo(30), eta: null }, originCX: { status: "done", due: daysAgo(25), eta: null }, pickup: { status: "done", due: daysAgo(25), eta: null }, destCX: { status: "done", due: daysAgo(5), eta: null }, delivery: { status: "done", due: daysAgo(1), eta: null }, invoicing: { status: "in_progress", due: daysFromNow(5), eta: daysFromNow(5) } } },
+  { id: "SHP-5042", silqId: "SILQ-3835", client: "Global Freight Solutions", origin: "Shanghai", destination: "Los Angeles", mode: "FCL", quotedValue: 10333, originOps: "James Chen", destOps: "Rachel Torres", shipmentLocation: 14, nextTask: { name: "Follow up on overdue invoice", milestone: "invoicing", due: daysAgo(2), status: "in_progress" }, milestones: { booking: { status: "done", due: daysAgo(35), eta: null }, originCX: { status: "done", due: daysAgo(30), eta: null }, pickup: { status: "done", due: daysAgo(30), eta: null }, destCX: { status: "done", due: daysAgo(8), eta: null }, delivery: { status: "done", due: daysAgo(3), eta: null }, invoicing: { status: "in_progress", due: daysAgo(2), eta: daysFromNow(3) } } },
+  { id: "SHP-5043", silqId: "SILQ-3838", client: "Pacific Cargo Lines", origin: "Taipei", destination: "Newark", mode: "LCL", quotedValue: 4200, originOps: "Lisa Wang", destOps: "Rachel Torres", shipmentLocation: 14, nextTask: { name: "Generate invoice draft", milestone: "invoicing", due: daysFromNow(5), status: "pending" }, milestones: { booking: { status: "done", due: daysAgo(28), eta: null }, originCX: { status: "done", due: daysAgo(22), eta: null }, pickup: { status: "done", due: daysAgo(22), eta: null }, destCX: { status: "done", due: daysAgo(4), eta: null }, delivery: { status: "done", due: daysAgo(0), eta: null }, invoicing: { status: "pending", due: daysFromNow(7), eta: daysFromNow(7) } } },
+
+  { id: "INS-6001", silqId: "SILQ-3850", client: "Global Freight Solutions", type: "inspection", inspectionType: "Pre-Shipment", location: "Yantian", mode: "Inspections", inspector: "Lisa Wang", scheduledDate: daysFromNow(2), inspectionStatus: "scheduled", result: null, quotedValue: 1200, stage: "inspections", nextTask: { name: "Review inspection checklist", due: daysFromNow(1), status: "in_progress" } },
+  { id: "INS-6002", silqId: "SILQ-3860", client: "Maple Leaf Imports", type: "inspection", inspectionType: "During Production", location: "Ho Chi Minh", mode: "Inspections", inspector: "James Chen", scheduledDate: daysAgo(1), inspectionStatus: "in_progress", result: null, quotedValue: 950, stage: "inspections", nextTask: { name: "Upload factory photos", due: daysAgo(1), status: "in_progress" } },
+  { id: "INS-6003", silqId: "SILQ-3805", client: "TransAtlantic Logistics", type: "inspection", inspectionType: "Pre-Loading", location: "Ningbo", mode: "Inspections", inspector: "Lisa Wang", scheduledDate: daysAgo(3), inspectionStatus: "completed", result: "pass", quotedValue: 800, stage: "inspections", nextTask: null },
+  { id: "INS-6004", silqId: "SILQ-3825", client: "Summit Intermodal", type: "inspection", inspectionType: "Pre-Shipment", location: "Busan", mode: "Inspections", inspector: "James Chen", scheduledDate: daysAgo(5), inspectionStatus: "completed", result: "fail", quotedValue: 1100, stage: "inspections", nextTask: null },
+  { id: "INS-6005", silqId: "SILQ-3855", client: "Vertex Trading LLC", type: "inspection", inspectionType: "Pre-Shipment", location: "Mumbai", mode: "Inspections", inspector: "Maria Lopez", scheduledDate: daysFromNow(0), inspectionStatus: "in_progress", result: null, quotedValue: 900, stage: "inspections", nextTask: { name: "Verify cargo weight & dimensions", due: daysFromNow(0), status: "in_progress" } }
 ];
 
-OPS_SHIPMENTS.forEach(s => { s.stage = deriveOpsStage(s.shipmentLocation); });
+OPS_SHIPMENTS.forEach(s => { if (!s.type) s.stage = deriveOpsStage(s.shipmentLocation); });
 
 // Historical RFQs for health view (full lifecycle: submitted → quoted → approved → delivered → invoiced)
 const HEALTH_DATA = [
@@ -2900,7 +3072,11 @@ function renderBoard(rfqs) {
         <div>No ${isOps ? "shipments" : "RFQs"} in this stage</div>
       </div>`;
     } else {
-      cardsHTML = stageRfqs.map(r => isOps ? buildOpsCardHTML(r) : buildCardHTML(r)).join("");
+      cardsHTML = stageRfqs.map(r => {
+        if (!isOps) return buildCardHTML(r);
+        if (r.type === "inspection") return buildInspectionCardHTML(r);
+        return buildOpsCardHTML(r);
+      }).join("");
     }
 
     const valueLabel = isOps ? "Value" : "Quoted Value";
@@ -2985,18 +3161,20 @@ function renderSummary(rfqs) {
 }
 
 function renderOpsSummary(shps, strip) {
+  const shipping = shps.filter(s => s.type !== "inspection");
+  const inspections = shps.filter(s => s.type === "inspection");
   const total = shps.length;
   const totalValue = shps.reduce((s, r) => s + r.quotedValue, 0);
-  const delayedCount = shps.filter(s => isShipmentDelayed(s)).length;
-  const originCount = shps.filter(s => s.stage === "origin").length;
-  const inTransitCount = shps.filter(s => s.stage === "inTransit").length;
-  const destCount = shps.filter(s => s.stage === "destination").length;
-  const deliveredCount = shps.filter(s => s.stage === "delivered").length;
+  const delayedCount = shps.filter(s => isShipmentDelayed(s) || isTaskDelayed(s)).length;
+  const originCount = shipping.filter(s => s.stage === "origin").length;
+  const inTransitCount = shipping.filter(s => s.stage === "inTransit").length;
+  const destCount = shipping.filter(s => s.stage === "destination").length;
+  const deliveredCount = shipping.filter(s => s.stage === "delivered").length;
 
   strip.innerHTML = `
     <div class="summary-pill" onclick="clearFilters()">
       <span class="pill-count" style="color:var(--text)">${total}</span>
-      <span class="pill-label">Shipments</span>
+      <span class="pill-label">Total</span>
     </div>
     <div class="summary-pill">
       <span class="pill-count" style="color:var(--text-secondary)">${fmtK(totalValue)}</span>
@@ -3021,6 +3199,10 @@ function renderOpsSummary(shps, strip) {
     ${deliveredCount > 0 ? `<div class="summary-pill" style="border-color:#bbf7d0;background:#f0fdf4">
       <span class="pill-count" style="color:#16a34a">${deliveredCount}</span>
       <span class="pill-label">Delivered</span>
+    </div>` : ""}
+    ${inspections.length > 0 ? `<div class="summary-pill" style="border-color:#c7d2fe;background:#eef2ff">
+      <span class="pill-count" style="color:#4f46e5">${inspections.length}</span>
+      <span class="pill-label">Inspections</span>
     </div>` : ""}`;
 }
 
@@ -3043,7 +3225,7 @@ function populateFilters() {
     clientSelect.appendChild(opt);
   });
 
-  const lanes = [...new Set(allRfqs.map(r => `${r.origin} → ${r.destination}`))].sort();
+  const lanes = [...new Set(allRfqs.filter(r => r.origin && r.destination).map(r => `${r.origin} → ${r.destination}`))].sort();
   const laneSelect = document.getElementById("filterLane");
   lanes.forEach(l => {
     const opt = document.createElement("option");
@@ -3067,21 +3249,26 @@ function applyFilters() {
   const source = isOps ? OPS_SHIPMENTS : RFQS;
   let filtered = source;
 
-  if (team) filtered = filtered.filter(r => isOps ? (r.originOps === team || r.destOps === team) : r.assignee === team);
+  if (team) filtered = filtered.filter(r => isOps ? (r.type === "inspection" ? r.inspector === team : (r.originOps === team || r.destOps === team)) : r.assignee === team);
   if (client) filtered = filtered.filter(r => r.client === client);
   if (mode) filtered = filtered.filter(r => r.mode === mode);
-  if (lane) filtered = filtered.filter(r => `${r.origin} → ${r.destination}` === lane);
+  if (lane) filtered = filtered.filter(r => {
+    if (r.type === "inspection") return false;
+    return `${r.origin} → ${r.destination}` === lane;
+  });
   if (search) {
     filtered = filtered.filter(r => {
       const haystack = isOps
-        ? `${r.id} ${r.silqId} ${r.client} ${r.origin} ${r.destination} ${r.originOps} ${r.destOps}`
+        ? (r.type === "inspection" ? `${r.id} ${r.silqId} ${r.client} ${r.location} ${r.inspector}` : `${r.id} ${r.silqId} ${r.client} ${r.origin} ${r.destination} ${r.originOps} ${r.destOps}`)
         : `${r.id} ${r.client} ${r.origin} ${r.destination} ${r.assignee}`;
       return haystack.toLowerCase().includes(search);
     });
   }
 
-  if (isOps && opsDelayedFilter) filtered = filtered.filter(s => isShipmentDelayed(s));
-  if (isOps && opsDelayedFilter) filtered = [...filtered].sort((a, b) => getDelayDays(b) - getDelayDays(a));
+  if (isOps && opsDelayedFilter) {
+    filtered = filtered.filter(s => isShipmentDelayed(s) || isTaskDelayed(s));
+    filtered = [...filtered].sort((a, b) => getDelayDays(b) - getDelayDays(a));
+  }
 
   renderBoard(filtered);
   renderSummary(filtered);
