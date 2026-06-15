@@ -2140,6 +2140,65 @@
   .pod-modal-btns .pod-modal-confirm:hover { background: var(--primary-dark); }
 
   .pod-empty { padding: 16px; text-align: center; color: var(--text-secondary); font-size: 12px; font-style: italic; }
+
+  /* Pod toast notifications */
+  .pod-toast-container { position: fixed; top: 20px; right: 20px; z-index: 300; display: flex; flex-direction: column; gap: 8px; }
+  .pod-toast {
+    padding: 12px 18px; border-radius: 10px; font-size: 12px; line-height: 1.5;
+    box-shadow: 0 4px 20px rgba(0,0,0,.15); animation: toastIn .25s ease-out;
+    max-width: 420px; display: flex; align-items: flex-start; gap: 10px;
+  }
+  .pod-toast.success { background: #dcfce7; border: 1px solid #86efac; color: #166534; }
+  .pod-toast.warning { background: #fef3c7; border: 1px solid #fde68a; color: #92400e; }
+  .pod-toast.error { background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; }
+  .pod-toast.info { background: #dbeafe; border: 1px solid #93c5fd; color: #1e40af; }
+  .pod-toast-icon { font-size: 16px; flex-shrink: 0; }
+  .pod-toast-close { margin-left: auto; cursor: pointer; opacity: .6; font-size: 14px; flex-shrink: 0; }
+  .pod-toast-close:hover { opacity: 1; }
+  @keyframes toastIn { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
+
+  /* Pod modal enhancements */
+  .pod-modal-error { background: #fee2e2; border: 1px solid #fca5a5; border-radius: 8px; padding: 10px 14px; font-size: 12px; color: #991b1b; margin-bottom: 14px; line-height: 1.5; }
+  .pod-modal-info { background: #dbeafe; border: 1px solid #93c5fd; border-radius: 8px; padding: 10px 14px; font-size: 12px; color: #1e40af; margin-bottom: 14px; line-height: 1.5; }
+  .pod-modal-success { background: #dcfce7; border: 1px solid #86efac; border-radius: 8px; padding: 10px 14px; font-size: 12px; color: #166534; margin-bottom: 14px; line-height: 1.5; }
+  .pod-modal-option-disabled { opacity: .45; pointer-events: none; }
+  .pod-modal-option-hint { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
+  .pod-modal-confirm.disabled { opacity: .4; pointer-events: none; }
+
+  /* Audit log */
+  .pod-audit-section { border-top: 1px solid var(--border-light); }
+  .pod-audit-toggle {
+    padding: 10px 18px; font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .5px; color: var(--text-secondary); cursor: pointer; display: flex;
+    align-items: center; gap: 6px; transition: background .1s;
+  }
+  .pod-audit-toggle:hover { background: var(--gray-bg); }
+  .pod-audit-toggle .audit-arrow { font-size: 9px; transition: transform .15s; }
+  .pod-audit-toggle.open .audit-arrow { transform: rotate(90deg); }
+  .pod-audit-list { display: none; padding: 0 18px 12px; max-height: 240px; overflow-y: auto; }
+  .pod-audit-list.visible { display: block; }
+  .pod-audit-entry {
+    display: flex; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--border-light);
+    font-size: 11px; line-height: 1.5;
+  }
+  .pod-audit-entry:last-child { border-bottom: none; }
+  .audit-time { color: var(--text-secondary); white-space: nowrap; flex-shrink: 0; width: 90px; }
+  .audit-msg { flex: 1; color: var(--text); }
+  .audit-msg strong { font-weight: 600; }
+
+  /* Pod Admin badge */
+  .pod-admin-badge {
+    font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px;
+    background: #fee2e2; color: #991b1b; white-space: nowrap;
+  }
+
+  /* Delete pod button */
+  .pod-delete-btn {
+    margin-top: 8px; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 500;
+    cursor: pointer; border: 1px solid var(--border); background: var(--card);
+    color: var(--text-secondary); font-family: inherit; transition: all .15s; width: 100%;
+  }
+  .pod-delete-btn:hover { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
 </style>
 </head>
 <body>
@@ -2402,6 +2461,7 @@
   <div class="pod-modal" id="podModal" onclick="if(event.target===this)closePodModal()">
     <div class="pod-modal-inner" id="podModalContent"></div>
   </div>
+  <div class="pod-toast-container" id="podToastContainer"></div>
 
   <!-- Ops milestone / task tray -->
   <div class="ops-tray-overlay" id="opsTrayOverlay" onclick="closeOpsTray()"></div>
@@ -4448,6 +4508,8 @@ const POD_ROLES = [
   { key: "internalFinance", label: "Internal Finance Admin", multi: true }
 ];
 
+const POD_ADMINS = ["u16", "u17", "u18"];
+
 const ALL_USERS = [
   { id: "u1", name: "Kathy Simmons", color: "#6366f1" },
   { id: "u2", name: "James Chen", color: "#0891b2" },
@@ -4463,7 +4525,10 @@ const ALL_USERS = [
   { id: "u12", name: "Priya Sharma", color: "#9333ea" },
   { id: "u13", name: "Carlos Reyes", color: "#dc2626" },
   { id: "u14", name: "Diane Tremblay", color: "#16a34a" },
-  { id: "u15", name: "Erik Lindgren", color: "#ea580c" }
+  { id: "u15", name: "Erik Lindgren", color: "#ea580c" },
+  { id: "u16", name: "Ram Kumar", color: "#7c3aed", isPodAdmin: true },
+  { id: "u17", name: "Vishnu Nair", color: "#0891b2", isPodAdmin: true },
+  { id: "u18", name: "Marla Jensen", color: "#db2777", isPodAdmin: true }
 ];
 
 const ALL_ORGS = [
@@ -4479,13 +4544,14 @@ const ALL_ORGS = [
   { id: "org10", name: "Caspian Freight Co." }
 ];
 
-const POD_STORAGE_KEY = "podBoard_pods_v2";
+const POD_STORAGE_KEY = "podBoard_pods_v3";
+const AUDIT_STORAGE_KEY = "podBoard_audit_v1";
 
 function defaultPods() {
   return [
-    { id: "pod1", name: "Pod 1", description: "Covers CN, KR, JP origins", roles: { accountManager: "u1", associateAM: "u7", accountExecutive: "u11", projectOwner: "u5", dataOps: ["u10"], originCoord: ["u2", "u5"], destCoord: ["u3"], financeOps: ["u10"] }, orgs: ["org1", "org2", "org5", "org10"] },
-    { id: "pod2", name: "Pod 2", description: "IN, BD, VN origins", roles: { accountManager: "u4", associateAM: "u12", projectOwner: "u8", originCoord: ["u8"], destCoord: ["u3"], dataOps: ["u13"] }, orgs: ["org3", "org6", "org8"] },
-    { id: "pod3", name: "Pod 3", description: "", roles: { accountManager: "u6", accountExecutive: "u14", projectOwner: "u9", financeOps: ["u10", "u15"], destCoord: ["u15"] }, orgs: ["org4", "org7", "org9"] }
+    { id: "pod1", name: "Pod 1", description: "Covers CN, KR, JP origins", isActive: true, roles: { accountManager: "u1", associateAM: "u7", accountExecutive: "u11", projectOwner: "u5", dataOps: ["u10"], originCoord: ["u2", "u5"], destCoord: ["u3"], financeOps: ["u10"] }, orgs: ["org1", "org2", "org5", "org10"] },
+    { id: "pod2", name: "Pod 2", description: "IN, BD, VN origins", isActive: true, roles: { accountManager: "u4", associateAM: "u12", projectOwner: "u8", originCoord: ["u8"], destCoord: ["u3"], dataOps: ["u13"] }, orgs: ["org3", "org6", "org8"] },
+    { id: "pod3", name: "Pod 3", description: "", isActive: true, roles: { accountManager: "u6", accountExecutive: "u14", projectOwner: "u9", financeOps: ["u10", "u15"], destCoord: ["u15"] }, orgs: ["org4", "org7", "org9"] }
   ];
 }
 
@@ -4498,12 +4564,32 @@ function loadPods() {
 }
 function savePods(p) { localStorage.setItem(POD_STORAGE_KEY, JSON.stringify(p)); }
 
+function loadAuditLog() { try { return JSON.parse(localStorage.getItem(AUDIT_STORAGE_KEY)) || []; } catch(e) { return []; } }
+function saveAuditLog(log) { localStorage.setItem(AUDIT_STORAGE_KEY, JSON.stringify(log)); }
+
+function addAuditEntry(podId, action, details) {
+  const log = loadAuditLog();
+  log.unshift({ podId, action, details, time: new Date().toISOString(), performedBy: "You" });
+  if (log.length > 200) log.length = 200;
+  saveAuditLog(log);
+}
+
 let pods = loadPods();
 let podCreateMode = false;
 
 function getUser(id) { return ALL_USERS.find(u => u.id === id); }
 function getUserInitials(name) { return name.split(" ").map(w => w[0]).join(""); }
 function getOrg(id) { return ALL_ORGS.find(o => o.id === id); }
+
+function showToast(msg, type) {
+  const c = document.getElementById("podToastContainer");
+  const t = document.createElement("div");
+  t.className = "pod-toast " + type;
+  const icons = { success: "✓", warning: "⚠", error: "✕", info: "ℹ" };
+  t.innerHTML = `<span class="pod-toast-icon">${icons[type] || "ℹ"}</span><span>${msg}</span><span class="pod-toast-close" onclick="this.parentElement.remove()">×</span>`;
+  c.appendChild(t);
+  setTimeout(() => { if (t.parentElement) t.remove(); }, 5000);
+}
 
 function getPodMembers(pod) {
   const ids = new Set();
@@ -4530,6 +4616,13 @@ function findUserInRole(userId, excludePodId) {
   return results;
 }
 
+function isSoleAssignee(userId, pod, roleKey) {
+  const val = pod.roles[roleKey];
+  if (!val) return false;
+  if (Array.isArray(val)) return val.length === 1 && val[0] === userId;
+  return val === userId;
+}
+
 function getOrgPod(orgId) {
   return pods.find(p => p.orgs && p.orgs.includes(orgId));
 }
@@ -4538,7 +4631,9 @@ function renderPodSetup() {
   const grid = document.getElementById("podGrid");
   let html = "";
 
-  pods.forEach(pod => {
+  const activePods = pods.filter(p => p.isActive !== false);
+
+  activePods.forEach(pod => {
     const members = getPodMembers(pod);
     const am = pod.roles.accountManager ? getUser(pod.roles.accountManager) : null;
     const orgCount = (pod.orgs || []).length;
@@ -4553,7 +4648,9 @@ function renderPodSetup() {
           <h3>${pod.name}</h3>
           ${pod.description ? `<div class="pod-card-desc">${pod.description}</div>` : ""}
         </div>
-        ${am ? `<span class="pod-lead-badge">Lead: ${am.name}</span>` : ""}
+        <div style="display:flex;gap:6px;align-items:center">
+          ${am ? `<span class="pod-lead-badge">Lead: ${am.name}</span>` : `<span class="pod-lead-badge" style="background:#fee2e2;color:#991b1b">No AM assigned</span>`}
+        </div>
       </div>
       <div class="pod-stats-row">
         <span><strong>${members.size}</strong> members</span>
@@ -4633,13 +4730,32 @@ function renderPodSetup() {
           <option value="">Add organization...</option>`;
       availOrgs.forEach(o => {
         const curPod = getOrgPod(o.id);
-        const tag = curPod ? ` (currently: ${curPod.name})` : "";
+        const tag = curPod ? ` (currently: ${curPod.name})` : " (unassigned)";
         html += `<option value="${o.id}">${o.name}${tag}</option>`;
       });
       html += `</select>
         <button class="pod-add-btn" onclick="addOrgToPod('${pod.id}')">Add</button>
       </div>`;
     }
+
+    const auditEntries = loadAuditLog().filter(e => e.podId === pod.id).slice(0, 20);
+    html += `<div class="pod-audit-section">
+      <div class="pod-audit-toggle" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('visible')">
+        <span class="audit-arrow">▶</span> Activity Log (${auditEntries.length})
+      </div>
+      <div class="pod-audit-list">`;
+    if (auditEntries.length === 0) {
+      html += `<div class="pod-empty">No activity recorded yet.</div>`;
+    } else {
+      auditEntries.forEach(e => {
+        const d = new Date(e.time);
+        const ts = d.toLocaleDateString("en-US", { month: "short", day: "numeric" }) + " " + d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+        html += `<div class="pod-audit-entry"><span class="audit-time">${ts}</span><span class="audit-msg">${e.details}</span></div>`;
+      });
+    }
+    html += `</div></div>`;
+
+    html += `<div style="padding:8px 18px 12px"><button class="pod-delete-btn" onclick="deactivatePod('${pod.id}')">Deactivate Pod</button></div>`;
 
     html += `</div>`;
   });
@@ -4663,19 +4779,54 @@ function renderPodSetup() {
 
   grid.innerHTML = html;
   const totalMembers = new Set();
-  pods.forEach(p => getPodMembers(p).forEach(m => totalMembers.add(m)));
-  document.getElementById("podCount").textContent = `${pods.length} pod${pods.length !== 1 ? "s" : ""} · ${totalMembers.size} members · ${ALL_ORGS.length} orgs`;
+  activePods.forEach(p => getPodMembers(p).forEach(m => totalMembers.add(m)));
+  document.getElementById("podCount").textContent = `${activePods.length} pod${activePods.length !== 1 ? "s" : ""} · ${totalMembers.size} members · ${ALL_ORGS.length} orgs`;
 }
 
 function createPod() {
   const name = document.getElementById("newPodName").value.trim();
   if (!name) return;
-  if (pods.find(p => p.name.toLowerCase() === name.toLowerCase())) { alert("A pod with this name already exists."); return; }
+  if (pods.find(p => p.name.toLowerCase() === name.toLowerCase() && p.isActive !== false)) {
+    showToast("A pod with this name already exists.", "error");
+    return;
+  }
   const desc = document.getElementById("newPodDesc").value.trim();
-  pods.push({ id: "pod_" + Date.now(), name, description: desc, roles: {}, orgs: [] });
+  const newId = "pod_" + Date.now();
+  pods.push({ id: newId, name, description: desc, isActive: true, roles: {}, orgs: [] });
   savePods(pods);
+  addAuditEntry(newId, "POD_CREATED", `Pod <strong>${name}</strong> created`);
   podCreateMode = false;
   renderPodSetup();
+  showToast(`Pod "${name}" created successfully. Assign roles and organizations to get started.`, "success");
+}
+
+function deactivatePod(podId) {
+  const pod = pods.find(p => p.id === podId);
+  if (!pod) return;
+  const realOrgs = (pod.orgs || []).length;
+  if (realOrgs > 0) {
+    showToast(`Cannot deactivate "${pod.name}" — ${realOrgs} organization${realOrgs > 1 ? "s are" : " is"} still assigned. Reassign all orgs before deactivating.`, "error");
+    return;
+  }
+  const html = `<h3>Deactivate Pod</h3>
+    <div class="pod-modal-desc">Are you sure you want to deactivate <strong>${pod.name}</strong>?</div>
+    <div class="pod-modal-warning">⚠ This pod will be hidden from all views. It can be reactivated later if needed.</div>
+    <div class="pod-modal-btns">
+      <button onclick="closePodModal()">Cancel</button>
+      <button class="pod-modal-confirm" style="background:#dc2626;border-color:#dc2626" onclick="confirmDeactivate('${podId}')">Deactivate</button>
+    </div>`;
+  document.getElementById("podModalContent").innerHTML = html;
+  document.getElementById("podModal").classList.add("visible");
+}
+
+function confirmDeactivate(podId) {
+  const pod = pods.find(p => p.id === podId);
+  pod.isActive = false;
+  savePods(pods);
+  addAuditEntry(podId, "POD_DEACTIVATED", `Pod <strong>${pod.name}</strong> deactivated`);
+  closePodModal();
+  renderPodSetup();
+  showToast(`"${pod.name}" has been deactivated.`, "warning");
 }
 
 function closePodModal() {
@@ -4693,6 +4844,7 @@ function openAssignModal(podId, roleKey) {
   else if (!roleDef.multi && currentVal) excluded.add(currentVal);
 
   const available = ALL_USERS.filter(u => !excluded.has(u.id));
+  const isAM = roleKey === "accountManager";
 
   let html = `<h3>Assign ${roleDef.label}</h3>
     <div class="pod-modal-desc">Select a person for the <strong>${roleDef.label}</strong> role in <strong>${pod.name}</strong>.</div>
@@ -4714,9 +4866,11 @@ function openAssignModal(podId, roleKey) {
   });
   html += `</select>
     <div id="modalAssignWarning"></div>
+    <div id="modalCrossPodOptions" style="display:none"></div>
+    <div id="modalCascadeOptions" style="display:none"></div>
     <div class="pod-modal-btns">
       <button onclick="closePodModal()">Cancel</button>
-      <button class="pod-modal-confirm" onclick="confirmAssign('${podId}','${roleKey}')">Assign</button>
+      <button class="pod-modal-confirm" id="modalAssignBtn" onclick="confirmAssign('${podId}','${roleKey}')">Assign</button>
     </div>`;
 
   document.getElementById("podModalContent").innerHTML = html;
@@ -4725,9 +4879,18 @@ function openAssignModal(podId, roleKey) {
   document.getElementById("modalAssignUser").addEventListener("change", function() {
     const uid = this.value;
     const warnEl = document.getElementById("modalAssignWarning");
-    if (!uid) { warnEl.innerHTML = ""; return; }
+    const crossEl = document.getElementById("modalCrossPodOptions");
+    const cascadeEl = document.getElementById("modalCascadeOptions");
+    const assignBtn = document.getElementById("modalAssignBtn");
+    warnEl.innerHTML = "";
+    crossEl.style.display = "none";
+    crossEl.innerHTML = "";
+    cascadeEl.style.display = "none";
+    cascadeEl.innerHTML = "";
+    assignBtn.classList.remove("disabled");
+    if (!uid) return;
 
-    const isAM = roleKey === "accountManager";
+    const user = getUser(uid);
     const otherRoles = findUserInRole(uid, podId);
     const sameRoles = [];
     POD_ROLES.forEach(r => {
@@ -4738,34 +4901,88 @@ function openAssignModal(podId, roleKey) {
     });
 
     let warn = "";
+
     if (isAM && otherRoles.find(r => r.role.key === "accountManager")) {
       const otherPod = otherRoles.find(r => r.role.key === "accountManager").pod;
-      warn = `<div class="pod-modal-warning">⚠ ${getUser(uid).name} is currently the Account Manager of <strong>${otherPod.name}</strong>. They will be removed from that pod's AM role.</div>`;
-    } else if (otherRoles.length > 0) {
-      warn = `<div class="pod-modal-warning">ℹ ${getUser(uid).name} is assigned in ${otherRoles.map(r => `<strong>${r.pod.name}</strong> (${r.role.label})`).join(", ")}. They can be kept in both pods.</div>`;
+      warn = `<div class="pod-modal-error">⚠ <strong>${user.name}</strong> is currently the Account Manager of <strong>${otherPod.name}</strong>. Please update the AM in ${otherPod.name} before assigning them here.</div>`;
+      assignBtn.classList.add("disabled");
+    } else if (otherRoles.length > 0 && !isAM) {
+      warn = `<div class="pod-modal-warning">⚠ <strong>${user.name}</strong> is currently assigned to ${otherRoles.map(r => `<strong>${r.role.label}</strong> in <strong>${r.pod.name}</strong>`).join(", ")}.</div>`;
+
+      crossEl.style.display = "block";
+      let crossHtml = `<div class="pod-section-label" style="padding:0 0 6px;">How should this be handled?</div><div class="pod-modal-options">`;
+      crossHtml += `<label class="pod-modal-option" onclick="this.querySelector('input').checked=true">
+        <input type="radio" name="crossPodChoice" value="keep" checked> Keep in both pods (multi-pod membership)
+        <div class="pod-modal-option-hint">Person remains in ${otherRoles[0].pod.name} AND is added to ${pod.name}.</div>
+      </label>`;
+
+      const canRemove = otherRoles.every(r => !isSoleAssignee(uid, r.pod, r.role.key));
+      crossHtml += `<label class="pod-modal-option${canRemove ? "" : " pod-modal-option-disabled"}" onclick="${canRemove ? "this.querySelector('input').checked=true" : ""}">
+        <input type="radio" name="crossPodChoice" value="remove"${canRemove ? "" : " disabled"}> Remove from other pod${otherRoles.length > 1 ? "s" : ""}
+        <div class="pod-modal-option-hint">${canRemove ? `Person removed from ${otherRoles.map(r => r.role.label + " in " + r.pod.name).join(", ")} and added here.` : `Blocked: ${user.name} is the sole assignee for ${otherRoles[0].role.label} in ${otherRoles[0].pod.name}. Cannot orphan that role.`}</div>
+      </label>`;
+      crossHtml += `</div>`;
+      crossEl.innerHTML = crossHtml;
     }
+
     if (sameRoles.length > 0) {
-      warn += `<div class="pod-modal-warning">ℹ ${getUser(uid).name} already holds <strong>${sameRoles.join(", ")}</strong> in this pod. They will hold both roles.</div>`;
+      warn += `<div class="pod-modal-info">ℹ <strong>${user.name}</strong> already holds <strong>${sameRoles.join(", ")}</strong> in this pod. They will now hold both ${sameRoles.join(", ")} and ${roleDef.label}.</div>`;
     }
+
     warnEl.innerHTML = warn;
+
+    cascadeEl.style.display = "block";
+    cascadeEl.innerHTML = `<div class="pod-section-label" style="padding:8px 0 6px;">Cascade to existing projects?</div>
+      <div class="pod-modal-options">
+        <label class="pod-modal-option" onclick="this.querySelector('input').checked=true">
+          <input type="radio" name="assignCascade" value="yes"> Update assignee on active projects for orgs in this pod
+          <div class="pod-modal-option-hint">All active projects under ${pod.name}'s orgs will get ${user.name} for ${roleDef.label}.</div>
+        </label>
+        <label class="pod-modal-option" onclick="this.querySelector('input').checked=true">
+          <input type="radio" name="assignCascade" value="no" checked> Apply to new projects only
+          <div class="pod-modal-option-hint">Existing projects retain their current assignees.</div>
+        </label>
+      </div>`;
   });
 }
 
 function confirmAssign(podId, roleKey) {
   const uid = document.getElementById("modalAssignUser").value;
-  if (!uid) { alert("Please select a person."); return; }
+  if (!uid) { showToast("Please select a person.", "warning"); return; }
 
   const pod = pods.find(p => p.id === podId);
   const roleDef = POD_ROLES.find(r => r.key === roleKey);
+  const user = getUser(uid);
   const isAM = roleKey === "accountManager";
 
   if (isAM) {
-    pods.forEach(p => {
-      if (p.id !== podId && p.roles.accountManager === uid) {
-        p.roles.accountManager = null;
-      }
-    });
+    const otherAM = pods.find(p => p.id !== podId && p.roles.accountManager === uid);
+    if (otherAM) {
+      showToast(`Cannot assign ${user.name} — they are AM of ${otherAM.name}. Update that pod's AM first.`, "error");
+      return;
+    }
   }
+
+  const otherRoles = findUserInRole(uid, podId);
+  const crossChoice = document.querySelector('input[name="crossPodChoice"]:checked');
+  const cascadeChoice = document.querySelector('input[name="assignCascade"]:checked');
+
+  if (otherRoles.length > 0 && !isAM && crossChoice && crossChoice.value === "remove") {
+    otherRoles.forEach(r => {
+      if (r.role.multi) {
+        r.pod.roles[r.role.key] = (r.pod.roles[r.role.key] || []).filter(u => u !== uid);
+        if (r.pod.roles[r.role.key].length === 0) delete r.pod.roles[r.role.key];
+      } else {
+        delete r.pod.roles[r.role.key];
+      }
+      addAuditEntry(r.pod.id, "MEMBER_REMOVED", `<strong>${user.name}</strong> removed from <strong>${r.role.label}</strong> (moved to ${pod.name})`);
+    });
+    showToast(`${user.name} removed from ${otherRoles.map(r => r.role.label + " in " + r.pod.name).join(", ")}.`, "info");
+  } else if (otherRoles.length > 0 && !isAM) {
+    showToast(`${user.name} kept in ${otherRoles.map(r => r.pod.name).join(", ")} and added to ${pod.name}. Multi-pod membership active.`, "info");
+  }
+
+  const prevPerson = roleDef.multi ? null : (pod.roles[roleKey] ? getUser(pod.roles[roleKey]) : null);
 
   if (roleDef.multi) {
     if (!pod.roles[roleKey]) pod.roles[roleKey] = [];
@@ -4774,9 +4991,16 @@ function confirmAssign(podId, roleKey) {
     pod.roles[roleKey] = uid;
   }
 
+  const cascaded = cascadeChoice && cascadeChoice.value === "yes";
+  const orgCount = (pod.orgs || []).length;
+  const projCount = cascaded ? Math.floor(Math.random() * 8) + orgCount : 0;
+
+  addAuditEntry(podId, "MEMBER_ASSIGNED", `<strong>${user.name}</strong> assigned to <strong>${roleDef.label}</strong>${prevPerson ? ` (replaced ${prevPerson.name})` : ""}${cascaded ? ` · Cascaded to ${projCount} projects across ${orgCount} orgs` : " · New projects only"}`);
+
   savePods(pods);
   closePodModal();
   renderPodSetup();
+  showToast(`${user.name} assigned as ${roleDef.label} in ${pod.name}.${cascaded ? ` Updated ${projCount} active projects.` : ""}`, "success");
 }
 
 function removeFromRole(podId, roleKey, userId) {
@@ -4784,7 +5008,48 @@ function removeFromRole(podId, roleKey, userId) {
   if (!pod) return;
   const roleDef = POD_ROLES.find(r => r.key === roleKey);
   const user = getUser(userId);
-  if (!confirm(`Remove ${user.name} from ${roleDef.label} in ${pod.name}?`)) return;
+
+  if (roleDef.multi) {
+    const arr = pod.roles[roleKey] || [];
+    if (arr.length <= 1) {
+      const html = `<h3>Remove Last Person</h3>
+        <div class="pod-modal-desc">Removing <strong>${user.name}</strong> from <strong>${roleDef.label}</strong> in <strong>${pod.name}</strong>.</div>
+        <div class="pod-modal-warning">⚠ ${user.name} is the last person assigned to this role. The role will be removed from the pod template entirely. It can be re-added later with a new person.</div>
+        <div class="pod-modal-btns">
+          <button onclick="closePodModal()">Cancel</button>
+          <button class="pod-modal-confirm" style="background:#dc2626;border-color:#dc2626" onclick="execRemoveFromRole('${podId}','${roleKey}','${userId}',true)">Remove & Delete Role</button>
+        </div>`;
+      document.getElementById("podModalContent").innerHTML = html;
+      document.getElementById("podModal").classList.add("visible");
+      return;
+    }
+  }
+
+  const html = `<h3>Remove from Role</h3>
+    <div class="pod-modal-desc">Remove <strong>${user.name}</strong> from <strong>${roleDef.label}</strong> in <strong>${pod.name}</strong>?</div>
+    <div class="pod-section-label" style="padding:0 0 6px;">Cascade removal to existing projects?</div>
+    <div class="pod-modal-options">
+      <label class="pod-modal-option" onclick="this.querySelector('input').checked=true">
+        <input type="radio" name="removeCascade" value="yes"> Remove from active projects under this pod's orgs
+      </label>
+      <label class="pod-modal-option" onclick="this.querySelector('input').checked=true">
+        <input type="radio" name="removeCascade" value="no" checked> Apply to new projects only
+      </label>
+    </div>
+    <div class="pod-modal-btns">
+      <button onclick="closePodModal()">Cancel</button>
+      <button class="pod-modal-confirm" style="background:#dc2626;border-color:#dc2626" onclick="execRemoveFromRole('${podId}','${roleKey}','${userId}',false)">Remove</button>
+    </div>`;
+  document.getElementById("podModalContent").innerHTML = html;
+  document.getElementById("podModal").classList.add("visible");
+}
+
+function execRemoveFromRole(podId, roleKey, userId, isLastPerson) {
+  const pod = pods.find(p => p.id === podId);
+  const roleDef = POD_ROLES.find(r => r.key === roleKey);
+  const user = getUser(userId);
+  const cascadeChoice = document.querySelector('input[name="removeCascade"]:checked');
+  const cascaded = cascadeChoice && cascadeChoice.value === "yes";
 
   if (roleDef.multi) {
     pod.roles[roleKey] = (pod.roles[roleKey] || []).filter(u => u !== userId);
@@ -4792,8 +5057,16 @@ function removeFromRole(podId, roleKey, userId) {
   } else {
     delete pod.roles[roleKey];
   }
+
+  addAuditEntry(podId, isLastPerson ? "ROLE_REMOVED" : "MEMBER_REMOVED",
+    isLastPerson
+      ? `<strong>${roleDef.label}</strong> role removed from template (last person <strong>${user.name}</strong> removed)`
+      : `<strong>${user.name}</strong> removed from <strong>${roleDef.label}</strong>${cascaded ? " · Cascaded to active projects" : ""}`);
+
   savePods(pods);
+  closePodModal();
   renderPodSetup();
+  showToast(`${user.name} removed from ${roleDef.label} in ${pod.name}.${isLastPerson ? " Role removed from template." : ""}`, "success");
 }
 
 function addOrgToPod(podId) {
@@ -4806,16 +5079,19 @@ function addOrgToPod(podId) {
   const org = getOrg(orgId);
 
   if (currentPod && currentPod.id !== podId) {
+    const orgProjects = Math.floor(Math.random() * 5) + 2;
     const html = `<h3>Move Organization</h3>
-      <div class="pod-modal-desc"><strong>${org.name}</strong> is currently in <strong>${currentPod.name}</strong>. Moving to <strong>${targetPod.name}</strong>.</div>
-      <div class="pod-modal-warning">Org-level assignees will be updated to ${targetPod.name}'s role template.</div>
-      <div class="pod-section-label" style="padding:0 0 6px;">Cascade to existing projects?</div>
+      <div class="pod-modal-desc"><strong>${org.name}</strong> currently belongs to <strong>${currentPod.name}</strong>.</div>
+      <div class="pod-modal-warning">⚠ Moving to <strong>${targetPod.name}</strong> will update all org-level assignees (pod-managed roles) to ${targetPod.name}'s role template. Non-pod roles (Client Task Assignee, Client Finance Rep) will not be affected.</div>
+      <div class="pod-section-label" style="padding:0 0 6px;">Update active projects currently?</div>
       <div class="pod-modal-options">
         <label class="pod-modal-option" onclick="this.querySelector('input').checked=true">
-          <input type="radio" name="cascadeChoice" value="yes"> Update active projects now
+          <input type="radio" name="cascadeChoice" value="yes"> Yes — update ${orgProjects} active projects now
+          <div class="pod-modal-option-hint">Pod-managed collaborators on all active projects under ${org.name} will be updated to ${targetPod.name}'s template. Task-level assignees are NOT changed.</div>
         </label>
         <label class="pod-modal-option" onclick="this.querySelector('input').checked=true">
-          <input type="radio" name="cascadeChoice" value="no" checked> Apply to new projects only
+          <input type="radio" name="cascadeChoice" value="no" checked> No — apply to new projects only
+          <div class="pod-modal-option-hint">Existing projects retain current assignees. Only new projects will carry ${targetPod.name}'s people.</div>
         </label>
       </div>
       <div class="pod-modal-btns">
@@ -4830,27 +5106,65 @@ function addOrgToPod(podId) {
   if (!targetPod.orgs) targetPod.orgs = [];
   if (!targetPod.orgs.includes(orgId)) targetPod.orgs.push(orgId);
   savePods(pods);
+  addAuditEntry(podId, "ORG_ASSIGNED", `<strong>${org.name}</strong> assigned to this pod`);
   renderPodSetup();
+  showToast(`${org.name} added to ${targetPod.name}.`, "success");
 }
 
 function confirmMoveOrg(fromPodId, toPodId, orgId) {
   const fromPod = pods.find(p => p.id === fromPodId);
   const toPod = pods.find(p => p.id === toPodId);
+  const org = getOrg(orgId);
+  const cascadeChoice = document.querySelector('input[name="cascadeChoice"]:checked');
+  const cascaded = cascadeChoice && cascadeChoice.value === "yes";
+  const projCount = cascaded ? Math.floor(Math.random() * 5) + 2 : 0;
+
   if (fromPod) fromPod.orgs = (fromPod.orgs || []).filter(o => o !== orgId);
   if (!toPod.orgs) toPod.orgs = [];
   if (!toPod.orgs.includes(orgId)) toPod.orgs.push(orgId);
+
+  addAuditEntry(fromPodId, "ORG_REMOVED", `<strong>${org.name}</strong> moved to <strong>${toPod.name}</strong>${cascaded ? ` · ${projCount} projects updated` : ""}`);
+  addAuditEntry(toPodId, "ORG_ASSIGNED", `<strong>${org.name}</strong> moved from <strong>${fromPod.name}</strong>${cascaded ? ` · ${projCount} projects updated` : " · New projects only"}`);
+
   savePods(pods);
   closePodModal();
   renderPodSetup();
+  showToast(`${org.name} moved from ${fromPod.name} to ${toPod.name}. Org-level assignees updated to ${toPod.name}'s template.${cascaded ? ` ${projCount} active projects updated.` : ""}`, "success");
 }
 
 function removeOrgFromPod(podId, orgId) {
   const pod = pods.find(p => p.id === podId);
   const org = getOrg(orgId);
-  if (!confirm(`Remove ${org.name} from ${pod.name}? The org will need to be reassigned to another pod.`)) return;
-  pod.orgs = (pod.orgs || []).filter(o => o !== orgId);
-  savePods(pods);
-  renderPodSetup();
+
+  const otherPods = pods.filter(p => p.id !== podId && p.isActive !== false);
+  let html = `<h3>Reassign Organization</h3>
+    <div class="pod-modal-desc"><strong>${org.name}</strong> must belong to a pod. Select the destination pod.</div>
+    <div class="pod-modal-warning">⚠ Every organization must be assigned to exactly one pod. Removing without reassigning is not allowed.</div>
+    <select id="modalReassignPod">
+      <option value="">Select destination pod...</option>`;
+  otherPods.forEach(p => { html += `<option value="${p.id}">${p.name}</option>`; });
+  html += `</select>
+    <div class="pod-section-label" style="padding:0 0 6px;">Cascade to existing projects?</div>
+    <div class="pod-modal-options">
+      <label class="pod-modal-option" onclick="this.querySelector('input').checked=true">
+        <input type="radio" name="reassignCascade" value="yes"> Update active projects
+      </label>
+      <label class="pod-modal-option" onclick="this.querySelector('input').checked=true">
+        <input type="radio" name="reassignCascade" value="no" checked> Apply to new projects only
+      </label>
+    </div>
+    <div class="pod-modal-btns">
+      <button onclick="closePodModal()">Cancel</button>
+      <button class="pod-modal-confirm" onclick="confirmReassignOrg('${podId}','${orgId}')">Reassign</button>
+    </div>`;
+  document.getElementById("podModalContent").innerHTML = html;
+  document.getElementById("podModal").classList.add("visible");
+}
+
+function confirmReassignOrg(fromPodId, orgId) {
+  const toPodId = document.getElementById("modalReassignPod").value;
+  if (!toPodId) { showToast("Please select a destination pod.", "warning"); return; }
+  confirmMoveOrg(fromPodId, toPodId, orgId);
 }
 
 populateFilters();
