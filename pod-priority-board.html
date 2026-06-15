@@ -2029,7 +2029,8 @@
     border-radius: 6px; font-size: 12px; transition: background .1s;
   }
   .pod-org-row:hover { background: var(--gray-bg); }
-  .pod-org-name { flex: 1; font-weight: 500; }
+  .pod-org-name { flex: 1; font-weight: 500; color: var(--primary-dark); cursor: pointer; text-decoration: none; }
+  .pod-org-name:hover { text-decoration: underline; }
   .pod-org-remove {
     opacity: 0; cursor: pointer; font-size: 11px; color: var(--text-secondary);
     width: 20px; height: 20px; border-radius: 4px; border: 1px solid var(--border);
@@ -4716,7 +4717,7 @@ function renderPodSetup() {
         if (!o) return;
         html += `<div class="pod-org-row">
           <span class="pod-org-icon">◆</span>
-          <span class="pod-org-name">${o.name}</span>
+          <a class="pod-org-name" href="#" onclick="event.preventDefault();openOrgDetail('${pod.id}','${oid}')" title="View org assignees">${o.name} <svg style="width:10px;height:10px;vertical-align:middle;opacity:.5" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z"/><path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z"/></svg></a>
           <button class="pod-org-remove" onclick="removeOrgFromPod('${pod.id}','${oid}')" title="Remove org">×</button>
         </div>`;
       });
@@ -5165,6 +5166,49 @@ function confirmReassignOrg(fromPodId, orgId) {
   const toPodId = document.getElementById("modalReassignPod").value;
   if (!toPodId) { showToast("Please select a destination pod.", "warning"); return; }
   confirmMoveOrg(fromPodId, toPodId, orgId);
+}
+
+function openOrgDetail(podId, orgId) {
+  const pod = pods.find(p => p.id === podId);
+  const org = getOrg(orgId);
+  if (!pod || !org) return;
+
+  let html = `<h3>${org.name}</h3>
+    <div class="pod-modal-desc">Org-level assignees · Managed by <strong>${pod.name}</strong></div>`;
+
+  html += `<div style="margin-bottom:12px">`;
+  POD_ROLES.forEach(roleDef => {
+    const val = pod.roles[roleDef.key];
+    if (!val) return;
+    const people = Array.isArray(val) ? val : [val];
+    const names = people.map(uid => { const u = getUser(uid); return u ? u.name : ""; }).filter(Boolean).join(", ");
+    html += `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;font-size:12px;border-bottom:1px solid var(--border-light)">
+      <span style="width:170px;color:var(--text-secondary);flex-shrink:0">${roleDef.label}</span>
+      <span style="flex:1;font-weight:500">${names}</span>
+      <span style="font-size:9px;padding:2px 6px;border-radius:4px;background:var(--primary-light);color:var(--primary-dark)">Pod managed</span>
+    </div>`;
+  });
+  html += `</div>`;
+
+  html += `<div class="pod-section-label" style="padding:4px 0">Client Roles (editable at org level)</div>`;
+  html += `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;font-size:12px;border-bottom:1px solid var(--border-light)">
+    <span style="width:170px;color:var(--text-secondary);flex-shrink:0">Client Task Assignee</span>
+    <span style="flex:1;font-weight:500;font-style:italic;color:var(--text-secondary)">Set at org level</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;padding:5px 0;font-size:12px">
+    <span style="width:170px;color:var(--text-secondary);flex-shrink:0">Client Finance Rep</span>
+    <span style="flex:1;font-weight:500;font-style:italic;color:var(--text-secondary)">Set at org level</span>
+  </div>`;
+
+  html += `<div style="margin-top:14px" class="pod-modal-info">ℹ Pod-managed roles are inherited from <strong>${pod.name}</strong>'s template. To change them, update the pod's role template. Client-specific roles can be edited directly on the org's Network page.</div>`;
+
+  html += `<div class="pod-modal-btns" style="margin-top:12px">
+    <button onclick="closePodModal()">Close</button>
+    <button class="pod-modal-confirm" onclick="showToast('Navigating to ${org.name} on Networks page...','info');closePodModal()">Open in Networks →</button>
+  </div>`;
+
+  document.getElementById("podModalContent").innerHTML = html;
+  document.getElementById("podModal").classList.add("visible");
 }
 
 populateFilters();
