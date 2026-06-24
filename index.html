@@ -24,6 +24,8 @@
       --purple-bg: #f3effb;
       --teal: #0d9488;
       --teal-bg: #f0fdfa;
+      --coral: #d85a30;
+      --coral-bg: #fdf0eb;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -114,6 +116,9 @@
 
     .card-hs .card-icon { background: var(--blue-bg); color: var(--blue); }
     .card-hs::before { background: var(--blue); }
+
+    .card-share .card-icon { background: var(--coral-bg); color: var(--coral); }
+    .card-share::before { background: var(--coral); }
 
     .proto-card h2 {
       font-size: 17px;
@@ -257,6 +262,22 @@
         <span class="tag">Tickets</span>
         <span class="tag">Timeline</span>
         <span class="tag">Issue Report</span>
+      </div>
+    </a>
+
+    <a class="proto-card card-share" href="custom-public-share-link.html">
+      <span class="owner-tag owner-am">AM</span>
+      <span class="card-arrow"><svg viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M1 8a.5.5 0 01.5-.5h11.793l-3.147-3.146a.5.5 0 01.708-.708l4 4a.5.5 0 010 .708l-4 4a.5.5 0 01-.708-.708L13.293 8.5H1.5A.5.5 0 011 8z"/></svg></span>
+      <div class="card-icon">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z"/></svg>
+      </div>
+      <h2>Custom Public Share Link</h2>
+      <p>Interactive preview of the shipment share flow. Create default and custom public links, configure visibility, copy or email links, and manage active share links from the tracking page.</p>
+      <div class="card-tags">
+        <span class="tag">Share</span>
+        <span class="tag">Public Link</span>
+        <span class="tag">Tracking</span>
+        <span class="tag">Permissions</span>
       </div>
     </a>
   </div>

@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Silq — Share Flow Preview v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" rel="stylesheet">
+<style>
+:root{
+  --bg:#FFFFFF; --bg2:#F4F3EF; --bg3:#ECEBE6; --bg4:#FAF9F5;
+  --ok-bg:#EAF3DE; --ok-tx:#3B6D11;
+  --wn-bg:#FAEEDA; --wn-tx:#854F0B;
+  --tx:#1A1A1A; --tx2:#6B6B6B; --tx3:#9A9A9A;
+  --bd:rgba(0,0,0,0.09); --bd2:rgba(0,0,0,0.14);
+  --coral:#D85A30; --coral-dk:#C24A22;
+  --r:8px; --r2:12px;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{font-family:'Inter',system-ui,sans-serif;background:var(--bg4);color:var(--tx);-webkit-font-smoothing:antialiased;min-height:100vh;padding:32px 20px}
+button{font-family:inherit;cursor:pointer}
+input{font-family:inherit}
+
+/* ── Page shell ── */
+.pg{max-width:840px;margin:0 auto}
+.pg-hd{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:20px}
+.pg-hd h1{font-size:17px;font-weight:500;line-height:1.3}
+.pg-hd p{font-size:12px;color:var(--tx2);margin-top:3px}
+.brand{font-size:15px;font-weight:600;color:var(--coral);flex-shrink:0;margin-top:2px}
+
+/* ── Stepper ── */
+.stepper{display:flex;border:0.5px solid var(--bd);border-radius:10px 10px 0 0;background:var(--bg2);overflow:hidden}
+.s-btn{flex:1;display:flex;flex-direction:column;align-items:flex-start;gap:5px;padding:12px 10px;background:transparent;border:0;border-bottom:2px solid transparent;border-right:0.5px solid var(--bd);text-align:left;color:var(--tx2);transition:all .15s}
+.s-btn:last-child{border-right:0}
+.s-btn.on{border-bottom-color:var(--coral);color:var(--tx);background:var(--bg)}
+.s-num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--bg3);color:var(--tx2);font-size:11px;font-weight:600}
+.s-btn.on .s-num{background:var(--coral);color:#fff}
+.s-lbl{font-size:11px;font-weight:500;line-height:1.3}
+
+/* ── Main mockup shell ── */
+.shell{position:relative;height:640px;border:0.5px solid var(--bd);border-top:0;border-radius:0 0 12px 12px;overflow:hidden;background:var(--bg4)}
+
+/* ── Tracking page background ── */
+.page-bg{position:absolute;inset:0;overflow:hidden}
+.pg-nav{background:var(--bg);border-bottom:0.5px solid var(--bd);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.pg-nav-l .co{font-size:11px;color:var(--tx2);display:flex;align-items:center;gap:5px}
+.pg-nav-l .tt{font-size:16px;font-weight:500;margin-top:3px;line-height:1.3}
+.pg-nav-r{display:flex;align-items:center;gap:8px}
+.share-wrap{position:relative;display:inline-block}
+.share-btn{padding:8px 15px;background:var(--coral);color:#fff;border:0;border-radius:8px;font-size:13px;font-weight:500;display:inline-flex;align-items:center;gap:6px}
+.share-btn::after{content:"";position:absolute;inset:-5px;border:2px solid var(--coral);border-radius:12px;animation:pulse 1.6s infinite ease-out;opacity:0;pointer-events:none}
+@keyframes pulse{0%{opacity:.7;transform:scale(1)}100%{opacity:0;transform:scale(1.3)}}
+.pg-tabs{display:flex;gap:8px;padding:12px 24px;background:var(--bg);border-bottom:0.5px solid var(--bd)}
+.pg-tab{flex:1;border:0.5px solid var(--bd);border-radius:8px;padding:9px 10px;font-size:11px;background:var(--bg)}
+.pg-tab.act{border-color:var(--coral);border-width:1.5px}
+.pg-tab b{display:block;font-size:12px;font-weight:500;margin-bottom:2px}
+.pg-tab .st{display:inline-flex;align-items:center;gap:4px}
+.pg-tab .dot{width:6px;height:6px;border-radius:50%;background:var(--tx3)}
+.pg-tab.act .dot{background:var(--coral)}
+.pg-body{padding:20px 24px;display:grid;grid-template-columns:1fr 280px;gap:16px}
+.pg-left{}
+.pg-progress{background:var(--bg);border:0.5px solid var(--bd);border-radius:10px;padding:14px;margin-bottom:14px}
+.prog-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.prog-pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--ok-tx);font-weight:500}
+.prog-pip{width:8px;height:8px;border-radius:50%;background:var(--ok-tx)}
+.prog-bar{height:4px;background:var(--bg3);border-radius:2px;margin-bottom:10px}
+.prog-fill{height:100%;width:54%;background:var(--coral);border-radius:2px}
+.route{display:flex;align-items:center;gap:6px;font-size:12px}
+.r-node{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px}
+.r-dot{width:10px;height:10px;border-radius:50%;border:2px solid var(--tx3);background:var(--bg)}
+.r-dot.done{background:var(--ok-tx);border-color:var(--ok-tx)}
+.r-dot.curr{background:var(--coral);border-color:var(--coral)}
+.r-line{flex:1;height:2px;background:var(--bg3);position:relative}
+.r-line::after{content:"";position:absolute;left:0;top:0;height:100%;width:var(--pct,0%);background:var(--coral)}
+.pg-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.stat{background:var(--bg);border:0.5px solid var(--bd);border-radius:8px;padding:10px 12px}
+.stat .lb{font-size:10px;color:var(--tx3)}
+.stat .vl{font-size:16px;font-weight:500;margin-top:2px}
+.pg-right{display:flex;flex-direction:column;gap:12px}
+.pg-card{background:var(--bg);border:0.5px solid var(--bd);border-radius:10px;padding:14px;font-size:12px}
+.pc-hd{font-size:12px;font-weight:500;display:flex;align-items:center;gap:6px;margin-bottom:10px;color:var(--tx2);text-transform:uppercase;letter-spacing:.3px;font-size:10px}
+.ev-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid var(--bd)}
+.ev-row:last-child{border-bottom:0}
+.ev-row .en{font-size:12px}
+.ev-row .ed{font-size:11px;color:var(--tx3)}
+
+/* ── Dim overlay ── */
+.dim-overlay{position:absolute;inset:0;background:rgba(10,8,6,.45);opacity:0;transition:opacity .28s;pointer-events:none;z-index:5;backdrop-filter:blur(1px)}
+.dim-overlay.on{opacity:1}
+
+/* ── Panel drawer ── */
+.drawer{position:absolute;right:0;top:0;height:100%;width:400px;display:flex;flex-direction:column;background:var(--bg);border-left:0.5px solid var(--bd2);box-shadow:-10px 0 32px rgba(0,0,0,.12);transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);z-index:10}
+.drawer.open{transform:translateX(0)}
+.step-pane{display:none;flex-direction:column;height:100%}
+.step-pane.on{display:flex}
+.p-hd{display:flex;align-items:center;justify-content:space-between;padding:15px 18px;border-bottom:0.5px solid var(--bd);background:var(--bg2);flex-shrink:0;gap:10px}
+.p-hd-l{display:flex;align-items:center;gap:8px;min-width:0}
+.p-title{font-size:14px;font-weight:500}
+.p-sub{font-size:11px;color:var(--tx2);margin-top:2px}
+.p-bd{flex:1;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:14px}
+.p-ft{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 18px;border-top:0.5px solid var(--bd);background:var(--bg2);flex-shrink:0;flex-wrap:wrap}
+
+/* ── Shared UI components ── */
+.icon-btn{width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;border:0.5px solid var(--bd);border-radius:6px;background:transparent;font-size:14px;color:var(--tx2)}
+.icon-btn:hover{background:var(--bg3)}
+.back-btn{width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;border:0.5px solid var(--bd);border-radius:6px;background:transparent;font-size:14px;color:var(--tx2);flex-shrink:0}
+.btn-pri{background:var(--coral);color:#fff;border:0;font-size:13px;font-weight:500;padding:8px 15px;border-radius:8px;display:inline-flex;align-items:center;gap:6px}
+.btn-pri:hover{background:var(--coral-dk)}
+.btn-pri:disabled{opacity:.4;cursor:not-allowed}
+.btn-sec{background:var(--bg);color:var(--tx);border:0.5px solid var(--bd2);font-size:13px;font-weight:500;padding:8px 14px;border-radius:8px;display:inline-flex;align-items:center;gap:6px}
+.btn-sec:hover{background:var(--bg2)}
+.btn-sec:disabled{opacity:.4;cursor:not-allowed}
+.btn-xs{background:var(--bg);color:var(--tx2);border:0.5px solid var(--bd);font-size:11px;font-weight:500;padding:4px 9px;border-radius:6px;display:inline-flex;align-items:center;gap:4px}
+.btn-xs:hover{background:var(--bg2)}
+
+.p-card{border:0.5px solid var(--bd);border-radius:10px;padding:13px 14px}
+.p-card-hd{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
+.pct{font-size:13px;font-weight:500;display:flex;align-items:center;gap:6px}
+.pcd{font-size:12px;color:var(--tx2);line-height:1.45;margin-top:2px}
+.link-row{display:flex;align-items:center;gap:8px;background:var(--bg2);border-radius:8px;padding:8px 10px;margin-top:10px;font-family:var(--mono);font-size:11.5px;color:var(--tx2)}
+.link-row span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acts{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+
+.empty-state{background:var(--bg2);border-radius:10px;padding:18px;text-align:center;margin-top:12px}
+.empty-state i.ic{font-size:26px;color:var(--coral)}
+.empty-state p{font-size:12px;color:var(--tx2);margin-top:6px;line-height:1.5}
+.empty-state p.sm{font-size:11px;color:var(--tx3);margin-top:3px}
+
+.links-tbl{width:100%;border-collapse:collapse;margin-top:10px;font-size:12px}
+.links-tbl th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.4px;color:var(--tx3);font-weight:500;padding:5px 8px;border-bottom:0.5px solid var(--bd)}
+.links-tbl td{padding:9px 8px;border-bottom:0.5px solid var(--bd);vertical-align:middle}
+.links-tbl tr:last-child td{border-bottom:0}
+.lnk-meta{font-size:10px;color:var(--tx3);margin-top:2px}
+.r-acts{display:flex;gap:4px}
+.m-chip{font-size:10px;font-weight:500;padding:1px 6px;border-radius:4px;background:var(--wn-bg);color:var(--wn-tx);margin-left:4px}
+
+/* ── Name input card ── */
+.name-card{background:var(--bg2);border-radius:10px;padding:12px 14px}
+.name-card label{font-size:12px;color:var(--tx2);font-weight:500}
+.name-card input{margin-top:6px;width:100%;font-size:14px;font-weight:500;border:0.5px solid var(--bd2);border-radius:8px;padding:8px 10px;background:var(--bg)}
+.name-card input:focus{outline:2px solid var(--coral);outline-offset:-2px}
+.name-card .hint{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--tx3);margin-top:6px}
+
+/* ── Quick settings ── */
+.quick-card{border:1.5px solid var(--coral);border-radius:10px;overflow:hidden}
+.quick-hdr{display:flex;align-items:center;gap:10px;padding:12px 14px;background:#FFF5F2;border-bottom:0.5px solid rgba(216,90,48,.15)}
+.quick-hdr i.icon{font-size:18px;color:var(--coral)}
+.quick-hdr .qt{font-size:13px;font-weight:500}
+.quick-hdr .qs{font-size:11px;color:var(--tx2);margin-top:1px}
+.q-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border-bottom:0.5px solid var(--bd)}
+.q-row:last-child{border-bottom:0}
+.q-left{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
+.q-ic{width:32px;height:32px;border-radius:8px;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--tx2);flex-shrink:0}
+.q-label{font-size:13px;font-weight:500}
+.q-sub{font-size:11px;color:var(--tx2);margin-top:2px}
+.q-seg{display:inline-flex;border:0.5px solid var(--bd2);border-radius:7px;overflow:hidden;flex-shrink:0}
+.q-seg button{font-size:12px;font-weight:500;padding:6px 12px;background:transparent;color:var(--tx2);border:0;border-left:0.5px solid var(--bd);display:inline-flex;align-items:center;gap:4px}
+.q-seg button:first-child{border-left:0}
+.q-seg button.on.show{background:var(--ok-bg);color:var(--ok-tx)}
+.q-seg button.on.mask{background:var(--wn-bg);color:var(--wn-tx)}
+.q-seg button:hover:not(.on){background:var(--bg2)}
+
+/* ── Advanced settings accordion ── */
+.adv-section{border:0.5px solid var(--bd);border-radius:10px;overflow:hidden}
+.adv-btn{width:100%;display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--bg2);border:0;font-size:13px;font-weight:500;color:var(--tx);text-align:left}
+.adv-btn:hover{background:var(--bg3)}
+.adv-l{display:flex;align-items:center;gap:8px}
+.adv-r{display:flex;align-items:center;gap:8px}
+.adv-badge{font-size:11px;font-weight:500;padding:2px 7px;border-radius:99px;background:var(--bg3);color:var(--tx2)}
+.adv-chev{font-size:14px;color:var(--tx3);transition:transform .2s}
+.adv-chev.open{transform:rotate(180deg)}
+.adv-body{display:none;max-height:340px;overflow-y:auto;background:var(--bg)}
+
+/* ── Advanced editor rows (same as before, smaller) ── */
+.eg-grp{border-bottom:0.5px solid var(--bd)}
+.eg-grp:last-child{border-bottom:0}
+.eg-hd{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:8px 14px 5px;background:var(--bg2);position:sticky;top:0;z-index:1}
+.eg-hd .gt{font-size:12px;font-weight:500}
+.eg-hd .gs{font-size:10px;color:var(--tx3)}
+.eg-sub{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--tx3);padding:7px 14px 2px}
+.f-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 14px;border-bottom:0.5px solid var(--bd)}
+.f-row:last-child{border-bottom:0}
+.f-meta{min-width:0;flex:1}
+.f-lbl{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--tx);flex-wrap:wrap}
+.f-lock{font-size:10px;color:var(--tx3)}
+.f-edit{font-size:12px;color:#2563EB}
+.f-new{font-size:9px;font-weight:600;padding:1px 4px;border-radius:3px;background:var(--wn-bg);color:var(--wn-tx);text-transform:uppercase}
+.f-quick-note{font-size:9px;color:var(--coral);font-weight:500;background:#FFF5F2;padding:1px 5px;border-radius:3px}
+.f-val{font-size:11px;color:var(--tx2);margin-top:2px;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.f-mask-info{font-size:10px;color:var(--wn-tx);background:var(--wn-bg);padding:1px 5px;border-radius:3px;font-weight:500}
+.f-row[data-state=mask] .f-actual{text-decoration:line-through;opacity:.4}
+.f-row[data-state=hide] .f-lbl{opacity:.38}
+.f-row[data-state=hide] .f-val{opacity:.38;text-decoration:line-through}
+.seg3{display:inline-flex;border:0.5px solid var(--bd2);border-radius:6px;overflow:hidden;flex-shrink:0}
+.seg3 button{font-size:11px;font-weight:500;padding:4px 7px;background:transparent;color:var(--tx2);border:0;border-left:0.5px solid var(--bd);display:inline-flex;align-items:center;gap:2px}
+.seg3 button:first-child{border-left:0}
+.seg3 button.on.show{background:var(--ok-bg);color:var(--ok-tx)}
+.seg3 button.on.mask{background:var(--wn-bg);color:var(--wn-tx)}
+.seg3 button.on.hide{background:var(--bg3);color:var(--tx)}
+.seg3 button.dis{opacity:.2;cursor:not-allowed}
+
+/* ── Step 5 success ── */
+.success-wrap{text-align:center;padding:24px 16px}
+.suc-icon{width:50px;height:50px;border-radius:50%;background:var(--ok-bg);color:var(--ok-tx);display:inline-flex;align-items:center;justify-content:center;font-size:26px}
+.suc-wrap h4{font-size:16px;font-weight:500;margin:12px 0 4px}
+.suc-url{font-family:var(--mono);font-size:11.5px;background:var(--bg2);padding:10px 12px;border-radius:8px;margin:14px 0;display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--tx2)}
+
+/* ── Bottom nav & caption ── */
+.nav-row{display:flex;justify-content:space-between;align-items:center;margin-top:10px;gap:12px;flex-wrap:wrap}
+.nav-row span{font-size:12px;color:var(--tx3)}
+.caption{font-size:12px;color:var(--tx2);background:var(--bg);border:0.5px solid var(--bd);border-top:0;border-radius:0 0 10px 10px;padding:10px 16px;line-height:1.6;margin-bottom:10px}
+.caption b{color:var(--tx)}
+.pg-foot{text-align:center;font-size:11px;color:var(--tx3);margin-top:8px}
+</style>
+</head>
+<body>
+<div class="pg">
+  <!-- Page header -->
+  <div class="pg-hd">
+    <div>
+      <h1>Share flow — interactive preview</h1>
+      <p>Click any step or use Continue / Back to walk the journey. Use ← → arrow keys too.</p>
+    </div>
+    <div class="brand">silq</div>
+  </div>
+
+  <!-- Stepper -->
+  <div class="stepper">
+    <button class="s-btn on" data-step="1"><span class="s-num">1</span><span class="s-lbl">Click Share</span></button>
+    <button class="s-btn" data-step="2"><span class="s-num">2</span><span class="s-lbl">Panel opens</span></button>
+    <button class="s-btn" data-step="3"><span class="s-num">3</span><span class="s-lbl">Returning user</span></button>
+    <button class="s-btn" data-step="4"><span class="s-num">4</span><span class="s-lbl">Configure &amp; create</span></button>
+    <button class="s-btn" data-step="5"><span class="s-num">5</span><span class="s-lbl">Link ready</span></button>
+  </div>
+
+  <!-- Shell -->
+  <div class="shell">
+
+    <!-- Tracking page background -->
+    <div class="page-bg">
+      <div class="pg-nav">
+        <div class="pg-nav-l">
+          <div class="co"><i class="ti ti-building"></i> Naadam Inc</div>
+          <div class="tt">PRODAMEX | Batam &lt;&gt; Houston | 1 × 40HC | CRD: 12 Aug</div>
+        </div>
+        <div class="pg-nav-r">
+          <div class="share-wrap"><button class="share-btn"><i class="ti ti-share"></i> Share</button></div>
+        </div>
+      </div>
+      <div class="pg-tabs">
+        <div class="pg-tab act"><b>SHIPMENT 1</b><span class="st"><span class="dot"></span> In transit · VNSGN → USCVG</span></div>
+        <div class="pg-tab"><b>SHIPMENT 2</b><span class="st"><span class="dot" style="background:#E53E3E"></span> Cancelled</span></div>
+        <div class="pg-tab"><b>SHIPMENT 3</b><span class="st"><span class="dot"></span> At origin</span></div>
+        <div class="pg-tab"><b>SHIPMENT 4</b><span class="st"><span class="dot"></span> In transit</span></div>
+      </div>
+      <div class="pg-body">
+        <div class="pg-left">
+          <div class="pg-progress">
+            <div class="prog-hd">
+              <div class="prog-pill"><span class="prog-pip"></span> In Progress</div>
+              <span style="font-size:12px;font-weight:500"><i class="ti ti-clock" style="color:var(--tx2)"></i> 14 / 26 days</span>
+            </div>
+            <div class="prog-bar"><div class="prog-fill"></div></div>
+            <div class="route">
+              <div class="r-node"><div class="r-dot done"></div><span>CNSHA</span></div>
+              <div class="r-line" style="--pct:100%"></div>
+              <div class="r-node"><div class="r-dot done"></div><span>Shanghai</span></div>
+              <div class="r-line" style="--pct:45%"><i class="ti ti-ship" style="position:absolute;left:40%;top:-10px;font-size:16px;color:var(--coral)"></i></div>
+              <div class="r-node"><div class="r-dot curr"></div><span>USLAX</span></div>
+              <div class="r-line" style="--pct:0%"></div>
+              <div class="r-node"><div class="r-dot"></div><span>LA</span></div>
+            </div>
+          </div>
+          <div class="pg-stats">
+            <div class="stat"><div class="lb">Weight</div><div class="vl">7,236 KG</div></div>
+            <div class="stat"><div class="lb">Volume</div><div class="vl">27.4 CBM</div></div>
+            <div class="stat"><div class="lb">Container</div><div class="vl" style="font-size:13px">TEMU8906255</div></div>
+            <div class="stat"><div class="lb">CO₂</div><div class="vl">56 KGCO₂</div></div>
+          </div>
+        </div>
+        <div class="pg-right">
+          <div class="pg-card">
+            <div class="pc-hd"><i class="ti ti-anchor"></i> Shipment events</div>
+            <div class="ev-row"><span class="en">Shipper Cargo Confirmation</span><span class="ed" style="color:var(--ok-tx)">✓ 15 Apr</span></div>
+            <div class="ev-row"><span class="en">Departure from Origin</span><span class="ed" style="color:var(--ok-tx)">✓ 19 Apr</span></div>
+            <div class="ev-row"><span class="en">HBL Released</span><span class="ed" style="color:var(--ok-tx)">✓ 07 May</span></div>
+            <div class="ev-row"><span class="en">Import Customs Cleared</span><span class="ed">EST 25 Jun</span></div>
+            <div class="ev-row"><span class="en">Arrived at Destination</span><span class="ed">EST 29 Jun</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dim overlay -->
+    <div class="dim-overlay" id="dim"></div>
+
+    <!-- Right-side panel drawer -->
+    <div class="drawer" id="drawer">
+
+      <!-- ── Step 2: First-time user ── -->
+      <div class="step-pane" data-pane="2">
+        <div class="p-hd">
+          <div class="p-hd-l"><div><div class="p-title">Share shipment</div><div class="p-sub">PRODAMEX | Batam &lt;&gt; Houston</div></div></div>
+          <button class="icon-btn"><i class="ti ti-x"></i></button>
+        </div>
+        <div class="p-bd">
+          <div class="p-card">
+            <div class="pct"><i class="ti ti-link"></i> Default share link</div>
+            <div class="pcd">Full visibility — recipient sees every field on this page.</div>
+            <div class="link-row"><span>https://silq.io/s/prodamex-7Hn4Ka</span><button class="btn-xs"><i class="ti ti-copy"></i> Copy</button></div>
+            <div class="acts"><button class="btn-sec" style="font-size:12px;padding:6px 12px"><i class="ti ti-mail"></i> Share via email</button></div>
+          </div>
+          <div class="p-card">
+            <div class="pct"><i class="ti ti-settings"></i> Custom share link</div>
+            <div class="pcd">Control what each recipient sees — show, mask, or hide any field.</div>
+            <div class="empty-state">
+              <i class="ti ti-sparkles ic"></i>
+              <p><b>No custom links yet.</b></p>
+              <p class="sm">Create a custom page for your recipient — takes less than 30 seconds.</p>
+              <div style="margin-top:12px"><button class="btn-pri" style="margin:0 auto;font-size:12px;padding:7px 13px"><i class="ti ti-plus"></i> Create custom share link</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Step 3: Returning user ── -->
+      <div class="step-pane" data-pane="3">
+        <div class="p-hd">
+          <div class="p-hd-l"><div><div class="p-title">Share shipment</div><div class="p-sub">PRODAMEX | Batam &lt;&gt; Houston</div></div></div>
+          <button class="icon-btn"><i class="ti ti-x"></i></button>
+        </div>
+        <div class="p-bd">
+          <div class="p-card">
+            <div class="pct"><i class="ti ti-link"></i> Default share link</div>
+            <div class="link-row"><span>https://silq.io/s/prodamex-7Hn4Ka</span><button class="btn-xs"><i class="ti ti-copy"></i> Copy</button></div>
+            <div class="acts"><button class="btn-sec" style="font-size:12px;padding:6px 12px"><i class="ti ti-mail"></i> Share via email</button></div>
+          </div>
+          <div class="p-card">
+            <div class="p-card-hd"><div class="pct"><i class="ti ti-settings"></i> Custom share links</div><button class="btn-xs"><i class="ti ti-plus"></i> New</button></div>
+            <table class="links-tbl">
+              <thead><tr><th>Link name</th><th>Created</th><th></th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><div>Customer view<span class="m-chip">3 masked</span></div><div class="lnk-meta">Warehouse, MBL, carrier obscured</div></td>
+                  <td><div>21 May</div><div class="lnk-meta">Anurag</div></td>
+                  <td><div class="r-acts"><button class="icon-btn" title="Preview"><i class="ti ti-eye"></i></button><button class="icon-btn" title="Copy"><i class="ti ti-copy"></i></button><button class="icon-btn" title="Email"><i class="ti ti-mail"></i></button></div></td>
+                </tr>
+                <tr>
+                  <td><div>Carrier-facing<span class="m-chip">5 masked</span></div><div class="lnk-meta">Booking, HBL, container # hidden</div></td>
+                  <td><div>14 May</div><div class="lnk-meta">Anurag</div></td>
+                  <td><div class="r-acts"><button class="icon-btn"><i class="ti ti-eye"></i></button><button class="icon-btn"><i class="ti ti-copy"></i></button><button class="icon-btn"><i class="ti ti-mail"></i></button></div></td>
+                </tr>
+                <tr>
+                  <td><div>Public tracking<span class="m-chip">events only</span></div><div class="lnk-meta">No commercial data</div></td>
+                  <td><div>02 May</div><div class="lnk-meta">Anurag</div></td>
+                  <td><div class="r-acts"><button class="icon-btn"><i class="ti ti-eye"></i></button><button class="icon-btn"><i class="ti ti-copy"></i></button><button class="icon-btn"><i class="ti ti-mail"></i></button></div></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Step 4: Configure & create ── -->
+      <div class="step-pane" data-pane="4">
+        <div class="p-hd">
+          <div class="p-hd-l">
+            <button class="back-btn"><i class="ti ti-arrow-left"></i></button>
+            <div><div class="p-title">Create share link</div><div class="p-sub">Customize what your recipient sees</div></div>
+          </div>
+          <button class="icon-btn"><i class="ti ti-x"></i></button>
+        </div>
+        <div class="p-bd">
+          <!-- Custom link name -->
+          <div class="name-card">
+            <label>Custom link name</label>
+            <input type="text" id="link-name" value="Customer-facing view" />
+            <div class="hint"><i class="ti ti-sparkles" style="color:var(--coral)"></i> AI-suggested from your settings — editable</div>
+          </div>
+
+          <!-- Quick settings — 2 promoted fields -->
+          <div class="quick-card">
+            <div class="quick-hdr">
+              <i class="ti ti-bolt icon"></i>
+              <div>
+                <div class="qt">Quick settings</div>
+                <div class="qs">The two fields most commonly adjusted before sharing</div>
+              </div>
+            </div>
+            <!-- Field 1 -->
+            <div class="q-row" id="qrow1">
+              <div class="q-left">
+                <div class="q-ic"><i class="ti ti-building-warehouse"></i></div>
+                <div>
+                  <div class="q-label">Supplier / Shipper location</div>
+                  <div class="q-sub">Factory or warehouse address &amp; name</div>
+                </div>
+              </div>
+              <div class="q-seg" id="qseg1">
+                <button class="on show" data-v="show"><i class="ti ti-eye"></i> Show</button>
+                <button data-v="mask"><i class="ti ti-eye-off"></i> Mask</button>
+              </div>
+            </div>
+            <!-- Field 2 -->
+            <div class="q-row" style="border-bottom:0" id="qrow2">
+              <div class="q-left">
+                <div class="q-ic"><i class="ti ti-building"></i></div>
+                <div>
+                  <div class="q-label">Shipper name</div>
+                  <div class="q-sub">Company name shown to recipient</div>
+                </div>
+              </div>
+              <div class="q-seg" id="qseg2">
+                <button class="on show" data-v="show"><i class="ti ti-eye"></i> Show</button>
+                <button data-v="mask"><i class="ti ti-eye-off"></i> Mask</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Advanced settings accordion -->
+          <div class="adv-section">
+            <button class="adv-btn" id="adv-btn">
+              <span class="adv-l"><i class="ti ti-adjustments-alt"></i> Advanced settings</span>
+              <span class="adv-r"><span class="adv-badge">38 more fields</span><i class="ti ti-chevron-down adv-chev" id="adv-chev"></i></span>
+            </button>
+            <div class="adv-body" id="adv-body">
+              <div id="adv-editor"></div>
+            </div>
+          </div>
+        </div>
+        <div class="p-ft">
+          <span id="s4-sum" style="font-size:11px;color:var(--tx2)"></span>
+          <div style="display:flex;gap:8px">
+            <button class="btn-sec" style="font-size:12px;padding:7px 13px">Cancel</button>
+            <button class="btn-pri" style="font-size:12px;padding:7px 13px"><i class="ti ti-check"></i> Create link</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Step 5: Success ── -->
+      <div class="step-pane" data-pane="5">
+        <div class="p-hd">
+          <div class="p-hd-l"><div><div class="p-title">Share shipment</div><div class="p-sub">PRODAMEX | Batam &lt;&gt; Houston</div></div></div>
+          <button class="icon-btn"><i class="ti ti-x"></i></button>
+        </div>
+        <div class="p-bd">
+          <div class="success-wrap suc-wrap">
+            <div class="suc-icon"><i class="ti ti-check"></i></div>
+            <h4>Custom link ready</h4>
+            <div style="font-size:12px;color:var(--tx2)">"Customer-facing view" · 4 fields masked, 2 hidden</div>
+            <div class="suc-url"><span>https://silq.io/s/custom/cust-9Hx2Pn</span><button class="btn-xs"><i class="ti ti-copy"></i> Copy</button></div>
+            <div class="acts" style="justify-content:center">
+              <button class="btn-pri" style="font-size:12px"><i class="ti ti-mail"></i> Share via email</button>
+              <button class="btn-sec" style="font-size:12px"><i class="ti ti-eye"></i> Preview</button>
+            </div>
+            <div style="margin-top:18px;font-size:12px"><a href="#" style="color:var(--coral);text-decoration:none">← Back to all custom links</a></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /drawer -->
+  </div><!-- /shell -->
+
+  <!-- Caption (below shell, changes per step) -->
+  <div class="caption" id="caption"></div>
+
+  <!-- Nav buttons -->
+  <div class="nav-row">
+    <button class="btn-sec" id="prev"><i class="ti ti-arrow-left"></i> Back</button>
+    <span id="nav-info">Step 1 of 5 — Click Share</span>
+    <button class="btn-pri" id="next">Continue <i class="ti ti-arrow-right"></i></button>
+  </div>
+
+  <div class="pg-foot">Silq · Internal design preview · Use ← → arrow keys or click steps to navigate</div>
+</div>
+
+<script>
+(function(){
+  /* ── Data for advanced editor ── */
+  var QUICK_IDS = ['Origin Address','Shipper: HBL'];
+  var ED=[
+    {grp:'Header',items:[
+      {l:'Org Name',v:'Naadam Inc',mand:1,mask:0,def:'show'},
+      {l:'Project Title',v:'PRODAMEX | Batam <> Houston | 1 × 40HC | CRD: 12 Aug',mand:1,mask:0,edit:1,def:'show'},
+      {l:'Silq Identifier',v:'SILQ-SHIPMENT 1',mand:0,mask:0,def:'show'},
+      {l:'Origin Port',v:'VNSGN · Saigon',mand:1,mask:1,mn:'Origin Port',def:'show'},
+      {l:'Type of Movement',v:"FCL 40'",mand:1,mask:0,def:'show'},
+      {l:'Destination Port',v:'USCVG · Houston',mand:1,mask:1,mn:'Destination Port',def:'show'},
+      {l:'Map view',v:'Interactive vessel route map',mand:1,mask:0,def:'show'}
+    ]},
+    {grp:'Overview',items:[
+      {l:'Weight',v:'7,236 KG',mand:1,mask:0,def:'show'},
+      {l:'CO\u2082',v:'56 KGCO\u2082',mand:1,mask:0,def:'show'},
+      {l:'Container Type',v:"40' HC",mand:1,mask:0,def:'show'},
+      {l:'Container Number with Dates',v:'TEMU8906255 · 17 Apr',mand:0,mask:0,def:'show'},
+      {l:'PO Number',v:'PO-94223',mand:0,mask:0,isNew:1,def:'show'},
+      {l:'MBL',v:'MF66549500',mand:1,mask:0,def:'show'},
+      {l:'CRD',v:'12 Aug 2025',mand:1,mask:0,def:'show'},
+      {l:'Booking Number',v:'BK-77232',mand:1,mask:0,def:'show'},
+      {l:'Carrier name',v:'CMA CGM',mand:0,mask:1,mn:'Carrier',def:'show'},
+      {l:'Shipper: HBL',v:'House BL details',mand:0,mask:0,def:'show',isQuick:1},
+      {l:'Vessel Name',v:'CMA CGM Marco Polo',mand:0,mask:0,def:'show'},
+      {l:'AMS no.',v:'AMS-001231',mand:1,mask:0,def:'show'},
+      {l:'SLAC Count',v:'12 cartons',mand:1,mask:0,def:'show'}
+    ]},
+    {grp:'Route Detail',sub:'Name & date of arrival',items:[
+      {l:'Origin Address',v:'Naadam Factory, Batam · 15 Apr',mand:0,mask:1,mn:'Origin Factory/Warehouse',def:'show',isQuick:1},
+      {l:'Origin CFS',v:'DT Shanghai CFS · 31 May',mand:0,mask:1,mn:'Origin CFS',def:'show'},
+      {l:'Origin Port',v:'Shanghai · 06 Jun',mand:0,mask:1,mn:'Origin Port',def:'show'},
+      {l:'Destination Port',v:'Los Angeles · EST 29 Jun',mand:0,mask:1,mn:'Destination Port',def:'show'},
+      {l:'Destination CFS',v:'LA CFS · EST 01 Jul',mand:0,mask:1,mn:'Destination CFS',def:'show'},
+      {l:'Destination Address',v:'Dimensional Merchandising · EST 02 Jul',mand:0,mask:1,mn:'Destination Factory/Warehouse',def:'show'},
+      {l:'Transit time between nodes',v:'4d · 17d · 4d',mand:0,mask:1,mn:'Hide transit days',def:'show'}
+    ]},
+    {grp:'Shipment Events',sub:'Mask hides the date only',subs:[
+      {name:'Origin',items:[
+        {l:'Shipper Cargo Confirmation',v:'15 Apr 2026',mand:1,mask:1,mn:'Hide date',def:'show'},
+        {l:'Freight Booking Confirmed',v:'15 Apr 2026',mand:1,mask:1,mn:'Hide date',def:'show'},
+        {l:'Confirming Cargo Pickup',v:'16 Apr 2026',mand:1,mask:1,mn:'Hide date',def:'show'},
+        {l:'Origin Shipping Documents',v:'22 Apr 2026',mand:1,mask:1,mn:'Hide date',def:'show'},
+        {l:'Container Load Plan',v:'17 Apr 2026',mand:1,mask:1,mn:'Hide date',def:'show'},
+        {l:'Cargo Handover at Port',v:'17 Apr 2026',mand:1,mask:1,mn:'Hide date',def:'show'},
+        {l:'Departure from Origin',v:'19 Apr 2026',mand:1,mask:1,mn:'Hide date',def:'show'}
+      ]},
+      {name:'Transit',items:[
+        {l:'HBL Released',v:'07 May 2026',mand:1,mask:1,mn:'Hide date',def:'show'},
+        {l:'MBL Released',v:'16 Apr 2026',mand:1,mask:1,mn:'Hide date',def:'show'},
+        {l:'HTS code Confirmation',v:'10 May 2026',mand:1,mask:1,mn:'Hide date',def:'show'},
+        {l:'Import Customs Cleared',v:'EST 25 Jun',mand:1,mask:1,mn:'Hide date',def:'show'}
+      ]},
+      {name:'Destination',items:[
+        {l:'Create and send DO',v:'EST 09 May',mand:1,mask:1,mn:'Hide date',def:'show'},
+        {l:'Arrived at Destination Sea Port',v:'EST 29 Jun',mand:1,mask:1,mn:'Hide date',def:'show'},
+        {l:'Confirm Container Available',v:'EST 30 Jun',mand:1,mask:1,mn:'Hide date',def:'show'}
+      ]},
+      {name:'Customer Invoicing',items:[
+        {l:'Customer Invoicing',v:'EST 05 Jul',mand:1,mask:1,mn:'Hide date',def:'show'}
+      ]}
+    ]},
+    {grp:'Documents & Image Preview',items:[
+      {l:'MBL Preview',v:'View PDF \u2192',mand:0,mask:1,mn:'Remove CTA',def:'show'},
+      {l:'HBL Preview',v:'View PDF \u2192',mand:0,mask:1,mn:'Remove CTA',def:'show'},
+      {l:'Cargo Images',v:'8 photos',mand:0,mask:1,mn:'Hide gallery',def:'show'}
+    ]}
+  ];
+
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+
+  function makeSeg3(it){
+    var def=it.def||'show'; var mD=!it.mask; var hD=!!it.mand;
+    function b(st,ic,lb){
+      var dis=(st==='mask'&&mD)||(st==='hide'&&hD);
+      var on=!dis&&st===def;
+      return '<button class="'+(on?'on '+st:'')+' '+(dis?'dis':'')+'" '+(dis?'disabled':'')+' data-st="'+st+'"><i class="ti '+ic+'"></i>'+lb+'</button>';
+    }
+    return '<div class="seg3">'+b('show','ti-eye','Show')+b('mask','ti-eye-off','Mask')+b('hide','ti-circle-minus','Hide')+'</div>';
+  }
+
+  function makeRow(it){
+    var def=it.def||'show';
+    var vHtml='';
+    if(def==='mask'&&it.mn){vHtml='<span class="f-mask-info">\u2192 '+esc(it.mn)+'</span>'+(it.v?'<span class="f-actual">'+esc(it.v)+'</span>':'');}
+    else if(it.v){vHtml=esc(it.v);}
+    return '<div class="f-row" data-state="'+def+'">'+
+      '<div class="f-meta">'+
+        '<div class="f-lbl">'+
+          (it.mand?'<i class="ti ti-lock-square f-lock" title="Mandatory"></i>':'')+
+          '<span>'+esc(it.l)+'</span>'+
+          (it.edit?'<i class="ti ti-pencil f-edit"></i>':'')+
+          (it.isNew?'<span class="f-new">New</span>':'')+
+          (it.isQuick?'<span class="f-quick-note">\u2197 Quick settings</span>':'')+
+        '</div>'+
+        (vHtml?'<div class="f-val">'+vHtml+'</div>':'')+
+      '</div>'+
+      (it.isQuick?'<div style="font-size:11px;color:var(--tx3);flex-shrink:0">Controlled above</div>':makeSeg3(it))+
+    '</div>';
+  }
+
+  function renderAdv(){
+    var el=document.getElementById('adv-editor');
+    if(!el||el.dataset.r) return;
+    var out='';
+    ED.forEach(function(g){
+      out+='<div class="eg-grp"><div class="eg-hd"><span class="gt">'+esc(g.grp)+'</span>'+(g.sub?'<span class="gs">'+esc(g.sub)+'</span>':'')+'</div>';
+      if(g.subs){
+        g.subs.forEach(function(s){out+='<div class="eg-sub">'+esc(s.name)+'</div>';s.items.forEach(function(it){out+=makeRow(it);});});
+      } else if(g.items){
+        g.items.forEach(function(it){out+=makeRow(it);});
+      }
+      out+='</div>';
+    });
+    el.innerHTML=out;
+    el.dataset.r='1';
+    el.querySelectorAll('.f-row').forEach(function(r){
+      r.querySelectorAll('.seg3 button:not(.dis)').forEach(function(b){
+        b.addEventListener('click',function(){
+          var st=b.dataset.st; r.dataset.state=st;
+          r.querySelectorAll('.seg3 button').forEach(function(bb){bb.classList.remove('on','show','mask','hide');});
+          b.classList.add('on',st);
+          updateSum();
+        });
+      });
+    });
+    updateSum();
+  }
+
+  function updateSum(){
+    var rows=document.querySelectorAll('#adv-editor .f-row');
+    var s=0,m=0,h=0;
+    document.querySelectorAll('#qseg1 button.on,#qseg2 button.on').forEach(function(b){
+      if(b.dataset.v==='show')s++; else if(b.dataset.v==='mask')m++;
+    });
+    rows.forEach(function(r){if(!r.querySelector('.f-quick-note')){var st=r.dataset.state;if(st==='show')s++;else if(st==='mask')m++;else if(st==='hide')h++;}});
+    var el=document.getElementById('s4-sum');
+    if(el)el.innerHTML='<i class="ti ti-eye" style="color:var(--ok-tx)"></i> '+s+' shown &nbsp;<i class="ti ti-eye-off" style="color:var(--wn-tx)"></i> '+m+' masked &nbsp;<i class="ti ti-circle-minus"></i> '+h+' hidden';
+  }
+
+  /* ── Quick field toggles ── */
+  ['qseg1','qseg2'].forEach(function(id){
+    var seg=document.getElementById(id);
+    if(!seg) return;
+    seg.querySelectorAll('button').forEach(function(b){
+      b.addEventListener('click',function(){
+        seg.querySelectorAll('button').forEach(function(bb){bb.classList.remove('on','show','mask');});
+        b.classList.add('on',b.dataset.v);
+        updateSum();
+      });
+    });
+  });
+
+  /* ── Advanced accordion ── */
+  document.getElementById('adv-btn').addEventListener('click',function(){
+    var body=document.getElementById('adv-body');
+    var chev=document.getElementById('adv-chev');
+    var open=body.style.display==='block';
+    body.style.display=open?'none':'block';
+    chev.classList.toggle('open',!open);
+    if(!open) setTimeout(function(){renderAdv(); updateSum();},10);
+  });
+
+  /* ── Step navigation ── */
+  var cur=1; var total=5;
+  var captions={
+    1:'From any shipment or project page, the <b>Share button</b> sits top-right with a pulsing indicator. Clicking it slides a panel in from the right edge of the screen.',
+    2:'The side panel opens with two options: a <b>Default share link</b> (full visibility, copy or email) and a <b>Custom share link</b>. First-time users see an empty state with a single clear CTA.',
+    3:'Returning users see their existing custom links in a table with <b>AI-generated names</b> that describe what\'s masked. Each row has Copy, Preview, and Email actions, plus a New button to create another.',
+    4:'Creating a link is fast: just two <b>Quick settings</b> (Supplier/Shipper location and Shipper name) are shown upfront — the fields most commonly adjusted before sharing. Everything else is one click away in <b>Advanced settings</b>.',
+    5:'Once the link is created, the user can <b>copy the URL</b> or <b>share via email</b>. A preview button lets them see exactly what the recipient will see. Back link returns to the full list of custom links.'
+  };
+  var labels={1:'Click Share',2:'Panel opens',3:'Returning user',4:'Configure & create',5:'Link ready'};
+
+  function setStep(n){
+    cur=Math.max(1,Math.min(total,n));
+    document.querySelectorAll('.s-btn').forEach(function(b){b.classList.toggle('on',+b.dataset.step===cur);});
+    var drawer=document.getElementById('drawer');
+    var dim=document.getElementById('dim');
+    var panelOpen=cur>1;
+    drawer.classList.toggle('open',panelOpen);
+    dim.classList.toggle('on',panelOpen);
+    drawer.querySelectorAll('.step-pane').forEach(function(p){p.classList.toggle('on',+p.dataset.pane===cur);});
+    document.getElementById('nav-info').textContent='Step '+cur+' of '+total+' — '+labels[cur];
+    document.getElementById('prev').disabled=cur===1;
+    document.getElementById('next').disabled=cur===total;
+    document.getElementById('caption').innerHTML=captions[cur];
+    if(cur===4) setTimeout(updateSum,50);
+  }
+
+  document.querySelectorAll('.s-btn').forEach(function(b){b.addEventListener('click',function(){setStep(+b.dataset.step);});});
+  document.getElementById('prev').addEventListener('click',function(){setStep(cur-1);});
+  document.getElementById('next').addEventListener('click',function(){setStep(cur+1);});
+  document.addEventListener('keydown',function(e){
+    if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA') return;
+    if(e.key==='ArrowRight') setStep(cur+1);
+    else if(e.key==='ArrowLeft') setStep(cur-1);
+  });
+
+  setStep(1);
+})();
+</script>
+</body>
+</html>
