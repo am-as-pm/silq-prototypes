@@ -33,6 +33,7 @@
     --blue: #2563eb;
     --blue-bg: #eff6ff;
     --blue-light: #dbeafe;
+    --lane-draft: #fafaf9;
     --lane-submitted: #f0f4ff;
     --lane-awaiting: #fefce8;
     --lane-expired: #fef2f2;
@@ -234,6 +235,68 @@
     font-weight: 500;
   }
 
+  /* Progress bar */
+  .progress-bar-section {
+    display: none;
+    padding: 14px 28px;
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+    gap: 16px;
+  }
+
+  .progress-bar-section.visible { display: flex; }
+
+  .progress-bar-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .progress-bar-labels {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+  }
+
+  .progress-label-left {
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .progress-label-right {
+    font-weight: 500;
+    color: var(--text-secondary);
+  }
+
+  .progress-bar-track {
+    width: 100%;
+    height: 10px;
+    background: var(--border-light);
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.3s ease, background 0.3s ease;
+  }
+
+  .progress-bar-fill.green { background: var(--green); }
+  .progress-bar-fill.yellow { background: var(--yellow); }
+  .progress-bar-fill.red { background: var(--red); }
+
+  .progress-percentage {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    white-space: nowrap;
+  }
+
   /* Filter bar */
   .filter-bar {
     display: flex;
@@ -304,6 +367,29 @@
   }
 
   .clear-filters-btn.visible { display: inline; }
+
+  .filter-checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 8px;
+  }
+
+  .filter-checkbox-wrapper label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  .filter-checkbox-wrapper input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+    accent-color: var(--primary);
+  }
 
   /* Kanban board */
   .board-container {
@@ -647,6 +733,8 @@
   .flag[title] { position: relative; }
 
   /* Lane color accents */
+  .lane[data-stage="draft"] .lane-header { background: var(--lane-draft); }
+  .lane[data-stage="draft"] .lane-dot { background: #a8a29e; }
   .lane[data-stage="submitted"] .lane-header { background: var(--lane-submitted); }
   .lane[data-stage="submitted"] .lane-dot { background: #6366f1; }
   .lane[data-stage="awaiting"] .lane-header { background: var(--lane-awaiting); }
@@ -1225,6 +1313,7 @@
     padding: 2px 6px; border-radius: 20px; font-size: 10px; font-weight: 500;
     white-space: nowrap;
   }
+  .tv-stage-pill.draft { background: #f5f5f4; color: #78716c; }
   .tv-stage-pill.submitted { background: #e8eeff; color: #3b5bdb; }
   .tv-stage-pill.awaiting { background: #fef9e7; color: #b8860b; }
   .tv-stage-pill.expired { background: #fde8e8; color: #c44b3f; }
@@ -1234,6 +1323,7 @@
   .tv-stage-dot {
     width: 6px; height: 6px; border-radius: 50%; display: inline-block;
   }
+  .tv-stage-dot.draft { background: #78716c; }
   .tv-stage-dot.submitted { background: #3b5bdb; }
   .tv-stage-dot.awaiting { background: #b8860b; }
   .tv-stage-dot.expired { background: #c44b3f; }
@@ -2200,6 +2290,222 @@
     color: var(--text-secondary); font-family: inherit; transition: all .15s; width: 100%;
   }
   .pod-delete-btn:hover { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+
+  /* Booking Targets Section */
+  .targets-section {
+    padding: 24px 28px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin: 0 28px;
+  }
+
+  .targets-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .targets-section-header h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .targets-current {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: var(--primary-lighter);
+    border: 1px solid var(--primary-light);
+    border-radius: 10px;
+    margin-bottom: 16px;
+  }
+
+  .targets-current-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+
+  .targets-current-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--primary-dark);
+  }
+
+  .targets-current-month {
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+
+  .target-edit-btn {
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--primary);
+    background: var(--card);
+    color: var(--primary);
+    font-family: inherit;
+    transition: all 0.15s;
+    margin-left: auto;
+  }
+
+  .target-edit-btn:hover {
+    background: var(--primary);
+    color: #fff;
+  }
+
+  .targets-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .targets-table th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    padding: 10px 12px;
+    border-bottom: 2px solid var(--border);
+  }
+
+  .targets-table td {
+    padding: 12px;
+    border-bottom: 1px solid var(--border-light);
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  .targets-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .targets-table .target-value {
+    font-weight: 600;
+    color: var(--primary-dark);
+  }
+
+  .targets-table-empty {
+    text-align: center;
+    padding: 20px;
+    color: var(--text-secondary);
+    font-size: 12px;
+  }
+
+  /* Target Modal */
+  .target-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+
+  .target-modal.visible {
+    display: flex;
+  }
+
+  .target-modal-content {
+    background: var(--card);
+    border-radius: 12px;
+    width: 450px;
+    max-width: 90%;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  }
+
+  .target-modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .target-modal-header h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .target-modal-body {
+    padding: 24px;
+  }
+
+  .target-form-group {
+    margin-bottom: 20px;
+  }
+
+  .target-form-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .target-form-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .target-form-input:focus {
+    border-color: var(--primary);
+  }
+
+  .target-modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+
+  .target-modal-btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+
+  .target-modal-btn.cancel {
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+  }
+
+  .target-modal-btn.cancel:hover {
+    background: var(--gray-bg);
+  }
+
+  .target-modal-btn.save {
+    border: 1px solid var(--primary);
+    background: var(--primary);
+    color: #fff;
+  }
+
+  .target-modal-btn.save:hover {
+    background: var(--primary-dark);
+  }
 </style>
 </head>
 <body>
@@ -2271,6 +2577,20 @@
   <div class="action-view" id="actionView">
     <div class="summary-strip" id="summaryStrip"></div>
 
+    <!-- Progress Bar for Target vs Achieved -->
+    <div class="progress-bar-section" id="progressBarSection">
+      <div class="progress-bar-container">
+        <div class="progress-bar-labels">
+          <span class="progress-label-left" id="progressLabelLeft">Achieved: $0</span>
+          <span class="progress-label-right" id="progressLabelRight">Target: $0</span>
+        </div>
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill green" id="progressBarFill" style="width: 0%"></div>
+        </div>
+      </div>
+      <div class="progress-percentage" id="progressPercentage">0%</div>
+    </div>
+
     <div class="filter-bar">
       <label>Filters</label>
       <select class="filter-select" id="filterTeam" onchange="applyFilters()">
@@ -2289,6 +2609,11 @@
       <select class="filter-select" id="filterLane" onchange="applyFilters()">
         <option value="">All Trade Lanes</option>
       </select>
+      <div class="filter-divider"></div>
+      <div class="filter-checkbox-wrapper">
+        <input type="checkbox" id="includeAirExpired" onchange="applyFilters()">
+        <label for="includeAirExpired">Include Air in expired</label>
+      </div>
       <div class="filter-divider"></div>
       <input type="text" class="search-input-sm" placeholder="Search by RFQ ID, client, route..." id="searchInput" oninput="applyFilters()">
       <button class="clear-filters-btn" id="clearBtn" onclick="clearFilters()">Clear all</button>
@@ -2456,6 +2781,37 @@
       </div>
     </div>
     <div class="pod-grid" id="podGrid"></div>
+    
+    <!-- Booking Targets Section -->
+    <div class="targets-section">
+      <div class="targets-section-header">
+        <h3>Monthly Booking Targets</h3>
+      </div>
+      <div id="targetsContent"></div>
+    </div>
+  </div>
+
+  <!-- Target Modal -->
+  <div class="target-modal" id="targetModal">
+    <div class="target-modal-content">
+      <div class="target-modal-header">
+        <h3>Set Booking Target</h3>
+      </div>
+      <div class="target-modal-body">
+        <div class="target-form-group">
+          <label for="targetMonth">Month</label>
+          <input type="month" id="targetMonth" class="target-form-input">
+        </div>
+        <div class="target-form-group">
+          <label for="targetAmount">Target Amount ($)</label>
+          <input type="number" id="targetAmount" class="target-form-input" placeholder="150000" step="1000">
+        </div>
+      </div>
+      <div class="target-modal-footer">
+        <button class="target-modal-btn cancel" onclick="closeTargetModal()">Cancel</button>
+        <button class="target-modal-btn save" onclick="saveTarget()">Save Target</button>
+      </div>
+    </div>
   </div>
 
   <!-- Pod Modal (assignment, cascade, warnings) -->
@@ -2475,6 +2831,7 @@
 
 <script>
 const STAGES = [
+  { key: "draft", label: "Draft", stageDataLabel: "Draft" },
   { key: "submitted", label: "Submitted for Quote", stageDataLabel: "Received" },
   { key: "awaiting", label: "Awaiting Client Response", stageDataLabel: "Validity" },
   { key: "expired", label: "Quote Expired", stageDataLabel: "Expired" },
@@ -2503,6 +2860,238 @@ function daysFromNow(n) {
   const d = new Date(today);
   d.setDate(d.getDate() + n);
   return d.toISOString().split("T")[0];
+}
+
+// Booking targets localStorage management
+const BOOKING_TARGETS_KEY = "silq_pod_booking_targets";
+
+function loadBookingTargets() {
+  const stored = localStorage.getItem(BOOKING_TARGETS_KEY);
+  if (stored) {
+    try {
+      return JSON.parse(stored);
+    } catch (e) {
+      return {};
+    }
+  }
+  // Default targets
+  return {
+    "2026-04": 150000,
+    "2026-03": 140000,
+    "2026-02": 135000
+  };
+}
+
+function saveBookingTargets(targets) {
+  localStorage.setItem(BOOKING_TARGETS_KEY, JSON.stringify(targets));
+}
+
+function getMonthKey(date) {
+  const d = new Date(date);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  return `${year}-${month}`;
+}
+
+function calculateAchievedForMonth(year, month) {
+  const monthKey = `${year}-${String(month).padStart(2, '0')}`;
+  let achieved = 0;
+
+  // Check RFQS for accepted quotes in the current month
+  RFQS.forEach(rfq => {
+    if (rfq.stage === "accepted") {
+      // For first-time acceptances, use stageDate
+      if (rfq.firstTime) {
+        const acceptMonth = getMonthKey(rfq.stageDate);
+        if (acceptMonth === monthKey) {
+          achieved += rfq.quotedValue || 0;
+        }
+      }
+      // For requotes, use originalAcceptanceDate
+      else if (rfq.originalAcceptanceDate) {
+        const origMonth = getMonthKey(rfq.originalAcceptanceDate);
+        if (origMonth === monthKey) {
+          achieved += rfq.quotedValue || 0;
+        }
+      }
+      // Fallback: if no originalAcceptanceDate for requote, use stageDate
+      else {
+        const acceptMonth = getMonthKey(rfq.stageDate);
+        if (acceptMonth === monthKey) {
+          achieved += rfq.quotedValue || 0;
+        }
+      }
+    }
+  });
+
+  // Check HEALTH_DATA for historical accepted quotes
+  if (typeof HEALTH_DATA !== 'undefined') {
+    HEALTH_DATA.forEach(rfq => {
+      if (rfq.approvedDate) {
+        const approvedMonth = getMonthKey(rfq.approvedDate);
+        if (approvedMonth === monthKey) {
+          achieved += rfq.quotedValue || 0;
+        }
+      }
+    });
+  }
+
+  return achieved;
+}
+
+function updateProgressBar() {
+  const progressSection = document.getElementById("progressBarSection");
+  const isQuotingPipeline = activePipeline === "quoting";
+  
+  // Only show progress bar in quoting pipeline
+  progressSection.classList.toggle("visible", isQuotingPipeline);
+  
+  if (!isQuotingPipeline) return;
+
+  const currentYear = today.getFullYear();
+  const currentMonth = today.getMonth() + 1;
+  const monthKey = getMonthKey(today);
+  
+  const targets = loadBookingTargets();
+  const target = targets[monthKey] || 150000;
+  const achieved = calculateAchievedForMonth(currentYear, currentMonth);
+  
+  const percentage = target > 0 ? Math.round((achieved / target) * 100) : 0;
+  
+  // Update labels
+  document.getElementById("progressLabelLeft").textContent = `Achieved: $${achieved.toLocaleString("en-US")}`;
+  document.getElementById("progressLabelRight").textContent = `Target: $${target.toLocaleString("en-US")}`;
+  document.getElementById("progressPercentage").textContent = `${percentage}%`;
+  
+  // Update progress bar fill
+  const fillElement = document.getElementById("progressBarFill");
+  fillElement.style.width = `${Math.min(percentage, 100)}%`;
+  
+  // Update color based on percentage
+  fillElement.classList.remove("green", "yellow", "red");
+  if (percentage >= 100) {
+    fillElement.classList.add("green");
+  } else if (percentage >= 70) {
+    fillElement.classList.add("yellow");
+  } else {
+    fillElement.classList.add("red");
+  }
+}
+
+// Booking Target Management Functions
+function renderTargetsSection() {
+  const targets = loadBookingTargets();
+  const currentMonthKey = getMonthKey(today);
+  const currentTarget = targets[currentMonthKey] || 150000;
+  
+  // Format current month display
+  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const currentDate = new Date(today);
+  const currentMonthName = monthNames[currentDate.getMonth()];
+  const currentYear = currentDate.getFullYear();
+  
+  // Get last 6 months for history table
+  const historyMonths = [];
+  for (let i = 1; i <= 6; i++) {
+    const d = new Date(today);
+    d.setMonth(d.getMonth() - i);
+    const key = getMonthKey(d);
+    const monthName = monthNames[d.getMonth()];
+    const year = d.getFullYear();
+    historyMonths.push({ key, monthName, year, target: targets[key] || null });
+  }
+  
+  let historyHTML = '';
+  if (historyMonths.filter(m => m.target !== null).length > 0) {
+    historyHTML = `
+      <table class="targets-table">
+        <thead>
+          <tr>
+            <th>Month</th>
+            <th>Target</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          ${historyMonths.filter(m => m.target !== null).map(m => `
+            <tr>
+              <td>${m.monthName} ${m.year}</td>
+              <td class="target-value">$${m.target.toLocaleString("en-US")}</td>
+              <td style="text-align: right;">
+                <button class="target-edit-btn" style="margin: 0; padding: 4px 10px; font-size: 11px;" onclick="openTargetModal('${m.key}')">✏️ Edit</button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+  } else {
+    historyHTML = '<div class="targets-table-empty">No historical targets set</div>';
+  }
+  
+  document.getElementById("targetsContent").innerHTML = `
+    <div class="targets-current">
+      <div style="flex: 1;">
+        <div class="targets-current-label">Current Month Target</div>
+        <div class="targets-current-value">$${currentTarget.toLocaleString("en-US")}</div>
+        <div class="targets-current-month">${currentMonthName} ${currentYear}</div>
+      </div>
+      <button class="target-edit-btn" onclick="openTargetModal('${currentMonthKey}')">Edit Target</button>
+    </div>
+    <div style="margin-top: 20px;">
+      <h4 style="font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.4px;">Historical Targets</h4>
+      ${historyHTML}
+    </div>
+  `;
+}
+
+function openTargetModal(monthKey) {
+  const targets = loadBookingTargets();
+  const modal = document.getElementById("targetModal");
+  
+  // Set month input
+  document.getElementById("targetMonth").value = monthKey;
+  
+  // Set amount input
+  const amount = targets[monthKey] || '';
+  document.getElementById("targetAmount").value = amount;
+  
+  modal.classList.add("visible");
+}
+
+function closeTargetModal() {
+  document.getElementById("targetModal").classList.remove("visible");
+}
+
+function saveTarget() {
+  const monthKey = document.getElementById("targetMonth").value;
+  const amount = parseInt(document.getElementById("targetAmount").value);
+  
+  if (!monthKey || !amount || amount <= 0) {
+    alert("Please enter a valid month and target amount.");
+    return;
+  }
+  
+  const targets = loadBookingTargets();
+  targets[monthKey] = amount;
+  saveBookingTargets(targets);
+  
+  closeTargetModal();
+  renderTargetsSection();
+  updateProgressBar();
+  showToast('Target updated successfully', 'success');
+}
+
+// Get lowest quoted value per RFQ (across all quote attempts)
+function getLowestQuotedValue(rfq) {
+  if (!rfq.quotedValue) return null;
+  
+  if (!rfq.quoteHistory || rfq.quoteHistory.length === 0) {
+    return rfq.quotedValue;
+  }
+  
+  const allValues = [rfq.quotedValue, ...rfq.quoteHistory.map(h => h.value)];
+  return Math.min(...allValues);
 }
 
 function formatDate(str) {
@@ -2558,6 +3147,11 @@ function diffDays(dateStr) {
 }
 
 const RFQS = [
+  // Draft — RFQs saved but not yet submitted for quote
+  { id: "RFQ-4220", client: "Alpine Trading Group", contact: "Thomas Weber", origin: "Munich", destination: "Chicago", mode: "Air", assignee: "Jessica Park", stage: "draft", stageDate: daysAgo(0), rfqDate: daysAgo(0), shipperPo: "", notes: "Waiting on final shipment details from client" },
+  { id: "RFQ-4221", client: "Pacific Cargo Lines", contact: "Amy Zhao", origin: "Singapore", destination: "Seattle", mode: "FCL", assignee: "Kathy Simmons", stage: "draft", stageDate: daysAgo(1), rfqDate: daysAgo(1), shipperPo: "", notes: "Need to confirm cargo dimensions" },
+  { id: "RFQ-4222", client: "Nordic Supply Chain AB", contact: "Erik Lindgren", origin: "Stockholm", destination: "Boston", mode: "LCL", assignee: "Lisa Wang", stage: "draft", stageDate: daysAgo(2), rfqDate: daysAgo(2), shipperPo: "NSC-1150", notes: "" },
+
   // Submitted (SUBMITTED_FOR_QUOTE) — fresh RFQs awaiting quote preparation
   { id: "RFQ-4201", client: "Global Freight Solutions", contact: "John Mitchell", origin: "Shanghai", destination: "Los Angeles", mode: "FCL", shipments: 3, quotedValue: 28500, assignee: "Kathy Simmons", stage: "submitted", stageDate: daysAgo(1), rfqDate: daysAgo(1), shipperPo: "GFS-PO-2290", crd: daysFromNow(10), quoteSentDate: null, approvalStatus: null, notes: "", firstTime: false },
   { id: "RFQ-4205", client: "Pacific Cargo Lines", contact: "Amy Zhao", origin: "Shenzhen", destination: "Newark", mode: "FCL", shipments: 1, quotedValue: 8200, assignee: "James Chen", stage: "submitted", stageDate: daysAgo(3), rfqDate: daysAgo(3), shipperPo: "PCL-8871", crd: daysFromNow(7), quoteSentDate: null, approvalStatus: null, notes: "", firstTime: false },
@@ -2585,8 +3179,8 @@ const RFQS = [
   { id: "RFQ-4100", client: "Maple Leaf Imports", contact: "Diane Tremblay", origin: "Ho Chi Minh", destination: "Vancouver", mode: "Air", shipments: 1, quotedValue: 9500, assignee: "Maria Lopez", stage: "rejected", stageDate: daysAgo(1), rfqDate: daysAgo(10), shipperPo: "MLI-8830", crd: daysFromNow(3), quoteSentDate: daysAgo(6), approvalStatus: null, notes: "Wants ocean instead — check feasibility", firstTime: true, rejectionReason: "Client prefers ocean freight — air too expensive", quoteHistory: [{date: daysAgo(6), value: 9500}] },
 
   // Accepted — quote accepted, stays until booking email is sent
-  { id: "RFQ-4170", client: "Nordic Supply Chain AB", contact: "Erik Lindgren", origin: "Rotterdam", destination: "Miami", mode: "FCL", shipments: 2, quotedValue: 18400, assignee: "Kathy Simmons", stage: "accepted", stageDate: daysAgo(1), rfqDate: daysAgo(12), shipperPo: "NSC-1102", crd: daysFromNow(4), quoteSentDate: daysAgo(8), approvalStatus: null, notes: "Awaiting booking confirmation from ops", firstTime: false, quoteHistory: [{date: daysAgo(14), value: 19200}, {date: daysAgo(8), value: 18400}] },
-  { id: "RFQ-4175", client: "Summit Intermodal", contact: "Carlos Reyes", origin: "Busan", destination: "Long Beach", mode: "Inspections", shipments: 4, quotedValue: 34000, assignee: "Lisa Wang", stage: "accepted", stageDate: daysAgo(0), rfqDate: daysAgo(6), shipperPo: "SMT-6625", crd: daysFromNow(8), quoteSentDate: daysAgo(4), approvalStatus: null, notes: "", firstTime: false },
+  { id: "RFQ-4170", client: "Nordic Supply Chain AB", contact: "Erik Lindgren", origin: "Rotterdam", destination: "Miami", mode: "FCL", shipments: 2, quotedValue: 18400, assignee: "Kathy Simmons", stage: "accepted", stageDate: daysAgo(1), rfqDate: daysAgo(12), shipperPo: "NSC-1102", crd: daysFromNow(4), quoteSentDate: daysAgo(8), approvalStatus: null, notes: "Awaiting booking confirmation from ops", firstTime: false, originalAcceptanceDate: daysAgo(15), quoteHistory: [{date: daysAgo(14), value: 19200}, {date: daysAgo(8), value: 18400}] },
+  { id: "RFQ-4175", client: "Summit Intermodal", contact: "Carlos Reyes", origin: "Busan", destination: "Long Beach", mode: "Inspections", shipments: 4, quotedValue: 34000, assignee: "Lisa Wang", stage: "accepted", stageDate: daysAgo(0), rfqDate: daysAgo(6), shipperPo: "SMT-6625", crd: daysFromNow(8), quoteSentDate: daysAgo(4), approvalStatus: null, notes: "", firstTime: false, originalAcceptanceDate: daysAgo(8) },
   { id: "RFQ-4178", client: "Caspian Freight Co.", contact: "Leila Mammadova", origin: "Istanbul", destination: "Houston", mode: "Air", shipments: 1, quotedValue: 7400, assignee: "James Chen", stage: "accepted", stageDate: daysAgo(2), rfqDate: daysAgo(14), shipperPo: "CSP-2210", crd: daysAgo(1), quoteSentDate: daysAgo(10), approvalStatus: null, notes: "Booking email pending — ops to confirm space", firstTime: true, quoteHistory: [{date: daysAgo(20), value: 8100}, {date: daysAgo(10), value: 7400}] },
 
 ];
@@ -2699,6 +3293,39 @@ function buildOpsTracker(rfq) {
 }
 
 function buildCardHTML(rfq) {
+  // Handle draft RFQs with minimal display
+  if (rfq.stage === "draft") {
+    const tm = getTeamMember(rfq.assignee);
+    const initials = rfq.assignee.split(" ").map(w => w[0]).join("");
+    
+    return `
+      <div class="rfq-card" onclick="alert('Complete RFQ details to submit for quote')" data-client="${rfq.client}" data-assignee="${rfq.assignee}" data-mode="${rfq.mode}" data-search="${rfq.id} ${rfq.client} ${rfq.origin} ${rfq.destination} ${rfq.assignee}">
+        <div class="rfq-card-header">
+          <div>
+            <div class="rfq-client">${rfq.client}</div>
+            <div class="rfq-id">${rfq.id}</div>
+          </div>
+        </div>
+        <div class="rfq-route">
+          ${transportIcon(rfq.mode)}
+          <span>${rfq.origin}</span>
+          <span class="route-arrow">→</span>
+          <span>${rfq.destination}</span>
+        </div>
+        <div class="rfq-meta">
+          <span class="meta-chip ${modeClass(rfq.mode)}">${rfq.mode}</span>
+          <span style="font-size: 11px; color: var(--text-secondary);">Draft — incomplete</span>
+        </div>
+        ${rfq.notes ? `<div class="rfq-stage-data" style="font-size: 11px; color: var(--text-secondary);">${rfq.notes}</div>` : ''}
+        <div class="rfq-footer">
+          <div class="rfq-assignee">
+            <div class="avatar-xs" style="background:${tm.color}">${initials}</div>
+            <span class="assignee-name">${rfq.assignee}</span>
+          </div>
+        </div>
+      </div>`;
+  }
+
   const tm = getTeamMember(rfq.assignee);
   const initials = rfq.assignee.split(" ").map(w => w[0]).join("");
   const isFirstTime = rfq.firstTime;
@@ -2706,6 +3333,12 @@ function buildCardHTML(rfq) {
   const isAccepted = rfq.stage === "accepted";
   const crdPassed = rfq.crd && diffDays(rfq.crd) > 0;
   const shipLabel = rfq.shipments === 1 ? "1 shipment" : `${rfq.shipments} shipments`;
+  
+  // Get lowest quoted value
+  const lowestValue = getLowestQuotedValue(rfq);
+  const hasMultipleQuotes = rfq.quoteHistory && rfq.quoteHistory.length > 0;
+  const quoteCountText = hasMultipleQuotes ? `Lowest of ${rfq.quoteHistory.length + 1} quotes` : '';
+  const valueDisplay = lowestValue ? `$${lowestValue.toLocaleString("en-US")}` : '';
 
   const isAttn = rfqAttention[rfq.id];
   let flags = "";
@@ -2734,6 +3367,7 @@ function buildCardHTML(rfq) {
       <div class="rfq-meta">
         <span class="meta-chip ${modeClass(rfq.mode)}">${rfq.mode}</span>
         <span class="shipment-count">${shipLabel}</span>
+        ${valueDisplay ? `<span class="shipment-count" ${hasMultipleQuotes ? `title="${quoteCountText}"` : ''} style="${hasMultipleQuotes ? 'cursor: help; text-decoration: underline dotted;' : ''}">${valueDisplay}</span>` : ''}
       </div>
       <div class="rfq-stage-data">${getStageDataDisplay(rfq)}</div>${rfq.rejectionReason ? `<div class="rfq-rejection-reason" title="${rfq.rejectionReason}">↳ ${rfq.rejectionReason}</div>` : ""}${buildOpsTracker(rfq)}
       <div class="rfq-footer">
@@ -3439,7 +4073,10 @@ function renderBoard(rfqs) {
 
   stages.forEach(stage => {
     const stageRfqs = rfqs.filter(r => r.stage === stage.key);
-    const totalValue = stageRfqs.reduce((sum, r) => sum + r.quotedValue, 0);
+    const totalValue = stageRfqs.reduce((sum, r) => {
+      const lowestValue = getLowestQuotedValue(r);
+      return sum + (lowestValue || 0);
+    }, 0);
     const totalShipments = isOps ? stageRfqs.length : stageRfqs.reduce((sum, r) => sum + (r.shipments || 0), 0);
     const lane = document.createElement("div");
     lane.className = "lane";
@@ -3482,6 +4119,9 @@ function renderBoard(rfqs) {
 
     board.appendChild(lane);
   });
+  
+  // Update progress bar
+  updateProgressBar();
 }
 
 function renderSummary(rfqs) {
@@ -3621,6 +4261,7 @@ function applyFilters() {
   const mode = document.getElementById("filterMode").value;
   const lane = document.getElementById("filterLane").value;
   const search = document.getElementById("searchInput").value.toLowerCase();
+  const includeAirExpired = document.getElementById("includeAirExpired").checked;
 
   const hasFilters = team || client || mode || lane || search;
   document.getElementById("clearBtn").classList.toggle("visible", hasFilters);
@@ -3645,6 +4286,11 @@ function applyFilters() {
     });
   }
 
+  // Exclude Air from expired stage by default (unless checkbox is checked)
+  if (!isOps && !includeAirExpired) {
+    filtered = filtered.filter(r => !(r.stage === "expired" && r.mode === "Air"));
+  }
+
   if (isOps && opsDelayedFilter) {
     filtered = filtered.filter(s => isShipmentDelayed(s) || isTaskDelayed(s));
     filtered = [...filtered].sort((a, b) => getDelayDays(b) - getDelayDays(a));
@@ -3660,6 +4306,7 @@ function clearFilters() {
   document.getElementById("filterMode").value = "";
   document.getElementById("filterLane").value = "";
   document.getElementById("searchInput").value = "";
+  document.getElementById("includeAirExpired").checked = false;
   document.getElementById("clearBtn").classList.remove("visible");
   opsDelayedFilter = false;
   const dbtn = document.getElementById("opsDelayedBtn");
@@ -4782,6 +5429,9 @@ function renderPodSetup() {
   const totalMembers = new Set();
   activePods.forEach(p => getPodMembers(p).forEach(m => totalMembers.add(m)));
   document.getElementById("podCount").textContent = `${activePods.length} pod${activePods.length !== 1 ? "s" : ""} · ${totalMembers.size} members · ${ALL_ORGS.length} orgs`;
+  
+  // Render booking targets section
+  renderTargetsSection();
 }
 
 function createPod() {
