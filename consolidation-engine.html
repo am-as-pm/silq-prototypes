@@ -596,69 +596,17 @@
      STAGE 3 — OUTPUT
 ═══════════════════════════════════════════════════════════════════════════ -->
 <section id="stage-output" class="stage">
-  <h2 style="margin-bottom:16px">Container Load Plan — Week 27 · 2 × 40ft Standard</h2>
-  <div class="split" style="grid-template-columns: 360px 1fr; align-items:start">
-
-    <!-- Left: manifest -->
-    <div class="flex-col">
-      <div class="grid-2" style="gap:12px">
-        <div class="stat"><div class="stat-value success">$74,300</div><div class="stat-label">Net Profit</div></div>
-        <div class="stat"><div class="stat-value info">73%</div><div class="stat-label">Avg Fill (2 Ctrs)</div></div>
-        <div class="stat"><div class="stat-value info">37%</div><div class="stat-label">Avg Weight Fill</div></div>
-        <div class="stat"><div class="stat-value">$82,300</div><div class="stat-label">Gross Revenue</div></div>
-      </div>
-
-      <div>
-        <div class="usage-bar-labels">
-          <span>73% avg utilization (2 containers)</span>
-          <span>98.9 / 135.4 CBM</span>
-        </div>
-        <div class="usage-bar" id="usage-bar"></div>
-        <div class="chart-caption" style="margin-top:6px">Volume utilization across 2 × 40ft containers</div>
-      </div>
-
-      <div>
-        <h2>Container Manifest</h2>
-        <table class="data-table">
-          <thead>
-            <tr><th>ID</th><th>Client</th><th class="text-right">CBM</th><th class="text-right">Revenue</th></tr>
-          </thead>
-          <tbody id="manifest-table"></tbody>
-        </table>
-      </div>
-
-      <div>
-        <h2>Spill List — Next Consolidation</h2>
-        <div class="callout warning">
-          <div class="callout-title">2 shipments held over to Week 28</div>
-          Below shipments were excluded from this load due to space constraints. Prioritized for next cycle.
-        </div>
-        <table class="data-table" style="margin-top:10px">
-          <thead>
-            <tr><th>ID</th><th>Client</th><th>CBM</th><th>Reason</th></tr>
-          </thead>
-          <tbody id="spill-table"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Right: 3D container -->
-    <div>
-      <div class="card">
-        <div class="card-header">
-          3D Load Visualization — Container A (Isometric View)
-          <span class="pill success">10 shipments · Group A</span>
-        </div>
-        <div class="card-body">
-          <div class="container-svg-wrap">
-            <svg id="container-svg" width="560" height="320" viewBox="0 0 560 320" style="display:block;overflow:visible"></svg>
-            <div class="iso-legend" id="iso-legend"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
+  <div class="flex-row" style="margin-bottom:16px;flex-wrap:wrap;gap:8px">
+    <h2 id="output-header-title" style="margin-bottom:0">Load Plan — Week 27</h2>
+    <div class="spacer"></div>
+    <span id="output-subtitle" style="font-size:12px;color:var(--text2)">—</span>
   </div>
+  <!-- KPI strip — rendered by JS -->
+  <div class="grid-4" style="margin-bottom:20px" id="output-kpi-strip"></div>
+  <!-- Per-group container panels — rendered by JS -->
+  <div id="output-groups"></div>
+  <!-- Spill — rendered by JS -->
+  <div id="output-spill"></div>
 </section>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════
@@ -1178,155 +1126,362 @@ function renderEngine() {
   renderEngineGroups(activeContainerType, activeStrategy);
 }
 
-// ─── Stage 3: Manifest + 3D Container ────────────────────────────────────────
-function renderOutput() {
-  // Usage bar — show proportional fill across 2 containers (135.4 CBM total)
-  const bar = document.getElementById('usage-bar');
-  bar.innerHTML = ACCEPTED.map((s, i) => {
-    const pct = (s.cbm / TOTAL_CAP_CBM * 100).toFixed(2);
-    return `<div class="usage-segment" style="width:${pct}%;background:${BOX_COLORS[i % BOX_COLORS.length]};opacity:0.85" title="${s.id}: ${s.cbm} CBM"></div>`;
-  }).join('');
-
-  // Manifest table
-  document.getElementById('manifest-table').innerHTML = ACCEPTED.map(s => `
-    <tr class="row-success">
-      <td>${s.id}</td><td>${s.client}</td>
-      <td class="text-right">${s.cbm.toFixed(2)}</td>
-      <td class="text-right">$${s.revenue.toLocaleString()}</td>
-    </tr>
-    <tr style="background:var(--bg3)"><td colspan="4" style="padding:0;border:none">
-      <div style="display:flex;gap:16px;padding:5px 10px 7px;font-size:11px;color:var(--text2)">
-        <span>Dims: ${s.dims}</span><span>Weight: ${s.weight} kg</span>
-        <span>Origin: ${s.origin}</span>
-        ${s.hazmat ? `<span style="color:var(--orange)">Hazmat: ${s.hazmat}</span>` : ''}
-        ${!s.stackable ? '<span style="color:var(--text3)">Non-stackable</span>' : ''}
-      </div>
-    </td></tr>
-  `).join('');
-
-  // Spill table
-  document.getElementById('spill-table').innerHTML = SPILL.map(s => `
-    <tr class="row-warning">
-      <td>${s.id}</td><td>${s.client}</td>
-      <td>${s.cbm.toFixed(2)}</td>
-      <td>${s.cbm > 1.4 ? 'Volume exceeded' : 'Weight impact'}</td>
-    </tr>
-  `).join('');
-
-  // Isometric container SVG
-  renderContainerSVG();
-
-  // Legend — Group A bookings (first 10 accepted = Container A)
-  const GROUP_A_IDS = ["BOK-005","BOK-010","BOK-019","BOK-003","BOK-008","BOK-002","BOK-001","BOK-013","BOK-018","BOK-012"];
-  document.getElementById('iso-legend').innerHTML = GROUP_A_IDS.map((id, i) => `
-    <div class="legend-item">
-      <div class="legend-dot" style="background:${BOX_COLORS[i % BOX_COLORS.length]}"></div>
-      ${id}
-    </div>
-  `).join('');
-}
-
-// ─── Isometric Container SVG ─────────────────────────────────────────────────
-function isoProject(x, y, z, OX, OY, SCALE_X, SCALE_Y, SCALE_H) {
-  return [
-    OX + (x - z) * SCALE_X,
-    OY + (x + z) * SCALE_Y - y * SCALE_H
-  ];
-}
-
-function renderContainerSVG() {
-  const svg = document.getElementById('container-svg');
-  const OX = 280, OY = 230;
-  const SX = 28, SY = 14, SH = 26;
-  // Container dims in "units": 10w x 4h x 5d
+// ─── Isometric SVG builder — one per container group ─────────────────────────
+// Generates HTML string to set as svg.innerHTML.
+// Shipments are laid out in 1-3 depth strips, boxes sized proportional to CBM.
+function buildGroupSVG(shipments, cap) {
+  const OX = 210, OY = 165, SX = 19, SY = 9.5, SH = 17;
   const CW = 10, CH = 4, CD = 5;
 
-  function pt(x, y, z) {
-    const [px, py] = isoProject(x, y, z, OX, OY, SX, SY, SH);
-    return `${px},${py}`;
+  function P(x, y, z) {
+    return `${+(OX + (x - z) * SX).toFixed(1)},${+(OY + (x + z) * SY - y * SH).toFixed(1)}`;
+  }
+
+  // Shade a hex colour by an integer amount (positive = lighter, negative = darker)
+  function shade(hex, amt) {
+    const n = parseInt(hex.replace('#', ''), 16);
+    const clamp = v => Math.min(255, Math.max(0, v));
+    const r = clamp((n >> 16)         + amt);
+    const g = clamp(((n >> 8) & 0xff) + amt);
+    const b = clamp((n & 0xff)        + amt);
+    return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
   }
 
   let html = '';
 
-  // Container floor
-  html += `<polygon points="${pt(0,0,0)} ${pt(CW,0,0)} ${pt(CW,0,CD)} ${pt(0,0,CD)}"
-    fill="#1c2233" stroke="#2e3650" stroke-width="1"/>`;
+  // Container interior faces (floor + back walls)
+  html += `<polygon points="${P(0,0,0)} ${P(CW,0,0)} ${P(CW,0,CD)} ${P(0,0,CD)}" fill="#1c2233" stroke="#2e3650" stroke-width="1.2"/>`;
+  html += `<polygon points="${P(0,0,0)} ${P(0,CH,0)} ${P(0,CH,CD)} ${P(0,0,CD)}" fill="#14192a" stroke="#2e3650" stroke-width="1"/>`;
+  html += `<polygon points="${P(0,0,0)} ${P(CW,0,0)} ${P(CW,CH,0)} ${P(0,CH,0)}" fill="#181e2e" stroke="#2e3650" stroke-width="1"/>`;
 
-  // Back wall (x=0, left face)
-  html += `<polygon points="${pt(0,0,0)} ${pt(0,CH,0)} ${pt(0,CH,CD)} ${pt(0,0,CD)}"
-    fill="#161b27" stroke="#2e3650" stroke-width="1"/>`;
+  if (!shipments.length) return html;
 
-  // Back wall (z=0, right face)
-  html += `<polygon points="${pt(0,0,0)} ${pt(CW,0,0)} ${pt(CW,CH,0)} ${pt(0,CH,0)}"
-    fill="#1a1f2e" stroke="#2e3650" stroke-width="1"/>`;
+  const groupCBM = shipments.reduce((a, s) => a + s.cbm, 0);
+  const sorted   = [...shipments].sort((a, b) => b.cbm - a.cbm);
+  const N        = sorted.length;
 
-  // ── Boxes — Container A (10 of 19 accepted bookings, 67.5 CBM) ──
-  // Isometric layout representing Group A container load
-  const boxes = [
-    // back-most first (painter's algorithm)
-    { x:0,   y:0,   z:0,   w:4,   h:2.8, d:3,   color:BOX_COLORS[2], id:"BOK-005" },  // NLD Furniture 8.4 cbm
-    { x:4,   y:0,   z:0,   w:3.5, h:2.5, d:2.5, color:BOX_COLORS[3], id:"BOK-010" },  // NLD Furniture 7.6 cbm
-    { x:7.5, y:0,   z:0,   w:2.5, h:2.2, d:2,   color:BOX_COLORS[3], id:"BOK-019" },  // NLD Furniture 8.8 cbm
-    { x:0,   y:0,   z:3,   w:3.5, h:2.3, d:2,   color:BOX_COLORS[4], id:"BOK-003" },  // HVI Bedding 6.8 cbm
-    { x:3.5, y:0,   z:2.5, w:3,   h:2.1, d:2,   color:BOX_COLORS[4], id:"BOK-008" },  // HVI Bedding 5.5 cbm
-    { x:6.5, y:0,   z:2,   w:2.5, h:1.8, d:2,   color:BOX_COLORS[1], id:"BOK-002" },  // BPH Cream 5.2 cbm
-    // front row
-    { x:0,   y:0,   z:4.5, w:3,   h:2.0, d:0.5, color:BOX_COLORS[0], id:"BOK-001" },  // NSL Footwear 4.8 cbm
-    { x:3,   y:0,   z:4,   w:2.5, h:1.8, d:0.8, color:BOX_COLORS[6], id:"BOK-013" },  // FBG Footwear 5.6 cbm
-    // stacked
-    { x:0,   y:2.8, z:0,   w:3,   h:1.5, d:2.5, color:BOX_COLORS[5], id:"BOK-018" },  // HVI Bedding 6.2 cbm
-    { x:3,   y:2.5, z:0,   w:2.5, h:1.4, d:2,   color:BOX_COLORS[6], id:"BOK-012" },  // BPH Cream 4.4 cbm
-  ];
+  // Number of depth strips: 1 strip for small groups, up to 3 for large
+  const numStrips = N <= 4 ? 1 : N <= 8 ? 2 : 3;
+  const stripD    = CD / numStrips;
 
-  // Sort back to front: higher x+z first (painter's algorithm)
-  boxes.sort((a, b) => -(a.x + a.z) + (b.x + b.z));
+  // Assign shipments to strips — balance total CBM across strips
+  const strips = Array.from({ length: numStrips }, (_, i) => ({
+    z: i * stripD + 0.04, d: stripD - 0.08, items: [], total: 0,
+  }));
+  for (const s of sorted) {
+    const min = strips.reduce((m, sp) => sp.total < m.total ? sp : m, strips[0]);
+    min.items.push(s);
+    min.total += s.cbm;
+  }
 
-  boxes.forEach(box => {
-    const {x, y, z, w, h, d, color, id} = box;
-    const topPts = `${pt(x,y+h,z)} ${pt(x+w,y+h,z)} ${pt(x+w,y+h,z+d)} ${pt(x,y+h,z+d)}`;
-    const leftPts = `${pt(x,y,z+d)} ${pt(x,y+h,z+d)} ${pt(x+w,y+h,z+d)} ${pt(x+w,y,z+d)}`;
-    const rightPts = `${pt(x+w,y,z)} ${pt(x+w,y+h,z)} ${pt(x+w,y+h,z+d)} ${pt(x+w,y,z+d)}`;
-
-    // Label center (top face centroid)
-    const [lx, ly] = isoProject(x+w/2, y+h, z+d/2, OX, OY, SX, SY, SH);
-
-    // Darken left/right slightly
-    html += `<polygon points="${leftPts}" fill="${color}" opacity="0.65" stroke="${color}" stroke-width="0.4"/>`;
-    html += `<polygon points="${rightPts}" fill="${color}" opacity="0.5" stroke="${color}" stroke-width="0.4"/>`;
-    html += `<polygon points="${topPts}" fill="${color}" opacity="0.88" stroke="${color}" stroke-width="0.4"/>`;
-
-    // Label only on top face (if it's not stacked duplicate)
-    if (!id.endsWith('b')) {
-      html += `<text x="${lx}" y="${ly+4}" text-anchor="middle" font-size="7.5" fill="#e2e8f0" font-weight="600" font-family="inherit" style="pointer-events:none">${id}</text>`;
+  // Build box list
+  const boxes = [];
+  for (const strip of strips) {
+    if (!strip.items.length) continue;
+    let cx = 0.05;
+    for (const s of strip.items) {
+      const w     = Math.max(0.45, (s.cbm / groupCBM) * CW * 0.97);
+      const h     = Math.max(0.9,  Math.min(3.3, 0.7 + s.weight / 380));
+      const color = CLIENT_STYLES[s.client]?.dot || '#4d8fd6';
+      boxes.push({ x: cx, y: 0, z: strip.z, w, h, d: strip.d, color, id: s.id });
+      cx += w;
     }
-  });
+  }
 
-  // Container frame edges (front/visible)
-  const edges = [
-    // vertical corners
-    [pt(0,0,0), pt(0,CH,0)],
-    [pt(CW,0,0), pt(CW,CH,0)],
-    [pt(0,0,CD), pt(0,CH,CD)],
-    [pt(CW,0,CD), pt(CW,CH,CD)],
-    // top edges
-    [pt(0,CH,0), pt(CW,CH,0)],
-    [pt(0,CH,0), pt(0,CH,CD)],
-    [pt(CW,CH,0), pt(CW,CH,CD)],
-    [pt(0,CH,CD), pt(CW,CH,CD)],
-    // bottom floor edges
-    [pt(0,0,0), pt(CW,0,0)],
-    [pt(0,0,0), pt(0,0,CD)],
-    [pt(CW,0,0), pt(CW,0,CD)],
-    [pt(0,0,CD), pt(CW,0,CD)],
+  // Painter's algorithm: draw back-most boxes first (ascending x + z)
+  boxes.sort((a, b) => (a.x + a.z) - (b.x + b.z));
+
+  for (const { x, y, z, w, h, d, color, id } of boxes) {
+    // Top face (brightest)
+    html += `<polygon points="${P(x,y+h,z)} ${P(x+w,y+h,z)} ${P(x+w,y+h,z+d)} ${P(x,y+h,z+d)}" fill="${color}" opacity="0.88" stroke="rgba(255,255,255,0.35)" stroke-width="0.6"/>`;
+    // Left / front face (z+d side — visible)
+    html += `<polygon points="${P(x,y,z+d)} ${P(x+w,y,z+d)} ${P(x+w,y+h,z+d)} ${P(x,y+h,z+d)}" fill="${shade(color,-42)}" opacity="0.92" stroke="rgba(255,255,255,0.15)" stroke-width="0.5"/>`;
+    // Right face (x+w side — visible)
+    html += `<polygon points="${P(x+w,y,z)} ${P(x+w,y,z+d)} ${P(x+w,y+h,z+d)} ${P(x+w,y+h,z)}" fill="${shade(color,-22)}" opacity="0.92" stroke="rgba(255,255,255,0.15)" stroke-width="0.5"/>`;
+    // ID label centred on top face
+    const lx = OX + (x + w / 2 - (z + d / 2)) * SX;
+    const ly = OY + (x + w / 2 + z + d / 2) * SY - (y + h) * SH;
+    html += `<text x="${+lx.toFixed(1)}" y="${+ly.toFixed(1)}" text-anchor="middle" dominant-baseline="middle" font-size="5.8" font-weight="700" fill="rgba(255,255,255,0.92)">${id}</text>`;
+  }
+
+  // Foreground container edges (drawn last so they sit on top)
+  const edgePairs = [
+    [P(CW,0,0),  P(CW,CH,0)],  [P(0,0,CD),   P(0,CH,CD)],
+    [P(CW,0,CD), P(CW,CH,CD)], [P(0,CH,0),   P(CW,CH,0)],
+    [P(CW,CH,0), P(CW,CH,CD)], [P(0,CH,CD),  P(CW,CH,CD)],
+    [P(0,CH,0),  P(0,CH,CD)],
   ];
-  edges.forEach(([from, to]) => {
-    html += `<line x1="${from.split(',')[0]}" y1="${from.split(',')[1]}" x2="${to.split(',')[0]}" y2="${to.split(',')[1]}" stroke="#3a4466" stroke-width="1.2"/>`;
+  for (const [a, b] of edgePairs) {
+    const [ax, ay] = a.split(',');
+    const [bx, by] = b.split(',');
+    html += `<line x1="${ax}" y1="${ay}" x2="${bx}" y2="${by}" stroke="#3d4d61" stroke-width="1.3"/>`;
+  }
+
+  return html;
+}
+
+// ─── Stage 3: Grouped Load Plan (fully dynamic) ───────────────────────────────
+function renderOutput() {
+  const groups  = groupShipments(activeContainerType, activeStrategy);
+  const cap     = CONTAINER_TYPES[activeContainerType];
+  const letters = ['A', 'B', 'C', 'D', 'E', 'F'];
+
+  // ── Overall KPIs ──────────────────────────────────────────────────────────
+  const totalFclCost = groups.length * cap.cost;
+  const totalRevenue = groups.reduce((a, g) => a + g.lclRevenue, 0);
+  const totalProfit  = totalRevenue - totalFclCost;
+  const avgFill      = (TOTAL_CBM / (groups.length * cap.cbm) * 100).toFixed(0);
+  const totalWeight  = groups.reduce((a, g) => a + g.kg, 0);
+
+  document.getElementById('output-header-title').textContent =
+    `Load Plan — Week 27 · ${groups.length} × ${cap.label}`;
+  document.getElementById('output-subtitle').textContent =
+    `${ACCEPTED.length} bookings loaded · ${SPILL.length} spill · ETD Jul 8, 2026`;
+
+  document.getElementById('output-kpi-strip').innerHTML = `
+    <div class="stat">
+      <div class="stat-value">${groups.length}</div>
+      <div class="stat-label">FCL Containers</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value success">$${totalProfit.toLocaleString()}</div>
+      <div class="stat-label">Total Net Profit</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value info">${avgFill}%</div>
+      <div class="stat-label">Avg Volume Fill</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">$${totalRevenue.toLocaleString()}</div>
+      <div class="stat-label">Gross Revenue (LCL)</div>
+    </div>
+  `;
+
+  // ── Per-group container panels ────────────────────────────────────────────
+  document.getElementById('output-groups').innerHTML = groups.map((g, i) => {
+    const color   = GROUP_COLORS[i % GROUP_COLORS.length];
+    const letter  = letters[i];
+    const fillPct = Math.min(100, (g.cbm / cap.cbm * 100)).toFixed(1);
+    const wtPct   = Math.min(100, (g.kg   / cap.kg  * 100)).toFixed(1);
+    const profit  = g.lclRevenue - cap.cost;
+    const margin  = g.lclRevenue > 0 ? ((profit / g.lclRevenue) * 100).toFixed(0) : 0;
+    const fillClr = +fillPct >= 85 ? 'var(--green)' : +fillPct >= 55 ? 'var(--orange)' : '#e05555';
+    const profClr = profit >= 0 ? 'var(--green)' : 'var(--red)';
+    const svgId   = `svg-grp-${i}`;
+
+    const manifestRows = [...g.shipments]
+      .sort((a, b) => b.cbm - a.cbm)
+      .map(s => {
+        const cs = CLIENT_STYLES[s.client] || {};
+        return `
+          <tr>
+            <td style="font-weight:700;color:var(--text1)">${s.id}</td>
+            <td><span style="color:${cs.text || 'var(--text2)'};font-size:11px">${cs.name || s.client}</span></td>
+            <td style="color:var(--text2);font-size:11px">${s.productType}</td>
+            <td class="text-right">${s.cbm.toFixed(2)}</td>
+            <td class="text-right">${s.weight.toLocaleString()}</td>
+            <td class="text-right" style="color:var(--green);font-weight:700">$${s.revenue.toLocaleString()}</td>
+          </tr>
+          <tr style="background:var(--bg3)">
+            <td colspan="6" style="padding:3px 10px 6px;font-size:10px;color:var(--text3);border:none">
+              ${s.dims} &nbsp;·&nbsp; ${s.origin}
+              ${s.palletized ? `<span class="pill palletized" style="font-size:9px;padding:1px 6px;margin-left:4px">Palletized</span>` : ''}
+              ${s.hazmat     ? `<span class="pill dg"         style="font-size:9px;padding:1px 6px;margin-left:4px">Hazmat ${s.hazmat}</span>` : ''}
+              ${!s.stackable ? `<span class="pill non-stackable" style="font-size:9px;padding:1px 6px;margin-left:4px">Non-Stack</span>` : ''}
+            </td>
+          </tr>`;
+      }).join('');
+
+    const legendItems = g.shipments.map(s => {
+      const cs = CLIENT_STYLES[s.client] || {};
+      return `<div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text2)">
+        <div style="width:7px;height:7px;border-radius:50%;background:${cs.dot || '#888'};flex-shrink:0"></div>
+        ${s.id}
+      </div>`;
+    }).join('');
+
+    return `
+      <div style="margin-bottom:28px">
+
+        <!-- Group header bar -->
+        <div style="display:flex;align-items:center;gap:12px;padding:14px 18px;background:var(--bg2);
+                    border:1px solid ${color}50;border-radius:12px 12px 0 0;border-bottom:none">
+          <div style="width:34px;height:34px;border-radius:9px;background:${color};display:flex;
+                      align-items:center;justify-content:center;font-weight:900;font-size:16px;
+                      color:#fff;flex-shrink:0">${letter}</div>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:var(--text1)">
+              Container ${letter} &nbsp;—&nbsp; ${cap.label}
+            </div>
+            <div style="font-size:11px;color:var(--text2)">
+              ${g.shipments.length} LCL bookings &nbsp;·&nbsp; ETD Jul 8, 2026 &nbsp;·&nbsp;
+              POL China → POD Los Angeles (USLAX)
+            </div>
+          </div>
+          <div class="spacer"></div>
+          <!-- Fill bar widget -->
+          <div style="width:170px">
+            <div style="font-size:10px;color:${fillClr};font-weight:700;text-align:right;margin-bottom:4px">
+              ${fillPct}% volume fill
+            </div>
+            <div style="height:7px;border-radius:4px;background:var(--bg4);overflow:hidden">
+              <div style="width:${fillPct}%;height:100%;background:${color};border-radius:4px;
+                          transition:width 0.4s ease"></div>
+            </div>
+          </div>
+          <!-- Net profit badge -->
+          <div style="text-align:right;min-width:110px;padding-left:12px;border-left:1px solid var(--border1)">
+            <div style="font-size:20px;font-weight:900;color:${profClr}">$${profit.toLocaleString()}</div>
+            <div style="font-size:10px;color:var(--text3)">net profit &nbsp;·&nbsp; ${margin}% margin</div>
+          </div>
+        </div>
+
+        <!-- Body: left = isometric SVG, right = metrics + manifest -->
+        <div style="display:grid;grid-template-columns:430px 1fr;border:1px solid ${color}30;
+                    border-radius:0 0 12px 12px;overflow:hidden">
+
+          <!-- ─ Left: 3D load view ─ -->
+          <div style="background:var(--bg2);border-right:1px solid var(--border1);padding:16px">
+            <div class="group-section-title">3D Isometric Load View</div>
+            <div style="background:var(--bg3);border-radius:8px;overflow:hidden;margin-bottom:10px">
+              <svg id="${svgId}" width="398" height="234" viewBox="0 0 398 234"
+                   style="display:block"></svg>
+            </div>
+            <!-- Legend -->
+            <div style="display:flex;flex-wrap:wrap;gap:6px 10px">${legendItems}</div>
+            <!-- Mini overall bar -->
+            <div style="margin-top:12px">
+              <div class="group-fill-label">
+                <span>Volume utilization</span>
+                <span style="color:${fillClr}">${fillPct}% &nbsp;·&nbsp; ${g.cbm.toFixed(2)} / ${cap.cbm} CBM</span>
+              </div>
+              <div class="group-fill-bar">
+                <div class="group-fill-inner" style="width:${fillPct}%;background:${color}"></div>
+              </div>
+              <div class="group-fill-label" style="margin-top:6px">
+                <span>Weight utilization</span>
+                <span>${wtPct}% &nbsp;·&nbsp; ${g.kg.toLocaleString()} / ${cap.kg.toLocaleString()} kg</span>
+              </div>
+              <div class="group-fill-bar">
+                <div class="group-fill-inner" style="width:${wtPct}%;background:#3dc78a"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ─ Right: Financials + manifest ─ -->
+          <div style="background:var(--bg2);padding:16px;display:flex;flex-direction:column;gap:14px">
+
+            <!-- Financial breakdown cards -->
+            <div>
+              <div class="group-section-title">Financial Breakdown</div>
+              <div class="group-financials">
+                <div class="group-fin-item">
+                  <div class="group-fin-value" style="color:var(--blue)">$${g.lclQuote.toLocaleString()}</div>
+                  <div class="group-fin-label">LCL Quote Total<br><span style="color:var(--text3)">(sum charged to clients)</span></div>
+                </div>
+                <div class="group-fin-item">
+                  <div class="group-fin-value" style="color:var(--orange)">$${cap.cost.toLocaleString()}</div>
+                  <div class="group-fin-label">FCL Ocean Freight<br><span style="color:var(--text3)">(1 × ${cap.label})</span></div>
+                </div>
+                <div class="group-fin-item" style="border-color:${profit >= 0 ? '#3dc78a40' : '#e0555540'}">
+                  <div class="group-fin-value" style="color:${profClr}">$${profit.toLocaleString()}</div>
+                  <div class="group-fin-label">Gross Profit<br><span style="color:var(--text3)">${margin}% margin</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Key stats row -->
+            <div style="display:flex;flex-wrap:wrap;gap:8px">
+              <div class="ctr-spec-chip">${g.shipments.length} bookings</div>
+              <div class="ctr-spec-chip">Avg CBM/booking: <strong>${(g.cbm / g.shipments.length).toFixed(2)}</strong></div>
+              <div class="ctr-spec-chip">Revenue/CBM: <strong>$${(g.lclRevenue / g.cbm).toFixed(0)}</strong></div>
+              <div class="ctr-spec-chip">Remaining space: <strong>${(cap.cbm - g.cbm).toFixed(2)} CBM</strong></div>
+              <div class="ctr-spec-chip">DG cargo: <strong>${g.shipments.filter(s => s.dg).length} booking${g.shipments.filter(s=>s.dg).length!==1?'s':''}</strong></div>
+            </div>
+
+            <!-- Manifest table -->
+            <div>
+              <div class="group-section-title">Container Manifest</div>
+              <div style="overflow-x:auto;max-height:320px;overflow-y:auto">
+                <table class="data-table" style="font-size:11px;min-width:520px">
+                  <thead>
+                    <tr>
+                      <th>Booking ID</th><th>Client</th><th>Product</th>
+                      <th class="text-right">CBM</th>
+                      <th class="text-right">Weight (kg)</th>
+                      <th class="text-right">Revenue</th>
+                    </tr>
+                  </thead>
+                  <tbody>${manifestRows}</tbody>
+                  <tfoot>
+                    <tr style="background:var(--bg4);font-weight:700;color:var(--text1)">
+                      <td colspan="3" style="color:var(--text2)">Group ${letter} Totals</td>
+                      <td class="text-right">${g.cbm.toFixed(2)}</td>
+                      <td class="text-right">${g.kg.toLocaleString()}</td>
+                      <td class="text-right" style="color:var(--green)">$${g.lclRevenue.toLocaleString()}</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // Inject SVG content after DOM is updated
+  groups.forEach((g, i) => {
+    const el = document.getElementById(`svg-grp-${i}`);
+    if (el) el.innerHTML = buildGroupSVG(g.shipments, cap);
   });
 
-  // Label
-  html += `<text x="280" y="304" text-anchor="middle" font-size="10" fill="#3d4d61" font-family="inherit">40ft Standard Container · Isometric Load Plan · Week 27</text>`;
-
-  svg.innerHTML = html;
+  // ── Spill section ─────────────────────────────────────────────────────────
+  document.getElementById('output-spill').innerHTML = SPILL.length > 0 ? `
+    <div style="margin-top:8px">
+      <div class="flex-row" style="margin-bottom:12px;gap:10px">
+        <h2 style="margin-bottom:0">Spill — Deferred to Next Consolidation</h2>
+        <span class="pill warning">${SPILL.length} booking${SPILL.length !== 1 ? 's' : ''} held over</span>
+      </div>
+      <div class="callout warning" style="margin-bottom:14px">
+        <div class="callout-title">Volume overflow — scheduled for Week 28 cycle</div>
+        These bookings could not be accommodated within the current container allocation.
+        Consider upgrading to a larger container type (e.g. 40ft HC) to reduce spill.
+      </div>
+      <div class="grid-2" style="gap:12px">
+        ${SPILL.map(s => {
+          const cs = CLIENT_STYLES[s.client] || {};
+          return `
+            <div style="background:var(--bg2);border:1px solid #f0a04040;border-radius:10px;padding:14px 16px">
+              <div class="flex-row" style="gap:8px;margin-bottom:10px">
+                <span style="font-size:14px;font-weight:800;color:var(--orange)">${s.id}</span>
+                <div style="background:${cs.bg||'var(--bg3)'};border:1px solid ${cs.border||'var(--border1)'};
+                            color:${cs.text||'var(--text1)'};padding:2px 8px;border-radius:4px;font-size:11px">
+                  ${cs.name || s.client}
+                </div>
+                <div class="spacer"></div>
+                <span class="pill warning" style="font-size:10px">Deferred · W28</span>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px">
+                <div class="ctr-spec-chip">${s.cbm.toFixed(2)} CBM</div>
+                <div class="ctr-spec-chip">${s.weight.toLocaleString()} kg</div>
+                <div class="ctr-spec-chip">${s.productType}</div>
+                <div class="ctr-spec-chip">$${s.revenue.toLocaleString()} revenue</div>
+              </div>
+              <div style="font-size:10px;color:var(--text3);margin-top:8px">
+                ${s.dims} &nbsp;·&nbsp; ${s.origin} &nbsp;·&nbsp; CRD in ${s.crd}d
+              </div>
+            </div>`;
+        }).join('')}
+      </div>
+    </div>
+  ` : `
+    <div class="callout success" style="margin-top:8px">
+      <div class="callout-title">No spill — all accepted bookings fully loaded</div>
+      All 19 accepted bookings fit within the allocated containers. Optimisation complete.
+    </div>
+  `;
 }
 
 // ─── Stage 4: Charts ──────────────────────────────────────────────────────────
