@@ -26,6 +26,8 @@
       --teal-bg: #f0fdfa;
       --coral: #d85a30;
       --coral-bg: #fdf0eb;
+      --orange: #c2620a;
+      --orange-bg: #fff4e6;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -119,6 +121,9 @@
 
     .card-share .card-icon { background: var(--coral-bg); color: var(--coral); }
     .card-share::before { background: var(--coral); }
+
+    .card-consolidation .card-icon { background: var(--orange-bg); color: var(--orange); }
+    .card-consolidation::before { background: var(--orange); }
 
     .proto-card h2 {
       font-size: 17px;
@@ -249,6 +254,22 @@
         <span class="tag">Tasks</span>
       </div>
     </a>
+    <a class="proto-card card-consolidation" href="consolidation-engine.html">
+      <span class="owner-tag owner-am">AM</span>
+      <span class="card-arrow"><svg viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M1 8a.5.5 0 01.5-.5h11.793l-3.147-3.146a.5.5 0 01.708-.708l4 4a.5.5 0 010 .708l-4 4a.5.5 0 01-.708-.708L13.293 8.5H1.5A.5.5 0 011 8z"/></svg></span>
+      <div class="card-icon">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 4a1 1 0 000 2h.535l.954 4.770A2 2 0 006 12.93V15a1 1 0 001 1h6a1 1 0 001-1v-2.07a2 2 0 001.511-2.16L15.465 6H16a1 1 0 000-2H3zm2.586 2h8.828l-.9 4.5H6.486L5.586 6zM7 14v-1h6v1H7z"/></svg>
+      </div>
+      <h2>Consolidation Engine</h2>
+      <p>Freight consolidation optimizer that ingests shipper booking forms, runs constraint-based matching (hazmat, weight, CRD), and outputs a 3D container load plan with financial manifest and spill list.</p>
+      <div class="card-tags">
+        <span class="tag">Input</span>
+        <span class="tag">Engine</span>
+        <span class="tag">Output</span>
+        <span class="tag">3D Load Plan</span>
+      </div>
+    </a>
+
     <a class="proto-card card-hs" href="help-support/index.html">
       <span class="owner-tag owner-am">AM</span>
       <span class="card-arrow"><svg viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M1 8a.5.5 0 01.5-.5h11.793l-3.147-3.146a.5.5 0 01.708-.708l4 4a.5.5 0 010 .708l-4 4a.5.5 0 01-.708-.708L13.293 8.5H1.5A.5.5 0 011 8z"/></svg></span>

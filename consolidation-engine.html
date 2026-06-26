@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Consolidation Engine — Silq Logistics</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg0: #0d1117;
+      --bg1: #161b27;
+      --bg2: #1c2233;
+      --bg3: #232840;
+      --bg4: #2a3050;
+      --border: #2e3650;
+      --border2: #3a4466;
+      --blue: #4d8fd6;
+      --blue-dim: #2a5580;
+      --blue-pale: #1a3350;
+      --green: #3dc78a;
+      --green-dim: #1e6646;
+      --green-pale: #112b1e;
+      --orange: #f0a040;
+      --orange-pale: #2e1e08;
+      --red: #e05555;
+      --red-pale: #2d1111;
+      --yellow: #f0c040;
+      --cyan: #40c0d0;
+      --purple: #9060d0;
+      --pink: #d06090;
+      --text0: #e2e8f0;
+      --text1: #94a3b8;
+      --text2: #64748b;
+      --text3: #3d4d61;
+      --accent: #4d8fd6;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg0);
+      color: var(--text0);
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* ── Header ── */
+    .app-header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 14px 28px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .app-title { font-size: 16px; font-weight: 700; color: var(--text0); }
+    .app-subtitle { font-size: 11px; color: var(--text2); margin-top: 1px; }
+    .stage-tabs { display: flex; gap: 6px; margin-left: auto; }
+    .tab-btn {
+      padding: 5px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border2);
+      background: none;
+      color: var(--text1);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .tab-btn:hover { background: var(--bg3); color: var(--text0); }
+    .tab-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+
+    /* ── Main layout ── */
+    .stage { display: none; padding: 24px 28px; }
+    .stage.active { display: block; }
+
+    /* ── Grid helpers ── */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .flex-row { display: flex; gap: 12px; align-items: center; }
+    .flex-col { display: flex; flex-direction: column; gap: 8px; }
+    .spacer { flex: 1; }
+    .split { display: grid; gap: 20px; }
+    .split-1-2 { grid-template-columns: 1fr 2fr; }
+    .split-1-1 { grid-template-columns: 1fr 1fr; }
+    .split-220 { grid-template-columns: 220px 1fr; }
+
+    /* ── Section titles ── */
+    h1 { font-size: 22px; font-weight: 700; }
+    h2 { font-size: 15px; font-weight: 600; color: var(--text0); margin-bottom: 8px; }
+    h3 { font-size: 12px; font-weight: 600; color: var(--text1); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+
+    /* ── Card ── */
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text1);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .card-body { padding: 14px; }
+
+    /* ── Badge / pill ── */
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 600;
+      border: 1px solid var(--border2);
+      color: var(--text1);
+      background: var(--bg3);
+    }
+    .pill.danger { background: var(--red-pale); border-color: var(--red); color: var(--red); }
+    .pill.warning { background: var(--orange-pale); border-color: var(--orange); color: var(--orange); }
+    .pill.success { background: var(--green-pale); border-color: var(--green); color: var(--green); }
+    .pill.info { background: var(--blue-pale); border-color: var(--blue); color: var(--blue); }
+
+    /* ── Stat ── */
+    .stat-grid { display: grid; gap: 12px; }
+    .stat {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+    }
+    .stat-value { font-size: 22px; font-weight: 700; color: var(--text0); line-height: 1.1; }
+    .stat-value.success { color: var(--green); }
+    .stat-value.info { color: var(--blue); }
+    .stat-value.warning { color: var(--orange); }
+    .stat-value.danger { color: var(--red); }
+    .stat-label { font-size: 11px; color: var(--text2); margin-top: 4px; }
+
+    /* ── Shipment card (Stage 1) ── */
+    .shipment-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .shipment-card.rejected {
+      background: var(--red-pale);
+      border-color: var(--red);
+      opacity: 0.85;
+    }
+    .shipment-card.spill {
+      background: var(--orange-pale);
+      border-color: var(--orange);
+    }
+    .shipment-id { font-size: 12px; font-weight: 700; color: var(--text0); }
+    .shipment-client { font-size: 12px; color: var(--text1); }
+    .data-row { display: flex; gap: 16px; }
+    .data-item { flex: 1; }
+    .data-label { font-size: 10px; color: var(--text2); margin-bottom: 2px; }
+    .data-value { font-size: 12px; font-weight: 600; color: var(--text0); }
+    .revenue-tag { font-size: 11px; color: var(--green); font-weight: 600; }
+    .crd-tag { font-size: 11px; color: var(--text2); }
+
+    /* ── Pipeline (Stage 2) ── */
+    .constraint-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg3);
+      margin-bottom: 6px;
+    }
+    .constraint-row.fail {
+      background: var(--red-pale);
+      border-color: var(--red);
+    }
+    .constraint-dot {
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .constraint-dot.pass { background: var(--green); }
+    .constraint-dot.fail { background: var(--red); }
+    .constraint-label { font-size: 12px; font-weight: 600; color: var(--text0); }
+    .constraint-desc { font-size: 11px; color: var(--text1); margin-top: 2px; }
+
+    .pool-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg3);
+      margin-bottom: 6px;
+    }
+    .pool-bar { width: 3px; height: 32px; border-radius: 2px; background: var(--blue); flex-shrink: 0; }
+
+    /* ── Usage bar ── */
+    .usage-bar-wrap { margin: 4px 0 8px; }
+    .usage-bar-labels { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 10px; color: var(--text2); }
+    .usage-bar { display: flex; height: 8px; border-radius: 4px; overflow: hidden; background: var(--bg4); }
+    .usage-segment { height: 100%; }
+
+    /* ── Table ── */
+    .data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .data-table th { text-align: left; padding: 7px 10px; color: var(--text2); font-weight: 600; font-size: 11px; border-bottom: 1px solid var(--border); }
+    .data-table td { padding: 8px 10px; border-bottom: 1px solid var(--border); color: var(--text0); }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr.row-success td { color: var(--text0); }
+    .data-table tr.row-success td:first-child { border-left: 2px solid var(--green); }
+    .data-table tr.row-warning td:first-child { border-left: 2px solid var(--orange); }
+    .data-table tr:hover td { background: var(--bg3); }
+    .text-right { text-align: right; }
+
+    /* ── Callout ── */
+    .callout {
+      padding: 10px 12px;
+      border-radius: 6px;
+      border: 1px solid;
+      font-size: 12px;
+      margin-top: 8px;
+    }
+    .callout.danger { background: var(--red-pale); border-color: var(--red); color: var(--text0); }
+    .callout.warning { background: var(--orange-pale); border-color: var(--orange); color: var(--text0); }
+    .callout.success { background: var(--green-pale); border-color: var(--green); color: var(--text0); }
+    .callout-title { font-weight: 600; margin-bottom: 3px; }
+
+    /* ── Divider ── */
+    .divider { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
+
+    /* ── Route widget ── */
+    .route-node {
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      padding: 10px 12px;
+    }
+    .route-label { font-size: 10px; color: var(--text2); margin-bottom: 3px; }
+    .route-value { font-size: 12px; font-weight: 600; }
+    .route-arrow { text-align: center; color: var(--text3); font-size: 11px; padding: 2px 0; }
+
+    /* ── Strategy toggle ── */
+    .strategy-toggle { display: flex; gap: 8px; }
+    .strategy-btn {
+      padding: 6px 16px;
+      border-radius: 999px;
+      border: 1px solid var(--border2);
+      background: none;
+      color: var(--text1);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .strategy-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+
+    /* ── Pipeline Steps (Stage 4) ── */
+    .pipeline-steps {
+      display: grid;
+      grid-template-columns: 1fr 48px 1fr 48px 1fr;
+      align-items: start;
+      gap: 0;
+      margin-bottom: 24px;
+    }
+    .pipeline-step {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+    }
+    .step-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .step-num {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .step-title { font-size: 13px; font-weight: 600; }
+    .step-desc { font-size: 12px; color: var(--text1); line-height: 1.55; margin-bottom: 12px; }
+    .step-metric { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+    .step-metric:last-child { border-bottom: none; }
+    .step-metric-label { color: var(--text2); }
+    .step-metric-value { font-weight: 600; }
+    .pipeline-arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-top: 32px;
+      color: var(--text3);
+    }
+    .pipeline-arrow svg { width: 40px; }
+
+    /* ── Container SVG wrapper ── */
+    .container-svg-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .iso-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+    .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text1); }
+    .legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+    /* ── Chart wrappers ── */
+    .chart-wrap { position: relative; }
+    .chart-caption { font-size: 10px; color: var(--text2); margin-top: 6px; }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .split-1-2, .split-1-1, .split-220 { grid-template-columns: 1fr; }
+      .grid-4 { grid-template-columns: 1fr 1fr; }
+      .pipeline-steps { grid-template-columns: 1fr; }
+      .pipeline-arrow { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     HEADER
+═══════════════════════════════════════════════════════════════════════════ -->
+<header class="app-header">
+  <div>
+    <div class="app-title">Consolidation Engine</div>
+    <div class="app-subtitle">Week 27 · Shenzhen–Guangzhou–Shanghai → Los Angeles (LAX/LGB)</div>
+  </div>
+  <div class="stage-tabs">
+    <button class="tab-btn active" data-stage="stage-input">Input</button>
+    <button class="tab-btn" data-stage="stage-engine">Engine</button>
+    <button class="tab-btn" data-stage="stage-output">Output</button>
+    <button class="tab-btn" data-stage="stage-exec">Executive View</button>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     STAGE 1 — INPUT
+═══════════════════════════════════════════════════════════════════════════ -->
+<section id="stage-input" class="stage active">
+  <div class="split split-220" style="align-items: start;">
+    <!-- Left sidebar -->
+    <div class="flex-col">
+      <h2>Origin Route</h2>
+      <div class="card" style="margin-bottom:0">
+        <div class="card-body flex-col" style="gap:8px">
+          <div class="route-node">
+            <div class="route-label">Factory Locations</div>
+            <div class="route-value">Shenzhen / Guangzhou / Shanghai / Ningbo / Tianjin</div>
+          </div>
+          <div class="route-arrow">── consolidation ──▶</div>
+          <div class="route-node">
+            <div class="route-label">Origin Warehouse</div>
+            <div class="route-value">Yantian Port, Shenzhen</div>
+          </div>
+          <div class="route-arrow">── ocean freight ──▶</div>
+          <div class="route-node">
+            <div class="route-label">Destination Port</div>
+            <div class="route-value">Los Angeles, USA</div>
+          </div>
+        </div>
+      </div>
+
+      <h2 style="margin-top:4px">Consolidation Window</h2>
+      <div class="card">
+        <div class="card-body">
+          <div class="step-metric"><span class="step-metric-label">CRD Earliest</span><span class="step-metric-value">Jun 27, 2026</span></div>
+          <div class="step-metric"><span class="step-metric-label">CRD Latest</span><span class="step-metric-value">Jul 3, 2026</span></div>
+          <div class="step-metric"><span class="step-metric-label">Warehouse Cut-off</span><span class="step-metric-value">Jul 6, 2026</span></div>
+          <div class="step-metric"><span class="step-metric-label">ETD</span><span class="step-metric-value">Jul 8, 2026</span></div>
+          <div class="step-metric"><span class="step-metric-label">ETA Los Angeles</span><span class="step-metric-value">Aug 3, 2026</span></div>
+          <div class="step-metric"><span class="step-metric-label">Container Type</span><span class="step-metric-value">40ft Standard</span></div>
+          <div class="step-metric" style="border:none"><span class="step-metric-label">Bookings Received</span><span class="step-metric-value" style="color:var(--blue)">8 shipments</span></div>
+        </div>
+      </div>
+
+      <h2 style="margin-top:4px">Totals at a Glance</h2>
+      <div class="grid-2" style="gap:10px">
+        <div class="stat">
+          <div class="stat-value info">8</div>
+          <div class="stat-label">Booking Forms</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">3,775</div>
+          <div class="stat-label">Declared kg (total)</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">8.91</div>
+          <div class="stat-label">Total CBM (all)</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value success">$10,530</div>
+          <div class="stat-label">Gross Revenue Pool</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: shipment cards -->
+    <div>
+      <div class="flex-row" style="margin-bottom:12px">
+        <h2 style="margin-bottom:0">Incoming Booking Forms</h2>
+        <div class="spacer"></div>
+        <span style="font-size:12px; color:var(--text2)">8 total · 5 eligible · 1 rejected · 2 spill</span>
+      </div>
+      <div class="grid-2" id="shipment-cards"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     STAGE 2 — ENGINE
+═══════════════════════════════════════════════════════════════════════════ -->
+<section id="stage-engine" class="stage">
+  <!-- Strategy + KPIs -->
+  <div class="flex-row" style="margin-bottom:16px">
+    <h2 style="margin-bottom:0">Optimization Strategy</h2>
+    <div class="spacer"></div>
+    <div class="strategy-toggle">
+      <button class="strategy-btn active" id="btn-profit">Maximize Profit</button>
+      <button class="strategy-btn" id="btn-volume">Maximize Volume</button>
+    </div>
+  </div>
+
+  <div class="grid-4" style="margin-bottom:20px">
+    <div class="stat"><div class="stat-value info">6.23 CBM</div><div class="stat-label">Current Volume Load</div></div>
+    <div class="stat"><div class="stat-value">2,015 kg</div><div class="stat-label">Total Gross Weight</div></div>
+    <div class="stat"><div class="stat-value success" id="margin-value">$2,670</div><div class="stat-label">Projected Net Margin</div></div>
+    <div class="stat"><div class="stat-value warning">9.2%</div><div class="stat-label">Volume Utilization</div></div>
+  </div>
+
+  <div class="split split-1-1" style="align-items:start">
+    <!-- Hard constraints -->
+    <div>
+      <h2>Hard Constraints Filter</h2>
+      <div id="constraints-list"></div>
+      <div class="callout danger" style="margin-top:10px">
+        <div class="callout-title">1 shipment permanently excluded</div>
+        SBF-004 (Blaze Chemicals) rejected — Class 4.1 Flammable Solid is incompatible with existing Class 3 Flammable Liquid cargo in container. DG regulations prohibit co-loading.
+      </div>
+    </div>
+
+    <!-- Optimization pool -->
+    <div>
+      <h2>Optimization Pool</h2>
+      <div id="pool-list"></div>
+      <hr class="divider" />
+      <h3>Revenue vs. Weight by Shipment</h3>
+      <div class="chart-wrap" style="height:180px">
+        <canvas id="engineChart"></canvas>
+      </div>
+      <div class="chart-caption">Revenue ($) and proportional weight contribution per shipment in optimization pool</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     STAGE 3 — OUTPUT
+═══════════════════════════════════════════════════════════════════════════ -->
+<section id="stage-output" class="stage">
+  <h2 style="margin-bottom:16px">Container Load Plan — Week 27 · 40ft Standard</h2>
+  <div class="split" style="grid-template-columns: 360px 1fr; align-items:start">
+
+    <!-- Left: manifest -->
+    <div class="flex-col">
+      <div class="grid-2" style="gap:12px">
+        <div class="stat"><div class="stat-value success">$2,670</div><div class="stat-label">Net Profit</div></div>
+        <div class="stat"><div class="stat-value info">9.2%</div><div class="stat-label">Volume Utilized</div></div>
+        <div class="stat"><div class="stat-value info">7.6%</div><div class="stat-label">Weight Utilized</div></div>
+        <div class="stat"><div class="stat-value">$6,420</div><div class="stat-label">Gross Revenue</div></div>
+      </div>
+
+      <div>
+        <div class="usage-bar-labels">
+          <span>9.2% full (by volume)</span>
+          <span>6.23 / 67.7 CBM</span>
+        </div>
+        <div class="usage-bar" id="usage-bar"></div>
+        <div class="chart-caption" style="margin-top:6px">Volume utilization by shipment</div>
+      </div>
+
+      <div>
+        <h2>Container Manifest</h2>
+        <table class="data-table">
+          <thead>
+            <tr><th>ID</th><th>Client</th><th class="text-right">CBM</th><th class="text-right">Revenue</th></tr>
+          </thead>
+          <tbody id="manifest-table"></tbody>
+        </table>
+      </div>
+
+      <div>
+        <h2>Spill List — Next Consolidation</h2>
+        <div class="callout warning">
+          <div class="callout-title">2 shipments held over to Week 28</div>
+          Below shipments were excluded from this load due to space constraints. Prioritized for next cycle.
+        </div>
+        <table class="data-table" style="margin-top:10px">
+          <thead>
+            <tr><th>ID</th><th>Client</th><th>CBM</th><th>Reason</th></tr>
+          </thead>
+          <tbody id="spill-table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Right: 3D container -->
+    <div>
+      <div class="card">
+        <div class="card-header">
+          3D Load Visualization — Isometric View
+          <span class="pill success">5 shipments loaded</span>
+        </div>
+        <div class="card-body">
+          <div class="container-svg-wrap">
+            <svg id="container-svg" width="560" height="320" viewBox="0 0 560 320" style="display:block;overflow:visible"></svg>
+            <div class="iso-legend" id="iso-legend"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     STAGE 4 — EXECUTIVE VIEW
+═══════════════════════════════════════════════════════════════════════════ -->
+<section id="stage-exec" class="stage">
+  <!-- KPI strip -->
+  <div class="grid-4" style="margin-bottom:24px">
+    <div class="stat"><div class="stat-value">8</div><div class="stat-label">Total Bookings This Week</div></div>
+    <div class="stat"><div class="stat-value success">$2,670</div><div class="stat-label">Net Profit This Cycle</div></div>
+    <div class="stat"><div class="stat-value info">9.2%</div><div class="stat-label">Container Utilization</div></div>
+    <div class="stat"><div class="stat-value warning">2</div><div class="stat-label">Spill to Next Week</div></div>
+  </div>
+
+  <!-- Pipeline steps -->
+  <h2 style="margin-bottom:16px">End-to-End Consolidation Pipeline</h2>
+  <div class="pipeline-steps">
+    <div class="pipeline-step">
+      <div class="step-header">
+        <div class="step-num" style="background:var(--blue);color:#fff">01</div>
+        <div class="step-title">Shipper Booking Forms</div>
+      </div>
+      <div class="step-desc">Raw cargo data ingested from shipper portals. Captures unit dimensions, gross weight, hazmat classification, stackability, cargo ready date, and client revenue.</div>
+      <div class="step-metric"><span class="step-metric-label">Bookings received</span><span class="step-metric-value">8</span></div>
+      <div class="step-metric"><span class="step-metric-label">Unique origin cities</span><span class="step-metric-value">4</span></div>
+      <div class="step-metric"><span class="step-metric-label">Total declared weight</span><span class="step-metric-value">3,775 kg</span></div>
+      <div class="step-metric"><span class="step-metric-label">Total CBM pool</span><span class="step-metric-value">8.91 CBM</span></div>
+      <div class="step-metric"><span class="step-metric-label">Gross revenue pool</span><span class="step-metric-value">$10,530</span></div>
+    </div>
+
+    <div class="pipeline-arrow">
+      <svg viewBox="0 0 40 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <line x1="0" y1="10" x2="32" y2="10" stroke="#3d4d61" stroke-width="1.5"/>
+        <polygon points="32,6 40,10 32,14" fill="#3d4d61"/>
+      </svg>
+    </div>
+
+    <div class="pipeline-step">
+      <div class="step-header">
+        <div class="step-num" style="background:var(--accent);color:#fff">02</div>
+        <div class="step-title">Optimization Engine</div>
+      </div>
+      <div class="step-desc">Constraint-based algorithm applies hard filters (hazmat incompatibility, weight limits, CRD alignment) then ranks the eligible pool by profit contribution per CBM.</div>
+      <div class="step-metric"><span class="step-metric-label">Hard constraints checked</span><span class="step-metric-value">5</span></div>
+      <div class="step-metric"><span class="step-metric-label">Shipments excluded</span><span class="step-metric-value" style="color:var(--red)">1</span></div>
+      <div class="step-metric"><span class="step-metric-label">Shipments in pool</span><span class="step-metric-value">5</span></div>
+      <div class="step-metric"><span class="step-metric-label">Spill (volume overflow)</span><span class="step-metric-value" style="color:var(--orange)">2</span></div>
+      <div class="step-metric"><span class="step-metric-label">Strategy applied</span><span class="step-metric-value">Maximize Profit</span></div>
+    </div>
+
+    <div class="pipeline-arrow">
+      <svg viewBox="0 0 40 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <line x1="0" y1="10" x2="32" y2="10" stroke="#3d4d61" stroke-width="1.5"/>
+        <polygon points="32,6 40,10 32,14" fill="#3d4d61"/>
+      </svg>
+    </div>
+
+    <div class="pipeline-step">
+      <div class="step-header">
+        <div class="step-num" style="background:var(--green);color:#000">03</div>
+        <div class="step-title">Container Load Plan</div>
+      </div>
+      <div class="step-desc">Optimal shipment set committed to a 40ft container with 3D load visualization, container manifest, and financial summary delivered to commercial and warehouse teams.</div>
+      <div class="step-metric"><span class="step-metric-label">Net profit</span><span class="step-metric-value" style="color:var(--green)">$2,670</span></div>
+      <div class="step-metric"><span class="step-metric-label">Volume utilized</span><span class="step-metric-value">9.2%</span></div>
+      <div class="step-metric"><span class="step-metric-label">Weight utilized</span><span class="step-metric-value">7.6%</span></div>
+      <div class="step-metric"><span class="step-metric-label">Container</span><span class="step-metric-value">40ft Standard</span></div>
+      <div class="step-metric"><span class="step-metric-label">ETD</span><span class="step-metric-value">Jul 8, 2026</span></div>
+    </div>
+  </div>
+
+  <hr class="divider" style="margin: 4px 0 20px" />
+
+  <h2 style="margin-bottom:16px">Weekly Performance Trends</h2>
+  <div class="grid-2" style="gap:24px">
+    <div>
+      <h3>Net Profit Per Consolidation Cycle</h3>
+      <div class="chart-wrap" style="height:200px">
+        <canvas id="profitChart"></canvas>
+      </div>
+      <div class="chart-caption">Source: internal · W24–W27 · Target: $3,000</div>
+    </div>
+    <div>
+      <h3>Container Volume Utilization (%)</h3>
+      <div class="chart-wrap" style="height:200px">
+        <canvas id="volumeChart"></canvas>
+      </div>
+      <div class="chart-caption">Source: internal · W24–W27 · Target: 90%</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     SCRIPTS
+═══════════════════════════════════════════════════════════════════════════ -->
+<script>
+// ─── Data ───────────────────────────────────────────────────────────────────
+
+const SHIPMENTS = [
+  { id:"SBF-001", client:"Sunrise Electronics", dims:"120×80×90 cm", weight:340, cbm:0.86, revenue:1200, crd:2, hazmat:null,       stackable:true,  status:"accepted", origin:"Shenzhen" },
+  { id:"SBF-002", client:"Apex Machinery",      dims:"200×100×120 cm",weight:820, cbm:2.40, revenue:2100, crd:3, hazmat:"Class 3", stackable:false, status:"accepted", origin:"Guangzhou" },
+  { id:"SBF-003", client:"FreshBrew Co.",        dims:"60×60×80 cm",  weight:210, cbm:0.29, revenue:680,  crd:1, hazmat:null,       stackable:true,  status:"accepted", origin:"Shenzhen" },
+  { id:"SBF-004", client:"Blaze Chemicals",      dims:"80×80×100 cm", weight:480, cbm:0.64, revenue:950,  crd:5, hazmat:"Class 4.1",stackable:false, status:"rejected", origin:"Ningbo" },
+  { id:"SBF-005", client:"TechVision Ltd.",      dims:"150×100×80 cm",weight:290, cbm:1.20, revenue:1560, crd:4, hazmat:null,       stackable:true,  status:"accepted", origin:"Shenzhen" },
+  { id:"SBF-006", client:"Nordic Furniture",     dims:"220×120×60 cm",weight:380, cbm:1.58, revenue:1840, crd:6, hazmat:null,       stackable:false, status:"spill",    origin:"Shanghai" },
+  { id:"SBF-007", client:"ProAudio Systems",     dims:"100×80×60 cm", weight:155, cbm:0.48, revenue:880,  crd:2, hazmat:null,       stackable:true,  status:"accepted", origin:"Shenzhen" },
+  { id:"SBF-008", client:"WeldPro Metals",       dims:"180×90×90 cm", weight:1100,cbm:1.46, revenue:1320, crd:7, hazmat:null,       stackable:false, status:"spill",    origin:"Tianjin" },
+];
+
+const ACCEPTED  = SHIPMENTS.filter(s => s.status === "accepted");
+const REJECTED  = SHIPMENTS.filter(s => s.status === "rejected");
+const SPILL     = SHIPMENTS.filter(s => s.status === "spill");
+const TOTAL_CBM = ACCEPTED.reduce((a,s) => a + s.cbm, 0);  // 6.23
+const TOTAL_KG  = ACCEPTED.reduce((a,s) => a + s.weight, 0); // 2015
+const REVENUE   = ACCEPTED.reduce((a,s) => a + s.revenue, 0); // 6420
+const COST      = 3750;
+const PROFIT    = REVENUE - COST; // 2670
+const CONTAINER_CBM = 67.7;
+const CONTAINER_KG  = 26500;
+
+const BOX_COLORS = ["#4d8fd6","#3dc78a","#f0a040","#9060d0","#40c0d0","#d06090","#f0c040"];
+
+// ─── Tab navigation ──────────────────────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.stage').forEach(s => s.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.stage).classList.add('active');
+  });
+});
+
+// ─── Stage 1: Shipment Cards ─────────────────────────────────────────────────
+function renderShipmentCards() {
+  const container = document.getElementById('shipment-cards');
+  container.innerHTML = SHIPMENTS.map(s => {
+    const cls = s.status === 'rejected' ? 'rejected' : s.status === 'spill' ? 'spill' : '';
+    const badges = [];
+    if (s.hazmat) badges.push(`<span class="pill danger">${s.hazmat}</span>`);
+    if (!s.stackable) badges.push(`<span class="pill warning">Non-Stack</span>`);
+    if (s.status === 'rejected') badges.push(`<span class="pill danger">Rejected</span>`);
+    if (s.status === 'spill') badges.push(`<span class="pill warning">Spill</span>`);
+    if (s.status === 'accepted') badges.push(`<span class="pill success">Accepted</span>`);
+
+    return `
+      <div class="shipment-card ${cls}">
+        <div class="flex-row" style="align-items:center;gap:8px">
+          <span class="shipment-id">${s.id}</span>
+          <div class="spacer"></div>
+          ${badges.join('')}
+        </div>
+        <div class="shipment-client">${s.client}</div>
+        <div class="data-row">
+          <div class="data-item">
+            <div class="data-label">Dims (L×W×H)</div>
+            <div class="data-value">${s.dims}</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">Gross Weight</div>
+            <div class="data-value">${s.weight} kg</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">CBM</div>
+            <div class="data-value">${s.cbm.toFixed(2)}</div>
+          </div>
+        </div>
+        <div class="flex-row" style="align-items:center">
+          <span class="revenue-tag">$${s.revenue.toLocaleString()} revenue</span>
+          <div class="spacer"></div>
+          <span class="crd-tag" style="color:${s.crd <= 2 ? 'var(--orange)' : 'var(--text2)'}">CRD in ${s.crd}d · ${s.origin}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ─── Stage 2: Constraints & Pool ─────────────────────────────────────────────
+function renderEngine() {
+  const constraints = [
+    { pass:true,  label:"Weight Limit (26,500 kg)", desc:`${TOTAL_KG.toLocaleString()} kg total accepted — within limit (${((TOTAL_KG/26500)*100).toFixed(0)}% used)` },
+    { pass:true,  label:"Volume Capacity (67.7 CBM)", desc:`${TOTAL_CBM.toFixed(2)} CBM utilized — ${((TOTAL_CBM/CONTAINER_CBM)*100).toFixed(1)}% of container` },
+    { pass:false, label:"Hazmat Compatibility Check", desc:"SBF-004 (Class 4.1 Flammable Solid) — incompatible with SBF-002 (Class 3 Liquid). IMDG Code 7.2.6 violation." },
+    { pass:true,  label:"Cargo Ready Date Alignment", desc:"All CRDs fall within Jun 27 – Jul 3 consolidation window" },
+    { pass:true,  label:"DG Documentation Submitted", desc:"Class 3 DG packing certificate received for SBF-002 — Apex Machinery" },
+  ];
+
+  document.getElementById('constraints-list').innerHTML = constraints.map(c => `
+    <div class="constraint-row ${c.pass ? '' : 'fail'}">
+      <div class="constraint-dot ${c.pass ? 'pass' : 'fail'}"></div>
+      <div>
+        <div class="constraint-label">${c.label}</div>
+        <div class="constraint-desc">${c.desc}</div>
+      </div>
+    </div>
+  `).join('');
+
+  document.getElementById('pool-list').innerHTML = ACCEPTED.map(s => `
+    <div class="pool-row">
+      <div class="pool-bar"></div>
+      <div style="flex:1">
+        <div class="flex-row" style="gap:6px">
+          <span style="font-size:12px;font-weight:700">${s.id}</span>
+          <div class="spacer"></div>
+          <span style="font-size:11px;color:var(--text2)">${s.cbm.toFixed(2)} CBM</span>
+        </div>
+        <div style="font-size:11px;color:var(--text1);margin-top:2px">${s.client} · $${s.revenue.toLocaleString()} · ${s.weight} kg</div>
+      </div>
+    </div>
+  `).join('');
+
+  // Engine chart
+  const ctx = document.getElementById('engineChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ACCEPTED.map(s => s.id),
+      datasets: [
+        { label: 'Revenue ($)', data: ACCEPTED.map(s => s.revenue), backgroundColor: '#2a5580', borderColor: '#4d8fd6', borderWidth: 1, borderRadius: 3 },
+        { label: 'Weight ÷10 (kg)', data: ACCEPTED.map(s => Math.round(s.weight/10)), backgroundColor: '#1e3a2a', borderColor: '#3dc78a', borderWidth: 1, borderRadius: 3 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { color:'#94a3b8', font:{size:11} } } },
+      scales: {
+        x: { ticks:{ color:'#64748b', font:{size:10} }, grid:{ color:'#1c2233' } },
+        y: { ticks:{ color:'#64748b', font:{size:10} }, grid:{ color:'#1c2233' } }
+      }
+    }
+  });
+
+  // Strategy toggle
+  document.getElementById('btn-profit').addEventListener('click', () => {
+    document.getElementById('btn-profit').classList.add('active');
+    document.getElementById('btn-volume').classList.remove('active');
+    document.getElementById('margin-value').textContent = '$2,670';
+  });
+  document.getElementById('btn-volume').addEventListener('click', () => {
+    document.getElementById('btn-volume').classList.add('active');
+    document.getElementById('btn-profit').classList.remove('active');
+    document.getElementById('margin-value').textContent = '$2,310';
+  });
+}
+
+// ─── Stage 3: Manifest + 3D Container ────────────────────────────────────────
+function renderOutput() {
+  // Usage bar
+  const bar = document.getElementById('usage-bar');
+  bar.innerHTML = ACCEPTED.map((s, i) => {
+    const pct = (s.cbm / CONTAINER_CBM * 100).toFixed(2);
+    return `<div class="usage-segment" style="width:${pct}%;background:${BOX_COLORS[i % BOX_COLORS.length]};opacity:0.85" title="${s.id}: ${s.cbm} CBM"></div>`;
+  }).join('');
+
+  // Manifest table
+  document.getElementById('manifest-table').innerHTML = ACCEPTED.map(s => `
+    <tr class="row-success">
+      <td>${s.id}</td><td>${s.client}</td>
+      <td class="text-right">${s.cbm.toFixed(2)}</td>
+      <td class="text-right">$${s.revenue.toLocaleString()}</td>
+    </tr>
+    <tr style="background:var(--bg3)"><td colspan="4" style="padding:0;border:none">
+      <div style="display:flex;gap:16px;padding:5px 10px 7px;font-size:11px;color:var(--text2)">
+        <span>Dims: ${s.dims}</span><span>Weight: ${s.weight} kg</span>
+        <span>Origin: ${s.origin}</span>
+        ${s.hazmat ? `<span style="color:var(--orange)">Hazmat: ${s.hazmat}</span>` : ''}
+        ${!s.stackable ? '<span style="color:var(--text3)">Non-stackable</span>' : ''}
+      </div>
+    </td></tr>
+  `).join('');
+
+  // Spill table
+  document.getElementById('spill-table').innerHTML = SPILL.map(s => `
+    <tr class="row-warning">
+      <td>${s.id}</td><td>${s.client}</td>
+      <td>${s.cbm.toFixed(2)}</td>
+      <td>${s.cbm > 1.4 ? 'Volume exceeded' : 'Weight impact'}</td>
+    </tr>
+  `).join('');
+
+  // Isometric container SVG
+  renderContainerSVG();
+
+  // Legend
+  document.getElementById('iso-legend').innerHTML = ACCEPTED.map((s, i) => `
+    <div class="legend-item">
+      <div class="legend-dot" style="background:${BOX_COLORS[i % BOX_COLORS.length]}"></div>
+      ${s.id}
+    </div>
+  `).join('');
+}
+
+// ─── Isometric Container SVG ─────────────────────────────────────────────────
+function isoProject(x, y, z, OX, OY, SCALE_X, SCALE_Y, SCALE_H) {
+  return [
+    OX + (x - z) * SCALE_X,
+    OY + (x + z) * SCALE_Y - y * SCALE_H
+  ];
+}
+
+function renderContainerSVG() {
+  const svg = document.getElementById('container-svg');
+  const OX = 280, OY = 230;
+  const SX = 28, SY = 14, SH = 26;
+  // Container dims in "units": 10w x 4h x 5d
+  const CW = 10, CH = 4, CD = 5;
+
+  function pt(x, y, z) {
+    const [px, py] = isoProject(x, y, z, OX, OY, SX, SY, SH);
+    return `${px},${py}`;
+  }
+
+  let html = '';
+
+  // Container floor
+  html += `<polygon points="${pt(0,0,0)} ${pt(CW,0,0)} ${pt(CW,0,CD)} ${pt(0,0,CD)}"
+    fill="#1c2233" stroke="#2e3650" stroke-width="1"/>`;
+
+  // Back wall (x=0, left face)
+  html += `<polygon points="${pt(0,0,0)} ${pt(0,CH,0)} ${pt(0,CH,CD)} ${pt(0,0,CD)}"
+    fill="#161b27" stroke="#2e3650" stroke-width="1"/>`;
+
+  // Back wall (z=0, right face)
+  html += `<polygon points="${pt(0,0,0)} ${pt(CW,0,0)} ${pt(CW,CH,0)} ${pt(0,CH,0)}"
+    fill="#1a1f2e" stroke="#2e3650" stroke-width="1"/>`;
+
+  // ── Boxes (back-to-front for painter's algorithm) ──
+  // Layout:
+  // Row 0 (z=0..2): SBF-002 (x=0..4, y=0..2.5, z=0..3)
+  //                 SBF-001 (x=4..6.5, y=0..2.2, z=0..2)
+  //                 SBF-003 (x=6.5..8.5, y=0..1.8, z=0..1.8)
+  // Row 1 (z=2..4): SBF-005 (x=0..3, y=0..1.5, z=2..4)
+  //                 SBF-007 (x=3..5, y=0..1.4, z=3..4.8)
+  // Stacked:
+  //                 SBF-001b (x=4..6.5, y=2.2..3.7, z=0..2)
+  //                 SBF-003b (x=6.5..8.5, y=1.8..3.3, z=0..1.8)
+
+  const boxes = [
+    // back-most first
+    { x:0,   y:0,   z:0,   w:4,   h:2.5, d:3,   color:BOX_COLORS[1], id:"SBF-002" },
+    { x:4,   y:0,   z:0,   w:2.5, h:2.2, d:2,   color:BOX_COLORS[0], id:"SBF-001" },
+    { x:6.5, y:0,   z:0,   w:2,   h:1.8, d:1.8, color:BOX_COLORS[2], id:"SBF-003" },
+    { x:0,   y:0,   z:3,   w:3,   h:1.5, d:2,   color:BOX_COLORS[3], id:"SBF-005" },
+    { x:3,   y:0,   z:3.5, w:2,   h:1.4, d:1.3, color:BOX_COLORS[4], id:"SBF-007" },
+    // stacked
+    { x:4,   y:2.2, z:0,   w:2.5, h:1.5, d:2,   color:BOX_COLORS[0], id:"SBF-001b" },
+    { x:6.5, y:1.8, z:0,   w:2,   h:1.5, d:1.8, color:BOX_COLORS[2], id:"SBF-003b" },
+  ];
+
+  // Sort back to front: higher x+z first (painter's algorithm)
+  boxes.sort((a, b) => -(a.x + a.z) + (b.x + b.z));
+
+  boxes.forEach(box => {
+    const {x, y, z, w, h, d, color, id} = box;
+    const topPts = `${pt(x,y+h,z)} ${pt(x+w,y+h,z)} ${pt(x+w,y+h,z+d)} ${pt(x,y+h,z+d)}`;
+    const leftPts = `${pt(x,y,z+d)} ${pt(x,y+h,z+d)} ${pt(x+w,y+h,z+d)} ${pt(x+w,y,z+d)}`;
+    const rightPts = `${pt(x+w,y,z)} ${pt(x+w,y+h,z)} ${pt(x+w,y+h,z+d)} ${pt(x+w,y,z+d)}`;
+
+    // Label center (top face centroid)
+    const [lx, ly] = isoProject(x+w/2, y+h, z+d/2, OX, OY, SX, SY, SH);
+
+    // Darken left/right slightly
+    html += `<polygon points="${leftPts}" fill="${color}" opacity="0.65" stroke="${color}" stroke-width="0.4"/>`;
+    html += `<polygon points="${rightPts}" fill="${color}" opacity="0.5" stroke="${color}" stroke-width="0.4"/>`;
+    html += `<polygon points="${topPts}" fill="${color}" opacity="0.88" stroke="${color}" stroke-width="0.4"/>`;
+
+    // Label only on top face (if it's not stacked duplicate)
+    if (!id.endsWith('b')) {
+      html += `<text x="${lx}" y="${ly+4}" text-anchor="middle" font-size="7.5" fill="#e2e8f0" font-weight="600" font-family="inherit" style="pointer-events:none">${id}</text>`;
+    }
+  });
+
+  // Container frame edges (front/visible)
+  const edges = [
+    // vertical corners
+    [pt(0,0,0), pt(0,CH,0)],
+    [pt(CW,0,0), pt(CW,CH,0)],
+    [pt(0,0,CD), pt(0,CH,CD)],
+    [pt(CW,0,CD), pt(CW,CH,CD)],
+    // top edges
+    [pt(0,CH,0), pt(CW,CH,0)],
+    [pt(0,CH,0), pt(0,CH,CD)],
+    [pt(CW,CH,0), pt(CW,CH,CD)],
+    [pt(0,CH,CD), pt(CW,CH,CD)],
+    // bottom floor edges
+    [pt(0,0,0), pt(CW,0,0)],
+    [pt(0,0,0), pt(0,0,CD)],
+    [pt(CW,0,0), pt(CW,0,CD)],
+    [pt(0,0,CD), pt(CW,0,CD)],
+  ];
+  edges.forEach(([from, to]) => {
+    html += `<line x1="${from.split(',')[0]}" y1="${from.split(',')[1]}" x2="${to.split(',')[0]}" y2="${to.split(',')[1]}" stroke="#3a4466" stroke-width="1.2"/>`;
+  });
+
+  // Label
+  html += `<text x="280" y="304" text-anchor="middle" font-size="10" fill="#3d4d61" font-family="inherit">40ft Standard Container · Isometric Load Plan · Week 27</text>`;
+
+  svg.innerHTML = html;
+}
+
+// ─── Stage 4: Charts ──────────────────────────────────────────────────────────
+function renderExec() {
+  const chartOpts = {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { backgroundColor: '#232840', borderColor:'#3a4466', borderWidth:1, titleColor:'#e2e8f0', bodyColor:'#94a3b8' }
+    },
+    scales: {
+      x: { ticks:{ color:'#64748b', font:{size:11} }, grid:{ color:'#1c2233' } },
+      y: { ticks:{ color:'#64748b', font:{size:11} }, grid:{ color:'#1c2233' } }
+    }
+  };
+
+  new Chart(document.getElementById('profitChart').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: ['W24','W25','W26','W27'],
+      datasets: [{
+        label: 'Net Profit ($)',
+        data: [2200, 2580, 3100, PROFIT],
+        borderColor: '#3dc78a', backgroundColor: '#1e3a2a',
+        borderWidth: 2, pointRadius: 4, pointBackgroundColor: '#3dc78a', fill: true, tension: 0.3
+      }, {
+        label: 'Target ($)',
+        data: [3000,3000,3000,3000],
+        borderColor: '#f0a040', borderDash: [5,3], borderWidth: 1.5,
+        pointRadius: 0, fill: false
+      }]
+    },
+    options: { ...chartOpts, plugins: { ...chartOpts.plugins, legend:{ labels:{ color:'#94a3b8', font:{size:11} } } } }
+  });
+
+  new Chart(document.getElementById('volumeChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: ['W24','W25','W26','W27'],
+      datasets: [{
+        label: 'Volume Utilized (%)',
+        data: [74, 81, 89, parseFloat(((TOTAL_CBM/CONTAINER_CBM)*100).toFixed(1))],
+        backgroundColor: '#2a5580', borderColor: '#4d8fd6', borderWidth: 1, borderRadius: 4
+      }]
+    },
+    options: {
+      ...chartOpts,
+      plugins: { ...chartOpts.plugins, annotation: {} },
+      scales: {
+        ...chartOpts.scales,
+        y: { ...chartOpts.scales.y, max: 100, ticks:{ ...chartOpts.scales.y.ticks, callback: v => v+'%' } }
+      }
+    }
+  });
+}
+
+// ─── Init ────────────────────────────────────────────────────────────────────
+renderShipmentCards();
+renderEngine();
+renderOutput();
+renderExec();
+</script>
+</body>
+</html>
