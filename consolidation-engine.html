@@ -76,6 +76,108 @@
     .stage { display: none; padding: 24px 28px; }
     .stage.active { display: block; }
 
+    /* ═══════════════════════════════════════════════
+       TRANSITION OVERLAY
+    ═══════════════════════════════════════════════ */
+    #tov {
+      position: fixed; inset: 0; z-index: 9999;
+      background: rgba(8, 11, 18, 0.96);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.22s ease;
+      backdrop-filter: blur(6px);
+    }
+    #tov.tov-show { opacity: 1; pointer-events: all; }
+    .tov-wrap { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+
+    /* Spinning ring */
+    .tov-ring {
+      width: 76px; height: 76px; border-radius: 50%;
+      border: 3px solid var(--bg4);
+      border-top-color: var(--tov-accent, #4d8fd6);
+      border-right-color: var(--tov-accent, #4d8fd6);
+      animation: tovSpin 0.75s linear infinite;
+    }
+    @keyframes tovSpin { to { transform: rotate(360deg); } }
+
+    /* Animated dots */
+    .tov-dots { display: flex; gap: 8px; }
+    .tov-dots span {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--tov-accent, #4d8fd6);
+      animation: tovDot 1.1s ease-in-out infinite;
+    }
+    .tov-dots span:nth-child(2) { animation-delay: 0.18s; }
+    .tov-dots span:nth-child(3) { animation-delay: 0.36s; }
+    @keyframes tovDot {
+      0%,80%,100% { transform: scale(0.55); opacity: 0.4; }
+      40%         { transform: scale(1);    opacity: 1;   }
+    }
+
+    /* Progress bar */
+    .tov-bar {
+      width: 220px; height: 3px; border-radius: 2px; background: var(--bg4); overflow: hidden;
+    }
+    .tov-bar-fill {
+      height: 100%; border-radius: 2px; width: 0%;
+      background: var(--tov-accent, #4d8fd6);
+      transition: width 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .tov-title { font-size: 18px; font-weight: 700; color: var(--text0); }
+    .tov-sub   { font-size: 11px; color: var(--text2); }
+
+    /* ═══════════════════════════════════════════════
+       STAGE NAV FOOTER
+    ═══════════════════════════════════════════════ */
+    .stage-nav-footer {
+      display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+      margin-top: 36px; padding: 20px 0 4px;
+      border-top: 1px solid var(--border1);
+    }
+    .step-track {
+      flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px;
+    }
+    .step-dots-row { display: flex; align-items: center; }
+    .step-node {
+      width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 800;
+      background: var(--bg3); border: 2px solid var(--border2); color: var(--text3);
+      transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .step-node.done   { background: #3dc78a40; border-color: #3dc78a; color: #3dc78a; }
+    .step-node.active { background: var(--blue); border-color: var(--blue); color: #fff;
+                        box-shadow: 0 0 0 4px rgba(77,143,214,0.2); }
+    .step-seg {
+      width: 52px; height: 2px; background: var(--border2);
+      transition: background 0.35s ease;
+    }
+    .step-seg.done { background: #3dc78a; }
+    .step-labels {
+      display: flex; gap: 0; font-size: 10px; color: var(--text3);
+    }
+    .step-lbl { width: 30px; text-align: center; }
+    .step-gap { width: 52px; }
+
+    /* Next / Back buttons */
+    .nav-btn-back {
+      padding: 10px 20px; border-radius: 9px; cursor: pointer; flex-shrink: 0;
+      border: 1.5px solid var(--border2); background: none;
+      color: var(--text2); font-size: 13px; font-weight: 600;
+      transition: all 0.15s; display: flex; align-items: center; gap: 8px;
+    }
+    .nav-btn-back:hover { border-color: var(--text1); color: var(--text1); }
+    .nav-btn-next {
+      padding: 13px 30px; border-radius: 10px; cursor: pointer; flex-shrink: 0; border: none;
+      font-size: 14px; font-weight: 700; color: #fff;
+      display: flex; align-items: center; gap: 10px;
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.35);
+    }
+    .nav-btn-next:hover  { transform: translateY(-2px); box-shadow: 0 7px 28px rgba(0,0,0,0.45); }
+    .nav-btn-next:active { transform: translateY(0); }
+    .nav-arrow { font-size: 18px; line-height: 1; }
+
     /* ── Grid helpers ── */
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
@@ -522,6 +624,30 @@
       <div class="grid-2" id="shipment-cards"></div>
     </div>
   </div>
+
+  <!-- INPUT → ENGINE navigation footer -->
+  <div class="stage-nav-footer">
+    <div class="step-track">
+      <div class="step-dots-row">
+        <div class="step-node active" id="sn-1">1</div>
+        <div class="step-seg" id="ss-1"></div>
+        <div class="step-node" id="sn-2">2</div>
+        <div class="step-seg" id="ss-2"></div>
+        <div class="step-node" id="sn-3">3</div>
+        <div class="step-seg" id="ss-3"></div>
+        <div class="step-node" id="sn-4">4</div>
+      </div>
+      <div class="step-labels">
+        <span class="step-lbl">Input</span><span class="step-gap"></span>
+        <span class="step-lbl">Engine</span><span class="step-gap"></span>
+        <span class="step-lbl">Output</span><span class="step-gap"></span>
+        <span class="step-lbl">Exec</span>
+      </div>
+    </div>
+    <button class="nav-btn-next" style="background:#1e4070" onclick="navigateTo('stage-engine','forward')">
+      Run Consolidation Engine <span class="nav-arrow">→</span>
+    </button>
+  </div>
 </section>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════
@@ -582,6 +708,33 @@
     <div id="groups-container"></div>
   </div>
 
+  <!-- ENGINE navigation footer -->
+  <div class="stage-nav-footer">
+    <button class="nav-btn-back" onclick="navigateTo('stage-input','back')">
+      ← Input
+    </button>
+    <div class="step-track">
+      <div class="step-dots-row">
+        <div class="step-node done">1</div>
+        <div class="step-seg done"></div>
+        <div class="step-node active">2</div>
+        <div class="step-seg"></div>
+        <div class="step-node">3</div>
+        <div class="step-seg"></div>
+        <div class="step-node">4</div>
+      </div>
+      <div class="step-labels">
+        <span class="step-lbl">Input</span><span class="step-gap"></span>
+        <span class="step-lbl">Engine</span><span class="step-gap"></span>
+        <span class="step-lbl">Output</span><span class="step-gap"></span>
+        <span class="step-lbl">Exec</span>
+      </div>
+    </div>
+    <button class="nav-btn-next" style="background:#1a3b28" onclick="navigateTo('stage-output','forward')">
+      Generate Load Plan <span class="nav-arrow">→</span>
+    </button>
+  </div>
+
 </section>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════
@@ -599,6 +752,33 @@
   <div id="output-groups"></div>
   <!-- Spill — rendered by JS -->
   <div id="output-spill"></div>
+
+  <!-- OUTPUT navigation footer -->
+  <div class="stage-nav-footer">
+    <button class="nav-btn-back" onclick="navigateTo('stage-engine','back')">
+      ← Engine
+    </button>
+    <div class="step-track">
+      <div class="step-dots-row">
+        <div class="step-node done">1</div>
+        <div class="step-seg done"></div>
+        <div class="step-node done">2</div>
+        <div class="step-seg done"></div>
+        <div class="step-node active">3</div>
+        <div class="step-seg"></div>
+        <div class="step-node">4</div>
+      </div>
+      <div class="step-labels">
+        <span class="step-lbl">Input</span><span class="step-gap"></span>
+        <span class="step-lbl">Engine</span><span class="step-gap"></span>
+        <span class="step-lbl">Output</span><span class="step-gap"></span>
+        <span class="step-lbl">Exec</span>
+      </div>
+    </div>
+    <button class="nav-btn-next" style="background:#25402a" onclick="navigateTo('stage-exec','forward')">
+      View Executive Summary <span class="nav-arrow">→</span>
+    </button>
+  </div>
 </section>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════
@@ -689,8 +869,45 @@
       <div class="chart-caption">Source: internal · W24–W27 · Target: 90%</div>
     </div>
   </div>
+
+  <!-- EXECUTIVE navigation footer -->
+  <div class="stage-nav-footer">
+    <button class="nav-btn-back" onclick="navigateTo('stage-output','back')">
+      ← Load Plan
+    </button>
+    <div class="step-track">
+      <div class="step-dots-row">
+        <div class="step-node done">1</div>
+        <div class="step-seg done"></div>
+        <div class="step-node done">2</div>
+        <div class="step-seg done"></div>
+        <div class="step-node done">3</div>
+        <div class="step-seg done"></div>
+        <div class="step-node active">4</div>
+      </div>
+      <div class="step-labels">
+        <span class="step-lbl">Input</span><span class="step-gap"></span>
+        <span class="step-lbl">Engine</span><span class="step-gap"></span>
+        <span class="step-lbl">Output</span><span class="step-gap"></span>
+        <span class="step-lbl">Exec</span>
+      </div>
+    </div>
+    <button class="nav-btn-next" style="background:#2a2010" onclick="navigateTo('stage-input','back')">
+      ← Start New Cycle
+    </button>
+  </div>
 </section>
 
+<!-- Transition overlay -->
+<div id="tov">
+  <div class="tov-wrap">
+    <div class="tov-ring" id="tov-ring"></div>
+    <div class="tov-dots"><span></span><span></span><span></span></div>
+    <div class="tov-title" id="tov-title">Processing…</div>
+    <div class="tov-sub" id="tov-sub">Please wait</div>
+    <div class="tov-bar"><div class="tov-bar-fill" id="tov-bar"></div></div>
+  </div>
+</div>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════
      SCRIPTS
@@ -820,15 +1037,122 @@ function groupShipments(ctype, strategy) {
 }
 
 // ─── Tab navigation ──────────────────────────────────────────────────────────
+// ─── Stage order & transition config ─────────────────────────────────────────
+const STAGE_ORDER = ['stage-input', 'stage-engine', 'stage-output', 'stage-exec'];
+
+const OVERLAY_CONFIG = {
+  'stage-input→stage-engine': {
+    title: 'Running Optimization Engine',
+    sub:   'Applying constraints · grouping bookings by CBM',
+    accent: '#4d8fd6',
+  },
+  'stage-engine→stage-output': {
+    title: 'Generating Container Load Plan',
+    sub:   'Packing groups · building isometric load view',
+    accent: '#3dc78a',
+  },
+  'stage-output→stage-exec': {
+    title: 'Building Executive Summary',
+    sub:   'Aggregating metrics · rendering trend charts',
+    accent: '#f0c040',
+  },
+};
+
+// ─── Main navigation function ─────────────────────────────────────────────────
+function navigateTo(targetId, hint) {
+  const current = document.querySelector('.stage.active');
+  if (!current || current.id === targetId) return;
+
+  const curIdx = STAGE_ORDER.indexOf(current.id);
+  const tgtIdx = STAGE_ORDER.indexOf(targetId);
+  const forward = hint === 'forward' || tgtIdx > curIdx;
+
+  const ovKey = `${current.id}→${targetId}`;
+  const ov    = OVERLAY_CONFIG[ovKey];
+  const wait  = ov ? 900 : 320;
+
+  // ── 1. Fade-out current stage ────────────────────────────────────────────
+  current.style.transition = 'opacity 0.22s ease, transform 0.22s ease';
+  current.style.opacity    = '0';
+  current.style.transform  = forward ? 'translateX(-44px)' : 'translateX(44px)';
+
+  // ── 2. Show overlay (if applicable) ─────────────────────────────────────
+  if (ov) showOverlay(ov);
+
+  setTimeout(() => {
+    // ── 3. Hide current, prepare next ──────────────────────────────────────
+    current.classList.remove('active');
+    current.style.cssText = '';
+
+    const next = document.getElementById(targetId);
+    next.style.cssText    = `opacity:0;transform:translateX(${forward ? 44 : -44}px);transition:none`;
+    next.classList.add('active');
+
+    // ── 4. Re-render data-driven stages ────────────────────────────────────
+    if (targetId === 'stage-output') renderOutput();
+
+    // ── 5. Hide overlay ────────────────────────────────────────────────────
+    if (ov) hideOverlay();
+
+    // ── 6. Animate stage in ────────────────────────────────────────────────
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      next.style.transition = 'opacity 0.42s cubic-bezier(0.22,1,0.36,1), transform 0.42s cubic-bezier(0.22,1,0.36,1)';
+      next.style.opacity    = '1';
+      next.style.transform  = 'translateX(0)';
+      setTimeout(() => { next.style.cssText = ''; }, 460);
+
+      // ── 7. Stagger children ───────────────────────────────────────────────
+      staggerChildren(targetId);
+    }));
+
+    // ── 8. Sync tab bar & step dots ────────────────────────────────────────
+    document.querySelectorAll('.tab-btn').forEach(b =>
+      b.classList.toggle('active', b.dataset.stage === targetId));
+
+  }, wait);
+}
+
+// ─── Overlay helpers ──────────────────────────────────────────────────────────
+function showOverlay({ title, sub, accent }) {
+  const ov = document.getElementById('tov');
+  ov.style.setProperty('--tov-accent', accent);
+  document.getElementById('tov-title').textContent = title;
+  document.getElementById('tov-sub').textContent   = sub;
+  const bar = document.getElementById('tov-bar');
+  bar.style.background = accent;
+  bar.style.width = '0%';
+  ov.classList.add('tov-show');
+  requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.width = '100%'; }));
+}
+
+function hideOverlay() {
+  const ov = document.getElementById('tov');
+  ov.classList.remove('tov-show');
+}
+
+// ─── Per-stage stagger animations ────────────────────────────────────────────
+function staggerChildren(stageId) {
+  function animate(selector, delay) {
+    document.querySelectorAll(selector).forEach((el, i) => {
+      el.style.opacity   = '0';
+      el.style.transform = 'translateY(18px)';
+      el.style.transition = `opacity 0.35s ease ${i * delay}ms, transform 0.35s ease ${i * delay}ms`;
+      requestAnimationFrame(() => {
+        el.style.opacity   = '1';
+        el.style.transform = 'translateY(0)';
+      });
+      setTimeout(() => { el.style.cssText = ''; }, 400 + i * delay);
+    });
+  }
+  if (stageId === 'stage-input')  animate('#shipment-cards .shipment-card', 35);
+  if (stageId === 'stage-engine') animate('#groups-container .group-card',  65);
+  if (stageId === 'stage-output') animate('#output-groups > div',           80);
+}
+
+// ─── Tab-bar still works (uses navigateTo) ────────────────────────────────────
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.stage').forEach(s => s.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById(btn.dataset.stage).classList.add('active');
-    // Re-render Output whenever user switches to it so it always reflects the
-    // current container type and strategy set in the Engine tab.
-    if (btn.dataset.stage === 'stage-output') renderOutput();
+    navigateTo(btn.dataset.stage, null);
   });
 });
 
