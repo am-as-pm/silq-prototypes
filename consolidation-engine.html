@@ -139,7 +139,7 @@
       border-top: 1px solid var(--border1);
     }
     .step-track {
-      flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px;
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
     }
     .step-dots-row { display: flex; align-items: center; }
     .step-node {
@@ -157,6 +157,12 @@
       transition: background 0.35s ease;
     }
     .step-seg.done { background: #3dc78a; }
+    /* Compact header variant */
+    .header-step-track { gap: 4px; }
+    .header-step-track .step-node { width: 26px; height: 26px; font-size: 10px; }
+    .header-step-track .step-seg  { width: 44px; }
+    .header-step-track .step-lbl  { width: 26px; }
+    .header-step-track .step-gap  { width: 44px; }
     .step-labels {
       display: flex; gap: 0; font-size: 10px; color: var(--text3);
     }
@@ -577,6 +583,26 @@
     <div class="app-title">Consolidation Engine</div>
     <div class="app-subtitle">Week 27 · Shenzhen–Guangzhou–Shanghai → Los Angeles (LAX/LGB)</div>
   </div>
+  <!-- Persistent step progress indicator -->
+  <div style="flex:1;display:flex;justify-content:center">
+    <div class="step-track header-step-track">
+      <div class="step-dots-row">
+        <div class="step-node active" id="sn-1">1</div>
+        <div class="step-seg" id="ss-1"></div>
+        <div class="step-node" id="sn-2">2</div>
+        <div class="step-seg" id="ss-2"></div>
+        <div class="step-node" id="sn-3">3</div>
+        <div class="step-seg" id="ss-3"></div>
+        <div class="step-node" id="sn-4">4</div>
+      </div>
+      <div class="step-labels">
+        <span class="step-lbl">Input</span><span class="step-gap"></span>
+        <span class="step-lbl">Engine</span><span class="step-gap"></span>
+        <span class="step-lbl">Output</span><span class="step-gap"></span>
+        <span class="step-lbl">Exec</span>
+      </div>
+    </div>
+  </div>
 </header>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════
@@ -689,23 +715,7 @@
 
   <!-- INPUT → ENGINE navigation footer -->
   <div class="stage-nav-footer">
-    <div class="step-track">
-      <div class="step-dots-row">
-        <div class="step-node active" id="sn-1">1</div>
-        <div class="step-seg" id="ss-1"></div>
-        <div class="step-node" id="sn-2">2</div>
-        <div class="step-seg" id="ss-2"></div>
-        <div class="step-node" id="sn-3">3</div>
-        <div class="step-seg" id="ss-3"></div>
-        <div class="step-node" id="sn-4">4</div>
-      </div>
-      <div class="step-labels">
-        <span class="step-lbl">Input</span><span class="step-gap"></span>
-        <span class="step-lbl">Engine</span><span class="step-gap"></span>
-        <span class="step-lbl">Output</span><span class="step-gap"></span>
-        <span class="step-lbl">Exec</span>
-      </div>
-    </div>
+    <div class="spacer"></div>
     <button class="nav-btn-next" style="background:#1e4070" onclick="navigateTo('stage-engine','forward')">
       Run Consolidation Engine <span class="nav-arrow">→</span>
     </button>
@@ -775,23 +785,7 @@
     <button class="nav-btn-back" onclick="navigateTo('stage-input','back')">
       ← Input
     </button>
-    <div class="step-track">
-      <div class="step-dots-row">
-        <div class="step-node done">1</div>
-        <div class="step-seg done"></div>
-        <div class="step-node active">2</div>
-        <div class="step-seg"></div>
-        <div class="step-node">3</div>
-        <div class="step-seg"></div>
-        <div class="step-node">4</div>
-      </div>
-      <div class="step-labels">
-        <span class="step-lbl">Input</span><span class="step-gap"></span>
-        <span class="step-lbl">Engine</span><span class="step-gap"></span>
-        <span class="step-lbl">Output</span><span class="step-gap"></span>
-        <span class="step-lbl">Exec</span>
-      </div>
-    </div>
+    <div class="spacer"></div>
     <button class="nav-btn-next" style="background:#1a3b28" onclick="navigateTo('stage-output','forward')">
       Generate Load Plan <span class="nav-arrow">→</span>
     </button>
@@ -820,23 +814,7 @@
     <button class="nav-btn-back" onclick="navigateTo('stage-engine','back')">
       ← Engine
     </button>
-    <div class="step-track">
-      <div class="step-dots-row">
-        <div class="step-node done">1</div>
-        <div class="step-seg done"></div>
-        <div class="step-node done">2</div>
-        <div class="step-seg done"></div>
-        <div class="step-node active">3</div>
-        <div class="step-seg"></div>
-        <div class="step-node">4</div>
-      </div>
-      <div class="step-labels">
-        <span class="step-lbl">Input</span><span class="step-gap"></span>
-        <span class="step-lbl">Engine</span><span class="step-gap"></span>
-        <span class="step-lbl">Output</span><span class="step-gap"></span>
-        <span class="step-lbl">Exec</span>
-      </div>
-    </div>
+    <div class="spacer"></div>
     <button class="nav-btn-next" style="background:#25402a" onclick="navigateTo('stage-exec','forward')">
       View Executive Summary <span class="nav-arrow">→</span>
     </button>
@@ -937,23 +915,7 @@
     <button class="nav-btn-back" onclick="navigateTo('stage-output','back')">
       ← Load Plan
     </button>
-    <div class="step-track">
-      <div class="step-dots-row">
-        <div class="step-node done">1</div>
-        <div class="step-seg done"></div>
-        <div class="step-node done">2</div>
-        <div class="step-seg done"></div>
-        <div class="step-node done">3</div>
-        <div class="step-seg done"></div>
-        <div class="step-node active">4</div>
-      </div>
-      <div class="step-labels">
-        <span class="step-lbl">Input</span><span class="step-gap"></span>
-        <span class="step-lbl">Engine</span><span class="step-gap"></span>
-        <span class="step-lbl">Output</span><span class="step-gap"></span>
-        <span class="step-lbl">Exec</span>
-      </div>
-    </div>
+    <div class="spacer"></div>
     <button class="nav-btn-next" style="background:#2a2010" onclick="navigateTo('stage-input','back')">
       ← Start New Cycle
     </button>
