@@ -559,7 +559,20 @@
     <div class="stat"><div class="stat-value warning" id="kpi-groups">—</div><div class="stat-label">Consolidation Groups</div></div>
   </div>
 
-  <!-- Section 1: Consolidation Groups (full width) -->
+  <!-- Section 1: Hard Constraints Filter (compact, full width) -->
+  <div style="margin-bottom:20px;background:var(--bg2);border:1px solid var(--border1);border-radius:10px;padding:12px 16px">
+    <div class="flex-row" style="margin-bottom:8px;gap:10px">
+      <h3 style="margin-bottom:0;font-size:13px">Hard Constraints Filter</h3>
+      <span class="pill danger" style="font-size:10px">1 excluded</span>
+    </div>
+    <div id="constraints-list" style="display:flex;flex-direction:column;gap:6px"></div>
+    <div style="margin-top:8px;padding:8px 12px;background:#2d111160;border:1px solid #e0555540;border-radius:7px;font-size:11px;color:var(--text2)">
+      <span style="color:var(--red);font-weight:700">BOK-009 excluded</span>
+      &nbsp;— VoltSupply Co. Lithium Batteries (Class 9 / UN3480) cannot be co-loaded with Class 3 Flammable Liquid (BOK-002, BOK-012, BOK-022). IMDG 7.2.6.
+    </div>
+  </div>
+
+  <!-- Section 2: Consolidation Groups (full width) -->
   <div style="margin-bottom:24px">
     <div class="flex-row" style="margin-bottom:10px">
       <h2 style="margin-bottom:0">Consolidation Groups</h2>
@@ -567,16 +580,6 @@
       <span style="font-size:12px;color:var(--text2)" id="groups-summary">calculating…</span>
     </div>
     <div id="groups-container"></div>
-  </div>
-
-  <!-- Section 2: Hard Constraints Filter (full width) -->
-  <div>
-    <h2 style="margin-bottom:12px">Hard Constraints Filter</h2>
-    <div id="constraints-list"></div>
-    <div class="callout danger" style="margin-top:10px">
-      <div class="callout-title">1 shipment permanently excluded</div>
-      BOK-009 (VoltSupply Co.) rejected — Lithium Batteries (Class 9 / UN3480) cannot be co-loaded with Class 3 Flammable Liquid cargo (BOK-002, BOK-012, BOK-022) per vessel operator restrictions and IMDG Code 7.2.6.
-    </div>
   </div>
 
 </section>
@@ -1057,12 +1060,12 @@ function renderEngine() {
   ];
 
   document.getElementById('constraints-list').innerHTML = constraints.map(c => `
-    <div class="constraint-row ${c.pass ? '' : 'fail'}">
-      <div class="constraint-dot ${c.pass ? 'pass' : 'fail'}"></div>
-      <div>
-        <div class="constraint-label">${c.label}</div>
-        <div class="constraint-desc">${c.desc}</div>
-      </div>
+    <div style="display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:6px;
+                background:${c.pass ? 'transparent' : '#2d111130'}">
+      <div style="width:8px;height:8px;border-radius:50%;flex-shrink:0;
+                  background:${c.pass ? 'var(--green)' : 'var(--red)'}"></div>
+      <span style="font-size:12px;font-weight:600;color:${c.pass ? 'var(--text1)' : 'var(--red)'};min-width:200px">${c.label}</span>
+      <span style="font-size:11px;color:var(--text2)">${c.desc}</span>
     </div>
   `).join('');
 
