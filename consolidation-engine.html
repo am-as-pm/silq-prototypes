@@ -99,6 +99,10 @@
       animation: tovSpin 0.75s linear infinite;
     }
     @keyframes tovSpin { to { transform: rotate(360deg); } }
+    @keyframes fadeSlideUp {
+      from { opacity:0; transform: translateY(8px); }
+      to   { opacity:1; transform: translateY(0); }
+    }
 
     /* Animated dots */
     .tov-dots { display: flex; gap: 8px; }
@@ -398,6 +402,34 @@
     }
     .strategy-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; }
 
+    /* ── Input view toggle ── */
+    .view-toggle { display:flex; gap:0; border:1px solid var(--border2); border-radius:8px; overflow:hidden; }
+    .view-toggle-btn {
+      padding: 6px 10px; background: none; border: none; cursor: pointer;
+      color: var(--text3); display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s, color 0.15s;
+    }
+    .view-toggle-btn:hover { background: var(--bg3); color: var(--text1); }
+    .view-toggle-btn.active { background: var(--blue); color: #fff; }
+    .view-toggle-btn + .view-toggle-btn { border-left: 1px solid var(--border2); }
+
+    /* ── Input table view ── */
+    .data-table { width:100%; border-collapse:collapse; background:var(--bg2); border-radius:10px; overflow:hidden; }
+    .data-table thead tr { background:var(--bg3); }
+    .data-table th {
+      padding: 9px 12px; text-align:left; font-size:11px; font-weight:600;
+      text-transform:uppercase; letter-spacing:0.05em; color:var(--text3);
+      border-bottom: 1px solid var(--border2); white-space:nowrap;
+    }
+    .data-table th.text-right { text-align:right; }
+    .data-table td { padding:9px 12px; border-bottom:1px solid var(--border2); color:var(--text1); vertical-align:middle; }
+    .data-table td.text-right { text-align:right; font-variant-numeric: tabular-nums; }
+    .data-table tbody tr:last-child td { border-bottom:none; }
+    .data-table tbody tr { transition: background 0.12s; }
+    .data-table tbody tr:hover { background: var(--bg3); }
+    .tbl-bok-id { font-family: monospace; font-size:12px; color:var(--blue); font-weight:600; }
+    .tbl-tags { display:flex; gap:4px; flex-wrap:wrap; }
+
     /* ── Container Type Selector ── */
     .ctr-type-bar {
       display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
@@ -608,14 +640,50 @@
       </div>
     </div>
 
-    <!-- Right: shipment cards -->
+    <!-- Right: shipment cards / table -->
     <div>
       <div class="flex-row" style="margin-bottom:12px">
         <h2 style="margin-bottom:0">Accepted Bookings</h2>
-        <div class="spacer"></div>
         <span style="font-size:12px; color:var(--text2)">22 total · <span style="color:var(--green)">19 accepted</span> · <span style="color:var(--red)">1 rejected</span> · <span style="color:var(--orange)">2 spill</span></span>
+        <div class="spacer"></div>
+        <!-- View toggle -->
+        <div class="view-toggle">
+          <button class="view-toggle-btn active" id="vbtn-card" title="Card view" onclick="setInputView('card')">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/>
+              <rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/>
+            </svg>
+          </button>
+          <button class="view-toggle-btn" id="vbtn-table" title="Table view" onclick="setInputView('table')">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <rect x="1" y="2" width="14" height="2" rx="1"/>
+              <rect x="1" y="6.5" width="14" height="2" rx="1"/>
+              <rect x="1" y="11" width="14" height="2" rx="1"/>
+            </svg>
+          </button>
+        </div>
       </div>
+      <!-- Card view -->
       <div class="grid-2" id="shipment-cards"></div>
+      <!-- Table view (hidden by default) -->
+      <div id="shipment-table-wrap" style="display:none;overflow-x:auto">
+        <table class="data-table" id="shipment-table" style="font-size:12px;min-width:900px">
+          <thead>
+            <tr>
+              <th>Booking ID</th>
+              <th>Client</th>
+              <th>Product Type</th>
+              <th class="text-right">CBM</th>
+              <th class="text-right">Weight (kg)</th>
+              <th class="text-right">Quote ($)</th>
+              <th>Origin</th>
+              <th>Tags</th>
+              <th class="text-right">CRD</th>
+            </tr>
+          </thead>
+          <tbody id="shipment-table-body"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -1149,6 +1217,58 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     navigateTo(btn.dataset.stage, null);
   });
 });
+
+// ─── Stage 1: view state ──────────────────────────────────────────────────────
+let activeInputView = 'card';
+
+function setInputView(view) {
+  activeInputView = view;
+  document.getElementById('vbtn-card').classList.toggle('active', view === 'card');
+  document.getElementById('vbtn-table').classList.toggle('active', view === 'table');
+  document.getElementById('shipment-cards').style.display      = view === 'card'  ? '' : 'none';
+  document.getElementById('shipment-table-wrap').style.display = view === 'table' ? '' : 'none';
+  if (view === 'table') renderShipmentTable();
+}
+
+function renderShipmentTable() {
+  const tbody = document.getElementById('shipment-table-body');
+  tbody.innerHTML = ACCEPTED.map((s, i) => {
+    const cs = CLIENT_STYLES[s.client];
+    const ps = PRODUCT_STYLES[s.productType] || PRODUCT_STYLES["Accessories"];
+
+    const dgTag = s.dg
+      ? `<span class="pill dg" style="font-size:10px;padding:2px 6px">DG · ${s.dgSubtype}</span>`
+      : '';
+    const palTag = s.palletized
+      ? `<span class="pill palletized" style="font-size:10px;padding:2px 6px">Palletized</span>`
+      : `<span class="pill" style="font-size:10px;padding:2px 6px;background:var(--bg4)">Loose</span>`;
+    const stkTag = s.stackable
+      ? `<span class="pill stackable" style="font-size:10px;padding:2px 6px">Stackable</span>`
+      : `<span class="pill non-stackable" style="font-size:10px;padding:2px 6px">Non-Stack</span>`;
+
+    return `
+      <tr style="animation: fadeSlideUp 0.25s ease both; animation-delay:${i * 0.025}s">
+        <td><span class="tbl-bok-id">${s.id}</span></td>
+        <td>
+          <span class="client-chip" style="background:${cs.bg};border-color:${cs.border};color:${cs.text};font-size:11px">
+            <span class="client-dot" style="background:${cs.dot}"></span>
+            ${cs.name}
+          </span>
+        </td>
+        <td>
+          <span class="pill product" style="background:${ps.bg};border-color:${ps.border};color:${ps.text};font-size:10px;padding:2px 7px">${s.productType}</span>
+        </td>
+        <td class="text-right" style="font-weight:600">${s.cbm.toFixed(2)}</td>
+        <td class="text-right">${s.weight.toLocaleString()}</td>
+        <td class="text-right" style="color:var(--green);font-weight:600">$${s.quote.toLocaleString()}</td>
+        <td style="color:var(--text2);white-space:nowrap">${s.origin}</td>
+        <td><div class="tbl-tags">${dgTag}${palTag}${stkTag}</div></td>
+        <td class="text-right" style="white-space:nowrap;color:${s.crd <= 2 ? 'var(--orange)' : 'var(--text2)'}">
+          in ${s.crd}d
+        </td>
+      </tr>`;
+  }).join('');
+}
 
 // ─── Stage 1: Shipment Cards ─────────────────────────────────────────────────
 function renderShipmentCards() {
