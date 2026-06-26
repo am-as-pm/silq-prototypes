@@ -834,6 +834,9 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     document.querySelectorAll('.stage').forEach(s => s.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById(btn.dataset.stage).classList.add('active');
+    // Re-render Output whenever user switches to it so it always reflects the
+    // current container type and strategy set in the Engine tab.
+    if (btn.dataset.stage === 'stage-output') renderOutput();
   });
 });
 
