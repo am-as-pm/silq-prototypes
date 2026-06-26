@@ -559,37 +559,26 @@
     <div class="stat"><div class="stat-value warning" id="kpi-groups">—</div><div class="stat-label">Consolidation Groups</div></div>
   </div>
 
-  <!-- Split: Left = Hard constraints, Right = Dynamic groups -->
-  <div class="split split-1-1" style="align-items:start">
-
-    <!-- Left: Hard constraints -->
-    <div>
-      <h2>Hard Constraints Filter</h2>
-      <div id="constraints-list"></div>
-      <div class="callout danger" style="margin-top:10px">
-        <div class="callout-title">1 shipment permanently excluded</div>
-        BOK-009 (VoltSupply Co.) rejected — Lithium Batteries (Class 9 / UN3480) cannot be co-loaded with Class 3 Flammable Liquid cargo (BOK-002, BOK-012, BOK-022) per vessel operator restrictions and IMDG Code 7.2.6.
-      </div>
-      <div style="margin-top:18px">
-        <h3 style="margin-bottom:8px">Revenue vs. Weight by Shipment</h3>
-        <div class="chart-wrap" style="height:180px">
-          <canvas id="engineChart"></canvas>
-        </div>
-        <div class="chart-caption">Revenue ($) and weight per accepted booking in optimization pool</div>
-      </div>
+  <!-- Section 1: Consolidation Groups (full width) -->
+  <div style="margin-bottom:24px">
+    <div class="flex-row" style="margin-bottom:10px">
+      <h2 style="margin-bottom:0">Consolidation Groups</h2>
+      <div class="spacer"></div>
+      <span style="font-size:12px;color:var(--text2)" id="groups-summary">calculating…</span>
     </div>
-
-    <!-- Right: Consolidation groups (rendered dynamically) -->
-    <div>
-      <div class="flex-row" style="margin-bottom:10px">
-        <h2 style="margin-bottom:0">Consolidation Groups</h2>
-        <div class="spacer"></div>
-        <span style="font-size:12px;color:var(--text2)" id="groups-summary">calculating…</span>
-      </div>
-      <div id="groups-container"></div>
-    </div>
-
+    <div id="groups-container"></div>
   </div>
+
+  <!-- Section 2: Hard Constraints Filter (full width) -->
+  <div>
+    <h2 style="margin-bottom:12px">Hard Constraints Filter</h2>
+    <div id="constraints-list"></div>
+    <div class="callout danger" style="margin-top:10px">
+      <div class="callout-title">1 shipment permanently excluded</div>
+      BOK-009 (VoltSupply Co.) rejected — Lithium Batteries (Class 9 / UN3480) cannot be co-loaded with Class 3 Flammable Liquid cargo (BOK-002, BOK-012, BOK-022) per vessel operator restrictions and IMDG Code 7.2.6.
+    </div>
+  </div>
+
 </section>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════
@@ -929,8 +918,6 @@ function renderShipmentCards() {
 }
 
 // ─── Stage 2: Interactive Engine ──────────────────────────────────────────────
-let engineChartInstance = null;
-
 function renderEngineGroups(ctype, strategy) {
   const cap     = CONTAINER_TYPES[ctype];
   const groups  = groupShipments(ctype, strategy);
@@ -1078,28 +1065,6 @@ function renderEngine() {
       </div>
     </div>
   `).join('');
-
-  // ── Engine chart ───────────────────────────────────────────────────────────
-  if (engineChartInstance) { engineChartInstance.destroy(); }
-  const ctx = document.getElementById('engineChart').getContext('2d');
-  engineChartInstance = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: ACCEPTED.map(s => s.id),
-      datasets: [
-        { label:'Revenue ($)',    data:ACCEPTED.map(s => s.revenue),              backgroundColor:'#2a5580', borderColor:'#4d8fd6', borderWidth:1, borderRadius:3 },
-        { label:'Weight ÷10 (kg)', data:ACCEPTED.map(s => Math.round(s.weight/10)), backgroundColor:'#1e3a2a', borderColor:'#3dc78a', borderWidth:1, borderRadius:3 },
-      ]
-    },
-    options: {
-      responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{ labels:{ color:'#94a3b8', font:{size:10} } } },
-      scales:{
-        x:{ ticks:{ color:'#64748b', font:{size:9} }, grid:{ color:'#1c2233' } },
-        y:{ ticks:{ color:'#64748b', font:{size:10} }, grid:{ color:'#1c2233' } }
-      }
-    }
-  });
 
   // ── Container type buttons ─────────────────────────────────────────────────
   document.querySelectorAll('.ctr-type-btn').forEach(btn => {
