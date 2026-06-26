@@ -502,6 +502,12 @@
     }
     .hiw-summary strong { color: var(--text0); }
     .hiw-summary-icon { font-size: 20px; flex-shrink: 0; }
+    .hiw-callout-note {
+      margin-top: 12px; padding: 10px 14px; border-radius: 8px;
+      background: #e0903015; border: 1px solid #e0903040;
+      font-size: 11.5px; color: var(--text2); line-height: 1.6;
+    }
+    .hiw-callout-note strong { color: #e09030; }
 
     /* ── Input view toggle ── */
     .view-toggle { display:flex; gap:0; border:1px solid var(--border2); border-radius:8px; overflow:hidden; }
@@ -1072,50 +1078,52 @@
       </div>
     </div>
 
-    <!-- Step 4 -->
+    <!-- Step 4 (combined: solvers + iteration) -->
     <div class="hiw-step" style="--accent:#3dc78a">
       <div class="hiw-step-num" style="background:#3dc78a20;color:#3dc78a;border-color:#3dc78a40">04</div>
       <div class="hiw-step-content">
-        <div class="hiw-step-title">Mathematical Solvers</div>
-        <div class="hiw-step-tag" style="background:#3dc78a20;color:#3dc78a">The Heavy Lifting</div>
-        <p class="hiw-step-desc">Two algorithms run <strong>simultaneously</strong>:</p>
-        <div class="hiw-dual-card">
+        <div class="hiw-step-title">Finding the Best Fit — and Fixing It When It Doesn't</div>
+        <div class="hiw-step-tag" style="background:#3dc78a20;color:#3dc78a">The Smart Trial-and-Error Loop</div>
+
+        <p class="hiw-step-desc">Think of this step like packing a suitcase before a flight. The engine does two things at once — and if they disagree, it tries again until they agree.</p>
+
+        <div class="hiw-dual-card" style="margin-bottom:14px">
           <div class="hiw-algo-card">
-            <div class="hiw-algo-icon">⚖️</div>
-            <div class="hiw-algo-name">Knapsack Solver</div>
-            <div class="hiw-algo-desc">Tests thousands of shipment combinations against container weight & CBM limits. Finds the grouping that gets closest to the container's maximum without exceeding it by a single kilogram.</div>
+            <div class="hiw-algo-icon">🎒</div>
+            <div class="hiw-algo-name">Part A — "Will it fit on paper?"</div>
+            <div class="hiw-algo-desc">The engine picks the best combination of bookings by weight and volume — like checking you're under the airline's baggage limit. It rapidly tests thousands of possible groupings and picks whichever one earns the most money (or fills the most space) without going over the container's limits.</div>
           </div>
           <div class="hiw-algo-card">
-            <div class="hiw-algo-icon">📦</div>
-            <div class="hiw-algo-name">3D Bin Packing Solver</div>
-            <div class="hiw-algo-desc">Plays 3-D Tetris with the selected boxes. Tests rotations, checks stackability rules, and verifies every carton physically fits through the container doors.</div>
+            <div class="hiw-algo-icon">🧩</div>
+            <div class="hiw-algo-name">Part B — "Will it physically fit?"</div>
+            <div class="hiw-algo-desc">Now it plays 3D Tetris. It takes those same boxes and checks if they actually stack inside the container in real life — respecting which boxes can't be turned on their side, which ones can't bear weight on top, and whether everything can slide in through the container doors.</div>
           </div>
+        </div>
+
+        <p class="hiw-step-desc" style="margin-bottom:8px">
+          <strong>What happens when Part A and Part B disagree?</strong><br>
+          Sometimes the "best on paper" group has awkward box shapes that leave big gaps in the container — making the load inefficient in reality. When that happens, the engine doesn't give up. It simply says <em>"okay, try the second-best group instead"</em> and runs the physical check again. This loop happens in milliseconds until it finds a combination that is <strong>both profitable and physically loadable</strong>.
+        </p>
+
+        <div class="hiw-mini-flow">
+          <span class="hiw-chip" style="background:#4d8fd620;color:#4d8fd6">Best combo found</span>
+          <span class="hiw-arrow">→</span>
+          <span class="hiw-chip" style="background:#e0903020;color:#e09030">Physical check fails?</span>
+          <span class="hiw-arrow">→</span>
+          <span class="hiw-chip" style="background:#9060d020;color:#9060d0">Try next best</span>
+          <span class="hiw-arrow">→</span>
+          <span class="hiw-chip" style="background:#3dc78a20;color:#3dc78a">Both checks pass ✓</span>
+        </div>
+
+        <div class="hiw-callout-note">
+          Shipments that don't make the cut are tagged as <strong>Spill</strong> — they roll over to the next consolidation cycle or get offered to a co-load partner.
         </div>
       </div>
     </div>
 
     <!-- Step 5 -->
-    <div class="hiw-step" style="--accent:#e09030">
-      <div class="hiw-step-num" style="background:#e0903020;color:#e09030;border-color:#e0903040">05</div>
-      <div class="hiw-step-content">
-        <div class="hiw-step-title">Iteration & Fallback</div>
-        <div class="hiw-step-tag" style="background:#e0903020;color:#e09030">The Spill Calculation</div>
-        <p class="hiw-step-desc">If the 3-D solver finds a Knapsack combination that <strong>doesn't physically fit</strong> (dead space from odd-shaped boxes), it rejects it and requests the <em>second-best</em> combination. This loop repeats <strong>in milliseconds</strong> until it lands on a grouping that is both profitable and loadable. Leftover shipments are tagged as <strong>Spill → Rolled</strong> to the next cycle.</p>
-        <div class="hiw-mini-flow">
-          <span class="hiw-chip" style="background:#4d8fd620;color:#4d8fd6">Knapsack result</span>
-          <span class="hiw-arrow">→</span>
-          <span class="hiw-chip" style="background:#e0903020;color:#e09030">3D check fails?</span>
-          <span class="hiw-arrow">→</span>
-          <span class="hiw-chip" style="background:#9060d020;color:#9060d0">Try #2 combo</span>
-          <span class="hiw-arrow">→</span>
-          <span class="hiw-chip" style="background:#3dc78a20;color:#3dc78a">Lock &amp; confirm</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Step 6 -->
     <div class="hiw-step" style="--accent:#2ab4b4">
-      <div class="hiw-step-num" style="background:#2ab4b420;color:#2ab4b4;border-color:#2ab4b440">06</div>
+      <div class="hiw-step-num" style="background:#2ab4b420;color:#2ab4b4;border-color:#2ab4b440">05</div>
       <div class="hiw-step-content">
         <div class="hiw-step-title">Output Compilation</div>
         <div class="hiw-step-tag" style="background:#2ab4b420;color:#2ab4b4">Finalising the Answer</div>
