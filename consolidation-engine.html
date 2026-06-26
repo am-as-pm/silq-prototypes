@@ -130,6 +130,31 @@
     .pill.warning { background: var(--orange-pale); border-color: var(--orange); color: var(--orange); }
     .pill.success { background: var(--green-pale); border-color: var(--green); color: var(--green); }
     .pill.info { background: var(--blue-pale); border-color: var(--blue); color: var(--blue); }
+    .pill.lcl { background: #1a2b44; border-color: #4d8fd6; color: #7bb8f5; letter-spacing: 0.04em; font-size: 9px; }
+    .pill.dg { background: #2d1111; border-color: #e05555; color: #e05555; font-size: 9px; }
+    .pill.palletized { background: #1a2a1a; border-color: #3dc78a; color: #3dc78a; font-size: 9px; }
+    .pill.stackable { background: #112233; border-color: #4d8fd6; color: #7bb8f5; font-size: 9px; }
+    .pill.non-stackable { background: #2e1e08; border-color: #f0a040; color: #f0a040; font-size: 9px; }
+    .pill.product { background: #1e1a30; border-color: #9060d0; color: #b090e8; font-size: 9px; }
+
+    /* ── Client tag chips ── */
+    .client-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 8px 3px 5px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      border: 1px solid;
+    }
+    .client-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .quote-amount { font-size: 12px; font-weight: 700; color: var(--cyan); }
+    .quote-label { font-size: 10px; color: var(--text2); }
 
     /* ── Stat ── */
     .stat-grid { display: grid; gap: 12px; }
@@ -405,7 +430,7 @@
           <div class="stat-label">Booking Forms</div>
         </div>
         <div class="stat">
-          <div class="stat-value">3,775</div>
+          <div class="stat-value">3,065</div>
           <div class="stat-label">Declared kg (total)</div>
         </div>
         <div class="stat">
@@ -413,8 +438,8 @@
           <div class="stat-label">Total CBM (all)</div>
         </div>
         <div class="stat">
-          <div class="stat-value success">$10,530</div>
-          <div class="stat-label">Gross Revenue Pool</div>
+          <div class="stat-value success">$11,175</div>
+          <div class="stat-label">Total Quote Value</div>
         </div>
       </div>
     </div>
@@ -459,7 +484,7 @@
       <div id="constraints-list"></div>
       <div class="callout danger" style="margin-top:10px">
         <div class="callout-title">1 shipment permanently excluded</div>
-        SBF-004 (Blaze Chemicals) rejected — Class 4.1 Flammable Solid is incompatible with existing Class 3 Flammable Liquid cargo in container. DG regulations prohibit co-loading.
+        BOK-004 (VoltSupply Co.) rejected — Lithium Batteries (Class 9 / UN3480) cannot be co-loaded with Class 3 Flammable Liquid cargo (BOK-002) per vessel operator restrictions and IMDG Code 7.2.6.
       </div>
     </div>
 
@@ -643,15 +668,37 @@
 <script>
 // ─── Data ───────────────────────────────────────────────────────────────────
 
+// Client colour definitions
+const CLIENT_STYLES = {
+  "NSL": { bg:"#1a3350", border:"#4d8fd6", text:"#7bb8f5",  dot:"#4d8fd6",  name:"NovaSport Ltd."  },
+  "BPH": { bg:"#2d1a2d", border:"#d06090", text:"#e090b8",  dot:"#d06090",  name:"BeautyPro HK"    },
+  "VSC": { bg:"#2e1e08", border:"#f0a040", text:"#f0b860",  dot:"#f0a040",  name:"VoltSupply Co."  },
+  "HVI": { bg:"#112b1e", border:"#3dc78a", text:"#60d8a0",  dot:"#3dc78a",  name:"HomeVibes Inc."  },
+  "NLD": { bg:"#0f2020", border:"#40c0d0", text:"#70d8e0",  dot:"#40c0d0",  name:"Nordic Living"   },
+};
+
+// Product type colour definitions (DG types get red, standard get purple)
+const PRODUCT_STYLES = {
+  "Footwear":       { bg:"#1c1535", border:"#9060d0", text:"#b08ee8" },
+  "Garments":       { bg:"#1c1535", border:"#9060d0", text:"#b08ee8" },
+  "Accessories":    { bg:"#1c1535", border:"#9060d0", text:"#b08ee8" },
+  "Bedding":        { bg:"#1c1535", border:"#9060d0", text:"#b08ee8" },
+  "Furniture":      { bg:"#1c1535", border:"#9060d0", text:"#b08ee8" },
+  "Cream & Powder": { bg:"#2d1111", border:"#e05555", text:"#e07070" },
+  "Batteries":      { bg:"#2d1111", border:"#e05555", text:"#e07070" },
+  "Hazardous":      { bg:"#2d1111", border:"#e05555", text:"#e07070" },
+  "Liquid":         { bg:"#2d1111", border:"#e05555", text:"#e07070" },
+};
+
 const SHIPMENTS = [
-  { id:"SBF-001", client:"Sunrise Electronics", dims:"120×80×90 cm", weight:340, cbm:0.86, revenue:1200, crd:2, hazmat:null,       stackable:true,  status:"accepted", origin:"Shenzhen" },
-  { id:"SBF-002", client:"Apex Machinery",      dims:"200×100×120 cm",weight:820, cbm:2.40, revenue:2100, crd:3, hazmat:"Class 3", stackable:false, status:"accepted", origin:"Guangzhou" },
-  { id:"SBF-003", client:"FreshBrew Co.",        dims:"60×60×80 cm",  weight:210, cbm:0.29, revenue:680,  crd:1, hazmat:null,       stackable:true,  status:"accepted", origin:"Shenzhen" },
-  { id:"SBF-004", client:"Blaze Chemicals",      dims:"80×80×100 cm", weight:480, cbm:0.64, revenue:950,  crd:5, hazmat:"Class 4.1",stackable:false, status:"rejected", origin:"Ningbo" },
-  { id:"SBF-005", client:"TechVision Ltd.",      dims:"150×100×80 cm",weight:290, cbm:1.20, revenue:1560, crd:4, hazmat:null,       stackable:true,  status:"accepted", origin:"Shenzhen" },
-  { id:"SBF-006", client:"Nordic Furniture",     dims:"220×120×60 cm",weight:380, cbm:1.58, revenue:1840, crd:6, hazmat:null,       stackable:false, status:"spill",    origin:"Shanghai" },
-  { id:"SBF-007", client:"ProAudio Systems",     dims:"100×80×60 cm", weight:155, cbm:0.48, revenue:880,  crd:2, hazmat:null,       stackable:true,  status:"accepted", origin:"Shenzhen" },
-  { id:"SBF-008", client:"WeldPro Metals",       dims:"180×90×90 cm", weight:1100,cbm:1.46, revenue:1320, crd:7, hazmat:null,       stackable:false, status:"spill",    origin:"Tianjin" },
+  { id:"BOK-001", client:"NSL", dims:"120×80×90 cm",   weight:340,  cbm:0.86, revenue:1200, quote:1395, crd:2, productType:"Footwear",       dg:false, dgSubtype:null,      hazmat:null,      palletized:true,  stackable:true,  status:"accepted", origin:"Guangzhou" },
+  { id:"BOK-002", client:"BPH", dims:"200×100×120 cm", weight:420,  cbm:2.40, revenue:2100, quote:2520, crd:3, productType:"Cream & Powder",  dg:true,  dgSubtype:"Liquid",  hazmat:"Class 3", palletized:true,  stackable:false, status:"accepted", origin:"Shenzhen"  },
+  { id:"BOK-003", client:"NSL", dims:"60×60×80 cm",    weight:180,  cbm:0.29, revenue:680,  quote:580,  crd:1, productType:"Garments",        dg:false, dgSubtype:null,      hazmat:null,      palletized:false, stackable:true,  status:"accepted", origin:"Guangzhou" },
+  { id:"BOK-004", client:"VSC", dims:"80×80×100 cm",   weight:480,  cbm:0.64, revenue:950,  quote:1100, crd:5, productType:"Batteries",       dg:true,  dgSubtype:"Batteries",hazmat:"Class 9", palletized:true,  stackable:false, status:"rejected", origin:"Shenzhen"  },
+  { id:"BOK-005", client:"HVI", dims:"150×100×80 cm",  weight:290,  cbm:1.20, revenue:1560, quote:1440, crd:4, productType:"Bedding",         dg:false, dgSubtype:null,      hazmat:null,      palletized:true,  stackable:true,  status:"accepted", origin:"Shanghai"  },
+  { id:"BOK-006", client:"NLD", dims:"220×120×60 cm",  weight:380,  cbm:1.58, revenue:1840, quote:1960, crd:6, productType:"Furniture",       dg:false, dgSubtype:null,      hazmat:null,      palletized:false, stackable:false, status:"spill",    origin:"Shanghai"  },
+  { id:"BOK-007", client:"HVI", dims:"100×80×60 cm",   weight:155,  cbm:0.48, revenue:880,  quote:720,  crd:2, productType:"Accessories",     dg:false, dgSubtype:null,      hazmat:null,      palletized:true,  stackable:true,  status:"accepted", origin:"Shenzhen"  },
+  { id:"BOK-008", client:"NLD", dims:"180×90×90 cm",   weight:820,  cbm:1.46, revenue:1320, quote:1460, crd:7, productType:"Furniture",       dg:false, dgSubtype:null,      hazmat:null,      palletized:false, stackable:false, status:"spill",    origin:"Tianjin"   },
 ];
 
 const ACCEPTED  = SHIPMENTS.filter(s => s.status === "accepted");
@@ -681,22 +728,62 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 function renderShipmentCards() {
   const container = document.getElementById('shipment-cards');
   container.innerHTML = SHIPMENTS.map(s => {
-    const cls = s.status === 'rejected' ? 'rejected' : s.status === 'spill' ? 'spill' : '';
-    const badges = [];
-    if (s.hazmat) badges.push(`<span class="pill danger">${s.hazmat}</span>`);
-    if (!s.stackable) badges.push(`<span class="pill warning">Non-Stack</span>`);
-    if (s.status === 'rejected') badges.push(`<span class="pill danger">Rejected</span>`);
-    if (s.status === 'spill') badges.push(`<span class="pill warning">Spill</span>`);
-    if (s.status === 'accepted') badges.push(`<span class="pill success">Accepted</span>`);
+    const cardCls = s.status === 'rejected' ? 'rejected' : s.status === 'spill' ? 'spill' : '';
+    const cs = CLIENT_STYLES[s.client];
+    const ps = PRODUCT_STYLES[s.productType] || PRODUCT_STYLES["Accessories"];
+
+    // Status badge
+    const statusBadge = s.status === 'rejected'
+      ? `<span class="pill danger">Rejected</span>`
+      : s.status === 'spill'
+      ? `<span class="pill warning">Spill — W28</span>`
+      : `<span class="pill success">Accepted</span>`;
+
+    // DG badge (if applicable)
+    const dgBadge = s.dg
+      ? `<span class="pill dg">DG · ${s.dgSubtype}${s.hazmat ? ' · ' + s.hazmat : ''}</span>`
+      : '';
+
+    // Palletized tag
+    const palletBadge = s.palletized
+      ? `<span class="pill palletized">Palletized</span>`
+      : `<span class="pill" style="font-size:9px;background:var(--bg4)">Loose</span>`;
+
+    // Stackable tag
+    const stackBadge = s.stackable
+      ? `<span class="pill stackable">Stackable</span>`
+      : `<span class="pill non-stackable">Non-Stackable</span>`;
 
     return `
-      <div class="shipment-card ${cls}">
-        <div class="flex-row" style="align-items:center;gap:8px">
+      <div class="shipment-card ${cardCls}">
+
+        <!-- Row 1: ID · LCL · Status -->
+        <div class="flex-row" style="gap:6px;align-items:center">
           <span class="shipment-id">${s.id}</span>
+          <span class="pill lcl">LCL</span>
           <div class="spacer"></div>
-          ${badges.join('')}
+          ${statusBadge}
         </div>
-        <div class="shipment-client">${s.client}</div>
+
+        <!-- Row 2: Client chip -->
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="client-chip" style="background:${cs.bg};border-color:${cs.border};color:${cs.text}">
+            <span class="client-dot" style="background:${cs.dot}"></span>
+            ${cs.name}
+          </span>
+        </div>
+
+        <!-- Row 3: Product + attributes tags -->
+        <div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center">
+          <span class="pill product" style="background:${ps.bg};border-color:${ps.border};color:${ps.text}">${s.productType}</span>
+          ${dgBadge}
+          ${palletBadge}
+          ${stackBadge}
+        </div>
+
+        <hr style="border:none;border-top:1px solid var(--border);margin:2px 0" />
+
+        <!-- Row 4: Dimensions / Weight / CBM -->
         <div class="data-row">
           <div class="data-item">
             <div class="data-label">Dims (L×W×H)</div>
@@ -711,11 +798,19 @@ function renderShipmentCards() {
             <div class="data-value">${s.cbm.toFixed(2)}</div>
           </div>
         </div>
-        <div class="flex-row" style="align-items:center">
-          <span class="revenue-tag">$${s.revenue.toLocaleString()} revenue</span>
+
+        <!-- Row 5: Quote · CRD · Origin -->
+        <div class="flex-row" style="align-items:center;gap:6px">
+          <div>
+            <span class="quote-label">Quote </span>
+            <span class="quote-amount">$${s.quote.toLocaleString()}</span>
+          </div>
           <div class="spacer"></div>
-          <span class="crd-tag" style="color:${s.crd <= 2 ? 'var(--orange)' : 'var(--text2)'}">CRD in ${s.crd}d · ${s.origin}</span>
+          <span style="font-size:11px;color:${s.crd <= 2 ? 'var(--orange)' : 'var(--text2)'}">
+            CRD in ${s.crd}d · ${s.origin}
+          </span>
         </div>
+
       </div>
     `;
   }).join('');
@@ -726,9 +821,9 @@ function renderEngine() {
   const constraints = [
     { pass:true,  label:"Weight Limit (26,500 kg)", desc:`${TOTAL_KG.toLocaleString()} kg total accepted — within limit (${((TOTAL_KG/26500)*100).toFixed(0)}% used)` },
     { pass:true,  label:"Volume Capacity (67.7 CBM)", desc:`${TOTAL_CBM.toFixed(2)} CBM utilized — ${((TOTAL_CBM/CONTAINER_CBM)*100).toFixed(1)}% of container` },
-    { pass:false, label:"Hazmat Compatibility Check", desc:"SBF-004 (Class 4.1 Flammable Solid) — incompatible with SBF-002 (Class 3 Liquid). IMDG Code 7.2.6 violation." },
+    { pass:false, label:"Hazmat Compatibility Check", desc:"BOK-004 (Batteries Class 9 / UN3480) — vessel operator prohibits co-loading with BOK-002 (Class 3 Flammable Liquid). IMDG 7.2.6." },
     { pass:true,  label:"Cargo Ready Date Alignment", desc:"All CRDs fall within Jun 27 – Jul 3 consolidation window" },
-    { pass:true,  label:"DG Documentation Submitted", desc:"Class 3 DG packing certificate received for SBF-002 — Apex Machinery" },
+    { pass:true,  label:"DG Documentation Submitted", desc:"Class 3 packing certificate & MSDS received for BOK-002 — BeautyPro HK (Cream & Powder)" },
   ];
 
   document.getElementById('constraints-list').innerHTML = constraints.map(c => `
@@ -883,14 +978,14 @@ function renderContainerSVG() {
 
   const boxes = [
     // back-most first
-    { x:0,   y:0,   z:0,   w:4,   h:2.5, d:3,   color:BOX_COLORS[1], id:"SBF-002" },
-    { x:4,   y:0,   z:0,   w:2.5, h:2.2, d:2,   color:BOX_COLORS[0], id:"SBF-001" },
-    { x:6.5, y:0,   z:0,   w:2,   h:1.8, d:1.8, color:BOX_COLORS[2], id:"SBF-003" },
-    { x:0,   y:0,   z:3,   w:3,   h:1.5, d:2,   color:BOX_COLORS[3], id:"SBF-005" },
-    { x:3,   y:0,   z:3.5, w:2,   h:1.4, d:1.3, color:BOX_COLORS[4], id:"SBF-007" },
+    { x:0,   y:0,   z:0,   w:4,   h:2.5, d:3,   color:BOX_COLORS[1], id:"BOK-002" },
+    { x:4,   y:0,   z:0,   w:2.5, h:2.2, d:2,   color:BOX_COLORS[0], id:"BOK-001" },
+    { x:6.5, y:0,   z:0,   w:2,   h:1.8, d:1.8, color:BOX_COLORS[2], id:"BOK-003" },
+    { x:0,   y:0,   z:3,   w:3,   h:1.5, d:2,   color:BOX_COLORS[3], id:"BOK-005" },
+    { x:3,   y:0,   z:3.5, w:2,   h:1.4, d:1.3, color:BOX_COLORS[4], id:"BOK-007" },
     // stacked
-    { x:4,   y:2.2, z:0,   w:2.5, h:1.5, d:2,   color:BOX_COLORS[0], id:"SBF-001b" },
-    { x:6.5, y:1.8, z:0,   w:2,   h:1.5, d:1.8, color:BOX_COLORS[2], id:"SBF-003b" },
+    { x:4,   y:2.2, z:0,   w:2.5, h:1.5, d:2,   color:BOX_COLORS[0], id:"BOK-001b" },
+    { x:6.5, y:1.8, z:0,   w:2,   h:1.5, d:1.8, color:BOX_COLORS[2], id:"BOK-003b" },
   ];
 
   // Sort back to front: higher x+z first (painter's algorithm)
