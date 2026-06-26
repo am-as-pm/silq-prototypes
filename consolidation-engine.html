@@ -296,6 +296,74 @@
     }
     .strategy-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; }
 
+    /* ── Container Type Selector ── */
+    .ctr-type-bar {
+      display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+      background: var(--bg2); border: 1px solid var(--border1);
+      border-radius: 12px; padding: 12px 16px; margin-bottom: 16px;
+    }
+    .ctr-type-btn {
+      padding: 8px 22px; border-radius: 8px; cursor: pointer;
+      border: 1.5px solid var(--border2); background: var(--bg3);
+      color: var(--text2); font-size: 13px; font-weight: 600;
+      transition: all 0.15s;
+    }
+    .ctr-type-btn:hover:not(.active) { border-color: var(--text2); color: var(--text1); }
+    .ctr-type-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+    .ctr-spec-chip {
+      font-size: 11px; color: var(--text2);
+      background: var(--bg4); padding: 4px 10px; border-radius: 6px;
+      white-space: nowrap;
+    }
+    .ctr-spec-chip strong { color: var(--text1); font-weight: 700; }
+
+    /* ── Consolidation Group Cards ── */
+    .group-card {
+      background: var(--bg2); border: 1px solid var(--border1);
+      border-radius: 12px; overflow: hidden; margin-bottom: 14px;
+    }
+    .group-header {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 16px; background: var(--bg3); border-bottom: 1px solid var(--border1);
+    }
+    .group-letter {
+      width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 14px; color: #fff;
+    }
+    .group-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 14px; }
+    .group-fill-bar {
+      height: 7px; border-radius: 4px; background: var(--bg4); overflow: hidden;
+    }
+    .group-fill-inner { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
+    .group-fill-label {
+      display: flex; justify-content: space-between;
+      font-size: 10px; color: var(--text3); margin-bottom: 4px;
+    }
+    .group-financials {
+      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;
+    }
+    .group-fin-item {
+      background: var(--bg3); border-radius: 8px; padding: 10px;
+      text-align: center; border: 1px solid var(--border1);
+    }
+    .group-fin-value { font-size: 15px; font-weight: 800; }
+    .group-fin-label { font-size: 10px; color: var(--text3); margin-top: 3px; }
+    .group-bok-row {
+      display: flex; align-items: center; gap: 8px;
+      padding: 6px 8px; background: var(--bg3); border-radius: 6px;
+      font-size: 11px; margin-bottom: 4px;
+    }
+    .group-bok-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .spill-card {
+      background: var(--bg2); border: 1px solid #f0a04060;
+      border-radius: 10px; padding: 12px 16px; margin-top: 4px;
+    }
+    .group-section-title {
+      font-size: 10px; font-weight: 700; color: var(--text3);
+      text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px;
+    }
+
     /* ── Pipeline Steps (Stage 4) ── */
     .pipeline-steps {
       display: grid;
@@ -460,9 +528,10 @@
      STAGE 2 — ENGINE
 ═══════════════════════════════════════════════════════════════════════════ -->
 <section id="stage-engine" class="stage">
-  <!-- Strategy + KPIs -->
-  <div class="flex-row" style="margin-bottom:16px">
-    <h2 style="margin-bottom:0">Optimization Strategy</h2>
+
+  <!-- Row 1: Container type selector + Strategy toggle -->
+  <div class="flex-row" style="margin-bottom:12px;flex-wrap:wrap;gap:8px">
+    <h2 style="margin-bottom:0">Consolidation Engine</h2>
     <div class="spacer"></div>
     <div class="strategy-toggle">
       <button class="strategy-btn active" id="btn-profit">Maximize Profit</button>
@@ -470,15 +539,30 @@
     </div>
   </div>
 
-  <div class="grid-4" style="margin-bottom:20px">
-    <div class="stat"><div class="stat-value info">98.9 CBM</div><div class="stat-label">Accepted Volume · 2 Containers</div></div>
-    <div class="stat"><div class="stat-value">9,790 kg</div><div class="stat-label">Total Gross Weight</div></div>
-    <div class="stat"><div class="stat-value success" id="margin-value">$74,300</div><div class="stat-label">Projected Net Margin</div></div>
-    <div class="stat"><div class="stat-value warning">73%</div><div class="stat-label">Avg Fill Rate (2×40ft)</div></div>
+  <!-- Container type selector bar -->
+  <div class="ctr-type-bar">
+    <span style="font-size:12px;font-weight:700;color:var(--text2);margin-right:4px">Container Type:</span>
+    <button class="ctr-type-btn active" data-ctype="40ft">40ft Standard</button>
+    <button class="ctr-type-btn" data-ctype="40hc">40ft High Cube</button>
+    <button class="ctr-type-btn" data-ctype="20ft">20ft Standard</button>
+    <div class="spacer"></div>
+    <div class="ctr-spec-chip" id="ctr-spec-cbm">Capacity: <strong>67.7 CBM</strong></div>
+    <div class="ctr-spec-chip" id="ctr-spec-kg">Max payload: <strong>26,500 kg</strong></div>
+    <div class="ctr-spec-chip" id="ctr-spec-cost">Est. FCL cost: <strong>$4,800</strong></div>
   </div>
 
+  <!-- Dynamic KPIs (updated on container type change) -->
+  <div class="grid-4" style="margin-bottom:20px">
+    <div class="stat"><div class="stat-value info" id="kpi-cbm">98.9 CBM</div><div class="stat-label">Accepted Volume Pool</div></div>
+    <div class="stat"><div class="stat-value" id="kpi-kg">9,790 kg</div><div class="stat-label">Total Gross Weight</div></div>
+    <div class="stat"><div class="stat-value success" id="kpi-profit">—</div><div class="stat-label">Projected Net Margin</div></div>
+    <div class="stat"><div class="stat-value warning" id="kpi-groups">—</div><div class="stat-label">Consolidation Groups</div></div>
+  </div>
+
+  <!-- Split: Left = Hard constraints, Right = Dynamic groups -->
   <div class="split split-1-1" style="align-items:start">
-    <!-- Hard constraints -->
+
+    <!-- Left: Hard constraints -->
     <div>
       <h2>Hard Constraints Filter</h2>
       <div id="constraints-list"></div>
@@ -486,19 +570,25 @@
         <div class="callout-title">1 shipment permanently excluded</div>
         BOK-009 (VoltSupply Co.) rejected — Lithium Batteries (Class 9 / UN3480) cannot be co-loaded with Class 3 Flammable Liquid cargo (BOK-002, BOK-012, BOK-022) per vessel operator restrictions and IMDG Code 7.2.6.
       </div>
+      <div style="margin-top:18px">
+        <h3 style="margin-bottom:8px">Revenue vs. Weight by Shipment</h3>
+        <div class="chart-wrap" style="height:180px">
+          <canvas id="engineChart"></canvas>
+        </div>
+        <div class="chart-caption">Revenue ($) and weight per accepted booking in optimization pool</div>
+      </div>
     </div>
 
-    <!-- Optimization pool -->
+    <!-- Right: Consolidation groups (rendered dynamically) -->
     <div>
-      <h2>Optimization Pool</h2>
-      <div id="pool-list"></div>
-      <hr class="divider" />
-      <h3>Revenue vs. Weight by Shipment</h3>
-      <div class="chart-wrap" style="height:180px">
-        <canvas id="engineChart"></canvas>
+      <div class="flex-row" style="margin-bottom:10px">
+        <h2 style="margin-bottom:0">Consolidation Groups</h2>
+        <div class="spacer"></div>
+        <span style="font-size:12px;color:var(--text2)" id="groups-summary">calculating…</span>
       </div>
-      <div class="chart-caption">Revenue ($) and proportional weight contribution per shipment in optimization pool</div>
+      <div id="groups-container"></div>
     </div>
+
   </div>
 </section>
 
@@ -736,6 +826,59 @@ const ALL_QUOTE_TOTAL = SHIPMENTS.reduce((a,s) => a + s.quote, 0);
 
 const BOX_COLORS = ["#4d8fd6","#3dc78a","#f0a040","#9060d0","#40c0d0","#d06090","#f0c040"];
 
+// Container type definitions
+// cbm = usable cargo volume, kg = max payload, cost = estimated FCL rate (China→US)
+const CONTAINER_TYPES = {
+  '40ft': { label:'40ft Standard',  cbm:67.7, kg:26500, cost:4800,  accentColor:'#4d8fd6' },
+  '40hc': { label:'40ft High Cube', cbm:76.4, kg:26500, cost:5400,  accentColor:'#9060d0' },
+  '20ft': { label:'20ft Standard',  cbm:25.5, kg:21600, cost:3200,  accentColor:'#40c0d0' },
+};
+
+// Group accent colours per container group index
+const GROUP_COLORS = ['#4d8fd6','#3dc78a','#f0c040','#9060d0','#f0a040','#d06090'];
+
+let activeContainerType = '40ft';
+let activeStrategy = 'profit';
+
+// Greedy First-Fit Decreasing bin-packing algorithm
+// Sorts pool by chosen strategy, then assigns each booking into the first
+// container that has enough remaining CBM and weight capacity.
+function groupShipments(ctype, strategy) {
+  const cap = CONTAINER_TYPES[ctype];
+  const sorted = [...ACCEPTED].sort((a, b) =>
+    strategy === 'profit'
+      ? (b.revenue / b.cbm) - (a.revenue / a.cbm)   // highest $/CBM first
+      : b.cbm - a.cbm                                 // largest volume first
+  );
+
+  const groups = [];
+
+  for (const s of sorted) {
+    let placed = false;
+    for (const g of groups) {
+      if (+(g.cbm + s.cbm).toFixed(2) <= cap.cbm && g.kg + s.weight <= cap.kg) {
+        g.shipments.push(s);
+        g.cbm   = +(g.cbm   + s.cbm).toFixed(2);
+        g.kg    += s.weight;
+        g.lclRevenue += s.revenue;
+        g.lclQuote   += s.quote;
+        placed = true;
+        break;
+      }
+    }
+    if (!placed) {
+      groups.push({
+        shipments:   [s],
+        cbm:         s.cbm,
+        kg:          s.weight,
+        lclRevenue:  s.revenue,
+        lclQuote:    s.quote,
+      });
+    }
+  }
+  return groups;
+}
+
 // ─── Tab navigation ──────────────────────────────────────────────────────────
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -834,14 +977,145 @@ function renderShipmentCards() {
   }).join('');
 }
 
-// ─── Stage 2: Constraints & Pool ─────────────────────────────────────────────
+// ─── Stage 2: Interactive Engine ──────────────────────────────────────────────
+let engineChartInstance = null;
+
+function renderEngineGroups(ctype, strategy) {
+  const cap     = CONTAINER_TYPES[ctype];
+  const groups  = groupShipments(ctype, strategy);
+  const letters = ['A','B','C','D','E','F'];
+
+  // ── KPI bar ──────────────────────────────────────────────────────────────
+  const totalFclCost  = groups.length * cap.cost;
+  const totalRevenue  = groups.reduce((a, g) => a + g.lclRevenue, 0);
+  const totalProfit   = totalRevenue - totalFclCost;
+  const avgFill       = (TOTAL_CBM / (groups.length * cap.cbm) * 100).toFixed(0);
+
+  document.getElementById('kpi-cbm').textContent    = TOTAL_CBM.toFixed(1) + ' CBM';
+  document.getElementById('kpi-kg').textContent     = TOTAL_KG.toLocaleString() + ' kg';
+  document.getElementById('kpi-profit').textContent = '$' + totalProfit.toLocaleString();
+  document.getElementById('kpi-groups').textContent = groups.length + ' group' + (groups.length !== 1 ? 's' : '');
+  document.getElementById('groups-summary').textContent =
+    `${groups.length} × ${cap.label} · ${ACCEPTED.length} bookings loaded`;
+
+  // ── Container spec chips ──────────────────────────────────────────────────
+  document.getElementById('ctr-spec-cbm').innerHTML  = `Capacity: <strong>${cap.cbm} CBM</strong>`;
+  document.getElementById('ctr-spec-kg').innerHTML   = `Max payload: <strong>${cap.kg.toLocaleString()} kg</strong>`;
+  document.getElementById('ctr-spec-cost').innerHTML = `Est. FCL cost: <strong>$${cap.cost.toLocaleString()}</strong>`;
+
+  // ── Group cards ──────────────────────────────────────────────────────────
+  document.getElementById('groups-container').innerHTML = groups.map((g, i) => {
+    const color      = GROUP_COLORS[i % GROUP_COLORS.length];
+    const fillPct    = Math.min(100, (g.cbm / cap.cbm * 100)).toFixed(1);
+    const wtPct      = Math.min(100, (g.kg   / cap.kg  * 100)).toFixed(1);
+    const profit     = g.lclRevenue - cap.cost;
+    const margin     = ((profit / g.lclRevenue) * 100).toFixed(0);
+    const profitClr  = profit >= 0 ? 'var(--green)' : 'var(--red)';
+    const fillClr    = +fillPct >= 85 ? 'var(--green)' : +fillPct >= 60 ? 'var(--orange)' : 'var(--red)';
+
+    const bookingRows = g.shipments.map(s => {
+      const cs = CLIENT_STYLES[s.client] || {};
+      const pct = (s.cbm / cap.cbm * 100).toFixed(1);
+      return `
+        <div class="group-bok-row">
+          <div class="group-bok-dot" style="background:${cs.dot || '#888'}"></div>
+          <span style="font-weight:700;color:var(--text1);min-width:72px">${s.id}</span>
+          <span style="color:${cs.text || 'var(--text2)'};min-width:82px">${s.client}</span>
+          <span style="color:var(--text2);min-width:60px">${s.cbm.toFixed(2)} CBM</span>
+          <span style="color:var(--text2);min-width:62px">${s.weight} kg</span>
+          <span style="color:var(--text3);min-width:40px">${pct}%</span>
+          <div class="spacer"></div>
+          <span style="color:var(--green);font-weight:700">$${s.revenue.toLocaleString()}</span>
+        </div>`;
+    }).join('');
+
+    return `
+      <div class="group-card" style="border-color:${color}50">
+        <!-- Header -->
+        <div class="group-header" style="border-bottom-color:${color}30">
+          <div class="group-letter" style="background:${color}">${letters[i]}</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--text1)">
+              Container ${letters[i]} — ${cap.label}
+            </div>
+            <div style="font-size:11px;color:var(--text2)">
+              ${g.shipments.length} LCL bookings &nbsp;·&nbsp;
+              <span style="color:${fillClr};font-weight:600">${fillPct}% volume fill</span>
+            </div>
+          </div>
+          <div class="spacer"></div>
+          <div style="text-align:right">
+            <div style="font-size:17px;font-weight:800;color:${profitClr}">
+              $${profit.toLocaleString()}
+            </div>
+            <div style="font-size:10px;color:var(--text3)">gross profit · ${margin}% margin</div>
+          </div>
+        </div>
+
+        <!-- Body -->
+        <div class="group-body">
+
+          <!-- Utilization bars -->
+          <div>
+            <div class="group-fill-label">
+              <span>Volume utilization</span>
+              <span style="color:${fillClr};font-weight:600">${fillPct}% &nbsp; ${g.cbm.toFixed(2)} / ${cap.cbm} CBM</span>
+            </div>
+            <div class="group-fill-bar">
+              <div class="group-fill-inner" style="width:${fillPct}%;background:${color}"></div>
+            </div>
+            <div class="group-fill-label" style="margin-top:8px">
+              <span>Weight utilization</span>
+              <span style="color:var(--text2);font-weight:600">${wtPct}% &nbsp; ${g.kg.toLocaleString()} / ${cap.kg.toLocaleString()} kg</span>
+            </div>
+            <div class="group-fill-bar">
+              <div class="group-fill-inner" style="width:${wtPct}%;background:#3dc78a"></div>
+            </div>
+          </div>
+
+          <!-- Financial breakdown -->
+          <div class="group-financials">
+            <div class="group-fin-item">
+              <div class="group-fin-value" style="color:var(--blue)">$${g.lclQuote.toLocaleString()}</div>
+              <div class="group-fin-label">LCL Quote Total<br>(sum of all bookings)</div>
+            </div>
+            <div class="group-fin-item">
+              <div class="group-fin-value" style="color:var(--orange)">$${cap.cost.toLocaleString()}</div>
+              <div class="group-fin-label">FCL Cost<br>(1 × ${cap.label})</div>
+            </div>
+            <div class="group-fin-item" style="border-color:${profit >= 0 ? '#3dc78a40' : '#e0555540'}">
+              <div class="group-fin-value" style="color:${profitClr}">$${profit.toLocaleString()}</div>
+              <div class="group-fin-label">Gross Profit<br>${margin}% margin</div>
+            </div>
+          </div>
+
+          <!-- Additional stats row -->
+          <div class="flex-row" style="gap:10px;flex-wrap:wrap">
+            <div class="ctr-spec-chip">${g.shipments.length} bookings loaded</div>
+            <div class="ctr-spec-chip">Avg CBM/booking: <strong>${(g.cbm/g.shipments.length).toFixed(2)}</strong></div>
+            <div class="ctr-spec-chip">Revenue/CBM: <strong>$${(g.lclRevenue/g.cbm).toFixed(0)}</strong></div>
+            <div class="ctr-spec-chip">Remaining: <strong>${(cap.cbm - g.cbm).toFixed(2)} CBM</strong></div>
+          </div>
+
+          <!-- Booking list -->
+          <div>
+            <div class="group-section-title">Bookings assigned to this container</div>
+            ${bookingRows}
+          </div>
+
+        </div>
+      </div>`;
+  }).join('');
+}
+
 function renderEngine() {
+  // ── Hard constraints (static) ─────────────────────────────────────────────
   const constraints = [
-    { pass:true,  label:"Weight Limit (26,500 kg)", desc:`${TOTAL_KG.toLocaleString()} kg total accepted — within limit (${((TOTAL_KG/26500)*100).toFixed(0)}% used)` },
-    { pass:true,  label:"Volume Capacity (2×67.7 CBM)", desc:`${TOTAL_CBM.toFixed(2)} CBM across 2 containers — ${((TOTAL_CBM/TOTAL_CAP_CBM)*100).toFixed(1)}% of total capacity` },
-    { pass:false, label:"Hazmat Compatibility Check", desc:"BOK-009 (Batteries Class 9 / UN3480) — vessel operator prohibits co-loading with BOK-002, BOK-012, BOK-022 (Class 3 Flammable Liquid). IMDG 7.2.6." },
-    { pass:true,  label:"Cargo Ready Date Alignment", desc:"All CRDs fall within Jun 27 – Jul 3 consolidation window" },
-    { pass:true,  label:"DG Documentation Submitted", desc:"Class 3 packing certificate & MSDS received for BOK-002, BOK-012, BOK-022 — BeautyPro HK (Cream & Powder / Liquid)" },
+    { pass:true,  label:"Weight Limit per Container",   desc:`${TOTAL_KG.toLocaleString()} kg total — distributed across groups, each within per-container max` },
+    { pass:true,  label:"Hazmat: Class 3 DG Approved",  desc:"Class 3 packing cert & MSDS received for BOK-002, BOK-012, BOK-022 — BeautyPro HK (Liquid / Cream & Powder)" },
+    { pass:false, label:"Hazmat: Class 9 Excluded",     desc:"BOK-009 (Batteries UN3480) cannot be co-loaded with Class 3 Flammable Liquid. IMDG 7.2.6. — permanently rejected." },
+    { pass:true,  label:"Cargo Ready Date Alignment",   desc:"All CRDs fall within Jun 27 – Jul 3 consolidation window. BOK-004 (CRD+1d) prioritized." },
+    { pass:true,  label:"Stackability Constraint",      desc:"Non-stackable shipments assigned to top layer of load plan. No weight conflicts detected." },
   ];
 
   document.getElementById('constraints-list').innerHTML = constraints.map(c => `
@@ -854,52 +1128,54 @@ function renderEngine() {
     </div>
   `).join('');
 
-  document.getElementById('pool-list').innerHTML = ACCEPTED.map(s => `
-    <div class="pool-row">
-      <div class="pool-bar"></div>
-      <div style="flex:1">
-        <div class="flex-row" style="gap:6px">
-          <span style="font-size:12px;font-weight:700">${s.id}</span>
-          <div class="spacer"></div>
-          <span style="font-size:11px;color:var(--text2)">${s.cbm.toFixed(2)} CBM</span>
-        </div>
-        <div style="font-size:11px;color:var(--text1);margin-top:2px">${s.client} · $${s.revenue.toLocaleString()} · ${s.weight} kg</div>
-      </div>
-    </div>
-  `).join('');
-
-  // Engine chart
+  // ── Engine chart ───────────────────────────────────────────────────────────
+  if (engineChartInstance) { engineChartInstance.destroy(); }
   const ctx = document.getElementById('engineChart').getContext('2d');
-  new Chart(ctx, {
+  engineChartInstance = new Chart(ctx, {
     type: 'bar',
     data: {
       labels: ACCEPTED.map(s => s.id),
       datasets: [
-        { label: 'Revenue ($)', data: ACCEPTED.map(s => s.revenue), backgroundColor: '#2a5580', borderColor: '#4d8fd6', borderWidth: 1, borderRadius: 3 },
-        { label: 'Weight ÷10 (kg)', data: ACCEPTED.map(s => Math.round(s.weight/10)), backgroundColor: '#1e3a2a', borderColor: '#3dc78a', borderWidth: 1, borderRadius: 3 },
+        { label:'Revenue ($)',    data:ACCEPTED.map(s => s.revenue),              backgroundColor:'#2a5580', borderColor:'#4d8fd6', borderWidth:1, borderRadius:3 },
+        { label:'Weight ÷10 (kg)', data:ACCEPTED.map(s => Math.round(s.weight/10)), backgroundColor:'#1e3a2a', borderColor:'#3dc78a', borderWidth:1, borderRadius:3 },
       ]
     },
     options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { labels: { color:'#94a3b8', font:{size:11} } } },
-      scales: {
-        x: { ticks:{ color:'#64748b', font:{size:10} }, grid:{ color:'#1c2233' } },
-        y: { ticks:{ color:'#64748b', font:{size:10} }, grid:{ color:'#1c2233' } }
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ labels:{ color:'#94a3b8', font:{size:10} } } },
+      scales:{
+        x:{ ticks:{ color:'#64748b', font:{size:9} }, grid:{ color:'#1c2233' } },
+        y:{ ticks:{ color:'#64748b', font:{size:10} }, grid:{ color:'#1c2233' } }
       }
     }
   });
 
-  // Strategy toggle
+  // ── Container type buttons ─────────────────────────────────────────────────
+  document.querySelectorAll('.ctr-type-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.ctr-type-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeContainerType = btn.dataset.ctype;
+      renderEngineGroups(activeContainerType, activeStrategy);
+    });
+  });
+
+  // ── Strategy toggle ────────────────────────────────────────────────────────
   document.getElementById('btn-profit').addEventListener('click', () => {
     document.getElementById('btn-profit').classList.add('active');
     document.getElementById('btn-volume').classList.remove('active');
-    document.getElementById('margin-value').textContent = '$2,670';
+    activeStrategy = 'profit';
+    renderEngineGroups(activeContainerType, activeStrategy);
   });
   document.getElementById('btn-volume').addEventListener('click', () => {
     document.getElementById('btn-volume').classList.add('active');
     document.getElementById('btn-profit').classList.remove('active');
-    document.getElementById('margin-value').textContent = '$2,310';
+    activeStrategy = 'volume';
+    renderEngineGroups(activeContainerType, activeStrategy);
   });
+
+  // ── Initial render ─────────────────────────────────────────────────────────
+  renderEngineGroups(activeContainerType, activeStrategy);
 }
 
 // ─── Stage 3: Manifest + 3D Container ────────────────────────────────────────
