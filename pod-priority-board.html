@@ -496,6 +496,42 @@
   .lane-cards::-webkit-scrollbar-track { background: transparent; }
   .lane-cards::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
+  /* Include-Air toggle inside the Quote Expired lane */
+  .lane-control {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    padding: 7px 12px; background: #fff; border-bottom: 1px solid var(--border-light);
+  }
+  .lane-air-toggle { display: inline-flex; align-items: center; gap: 7px; cursor: pointer; font-size: 11px; font-weight: 600; color: var(--text-secondary); user-select: none; }
+  .lane-air-toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .lane-air-toggle .track {
+    width: 30px; height: 16px; border-radius: 999px; background: var(--gray-bg);
+    border: 1px solid var(--border); position: relative; transition: all .15s; flex-shrink: 0;
+  }
+  .lane-air-toggle .track::after {
+    content: ""; position: absolute; top: 1px; left: 1px; width: 12px; height: 12px;
+    border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.25); transition: left .15s;
+  }
+  .lane-air-toggle input:checked + .track { background: var(--primary); border-color: var(--primary); }
+  .lane-air-toggle input:checked + .track::after { left: 15px; }
+  .lane-control-hint { font-size: 10px; color: var(--text-secondary); opacity: .8; white-space: nowrap; }
+
+  /* Info tooltip (hover) */
+  .info-tip {
+    position: relative; display: inline-flex; align-items: center; justify-content: center;
+    width: 12px; height: 12px; border-radius: 50%; border: 1px solid currentColor;
+    font-size: 9px; font-weight: 700; line-height: 1; cursor: help; opacity: .6; margin-left: 4px; vertical-align: middle;
+  }
+  .info-tip:hover { opacity: 1; }
+  .info-tip::after {
+    content: attr(data-tip); position: absolute; bottom: 150%; left: 50%; transform: translateX(-50%);
+    background: var(--text); color: #fff; padding: 6px 9px; border-radius: 6px;
+    font-size: 10px; font-weight: 500; line-height: 1.35; text-transform: none; letter-spacing: 0;
+    width: max-content; max-width: 190px; text-align: left; white-space: normal;
+    opacity: 0; pointer-events: none; transition: opacity .12s; z-index: 60;
+    box-shadow: 0 4px 14px rgba(0,0,0,.2);
+  }
+  .info-tip:hover::after { opacity: 1; }
+
   /* RFQ Card */
   .rfq-card {
     background: var(--card);
@@ -2610,11 +2646,6 @@
         <option value="">All Trade Lanes</option>
       </select>
       <div class="filter-divider"></div>
-      <div class="filter-checkbox-wrapper">
-        <input type="checkbox" id="includeAirExpired" onchange="applyFilters()">
-        <label for="includeAirExpired">Include Air in expired</label>
-      </div>
-      <div class="filter-divider"></div>
       <input type="text" class="search-input-sm" placeholder="Search by RFQ ID, client, route..." id="searchInput" oninput="applyFilters()">
       <button class="clear-filters-btn" id="clearBtn" onclick="clearFilters()">Clear all</button>
     </div>
@@ -4064,6 +4095,13 @@ function fmtK(n) {
   return "$" + n.toLocaleString("en-US");
 }
 
+let includeAirExpired = false;  // controlled by the toggle inside the Quote Expired lane
+
+function toggleIncludeAirExpired() {
+  includeAirExpired = !includeAirExpired;
+  applyFilters();
+}
+
 function renderBoard(rfqs) {
   const board = document.getElementById("board");
   board.innerHTML = "";
@@ -4097,6 +4135,22 @@ function renderBoard(rfqs) {
     }
 
     const valueLabel = isOps ? "Value" : "Quoted Value";
+    const valueLabelHTML = isOps
+      ? valueLabel
+      : `${valueLabel}<span class="info-tip" data-tip="Lowest quote value per RFQ, summed across this stage">i</span>`;
+
+    // Include-Air toggle lives inside the Quote Expired lane
+    const airExpiredTotal = RFQS.filter(r => r.stage === "expired" && r.mode === "Air").length;
+    const controlHTML = (!isOps && stage.key === "expired") ? `
+      <div class="lane-control">
+        <label class="lane-air-toggle" title="Show expired Air quotes in this lane too">
+          <input type="checkbox" ${includeAirExpired ? "checked" : ""} onchange="toggleIncludeAirExpired()">
+          <span class="track"></span>
+          Include Air
+        </label>
+        <span class="lane-control-hint">${airExpiredTotal} Air expired</span>
+      </div>` : "";
+
     lane.innerHTML = `
       <div class="lane-header">
         <div class="lane-header-left">
@@ -4112,9 +4166,10 @@ function renderBoard(rfqs) {
         </div>
         <div class="lane-stat">
           <span class="lane-stat-value">${fmtK(totalValue)}</span>
-          <span class="lane-stat-label">${valueLabel}</span>
+          <span class="lane-stat-label">${valueLabelHTML}</span>
         </div>
       </div>
+      ${controlHTML}
       <div class="lane-cards">${cardsHTML}</div>`;
 
     board.appendChild(lane);
@@ -4261,7 +4316,6 @@ function applyFilters() {
   const mode = document.getElementById("filterMode").value;
   const lane = document.getElementById("filterLane").value;
   const search = document.getElementById("searchInput").value.toLowerCase();
-  const includeAirExpired = document.getElementById("includeAirExpired").checked;
 
   const hasFilters = team || client || mode || lane || search;
   document.getElementById("clearBtn").classList.toggle("visible", hasFilters);
@@ -4306,7 +4360,7 @@ function clearFilters() {
   document.getElementById("filterMode").value = "";
   document.getElementById("filterLane").value = "";
   document.getElementById("searchInput").value = "";
-  document.getElementById("includeAirExpired").checked = false;
+  includeAirExpired = false;
   document.getElementById("clearBtn").classList.remove("visible");
   opsDelayedFilter = false;
   const dbtn = document.getElementById("opsDelayedBtn");
