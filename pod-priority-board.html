@@ -283,12 +283,29 @@
   .progress-bar-fill {
     height: 100%;
     border-radius: 10px;
-    transition: width 0.3s ease, background 0.3s ease;
+    display: flex;
+    overflow: hidden;
+    transition: width 0.3s ease;
   }
 
-  .progress-bar-fill.green { background: var(--green); }
-  .progress-bar-fill.yellow { background: var(--yellow); }
-  .progress-bar-fill.red { background: var(--red); }
+  /* Achieved-value breakdown segments (Air / Ocean / Inspections) */
+  .progress-seg { height: 100%; transition: width 0.3s ease; }
+  .progress-seg.air { background: var(--blue); }
+  .progress-seg.ocean { background: var(--primary); }
+  .progress-seg.inspections { background: var(--purple); }
+
+  .progress-legend {
+    display: flex;
+    gap: 16px;
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+  .progress-legend-item { display: flex; align-items: center; gap: 5px; }
+  .progress-legend-item b { color: var(--text); font-weight: 600; }
+  .progress-legend-dot { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
+  .progress-legend-dot.air { background: var(--blue); }
+  .progress-legend-dot.ocean { background: var(--primary); }
+  .progress-legend-dot.inspections { background: var(--purple); }
 
   .progress-percentage {
     font-size: 18px;
@@ -400,7 +417,7 @@
 
   .board {
     display: flex;
-    gap: 14px;
+    gap: 24px;
     min-height: calc(100vh - 230px);
     align-items: flex-start;
   }
@@ -413,6 +430,30 @@
     display: flex;
     flex-direction: column;
     max-height: calc(100vh - 240px);
+  }
+
+  /* Board grouped into labelled sections: Main swimlanes | User actionables */
+  .board-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .board-group--aside {
+    padding-left: 24px;
+    border-left: 2px dashed var(--border);
+  }
+  .board-group-header {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    padding-left: 2px;
+  }
+  .board-group-lanes {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
   }
 
   .lane-header {
@@ -2621,7 +2662,16 @@
           <span class="progress-label-right" id="progressLabelRight">Target: $0</span>
         </div>
         <div class="progress-bar-track">
-          <div class="progress-bar-fill green" id="progressBarFill" style="width: 0%"></div>
+          <div class="progress-bar-fill" id="progressBarFill" style="width: 0%">
+            <div class="progress-seg air" id="segAir" title="Air"></div>
+            <div class="progress-seg ocean" id="segOcean" title="Ocean"></div>
+            <div class="progress-seg inspections" id="segInsp" title="Inspections"></div>
+          </div>
+        </div>
+        <div class="progress-legend" id="progressLegend">
+          <span class="progress-legend-item"><span class="progress-legend-dot air"></span>Air <b id="legAir">$0</b></span>
+          <span class="progress-legend-item"><span class="progress-legend-dot ocean"></span>Ocean <b id="legOcean">$0</b></span>
+          <span class="progress-legend-item"><span class="progress-legend-dot inspections"></span>Inspections <b id="legInsp">$0</b></span>
         </div>
       </div>
       <div class="progress-percentage" id="progressPercentage">0%</div>
@@ -2863,11 +2913,12 @@
 <script>
 const STAGES = [
   { key: "submitted", label: "Submitted for Quote", stageDataLabel: "Received" },
-  { key: "draft", label: "Draft", stageDataLabel: "Draft" },
   { key: "awaiting", label: "Awaiting Client Response", stageDataLabel: "Validity" },
   { key: "rejected", label: "Rejected", stageDataLabel: "Rejected" },
   { key: "accepted", label: "Accepted", stageDataLabel: "Accepted" },
-  { key: "expired", label: "Quote Expired", stageDataLabel: "Expired" }
+  // Aside bucket — not part of the direct Submitted → Accepted flow
+  { key: "draft", label: "Draft", stageDataLabel: "Draft", aside: true },
+  { key: "expired", label: "Quote Expired", stageDataLabel: "Expired", aside: true }
 ];
 
 const TEAM = [
@@ -2985,28 +3036,43 @@ function updateProgressBar() {
   
   const targets = loadBookingTargets();
   const target = targets[monthKey] || 150000;
-  const achieved = calculateAchievedForMonth(currentYear, currentMonth);
-  
-  const percentage = target > 0 ? Math.round((achieved / target) * 100) : 0;
-  
+
+  // Progress fixed at 60% for this view; achieved derived from that.
+  const percentage = 60;
+  const achieved = Math.round(target * percentage / 100);
+
+  // Break achieved down by mode using accepted RFQs (Air / Ocean / Inspections);
+  // fall back to representative shares if there's no accepted data yet.
+  let air = 0, ocean = 0, insp = 0;
+  RFQS.filter(r => r.stage === "accepted").forEach(r => {
+    const v = getLowestQuotedValue(r) || 0;
+    if (r.mode === "Air") air += v;
+    else if (r.mode === "Inspections") insp += v;
+    else ocean += v; // FCL / LCL / SCL and other ocean modes
+  });
+  let modeTotal = air + ocean + insp;
+  if (modeTotal <= 0) { air = 28; ocean = 52; insp = 20; modeTotal = 100; }
+
+  const airVal = Math.round(achieved * air / modeTotal);
+  const oceanVal = Math.round(achieved * ocean / modeTotal);
+  const inspVal = achieved - airVal - oceanVal; // remainder keeps the total exact
+  const usd = n => `$${n.toLocaleString("en-US")}`;
+
   // Update labels
-  document.getElementById("progressLabelLeft").textContent = `Achieved: $${achieved.toLocaleString("en-US")}`;
-  document.getElementById("progressLabelRight").textContent = `Target: $${target.toLocaleString("en-US")}`;
+  document.getElementById("progressLabelLeft").textContent = `Achieved: ${usd(achieved)}`;
+  document.getElementById("progressLabelRight").textContent = `Target: ${usd(target)}`;
   document.getElementById("progressPercentage").textContent = `${percentage}%`;
-  
-  // Update progress bar fill
-  const fillElement = document.getElementById("progressBarFill");
-  fillElement.style.width = `${Math.min(percentage, 100)}%`;
-  
-  // Update color based on percentage
-  fillElement.classList.remove("green", "yellow", "red");
-  if (percentage >= 100) {
-    fillElement.classList.add("green");
-  } else if (percentage >= 70) {
-    fillElement.classList.add("yellow");
-  } else {
-    fillElement.classList.add("red");
-  }
+
+  // Overall fill width, then the internal Air/Ocean/Inspections breakdown
+  document.getElementById("progressBarFill").style.width = `${Math.min(percentage, 100)}%`;
+  document.getElementById("segAir").style.width = `${air / modeTotal * 100}%`;
+  document.getElementById("segOcean").style.width = `${ocean / modeTotal * 100}%`;
+  document.getElementById("segInsp").style.width = `${insp / modeTotal * 100}%`;
+
+  // Legend values
+  document.getElementById("legAir").textContent = usd(airVal);
+  document.getElementById("legOcean").textContent = usd(oceanVal);
+  document.getElementById("legInsp").textContent = usd(inspVal);
 }
 
 // Booking Target Management Functions
@@ -4109,6 +4175,28 @@ function renderBoard(rfqs) {
   const isOps = activePipeline === "ops";
   const stages = isOps ? OPS_STAGES : STAGES;
 
+  // Quoting pipeline splits lanes into two labelled sections;
+  // ops pipeline keeps a single flat row.
+  let mainLanes = board, asideLanes = board;
+  if (!isOps) {
+    const mainGroup = document.createElement("div");
+    mainGroup.className = "board-group";
+    mainGroup.innerHTML = `<div class="board-group-header">Main swimlanes</div>`;
+    mainLanes = document.createElement("div");
+    mainLanes.className = "board-group-lanes";
+    mainGroup.appendChild(mainLanes);
+
+    const asideGroup = document.createElement("div");
+    asideGroup.className = "board-group board-group--aside";
+    asideGroup.innerHTML = `<div class="board-group-header">User actionables</div>`;
+    asideLanes = document.createElement("div");
+    asideLanes.className = "board-group-lanes";
+    asideGroup.appendChild(asideLanes);
+
+    board.appendChild(mainGroup);
+    board.appendChild(asideGroup);
+  }
+
   stages.forEach(stage => {
     const stageRfqs = rfqs.filter(r => r.stage === stage.key);
     const totalValue = stageRfqs.reduce((sum, r) => {
@@ -4116,6 +4204,7 @@ function renderBoard(rfqs) {
       return sum + (lowestValue || 0);
     }, 0);
     const totalShipments = isOps ? stageRfqs.length : stageRfqs.reduce((sum, r) => sum + (r.shipments || 0), 0);
+
     const lane = document.createElement("div");
     lane.className = "lane";
     lane.dataset.stage = stage.key;
@@ -4172,7 +4261,7 @@ function renderBoard(rfqs) {
       ${controlHTML}
       <div class="lane-cards">${cardsHTML}</div>`;
 
-    board.appendChild(lane);
+    (isOps ? board : (stage.aside ? asideLanes : mainLanes)).appendChild(lane);
   });
   
   // Update progress bar
