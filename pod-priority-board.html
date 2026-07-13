@@ -442,7 +442,15 @@
     padding-left: 24px;
     border-left: 2px dashed var(--border);
   }
+  .board-group--aside.is-collapsed {
+    padding-left: 0;
+    border-left: none;
+    align-self: stretch;
+  }
   .board-group-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     font-size: 12px;
     font-weight: 700;
     letter-spacing: .05em;
@@ -454,6 +462,45 @@
     display: flex;
     gap: 14px;
     align-items: flex-start;
+  }
+  /* Collapse/expand controls for the "User actionables" section */
+  .group-collapse-btn {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 15px;
+    line-height: 1;
+    color: var(--text-secondary);
+    padding: 0;
+  }
+  .group-collapse-btn:hover { color: var(--primary); }
+  .aside-rail {
+    height: 100%;
+    min-height: 260px;
+    width: 46px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 0;
+    background: var(--gray-bg);
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-family: inherit;
+    transition: background .15s ease, color .15s ease;
+  }
+  .aside-rail:hover { background: var(--primary-lighter); color: var(--primary); }
+  .aside-rail-chevron { font-size: 16px; font-weight: 700; }
+  .aside-rail-label {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    white-space: nowrap;
   }
 
   .lane-header {
@@ -3435,7 +3482,8 @@ function buildCardHTML(rfq) {
   const lowestValue = getLowestQuotedValue(rfq);
   const hasMultipleQuotes = rfq.quoteHistory && rfq.quoteHistory.length > 0;
   const quoteCountText = hasMultipleQuotes ? `Lowest of ${rfq.quoteHistory.length + 1} quotes` : '';
-  const valueDisplay = lowestValue ? `$${lowestValue.toLocaleString("en-US")}` : '';
+  // Submitted RFQs have no quote yet — no cost estimate to show
+  const valueDisplay = (lowestValue && rfq.stage !== "submitted") ? `$${lowestValue.toLocaleString("en-US")}` : '';
 
   const isAttn = rfqAttention[rfq.id];
   let flags = "";
@@ -4168,6 +4216,13 @@ function toggleIncludeAirExpired() {
   applyFilters();
 }
 
+let asideCollapsed = false;  // "User actionables" section collapsed/expanded
+
+function toggleAsideCollapse() {
+  asideCollapsed = !asideCollapsed;
+  applyFilters();
+}
+
 function renderBoard(rfqs) {
   const board = document.getElementById("board");
   board.innerHTML = "";
@@ -4187,11 +4242,25 @@ function renderBoard(rfqs) {
     mainGroup.appendChild(mainLanes);
 
     const asideGroup = document.createElement("div");
-    asideGroup.className = "board-group board-group--aside";
-    asideGroup.innerHTML = `<div class="board-group-header">User actionables</div>`;
-    asideLanes = document.createElement("div");
-    asideLanes.className = "board-group-lanes";
-    asideGroup.appendChild(asideLanes);
+    asideGroup.className = "board-group board-group--aside" + (asideCollapsed ? " is-collapsed" : "");
+    if (asideCollapsed) {
+      // Collapsed: show a thin clickable rail; lanes are built but kept off-board
+      asideGroup.innerHTML = `
+        <button class="aside-rail" onclick="toggleAsideCollapse()" title="Show user actionables">
+          <span class="aside-rail-chevron">‹</span>
+          <span class="aside-rail-label">User actionables</span>
+        </button>`;
+      asideLanes = document.createElement("div"); // detached — not appended to the board
+    } else {
+      asideGroup.innerHTML = `
+        <div class="board-group-header">
+          <button class="group-collapse-btn" onclick="toggleAsideCollapse()" title="Hide user actionables">›</button>
+          User actionables
+        </div>`;
+      asideLanes = document.createElement("div");
+      asideLanes.className = "board-group-lanes";
+      asideGroup.appendChild(asideLanes);
+    }
 
     board.appendChild(mainGroup);
     board.appendChild(asideGroup);
@@ -4228,6 +4297,14 @@ function renderBoard(rfqs) {
       ? valueLabel
       : `${valueLabel}<span class="info-tip" data-tip="Lowest quote value per RFQ, summed across this stage">i</span>`;
 
+    // Submitted RFQs have no quote yet — omit the quoted-value stat for that lane
+    const showValueStat = !(stage.key === "submitted" && !isOps);
+    const valueStatHTML = showValueStat ? `
+        <div class="lane-stat">
+          <span class="lane-stat-value">${fmtK(totalValue)}</span>
+          <span class="lane-stat-label">${valueLabelHTML}</span>
+        </div>` : "";
+
     // Include-Air toggle lives inside the Quote Expired lane
     const airExpiredTotal = RFQS.filter(r => r.stage === "expired" && r.mode === "Air").length;
     const controlHTML = (!isOps && stage.key === "expired") ? `
@@ -4252,11 +4329,7 @@ function renderBoard(rfqs) {
         <div class="lane-stat">
           <span class="lane-stat-value">${totalShipments}</span>
           <span class="lane-stat-label">Shipments</span>
-        </div>
-        <div class="lane-stat">
-          <span class="lane-stat-value">${fmtK(totalValue)}</span>
-          <span class="lane-stat-label">${valueLabelHTML}</span>
-        </div>
+        </div>${valueStatHTML}
       </div>
       ${controlHTML}
       <div class="lane-cards">${cardsHTML}</div>`;
