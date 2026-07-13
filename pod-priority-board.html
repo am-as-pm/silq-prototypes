@@ -273,7 +273,7 @@
 
   .progress-bar-track {
     width: 100%;
-    height: 10px;
+    height: 16px;
     background: var(--border-light);
     border-radius: 10px;
     overflow: hidden;
@@ -291,8 +291,8 @@
   /* Achieved-value breakdown segments (Air / Ocean / Inspections) */
   .progress-seg { height: 100%; transition: width 0.3s ease; }
   .progress-seg.air { background: var(--blue); }
-  .progress-seg.ocean { background: var(--primary); }
-  .progress-seg.inspections { background: var(--purple); }
+  .progress-seg.ocean { background: var(--green); }
+  .progress-seg.inspections { background: var(--yellow); }
 
   .progress-legend {
     display: flex;
@@ -304,8 +304,8 @@
   .progress-legend-item b { color: var(--text); font-weight: 600; }
   .progress-legend-dot { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
   .progress-legend-dot.air { background: var(--blue); }
-  .progress-legend-dot.ocean { background: var(--primary); }
-  .progress-legend-dot.inspections { background: var(--purple); }
+  .progress-legend-dot.ocean { background: var(--green); }
+  .progress-legend-dot.inspections { background: var(--yellow); }
 
   .progress-percentage {
     font-size: 18px;
@@ -384,6 +384,28 @@
   }
 
   .clear-filters-btn.visible { display: inline; }
+
+  .filter-toggle-btn {
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .filter-toggle-btn:hover { border-color: var(--primary); color: var(--primary); }
+  .filter-toggle-btn.active {
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    border-color: var(--primary);
+  }
 
   .filter-checkbox-wrapper {
     display: flex;
@@ -644,10 +666,25 @@
     margin-bottom: 8px;
   }
 
+  .rfq-client-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
   .rfq-client {
     font-size: 13px;
     font-weight: 600;
     color: var(--text);
+    line-height: 1.3;
+  }
+
+  .rfq-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+    opacity: 0.85;
+    margin-top: 2px;
     line-height: 1.3;
   }
 
@@ -656,6 +693,45 @@
     color: var(--text-secondary);
     margin-top: 1px;
   }
+
+  /* Requote marker, sits to the left of the client name */
+  .requote-inline {
+    color: var(--primary-dark);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  /* "New" client badge */
+  .new-badge {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--green);
+    background: var(--green-bg);
+    border: 1px solid #bbf7d0;
+    border-radius: 4px;
+    padding: 1px 5px;
+    flex-shrink: 0;
+  }
+
+  /* Pod selector in the header */
+  .pod-select {
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 3px 8px;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .pod-select:hover, .pod-select:focus { border-color: var(--primary); }
 
   .rfq-flags {
     display: flex;
@@ -688,6 +764,14 @@
     background: var(--red-bg);
     color: var(--red);
     border: 1px solid #fcd5d2;
+  }
+
+  .flag-requote {
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    border: 1px solid #f0dcc0;
+    font-size: 13px;
+    font-weight: 700;
   }
 
   .rfq-route {
@@ -2679,7 +2763,11 @@
       <h1>Pod Priority Board</h1>
       <div class="header-pod-info">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" style="opacity:0.5"><path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path fill-rule="evenodd" d="M5.216 14A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216z"/><path d="M4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/></svg>
-        Revenue AM: <strong>Kathy Simmons</strong>
+        <select class="pod-select" id="podSelect" aria-label="Pod">
+          <option value="pod1">Pod 1 - Jessica Portillo</option>
+          <option value="pod2">Pod 2 - Kathy Keathley</option>
+          <option value="pod3">Pod 3 - Christine Sullivan</option>
+        </select>
       </div>
     </div>
     <div class="header-actions">
@@ -2739,9 +2827,13 @@
         <option value="Air">Air</option>
         <option value="Inspections">Inspections</option>
       </select>
-      <select class="filter-select" id="filterLane" onchange="applyFilters()">
-        <option value="">All Trade Lanes</option>
+      <select class="filter-select" id="filterSort" onchange="applyFilters()" title="Sort cards within each lane">
+        <option value="recent">Sort: Recent first</option>
+        <option value="earliest">Sort: Earliest first</option>
       </select>
+      <div class="filter-divider"></div>
+      <button class="filter-toggle-btn" id="hpToggle" onclick="toggleHighPriority()" title="Show only high-priority projects">★ High priority</button>
+      <button class="filter-toggle-btn" id="attnToggle" onclick="toggleNeedsAttention()" title="Show only cards flagged as needs attention">! Needs attention</button>
       <div class="filter-divider"></div>
       <input type="text" class="search-input-sm" placeholder="Search by RFQ ID, client, route..." id="searchInput" oninput="applyFilters()">
       <button class="clear-filters-btn" id="clearBtn" onclick="clearFilters()">Clear all</button>
@@ -3303,7 +3395,7 @@ const RFQS = [
   { id: "RFQ-4212", client: "Vertex Trading LLC", contact: "Priya Sharma", origin: "Mumbai", destination: "Houston", mode: "Air", shipments: 1, quotedValue: 12300, assignee: "Jessica Park", stage: "submitted", stageDate: daysAgo(5), rfqDate: daysAgo(5), shipperPo: "VTX-443", crd: daysAgo(1), quoteSentDate: null, approvalStatus: null, notes: "Urgent — cargo ready, waiting on rates from carrier", firstTime: true },
   { id: "RFQ-4215", client: "Summit Intermodal", contact: "Carlos Reyes", origin: "Busan", destination: "Long Beach", mode: "FCL", shipments: 4, quotedValue: 34000, assignee: "Lisa Wang", stage: "submitted", stageDate: daysAgo(2), rfqDate: daysAgo(2), shipperPo: "SMT-6620", crd: daysFromNow(5), quoteSentDate: null, approvalStatus: null, notes: "", firstTime: false },
   // Submitted — looped back after client declined all quotes (CRD stays SUBMITTED_FOR_QUOTE)
-  { id: "RFQ-4160", client: "Eagle Express Freight", contact: "Tom Bradley", origin: "Hong Kong", destination: "JFK", mode: "Air", shipments: 1, quotedValue: 14200, assignee: "Lisa Wang", stage: "submitted", stageDate: daysAgo(6), rfqDate: daysAgo(20), shipperPo: "EEF-5540", crd: daysAgo(3), quoteSentDate: daysAgo(15), approvalStatus: null, notes: "Client declined Q1 — preparing revised quote", firstTime: false, quoteHistory: [{date: daysAgo(15), value: 15800}] },
+  { id: "RFQ-4160", client: "Eagle Express Freight", contact: "Tom Bradley", origin: "Hong Kong", destination: "JFK", mode: "Air", shipments: 1, quotedValue: 14200, assignee: "Lisa Wang", stage: "submitted", stageDate: daysAgo(6), rfqDate: daysAgo(20), shipperPo: "EEF-5540", crd: daysAgo(3), quoteSentDate: daysAgo(15), approvalStatus: null, notes: "Client declined Q1 — preparing revised quote", firstTime: false, requote: true, quoteHistory: [{date: daysAgo(15), value: 15800}] },
 
   // Awaiting Client (AWAITING_CLIENT_RESPONSE) — quote sent, waiting on client decision
   { id: "RFQ-4180", client: "Nordic Supply Chain AB", contact: "Erik Lindgren", origin: "Rotterdam", destination: "Miami", mode: "FCL", shipments: 2, quotedValue: 18400, assignee: "Kathy Simmons", stage: "awaiting", stageDate: daysFromNow(3), rfqDate: daysAgo(8), shipperPo: "NSC-1102", crd: daysFromNow(6), quoteSentDate: daysAgo(5), approvalStatus: null, notes: "Client comparing with competitor quote", firstTime: false, quoteHistory: [{date: daysAgo(14), value: 19200}, {date: daysAgo(5), value: 18400}] },
@@ -3345,9 +3437,9 @@ function getDaysClass(rfq) {
   switch (rfq.stage) {
     case "submitted": days = diffDays(rfq.stageDate); break;
     case "awaiting": {
-      const remain = -diffDays(rfq.stageDate);
-      if (remain <= 2) return "days-danger";
-      if (remain <= 5) return "days-warn";
+      const elapsed = diffDays(rfq.quoteSentDate || rfq.rfqDate);
+      if (elapsed >= 7) return "days-danger";
+      if (elapsed >= 4) return "days-warn";
       return "days-ok";
     }
     case "expired": days = diffDays(rfq.stageDate); break;
@@ -3374,9 +3466,8 @@ function getDaysBadgeText(rfq) {
   switch (rfq.stage) {
     case "submitted": return `${diffDays(rfq.stageDate)}d waiting`;
     case "awaiting": {
-      const remain = -diffDays(rfq.stageDate);
-      if (remain < 0) return `Expired ${-remain}d ago`;
-      return `${remain}d left`;
+      const elapsed = diffDays(rfq.quoteSentDate || rfq.rfqDate);
+      return elapsed <= 0 ? "Today" : `${elapsed}d elapsed`;
     }
     case "expired": return `${diffDays(rfq.stageDate)}d expired`;
     case "rejected": return `${diffDays(rfq.stageDate)}d since rejected`;
@@ -3436,6 +3527,23 @@ function buildOpsTracker(rfq) {
   return html;
 }
 
+const RFQ_NAMES = {
+  "RFQ-4220": "Industrial machinery parts", "RFQ-4221": "Consumer electronics restock", "RFQ-4222": "Furniture & fixtures",
+  "RFQ-4201": "Retail apparel — peak season", "RFQ-4205": "Automotive components", "RFQ-4210": "Packaged food goods",
+  "RFQ-4212": "Medical devices — urgent", "RFQ-4215": "Home appliances bulk order", "RFQ-4160": "Telecom equipment — revised",
+  "RFQ-4180": "Chemical drums (non-haz)", "RFQ-4182": "Textile samples inspection", "RFQ-4188": "Solar panels & inverters",
+  "RFQ-4190": "Fresh produce — air", "RFQ-4195": "Building materials",
+  "RFQ-4120": "Ceramic tiles & sanitaryware", "RFQ-4125": "Footwear QC inspection", "RFQ-4130": "Pharma cold-chain",
+  "RFQ-4050": "Steel fittings & hardware", "RFQ-3990": "Plastic resins", "RFQ-4100": "Sporting goods",
+  "RFQ-4170": "Packaging materials", "RFQ-4175": "Electronics pre-shipment QC", "RFQ-4178": "Aerospace spares — air"
+};
+function rfqName(rfq) { return rfq.name || RFQ_NAMES[rfq.id] || `${rfq.mode} shipment`; }
+function silqId(rfq) { return rfq.silqId || "SILQ-" + rfq.id.replace(/\D/g, "").padStart(7, "0"); }
+
+function reviewQuotesDialog(id) {
+  alert(`Will navigate to review quotes page for this RFQ (${id})`);
+}
+
 function buildCardHTML(rfq) {
   // Handle draft RFQs with minimal display
   if (rfq.stage === "draft") {
@@ -3445,9 +3553,13 @@ function buildCardHTML(rfq) {
     return `
       <div class="rfq-card" onclick="alert('Complete RFQ details to submit for quote')" data-client="${rfq.client}" data-assignee="${rfq.assignee}" data-mode="${rfq.mode}" data-search="${rfq.id} ${rfq.client} ${rfq.origin} ${rfq.destination} ${rfq.assignee}">
         <div class="rfq-card-header">
-          <div>
-            <div class="rfq-client">${rfq.client}</div>
-            <div class="rfq-id">${rfq.id}</div>
+          <div class="rfq-title-wrap">
+            <div class="rfq-client-row">
+              <span class="rfq-client">${rfq.client}</span>
+              ${rfq.firstTime ? `<span class="new-badge" title="New client">New</span>` : ""}
+            </div>
+            <div class="rfq-name">${rfqName(rfq)}</div>
+            <div class="rfq-id">${silqId(rfq)}</div>
           </div>
         </div>
         <div class="rfq-route">
@@ -3486,20 +3598,24 @@ function buildCardHTML(rfq) {
   const valueDisplay = (lowestValue && rfq.stage !== "submitted") ? `$${lowestValue.toLocaleString("en-US")}` : '';
 
   const isAttn = rfqAttention[rfq.id];
+  const isRequote = ["submitted", "awaiting", "rejected", "accepted"].includes(rfq.stage)
+    && (rfq.requote === true || (rfq.quoteHistory && rfq.quoteHistory.length >= 2));
   let flags = "";
   flags += `<button class="card-attn-btn${isAttn ? " active" : ""}" onclick="event.stopPropagation();toggleAttention('${rfq.id}',true)" title="${isAttn ? "Remove attention flag" : "Flag as needs attention"}">!</button>`;
-  if (crdPassed) flags += `<span class="flag flag-arriving" title="CRD has passed">⚡</span>`;
-  if (isRejected) flags += `<span class="flag flag-delayed" title="Quote rejected">✗</span>`;
-  if (isAccepted) flags += `<span class="flag flag-arriving" title="Accepted — send booking">✓</span>`;
-  if (isFirstTime) flags += `<span class="flag flag-first-time" title="First-time client">★</span>`;
+  if (isRejected) flags += `<span class="flag flag-delayed" title="${rfq.rejectionReason ? "Rejected — " + rfq.rejectionReason.replace(/"/g, "&quot;") : "Quote rejected"}">✗</span>`;
 
   return `
-    <div class="rfq-card${isAttn ? " card-attention" : ""}" onclick="openRfq('${rfq.id}')" data-client="${rfq.client}" data-assignee="${rfq.assignee}" data-mode="${rfq.mode}" data-lane="${rfq.origin}-${rfq.destination}" data-search="${rfq.id} ${rfq.client} ${rfq.origin} ${rfq.destination} ${rfq.assignee}">
-      ${linkIconHtml(`event.stopPropagation();openRfq('${rfq.id}')`)}
+    <div class="rfq-card${isAttn ? " card-attention" : ""}" onclick="reviewQuotesDialog('${rfq.id}')" data-client="${rfq.client}" data-assignee="${rfq.assignee}" data-mode="${rfq.mode}" data-lane="${rfq.origin}-${rfq.destination}" data-search="${rfq.id} ${rfq.client} ${rfq.origin} ${rfq.destination} ${rfq.assignee}">
+      ${linkIconHtml(`event.stopPropagation();reviewQuotesDialog('${rfq.id}')`)}
       <div class="rfq-card-header">
-        <div>
-          <div class="rfq-client">${rfq.client}</div>
-          <div class="rfq-id">${rfq.id}</div>
+        <div class="rfq-title-wrap">
+          <div class="rfq-client-row">
+            ${isRequote ? `<span class="requote-inline" title="Requote — revised quote issued">↻</span>` : ""}
+            <span class="rfq-client">${rfq.client}</span>
+            ${isFirstTime ? `<span class="new-badge" title="New client">New</span>` : ""}
+          </div>
+          <div class="rfq-name">${rfqName(rfq)}</div>
+          <div class="rfq-id">${silqId(rfq)}</div>
         </div>
         <div class="rfq-flags">${flags}</div>
       </div>
@@ -3514,7 +3630,7 @@ function buildCardHTML(rfq) {
         <span class="shipment-count">${shipLabel}</span>
         ${valueDisplay ? `<span class="shipment-count" ${hasMultipleQuotes ? `title="${quoteCountText}"` : ''} style="${hasMultipleQuotes ? 'cursor: help; text-decoration: underline dotted;' : ''}">${valueDisplay}</span>` : ''}
       </div>
-      <div class="rfq-stage-data">${getStageDataDisplay(rfq)}</div>${rfq.rejectionReason ? `<div class="rfq-rejection-reason" title="${rfq.rejectionReason}">↳ ${rfq.rejectionReason}</div>` : ""}${buildOpsTracker(rfq)}
+      <div class="rfq-stage-data">${getStageDataDisplay(rfq)}</div>${buildOpsTracker(rfq)}
       <div class="rfq-footer">
         <div class="rfq-assignee">
           <div class="avatar-xs" style="background:${tm.color}">${initials}</div>
@@ -4223,6 +4339,23 @@ function toggleAsideCollapse() {
   applyFilters();
 }
 
+// High-priority projects (drives the "High priority" filter toggle)
+const HIGH_PRIORITY = new Set(["RFQ-4212", "RFQ-4195", "RFQ-4188", "RFQ-4160", "RFQ-4050", "RFQ-4170", "RFQ-4130"]);
+function isHighPriority(rfq) { return rfq.highPriority === true || HIGH_PRIORITY.has(rfq.id); }
+
+let hpFilter = false, attnFilter = false;
+
+function toggleHighPriority() {
+  hpFilter = !hpFilter;
+  document.getElementById("hpToggle").classList.toggle("active", hpFilter);
+  applyFilters();
+}
+function toggleNeedsAttention() {
+  attnFilter = !attnFilter;
+  document.getElementById("attnToggle").classList.toggle("active", attnFilter);
+  applyFilters();
+}
+
 function renderBoard(rfqs) {
   const board = document.getElementById("board");
   board.innerHTML = "";
@@ -4357,10 +4490,6 @@ function renderSummary(rfqs) {
     <div class="summary-pill" onclick="clearFilters()">
       <span class="pill-count" style="color:var(--text)">${totalRfqs}</span>
       <span class="pill-label">Active RFQs</span>
-    </div>
-    <div class="summary-pill">
-      <span class="pill-count" style="color:var(--text-secondary)">${fmtK(totalValue)}</span>
-      <span class="pill-label">Pipeline Value</span>
     </div>`;
 
   if (expiredCount > 0) {
@@ -4375,22 +4504,10 @@ function renderSummary(rfqs) {
       <span class="pill-label">Rejected</span>
     </div>`;
   }
-  if (acceptedCount > 0) {
-    html += `<div class="summary-pill" style="border-color:#bbf7d0;background:#f0fdf4">
-      <span class="pill-count" style="color:#1e7a42">${acceptedCount}</span>
-      <span class="pill-label">Accepted</span>
-    </div>`;
-  }
-  if (crdPassedCount > 0) {
-    html += `<div class="summary-pill" style="border-color:#fde68a;background:var(--yellow-bg)">
-      <span class="pill-count" style="color:var(--yellow)">${crdPassedCount}</span>
-      <span class="pill-label">CRD Passed</span>
-    </div>`;
-  }
   if (firstTimeCount > 0) {
-    html += `<div class="summary-pill" style="border-color:#e4d9f7;background:var(--purple-bg)">
-      <span class="pill-count" style="color:var(--purple)">${firstTimeCount}</span>
-      <span class="pill-label">First-Time Client</span>
+    html += `<div class="summary-pill" style="border-color:var(--blue-light);background:var(--blue-bg)">
+      <span class="pill-count" style="color:var(--blue)">${firstTimeCount}</span>
+      <span class="pill-label">New client</span>
     </div>`;
   }
 
@@ -4461,25 +4578,15 @@ function populateFilters() {
     opt.textContent = c;
     clientSelect.appendChild(opt);
   });
-
-  const lanes = [...new Set(allRfqs.filter(r => r.origin && r.destination).map(r => `${r.origin} → ${r.destination}`))].sort();
-  const laneSelect = document.getElementById("filterLane");
-  lanes.forEach(l => {
-    const opt = document.createElement("option");
-    opt.value = l;
-    opt.textContent = l;
-    laneSelect.appendChild(opt);
-  });
 }
 
 function applyFilters() {
   const team = document.getElementById("filterTeam").value;
   const client = document.getElementById("filterClient").value;
   const mode = document.getElementById("filterMode").value;
-  const lane = document.getElementById("filterLane").value;
   const search = document.getElementById("searchInput").value.toLowerCase();
 
-  const hasFilters = team || client || mode || lane || search;
+  const hasFilters = team || client || mode || search || hpFilter || attnFilter;
   document.getElementById("clearBtn").classList.toggle("visible", hasFilters);
 
   const isOps = activePipeline === "ops";
@@ -4489,10 +4596,8 @@ function applyFilters() {
   if (team) filtered = filtered.filter(r => isOps ? (r.type === "inspection" ? r.inspector === team : (r.originOps === team || r.destOps === team)) : r.assignee === team);
   if (client) filtered = filtered.filter(r => r.client === client);
   if (mode) filtered = filtered.filter(r => r.mode === mode);
-  if (lane) filtered = filtered.filter(r => {
-    if (r.type === "inspection") return false;
-    return `${r.origin} → ${r.destination}` === lane;
-  });
+  if (!isOps && hpFilter) filtered = filtered.filter(r => isHighPriority(r));
+  if (!isOps && attnFilter) filtered = filtered.filter(r => rfqAttention[r.id]);
   if (search) {
     filtered = filtered.filter(r => {
       const haystack = isOps
@@ -4510,6 +4615,11 @@ function applyFilters() {
   if (isOps && opsDelayedFilter) {
     filtered = filtered.filter(s => isShipmentDelayed(s) || isTaskDelayed(s));
     filtered = [...filtered].sort((a, b) => getDelayDays(b) - getDelayDays(a));
+  } else {
+    // Recent / earliest sort by RFQ date (applied within each lane)
+    const sortOrder = document.getElementById("filterSort").value;
+    const dateOf = r => new Date((r.rfqDate || r.stageDate) + "T00:00:00");
+    filtered = [...filtered].sort((a, b) => sortOrder === "earliest" ? dateOf(a) - dateOf(b) : dateOf(b) - dateOf(a));
   }
 
   renderBoard(filtered);
@@ -4520,9 +4630,12 @@ function clearFilters() {
   document.getElementById("filterTeam").value = "";
   document.getElementById("filterClient").value = "";
   document.getElementById("filterMode").value = "";
-  document.getElementById("filterLane").value = "";
+  document.getElementById("filterSort").value = "recent";
   document.getElementById("searchInput").value = "";
   includeAirExpired = false;
+  hpFilter = false; attnFilter = false;
+  document.getElementById("hpToggle").classList.remove("active");
+  document.getElementById("attnToggle").classList.remove("active");
   document.getElementById("clearBtn").classList.remove("visible");
   opsDelayedFilter = false;
   const dbtn = document.getElementById("opsDelayedBtn");
@@ -4619,7 +4732,7 @@ function getNextAction(rfq) {
 }
 
 const rfqNotes = {};
-const rfqAttention = {};
+const rfqAttention = { "RFQ-4212": true, "RFQ-4195": true, "RFQ-4050": true };
 const rfqDeadlines = {};
 RFQS.forEach(r => { if (r.notes) rfqNotes[r.id] = r.notes; });
 
