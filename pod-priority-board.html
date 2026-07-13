@@ -2832,10 +2832,13 @@
       <select class="filter-select" id="filterSort" onchange="applyFilters()" title="Sort cards within each lane">
         <option value="recent">Sort: Recently submitted</option>
         <option value="earliest">Sort: Earliest submitted</option>
+        <option value="crdAsc">Sort: CRD ↑ (asc)</option>
+        <option value="crdDesc">Sort: CRD ↓ (desc)</option>
       </select>
       <div class="filter-divider"></div>
       <button class="filter-toggle-btn" id="hpToggle" onclick="toggleHighPriority()" title="Show only high-priority projects">★ High priority</button>
       <button class="filter-toggle-btn" id="attnToggle" onclick="toggleNeedsAttention()" title="Show only cards flagged as needs attention">! Needs attention</button>
+      <button class="filter-toggle-btn" id="requoteToggle" onclick="toggleRequotes()" title="Show only requotes">↻ Requotes</button>
       <div class="filter-divider"></div>
       <input type="text" class="search-input-sm" placeholder="Search by RFQ ID, client, route..." id="searchInput" oninput="applyFilters()">
       <button class="clear-filters-btn" id="clearBtn" onclick="clearFilters()">Clear all</button>
@@ -3546,6 +3549,19 @@ function reviewQuotesDialog(id) {
   alert(`Will navigate to review quotes page for this RFQ (${id})`);
 }
 
+// Shared requote check (used by the card marker and the Requotes filter)
+function isRequoteRfq(rfq) {
+  return ["submitted", "awaiting", "rejected", "accepted"].includes(rfq.stage)
+    && (rfq.requote === true || (rfq.quoteHistory && rfq.quoteHistory.length >= 2));
+}
+
+// Draft cards offer a delete action on click
+function deleteDraftRfq(id) {
+  if (!confirm("Delete this draft RFQ? This can't be undone.")) return;
+  const i = RFQS.findIndex(r => r.id === id);
+  if (i > -1) { RFQS.splice(i, 1); applyFilters(); }
+}
+
 function buildCardHTML(rfq) {
   // Handle draft RFQs with minimal display
   if (rfq.stage === "draft") {
@@ -3553,7 +3569,7 @@ function buildCardHTML(rfq) {
     const initials = rfq.assignee.split(" ").map(w => w[0]).join("");
     
     return `
-      <div class="rfq-card" onclick="alert('Complete RFQ details to submit for quote')" data-client="${rfq.client}" data-assignee="${rfq.assignee}" data-mode="${rfq.mode}" data-search="${rfq.id} ${rfq.client} ${rfq.origin} ${rfq.destination} ${rfq.assignee}">
+      <div class="rfq-card" onclick="deleteDraftRfq('${rfq.id}')" title="Click to delete this draft RFQ" data-client="${rfq.client}" data-assignee="${rfq.assignee}" data-mode="${rfq.mode}" data-search="${rfq.id} ${rfq.client} ${rfq.origin} ${rfq.destination} ${rfq.assignee}">
         <div class="rfq-card-header">
           <div class="rfq-title-wrap">
             <div class="rfq-client-row">
@@ -3600,8 +3616,7 @@ function buildCardHTML(rfq) {
   const valueDisplay = (lowestValue && rfq.stage !== "submitted") ? `$${lowestValue.toLocaleString("en-US")}` : '';
 
   const isAttn = rfqAttention[rfq.id];
-  const isRequote = ["submitted", "awaiting", "rejected", "accepted"].includes(rfq.stage)
-    && (rfq.requote === true || (rfq.quoteHistory && rfq.quoteHistory.length >= 2));
+  const isRequote = isRequoteRfq(rfq);
   let flags = "";
   flags += `<button class="card-attn-btn${isAttn ? " active" : ""}" onclick="event.stopPropagation();toggleAttention('${rfq.id}',true)" title="${isAttn ? "Remove attention flag" : "Flag as needs attention"}">!</button>`;
 
@@ -4349,7 +4364,7 @@ function toggleMainCollapse() {
 const HIGH_PRIORITY = new Set(["RFQ-4212", "RFQ-4195", "RFQ-4188", "RFQ-4160", "RFQ-4050", "RFQ-4170", "RFQ-4130"]);
 function isHighPriority(rfq) { return rfq.highPriority === true || HIGH_PRIORITY.has(rfq.id); }
 
-let hpFilter = false, attnFilter = false;
+let hpFilter = false, attnFilter = false, requoteFilter = false;
 
 function toggleHighPriority() {
   hpFilter = !hpFilter;
@@ -4359,6 +4374,11 @@ function toggleHighPriority() {
 function toggleNeedsAttention() {
   attnFilter = !attnFilter;
   document.getElementById("attnToggle").classList.toggle("active", attnFilter);
+  applyFilters();
+}
+function toggleRequotes() {
+  requoteFilter = !requoteFilter;
+  document.getElementById("requoteToggle").classList.toggle("active", requoteFilter);
   applyFilters();
 }
 
@@ -4605,7 +4625,7 @@ function applyFilters() {
   const mode = document.getElementById("filterMode").value;
   const search = document.getElementById("searchInput").value.toLowerCase();
 
-  const hasFilters = team || client || mode || search || hpFilter || attnFilter;
+  const hasFilters = team || client || mode || search || hpFilter || attnFilter || requoteFilter;
   document.getElementById("clearBtn").classList.toggle("visible", hasFilters);
 
   const isOps = activePipeline === "ops";
@@ -4617,6 +4637,7 @@ function applyFilters() {
   if (mode) filtered = filtered.filter(r => r.mode === mode);
   if (!isOps && hpFilter) filtered = filtered.filter(r => isHighPriority(r));
   if (!isOps && attnFilter) filtered = filtered.filter(r => rfqAttention[r.id]);
+  if (!isOps && requoteFilter) filtered = filtered.filter(r => isRequoteRfq(r));
   if (search) {
     filtered = filtered.filter(r => {
       const haystack = isOps
@@ -4635,10 +4656,21 @@ function applyFilters() {
     filtered = filtered.filter(s => isShipmentDelayed(s) || isTaskDelayed(s));
     filtered = [...filtered].sort((a, b) => getDelayDays(b) - getDelayDays(a));
   } else {
-    // Recent / earliest sort by RFQ date (applied within each lane)
+    // Sort within each lane: by RFQ date (recent/earliest) or by CRD (asc/desc)
     const sortOrder = document.getElementById("filterSort").value;
-    const dateOf = r => new Date((r.rfqDate || r.stageDate) + "T00:00:00");
-    filtered = [...filtered].sort((a, b) => sortOrder === "earliest" ? dateOf(a) - dateOf(b) : dateOf(b) - dateOf(a));
+    if (sortOrder === "crdAsc" || sortOrder === "crdDesc") {
+      const crdOf = r => r.crd ? new Date(r.crd + "T00:00:00").getTime() : null;
+      filtered = [...filtered].sort((a, b) => {
+        const ca = crdOf(a), cb = crdOf(b);
+        if (ca === null && cb === null) return 0;
+        if (ca === null) return 1;   // cards without a CRD sort to the end
+        if (cb === null) return -1;
+        return sortOrder === "crdAsc" ? ca - cb : cb - ca;
+      });
+    } else {
+      const dateOf = r => new Date((r.rfqDate || r.stageDate) + "T00:00:00");
+      filtered = [...filtered].sort((a, b) => sortOrder === "earliest" ? dateOf(a) - dateOf(b) : dateOf(b) - dateOf(a));
+    }
   }
 
   renderBoard(filtered);
@@ -4652,9 +4684,10 @@ function clearFilters() {
   document.getElementById("filterSort").value = "recent";
   document.getElementById("searchInput").value = "";
   includeAirExpired = false;
-  hpFilter = false; attnFilter = false;
+  hpFilter = false; attnFilter = false; requoteFilter = false;
   document.getElementById("hpToggle").classList.remove("active");
   document.getElementById("attnToggle").classList.remove("active");
+  document.getElementById("requoteToggle").classList.remove("active");
   document.getElementById("clearBtn").classList.remove("visible");
   opsDelayedFilter = false;
   const dbtn = document.getElementById("opsDelayedBtn");
