@@ -290,8 +290,8 @@
 
   /* Achieved-value breakdown segments (Air / Ocean / Inspections) */
   .progress-seg { height: 100%; transition: width 0.3s ease; }
-  .progress-seg.air { background: var(--blue); }
-  .progress-seg.ocean { background: var(--green); }
+  .progress-seg.air { background: var(--green); }
+  .progress-seg.ocean { background: var(--blue); }
   .progress-seg.inspections { background: var(--yellow); }
 
   .progress-legend {
@@ -303,8 +303,8 @@
   .progress-legend-item { display: flex; align-items: center; gap: 5px; }
   .progress-legend-item b { color: var(--text); font-weight: 600; }
   .progress-legend-dot { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
-  .progress-legend-dot.air { background: var(--blue); }
-  .progress-legend-dot.ocean { background: var(--green); }
+  .progress-legend-dot.air { background: var(--green); }
+  .progress-legend-dot.ocean { background: var(--blue); }
   .progress-legend-dot.inspections { background: var(--yellow); }
 
   .progress-percentage {
@@ -467,6 +467,8 @@
   .board-group--aside.is-collapsed {
     padding-left: 0;
     border-left: none;
+  }
+  .board-group.is-collapsed {
     align-self: stretch;
   }
   .board-group-header {
@@ -2828,8 +2830,8 @@
         <option value="Inspections">Inspections</option>
       </select>
       <select class="filter-select" id="filterSort" onchange="applyFilters()" title="Sort cards within each lane">
-        <option value="recent">Sort: Recent first</option>
-        <option value="earliest">Sort: Earliest first</option>
+        <option value="recent">Sort: Recently submitted</option>
+        <option value="earliest">Sort: Earliest submitted</option>
       </select>
       <div class="filter-divider"></div>
       <button class="filter-toggle-btn" id="hpToggle" onclick="toggleHighPriority()" title="Show only high-priority projects">★ High priority</button>
@@ -3602,7 +3604,6 @@ function buildCardHTML(rfq) {
     && (rfq.requote === true || (rfq.quoteHistory && rfq.quoteHistory.length >= 2));
   let flags = "";
   flags += `<button class="card-attn-btn${isAttn ? " active" : ""}" onclick="event.stopPropagation();toggleAttention('${rfq.id}',true)" title="${isAttn ? "Remove attention flag" : "Flag as needs attention"}">!</button>`;
-  if (isRejected) flags += `<span class="flag flag-delayed" title="${rfq.rejectionReason ? "Rejected — " + rfq.rejectionReason.replace(/"/g, "&quot;") : "Quote rejected"}">✗</span>`;
 
   return `
     <div class="rfq-card${isAttn ? " card-attention" : ""}" onclick="reviewQuotesDialog('${rfq.id}')" data-client="${rfq.client}" data-assignee="${rfq.assignee}" data-mode="${rfq.mode}" data-lane="${rfq.origin}-${rfq.destination}" data-search="${rfq.id} ${rfq.client} ${rfq.origin} ${rfq.destination} ${rfq.assignee}">
@@ -4333,9 +4334,14 @@ function toggleIncludeAirExpired() {
 }
 
 let asideCollapsed = false;  // "User actionables" section collapsed/expanded
+let mainCollapsed = false;   // "Main swimlanes" section collapsed/expanded
 
 function toggleAsideCollapse() {
   asideCollapsed = !asideCollapsed;
+  applyFilters();
+}
+function toggleMainCollapse() {
+  mainCollapsed = !mainCollapsed;
   applyFilters();
 }
 
@@ -4368,11 +4374,24 @@ function renderBoard(rfqs) {
   let mainLanes = board, asideLanes = board;
   if (!isOps) {
     const mainGroup = document.createElement("div");
-    mainGroup.className = "board-group";
-    mainGroup.innerHTML = `<div class="board-group-header">Main swimlanes</div>`;
-    mainLanes = document.createElement("div");
-    mainLanes.className = "board-group-lanes";
-    mainGroup.appendChild(mainLanes);
+    mainGroup.className = "board-group" + (mainCollapsed ? " is-collapsed" : "");
+    if (mainCollapsed) {
+      mainGroup.innerHTML = `
+        <button class="aside-rail" onclick="toggleMainCollapse()" title="Show main swimlanes">
+          <span class="aside-rail-chevron">›</span>
+          <span class="aside-rail-label">Main swimlanes</span>
+        </button>`;
+      mainLanes = document.createElement("div"); // detached — not appended to the board
+    } else {
+      mainGroup.innerHTML = `
+        <div class="board-group-header">
+          <button class="group-collapse-btn" onclick="toggleMainCollapse()" title="Hide main swimlanes">‹</button>
+          Main swimlanes
+        </div>`;
+      mainLanes = document.createElement("div");
+      mainLanes.className = "board-group-lanes";
+      mainGroup.appendChild(mainLanes);
+    }
 
     const asideGroup = document.createElement("div");
     asideGroup.className = "board-group board-group--aside" + (asideCollapsed ? " is-collapsed" : "");
