@@ -1075,6 +1075,17 @@
   }
   .card-attn-btn:hover { border-color: #dc2626; color: #dc2626; background: #fee2e2; }
   .card-attn-btn.active { border-color: #dc2626; color: #fff; background: #dc2626; }
+
+  /* CRD-passed cards (non-draft): amber highlight, flagged for deletion */
+  .rfq-card.card-crd-passed { border-left: 3px solid #d97706; background: #fffbeb; }
+  /* Delete button on expired / CRD-passed cards */
+  .card-del-btn {
+    width: 20px; height: 20px; border-radius: 4px; border: 1.5px solid #e5e7eb;
+    background: #fff; color: #9ca3af; font-size: 11px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: all .15s; flex-shrink: 0;
+  }
+  .card-del-btn:hover { border-color: #dc2626; color: #dc2626; background: #fee2e2; }
   .ops-priority-icon {
     display: inline-flex; align-items: center; justify-content: center;
     width: 18px; height: 18px; border-radius: 4px; flex-shrink: 0;
@@ -3556,10 +3567,18 @@ function isRequoteRfq(rfq) {
 }
 
 // Draft cards offer a delete action on click
-function deleteDraftRfq(id) {
-  if (!confirm("Delete this draft RFQ? This can't be undone.")) return;
+function deleteDraftRfq(id) { deleteRfq(id); }
+
+// Generic delete (Draft on click; Expired / CRD-passed via the card's delete button)
+function deleteRfq(id) {
+  if (!confirm("Delete this RFQ? This can't be undone.")) return;
   const i = RFQS.findIndex(r => r.id === id);
   if (i > -1) { RFQS.splice(i, 1); applyFilters(); }
+}
+
+// A non-draft card is deletable if it's expired or its CRD has already passed
+function isDeletableCard(rfq) {
+  return rfq.stage === "expired" || (rfq.crd && diffDays(rfq.crd) > 0);
 }
 
 function buildCardHTML(rfq) {
@@ -3617,11 +3636,14 @@ function buildCardHTML(rfq) {
 
   const isAttn = rfqAttention[rfq.id];
   const isRequote = isRequoteRfq(rfq);
+  const isDeletable = isDeletableCard(rfq);
+  const highlightClass = isAttn ? " card-attention" : (crdPassed ? " card-crd-passed" : "");
   let flags = "";
   flags += `<button class="card-attn-btn${isAttn ? " active" : ""}" onclick="event.stopPropagation();toggleAttention('${rfq.id}',true)" title="${isAttn ? "Remove attention flag" : "Flag as needs attention"}">!</button>`;
+  if (isDeletable) flags += `<button class="card-del-btn" onclick="event.stopPropagation();deleteRfq('${rfq.id}')" title="${crdPassed ? "CRD passed — delete this RFQ" : "Delete this expired RFQ"}">🗑</button>`;
 
   return `
-    <div class="rfq-card${isAttn ? " card-attention" : ""}" onclick="reviewQuotesDialog('${rfq.id}')" data-client="${rfq.client}" data-assignee="${rfq.assignee}" data-mode="${rfq.mode}" data-lane="${rfq.origin}-${rfq.destination}" data-search="${rfq.id} ${rfq.client} ${rfq.origin} ${rfq.destination} ${rfq.assignee}">
+    <div class="rfq-card${highlightClass}" onclick="reviewQuotesDialog('${rfq.id}')" data-client="${rfq.client}" data-assignee="${rfq.assignee}" data-mode="${rfq.mode}" data-lane="${rfq.origin}-${rfq.destination}" data-search="${rfq.id} ${rfq.client} ${rfq.origin} ${rfq.destination} ${rfq.assignee}">
       ${linkIconHtml(`event.stopPropagation();reviewQuotesDialog('${rfq.id}')`)}
       <div class="rfq-card-header">
         <div class="rfq-title-wrap">
