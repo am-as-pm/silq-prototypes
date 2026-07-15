@@ -665,13 +665,42 @@
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
+    gap: 8px;
     margin-bottom: 8px;
   }
+
+  .rfq-title-wrap { flex: 1; min-width: 0; }
 
   .rfq-client-row {
     display: flex;
     align-items: center;
     gap: 6px;
+  }
+
+  /* Primary title line = RFQ name; truncates with ellipsis when long */
+  .rfq-title-primary {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Secondary line = client name */
+  .rfq-client-line {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+    opacity: 0.85;
+    margin-top: 2px;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .rfq-client {
@@ -2727,6 +2756,57 @@
   .target-modal-btn.save:hover {
     background: var(--primary-dark);
   }
+
+  /* Projections upload controls */
+  .proj-controls { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+  .proj-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600;
+    font-family: inherit; cursor: pointer; white-space: nowrap;
+    border: 1px solid var(--primary); background: var(--primary); color: #fff;
+    transition: all .15s;
+  }
+  .proj-btn:hover { background: var(--primary-dark); }
+  .proj-btn.ghost { background: var(--card); color: var(--text-secondary); border-color: var(--border); }
+  .proj-btn.ghost:hover { border-color: var(--primary); color: var(--primary); }
+
+  /* Right-side audit drawer */
+  .proj-drawer-overlay {
+    position: fixed; inset: 0; background: rgba(45,42,38,.35);
+    opacity: 0; visibility: hidden; transition: opacity .2s; z-index: 60;
+  }
+  .proj-drawer-overlay.open { opacity: 1; visibility: visible; }
+  .proj-drawer {
+    position: fixed; top: 0; right: 0; height: 100vh; width: 380px; max-width: 90vw;
+    background: var(--card); box-shadow: -8px 0 24px rgba(45,42,38,.12);
+    transform: translateX(100%); transition: transform .25s ease; z-index: 61;
+    display: flex; flex-direction: column;
+  }
+  .proj-drawer.open { transform: translateX(0); }
+  .proj-drawer-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    padding: 18px 20px; border-bottom: 1px solid var(--border);
+  }
+  .proj-drawer-title { font-size: 15px; font-weight: 700; color: var(--text); }
+  .proj-drawer-sub { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+  .proj-drawer-close {
+    border: none; background: transparent; cursor: pointer;
+    font-size: 15px; color: var(--text-secondary); padding: 2px 6px; border-radius: 6px;
+  }
+  .proj-drawer-close:hover { background: var(--gray-bg); color: var(--text); }
+  .proj-drawer-body { padding: 12px 20px; overflow-y: auto; }
+  .proj-audit-item {
+    padding: 12px 0; border-bottom: 1px solid var(--border-light);
+    display: flex; gap: 10px;
+  }
+  .proj-audit-icon {
+    width: 30px; height: 30px; border-radius: 7px; flex-shrink: 0;
+    background: var(--primary-light); color: var(--primary-dark);
+    display: flex; align-items: center; justify-content: center; font-size: 14px;
+  }
+  .proj-audit-file { font-size: 13px; font-weight: 600; color: var(--text); word-break: break-all; }
+  .proj-audit-meta { font-size: 11.5px; color: var(--text-secondary); margin-top: 2px; }
+  .proj-audit-empty { font-size: 13px; color: var(--text-secondary); padding: 20px 0; text-align: center; }
 </style>
 </head>
 <body>
@@ -2823,7 +2903,25 @@
         </div>
       </div>
       <div class="progress-percentage" id="progressPercentage">0%</div>
+      <div class="proj-controls">
+        <input type="file" id="projFileInput" accept=".csv,.xlsx,.xls" style="display:none" onchange="onProjFileSelected(event)">
+        <button class="proj-btn" onclick="document.getElementById('projFileInput').click()" title="Upload the monthly projections (target) file">⬆ Upload projections</button>
+        <button class="proj-btn ghost" onclick="openProjHistory()" title="View upload history">🕘 History</button>
+      </div>
     </div>
+
+    <!-- Projections upload audit drawer -->
+    <div class="proj-drawer-overlay" id="projDrawerOverlay" onclick="closeProjHistory()"></div>
+    <aside class="proj-drawer" id="projDrawer" aria-label="Projections upload history">
+      <div class="proj-drawer-header">
+        <div>
+          <div class="proj-drawer-title">Projections — upload history</div>
+          <div class="proj-drawer-sub">Audit trail of target uploads</div>
+        </div>
+        <button class="proj-drawer-close" onclick="closeProjHistory()" title="Close">✕</button>
+      </div>
+      <div class="proj-drawer-body" id="projDrawerBody"></div>
+    </aside>
 
     <div class="filter-bar">
       <label>Filters</label>
@@ -2850,6 +2948,7 @@
       <button class="filter-toggle-btn" id="hpToggle" onclick="toggleHighPriority()" title="Show only high-priority projects">★ High priority</button>
       <button class="filter-toggle-btn" id="attnToggle" onclick="toggleNeedsAttention()" title="Show only cards flagged as needs attention">! Needs attention</button>
       <button class="filter-toggle-btn" id="requoteToggle" onclick="toggleRequotes()" title="Show only requotes">↻ Requotes</button>
+      <button class="filter-toggle-btn" id="crdToggle" onclick="toggleCrdPassed()" title="Show only RFQs whose CRD has passed">⚑ CRD passed?</button>
       <div class="filter-divider"></div>
       <input type="text" class="search-input-sm" placeholder="Search by RFQ ID, client, route..." id="searchInput" oninput="applyFilters()">
       <button class="clear-filters-btn" id="clearBtn" onclick="clearFilters()">Clear all</button>
@@ -3578,7 +3677,7 @@ function deleteRfq(id) {
 
 // A non-draft card is deletable if it's expired or its CRD has already passed
 function isDeletableCard(rfq) {
-  return rfq.stage === "expired" || (rfq.crd && diffDays(rfq.crd) > 0);
+  return rfq.stage === "expired" || crdHasPassed(rfq);
 }
 
 function buildCardHTML(rfq) {
@@ -3592,10 +3691,10 @@ function buildCardHTML(rfq) {
         <div class="rfq-card-header">
           <div class="rfq-title-wrap">
             <div class="rfq-client-row">
-              <span class="rfq-client">${rfq.client}</span>
+              <span class="rfq-title-primary" title="${rfqName(rfq).replace(/"/g, "&quot;")}">${rfqName(rfq)}</span>
               ${rfq.firstTime ? `<span class="new-badge" title="New client">New</span>` : ""}
             </div>
-            <div class="rfq-name">${rfqName(rfq)}</div>
+            <div class="rfq-client-line">${rfq.client}</div>
             <div class="rfq-id">${silqId(rfq)}</div>
           </div>
         </div>
@@ -3649,10 +3748,10 @@ function buildCardHTML(rfq) {
         <div class="rfq-title-wrap">
           <div class="rfq-client-row">
             ${isRequote ? `<span class="requote-inline" title="Requote — revised quote issued">↻</span>` : ""}
-            <span class="rfq-client">${rfq.client}</span>
+            <span class="rfq-title-primary" title="${rfqName(rfq).replace(/"/g, "&quot;")}">${rfqName(rfq)}</span>
             ${isFirstTime ? `<span class="new-badge" title="New client">New</span>` : ""}
           </div>
-          <div class="rfq-name">${rfqName(rfq)}</div>
+          <div class="rfq-client-line">${rfq.client}</div>
           <div class="rfq-id">${silqId(rfq)}</div>
         </div>
         <div class="rfq-flags">${flags}</div>
@@ -4386,7 +4485,8 @@ function toggleMainCollapse() {
 const HIGH_PRIORITY = new Set(["RFQ-4212", "RFQ-4195", "RFQ-4188", "RFQ-4160", "RFQ-4050", "RFQ-4170", "RFQ-4130"]);
 function isHighPriority(rfq) { return rfq.highPriority === true || HIGH_PRIORITY.has(rfq.id); }
 
-let hpFilter = false, attnFilter = false, requoteFilter = false;
+let hpFilter = false, attnFilter = false, requoteFilter = false, crdFilter = false;
+function crdHasPassed(rfq) { return rfq.crd && diffDays(rfq.crd) > 0; }
 
 function toggleHighPriority() {
   hpFilter = !hpFilter;
@@ -4402,6 +4502,60 @@ function toggleRequotes() {
   requoteFilter = !requoteFilter;
   document.getElementById("requoteToggle").classList.toggle("active", requoteFilter);
   applyFilters();
+}
+function toggleCrdPassed() {
+  crdFilter = !crdFilter;
+  document.getElementById("crdToggle").classList.toggle("active", crdFilter);
+  applyFilters();
+}
+
+/* ── Projections upload + audit history ─────────────── */
+const CURRENT_USER = "Vishal Prabhakar";
+// Seeded audit trail (most recent first)
+let projAuditLog = [
+  { user: "Jessica Portillo", file: "H2-2026-projections.xlsx", at: new Date(2026, 6, 1, 9, 12) },
+  { user: "Kathy Keathley", file: "Q2-2026-targets-v3.csv", at: new Date(2026, 3, 2, 16, 40) },
+];
+
+function fmtAuditTime(d) {
+  return d.toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
+}
+
+function onProjFileSelected(e) {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  projAuditLog.unshift({ user: CURRENT_USER, file: file.name, at: new Date() });
+  e.target.value = ""; // allow re-uploading the same file name
+  renderProjHistory();
+  openProjHistory();
+  alert(`Projections uploaded: ${file.name}\nTargets will be refreshed from this file.`);
+}
+
+function renderProjHistory() {
+  const body = document.getElementById("projDrawerBody");
+  if (!projAuditLog.length) {
+    body.innerHTML = `<div class="proj-audit-empty">No projections uploaded yet.</div>`;
+    return;
+  }
+  body.innerHTML = projAuditLog.map(a => `
+    <div class="proj-audit-item">
+      <div class="proj-audit-icon">📄</div>
+      <div>
+        <div class="proj-audit-file">${a.file}</div>
+        <div class="proj-audit-meta">Uploaded by <strong>${a.user}</strong></div>
+        <div class="proj-audit-meta">${fmtAuditTime(a.at)}</div>
+      </div>
+    </div>`).join("");
+}
+
+function openProjHistory() {
+  renderProjHistory();
+  document.getElementById("projDrawer").classList.add("open");
+  document.getElementById("projDrawerOverlay").classList.add("open");
+}
+function closeProjHistory() {
+  document.getElementById("projDrawer").classList.remove("open");
+  document.getElementById("projDrawerOverlay").classList.remove("open");
 }
 
 function renderBoard(rfqs) {
@@ -4647,7 +4801,7 @@ function applyFilters() {
   const mode = document.getElementById("filterMode").value;
   const search = document.getElementById("searchInput").value.toLowerCase();
 
-  const hasFilters = team || client || mode || search || hpFilter || attnFilter || requoteFilter;
+  const hasFilters = team || client || mode || search || hpFilter || attnFilter || requoteFilter || crdFilter;
   document.getElementById("clearBtn").classList.toggle("visible", hasFilters);
 
   const isOps = activePipeline === "ops";
@@ -4660,6 +4814,7 @@ function applyFilters() {
   if (!isOps && hpFilter) filtered = filtered.filter(r => isHighPriority(r));
   if (!isOps && attnFilter) filtered = filtered.filter(r => rfqAttention[r.id]);
   if (!isOps && requoteFilter) filtered = filtered.filter(r => isRequoteRfq(r));
+  if (!isOps && crdFilter) filtered = filtered.filter(r => crdHasPassed(r));
   if (search) {
     filtered = filtered.filter(r => {
       const haystack = isOps
@@ -4706,10 +4861,11 @@ function clearFilters() {
   document.getElementById("filterSort").value = "recent";
   document.getElementById("searchInput").value = "";
   includeAirExpired = false;
-  hpFilter = false; attnFilter = false; requoteFilter = false;
+  hpFilter = false; attnFilter = false; requoteFilter = false; crdFilter = false;
   document.getElementById("hpToggle").classList.remove("active");
   document.getElementById("attnToggle").classList.remove("active");
   document.getElementById("requoteToggle").classList.remove("active");
+  document.getElementById("crdToggle").classList.remove("active");
   document.getElementById("clearBtn").classList.remove("visible");
   opsDelayedFilter = false;
   const dbtn = document.getElementById("opsDelayedBtn");
