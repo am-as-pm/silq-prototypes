@@ -28,6 +28,8 @@
       --coral-bg: #fdf0eb;
       --orange: #c2620a;
       --orange-bg: #fff4e6;
+      --indigo: #4f46e5;
+      --indigo-bg: #eef2ff;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -124,6 +126,9 @@
 
     .card-consolidation .card-icon { background: var(--orange-bg); color: var(--orange); }
     .card-consolidation::before { background: var(--orange); }
+
+    .card-inspection .card-icon { background: var(--indigo-bg); color: var(--indigo); }
+    .card-inspection::before { background: var(--indigo); }
 
     .proto-card h2 {
       font-size: 17px;
@@ -299,6 +304,22 @@
         <span class="tag">Public Link</span>
         <span class="tag">Tracking</span>
         <span class="tag">Permissions</span>
+      </div>
+    </a>
+
+    <a class="proto-card card-inspection" href="inspections-booking-form/index.html">
+      <span class="owner-tag owner-am">AM</span>
+      <span class="card-arrow"><svg viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M1 8a.5.5 0 01.5-.5h11.793l-3.147-3.146a.5.5 0 01.708-.708l4 4a.5.5 0 010 .708l-4 4a.5.5 0 01-.708-.708L13.293 8.5H1.5A.5.5 0 011 8z"/></svg></span>
+      <div class="card-icon">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 2a1 1 0 00-.894.553L7.382 4H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-3.382l-.724-1.447A1 1 0 0011 2H9zm-.382 2h2.764l.724 1.447A1 1 0 0013 6h3v10H4V6h3a1 1 0 00.894-.553L8.618 4zm5.089 5.707a1 1 0 00-1.414-1.414l-3.043 3.043-1.011-1.011a1 1 0 10-1.414 1.414l1.718 1.718a1 1 0 001.414 0l3.75-3.75z"/></svg>
+      </div>
+      <h2>Inspections Booking Form</h2>
+      <p>Factory-led inspection booking flow on a secure public link. Capture factory &amp; buyer details, inspection services, order stage, and booking specifics that auto-generate an RFQ.</p>
+      <div class="card-tags">
+        <span class="tag">Inspections</span>
+        <span class="tag">Booking Form</span>
+        <span class="tag">Factory</span>
+        <span class="tag">RFQ</span>
       </div>
     </a>
   </div>
