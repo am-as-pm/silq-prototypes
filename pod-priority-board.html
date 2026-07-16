@@ -314,6 +314,158 @@
     white-space: nowrap;
   }
 
+  /* Astra brief strip (below progress bar, Quoting only) */
+  .astra-brief {
+    display: none;
+    padding: 10px 28px 12px;
+    background: linear-gradient(180deg, #fefcfa 0%, var(--card) 100%);
+    border-bottom: 1px solid var(--border);
+    gap: 14px;
+    align-items: stretch;
+  }
+  .astra-brief.visible { display: flex; }
+
+  .astra-brief-aside {
+    flex-shrink: 0;
+    width: 148px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-right: 14px;
+    border-right: 1px solid var(--border-light);
+  }
+  .astra-brand {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .astra-brand-mark {
+    width: 18px; height: 18px;
+    border-radius: 5px;
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px;
+  }
+  .astra-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .astra-stat {
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.3;
+  }
+  .astra-stat b { color: var(--text); font-weight: 600; }
+  .astra-stat.hot b { color: var(--red); }
+  .astra-stat.warn b { color: var(--orange); }
+
+  .astra-actions {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .astra-actions-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--text-secondary);
+    margin-bottom: 1px;
+  }
+  .astra-action {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 8px;
+    border-radius: 7px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background 0.12s, border-color 0.12s;
+    font-size: 12px;
+    line-height: 1.25;
+    background: transparent;
+    font-family: inherit;
+    color: var(--text);
+    text-align: left;
+    width: 100%;
+  }
+  .astra-action:hover {
+    background: var(--primary-lighter);
+    border-color: var(--primary-light);
+  }
+  .astra-action-rank {
+    width: 16px; height: 16px;
+    border-radius: 4px;
+    background: var(--gray-bg);
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .astra-action-rank.r1 { background: #fee2e2; color: #b91c1c; }
+  .astra-action-rank.r2 { background: #ffedd5; color: #c2410c; }
+  .astra-action-rank.r3 { background: #fef3c7; color: #a16207; }
+  .astra-action-verb {
+    font-weight: 600;
+    color: var(--text);
+    flex-shrink: 0;
+    min-width: 78px;
+  }
+  .astra-action-body {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text);
+  }
+  .astra-action-body .why {
+    color: var(--text-secondary);
+    font-weight: 400;
+  }
+  .astra-action-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .astra-stage-chip {
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: var(--gray-bg);
+    color: var(--text-secondary);
+  }
+  .astra-stage-chip.awaiting { background: #fef9e7; color: #a16207; }
+  .astra-stage-chip.submitted { background: #e8eeff; color: #3b5bdb; }
+  .astra-stage-chip.accepted { background: #e6f7ed; color: #1e7a42; }
+  .astra-stage-chip.rejected { background: #fce7f3; color: #be185d; }
+  .astra-stage-chip.expired { background: #fde8e8; color: #c44b3f; }
+  .astra-action-value {
+    font-size: 11px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--text);
+    min-width: 42px;
+    text-align: right;
+  }
+  .astra-empty {
+    font-size: 12px;
+    color: var(--text-secondary);
+    padding: 8px 0;
+  }
+
   /* Filter bar */
   .filter-bar {
     display: flex;
@@ -2910,6 +3062,21 @@
       </div>
     </div>
 
+    <!-- Astra Pod Brief — ranked next actions for AMs -->
+    <div class="astra-brief" id="astraBrief">
+      <div class="astra-brief-aside">
+        <div class="astra-brand">
+          <span class="astra-brand-mark">✦</span>
+          Astra
+        </div>
+        <div class="astra-stats" id="astraStats"></div>
+      </div>
+      <div class="astra-actions">
+        <div class="astra-actions-label">Do next</div>
+        <div id="astraActionList"></div>
+      </div>
+    </div>
+
     <!-- Projections upload audit drawer -->
     <div class="proj-drawer-overlay" id="projDrawerOverlay" onclick="closeProjHistory()"></div>
     <aside class="proj-drawer" id="projDrawer" aria-label="Projections upload history">
@@ -3327,6 +3494,212 @@ function updateProgressBar() {
   document.getElementById("legAir").textContent = usd(airVal);
   document.getElementById("legOcean").textContent = usd(oceanVal);
   document.getElementById("legInsp").textContent = usd(inspVal);
+
+  renderAstraBrief();
+}
+
+function astraFmtK(n) {
+  if (n == null || isNaN(n)) return "—";
+  if (n >= 1000) return "$" + (n / 1000).toFixed(n % 1000 === 0 ? 0 : 1) + "k";
+  return "$" + n.toLocaleString("en-US");
+}
+
+function getAstraNextActions() {
+  const actions = [];
+
+  RFQS.forEach(rfq => {
+    if (rfq.stage === "draft") return;
+    const value = getLowestQuotedValue(rfq) || rfq.quotedValue || 0;
+    const crdPassed = rfq.crd && diffDays(rfq.crd) > 0;
+    const isAttn = typeof rfqAttention !== "undefined" && !!rfqAttention[rfq.id];
+    const isHp = typeof isHighPriority === "function" && isHighPriority(rfq);
+    const isRequote = rfq.requote === true || (rfq.quoteHistory && rfq.quoteHistory.length >= 1 && rfq.stage === "submitted");
+    const shortClient = rfq.client.length > 22 ? rfq.client.slice(0, 20) + "…" : rfq.client;
+
+    // Awaiting: validity today/past, or long elapsed
+    if (rfq.stage === "awaiting") {
+      const daysLeft = diffDays(rfq.stageDate); // positive = past validity when stageDate is in past
+      const elapsed = rfq.quoteSentDate ? diffDays(rfq.quoteSentDate) : 0;
+      if (daysLeft >= 0) {
+        actions.push({
+          id: rfq.id, score: 100 + value / 1000 + (isAttn ? 15 : 0) + (isHp ? 10 : 0),
+          verb: "Follow up", client: shortClient,
+          why: daysLeft === 0 ? "validity ends today" : `${daysLeft}d past validity`,
+          stage: "awaiting", value
+        });
+      } else if (elapsed >= 5) {
+        actions.push({
+          id: rfq.id, score: 70 + elapsed + value / 2000 + (isAttn ? 10 : 0),
+          verb: "Follow up", client: shortClient,
+          why: `${elapsed}d waiting on client`,
+          stage: "awaiting", value
+        });
+      }
+    }
+
+    // Submitted: CRD passed or aging / requote
+    if (rfq.stage === "submitted") {
+      const waiting = diffDays(rfq.stageDate);
+      if (crdPassed) {
+        actions.push({
+          id: rfq.id, score: 95 + value / 1000 + (rfq.firstTime ? 8 : 0) + (isAttn ? 12 : 0),
+          verb: "Quote now", client: shortClient,
+          why: rfq.firstTime ? "CRD passed · New client" : "CRD passed — cargo ready",
+          stage: "submitted", value
+        });
+      } else if (isRequote) {
+        actions.push({
+          id: rfq.id, score: 80 + waiting + value / 1500,
+          verb: "Requote", client: shortClient,
+          why: "prior quote declined — revise",
+          stage: "submitted", value
+        });
+      } else if (waiting >= 4 || isAttn) {
+        actions.push({
+          id: rfq.id, score: 55 + waiting + (isAttn ? 20 : 0),
+          verb: "Quote now", client: shortClient,
+          why: `${waiting}d waiting for quote`,
+          stage: "submitted", value
+        });
+      }
+    }
+
+    // Accepted: booking chase
+    if (rfq.stage === "accepted") {
+      const since = diffDays(rfq.stageDate);
+      if (since >= 1) {
+        actions.push({
+          id: rfq.id, score: 85 + since * 5 + value / 2000,
+          verb: "Send booking", client: shortClient,
+          why: `${since}d accepted — no booking`,
+          stage: "accepted", value
+        });
+      }
+    }
+
+    // Rejected: win-back if recent or high value
+    if (rfq.stage === "rejected") {
+      const since = diffDays(rfq.stageDate);
+      const reason = (rfq.rejectionReason || "").toLowerCase();
+      let why = since + "d since rejected";
+      if (reason.includes("competitor")) why = "lost to competitor";
+      else if (reason.includes("rate") || reason.includes("budget")) why = "rate / budget gap";
+      else if (reason.includes("ocean") || reason.includes("air")) why = "mode mismatch";
+      actions.push({
+        id: rfq.id, score: (since <= 3 ? 75 : 50) + value / 1500 + (isAttn ? 15 : 0) + (rfq.firstTime ? 5 : 0),
+        verb: "Win back", client: shortClient,
+        why, stage: "rejected", value
+      });
+    }
+
+    // Expired: reissue (respect Include Air default)
+    if (rfq.stage === "expired") {
+      if (rfq.mode === "Air" && !includeAirExpired) return;
+      const since = diffDays(rfq.stageDate);
+      actions.push({
+        id: rfq.id, score: 60 + Math.min(since, 10) + (rfq.firstTime ? 10 : 0),
+        verb: "Reissue", client: shortClient,
+        why: rfq.firstTime ? "expired · New client" : `${since}d expired`,
+        stage: "expired", value
+      });
+    }
+  });
+
+  // Deduplicate by RFQ (keep highest score), then top 3
+  const best = new Map();
+  actions.forEach(a => {
+    const prev = best.get(a.id);
+    if (!prev || a.score > prev.score) best.set(a.id, a);
+  });
+  return [...best.values()].sort((a, b) => b.score - a.score).slice(0, 3);
+}
+
+function getAstraBriefStats() {
+  let followUps = 0, bookingPending = 0, atRisk = 0;
+
+  RFQS.forEach(rfq => {
+    const value = getLowestQuotedValue(rfq) || rfq.quotedValue || 0;
+    if (rfq.stage === "awaiting") {
+      const daysLeft = diffDays(rfq.stageDate);
+      const elapsed = rfq.quoteSentDate ? diffDays(rfq.quoteSentDate) : 0;
+      if (daysLeft >= 0 || elapsed >= 5) {
+        followUps++;
+        atRisk += value;
+      }
+    }
+    if (rfq.stage === "accepted" && diffDays(rfq.stageDate) >= 1) bookingPending++;
+    if (rfq.stage === "submitted" && rfq.crd && diffDays(rfq.crd) > 0) {
+      followUps++;
+      atRisk += value;
+    }
+    if (rfq.stage === "rejected" && diffDays(rfq.stageDate) <= 5) atRisk += value;
+    if (rfq.stage === "expired") {
+      if (rfq.mode === "Air" && !includeAirExpired) return;
+      atRisk += value;
+    }
+  });
+
+  return { followUps, bookingPending, atRisk };
+}
+
+function renderAstraBrief() {
+  const el = document.getElementById("astraBrief");
+  if (!el) return;
+  const show = activePipeline === "quoting";
+  el.classList.toggle("visible", show);
+  if (!show) return;
+
+  const stats = getAstraBriefStats();
+  document.getElementById("astraStats").innerHTML = `
+    <div class="astra-stat hot"><b>${stats.followUps}</b> need action</div>
+    <div class="astra-stat warn"><b>${astraFmtK(stats.atRisk)}</b> at risk</div>
+    <div class="astra-stat"><b>${stats.bookingPending}</b> booking pending</div>
+  `;
+
+  const actions = getAstraNextActions();
+  const list = document.getElementById("astraActionList");
+  if (!actions.length) {
+    list.innerHTML = `<div class="astra-empty">No urgent actions — pipeline looks healthy.</div>`;
+    return;
+  }
+
+  list.innerHTML = actions.map((a, i) => `
+    <button type="button" class="astra-action" onclick="focusAstraAction('${a.id}')" title="Open ${a.id}">
+      <span class="astra-action-rank r${i + 1}">${i + 1}</span>
+      <span class="astra-action-verb">${a.verb}</span>
+      <span class="astra-action-body"><b>${a.client}</b> <span class="why">· ${a.why}</span></span>
+      <span class="astra-action-meta">
+        <span class="astra-stage-chip ${a.stage}">${a.stage}</span>
+        <span class="astra-action-value">${astraFmtK(a.value)}</span>
+      </span>
+    </button>
+  `).join("");
+}
+
+function focusAstraAction(rfqId) {
+  // Clear heavy filters so the card is visible, then open RFQ stub
+  const search = document.getElementById("searchInput");
+  if (search) search.value = rfqId;
+  hpFilter = false;
+  attnFilter = false;
+  requoteFilter = false;
+  crdFilter = false;
+  ["hpToggle", "attnToggle", "requoteToggle", "crdToggle"].forEach(id => {
+    const b = document.getElementById(id);
+    if (b) b.classList.remove("active");
+  });
+  applyFilters();
+  // Flash the matching card if present
+  requestAnimationFrame(() => {
+    const card = document.querySelector(`.rfq-card[data-search*="${rfqId}"]`);
+    if (card) {
+      card.scrollIntoView({ behavior: "smooth", block: "center" });
+      card.style.outline = "2px solid var(--primary)";
+      setTimeout(() => { card.style.outline = ""; }, 1600);
+    }
+  });
+  if (typeof reviewQuotesDialog === "function") reviewQuotesDialog(rfqId);
+  else if (typeof openRfq === "function") openRfq(rfqId);
 }
 
 // Booking Target Management Functions
