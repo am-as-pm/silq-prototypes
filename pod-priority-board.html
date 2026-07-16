@@ -3576,96 +3576,117 @@ function getAstraNextActions(limit) {
   RFQS.forEach(rfq => {
     if (rfq.stage === "draft") return;
     const value = getLowestQuotedValue(rfq) || rfq.quotedValue || 0;
-    const crdStale = crdHasPassed(rfq); // CRD ≥2 days past
+    const crdStale = crdHasPassed(rfq); // CRD ≥2d past — tiebreaker only within P1
     const isAttn = typeof rfqAttention !== "undefined" && !!rfqAttention[rfq.id];
     const isHp = typeof isHighPriority === "function" && isHighPriority(rfq);
     const isRequote = rfq.requote === true || (rfq.quoteHistory && rfq.quoteHistory.length >= 1 && rfq.stage === "submitted");
     const shortClient = rfq.client.length > 22 ? rfq.client.slice(0, 20) + "…" : rfq.client;
+    const submittedAge = rfq.rfqDate ? diffDays(rfq.rfqDate) : diffDays(rfq.stageDate);
 
-    // P1 — Not yet quoted (Submitted)
+    // Within-bucket preference additives (shared)
+    const prefs = (crdBoost = false) =>
+      (crdBoost && crdStale ? 6 : 0) +
+      Math.min((value || 0) / 2500, 8) +
+      (rfq.firstTime ? 5 : 0) +
+      (isAttn ? 4 : 0) +
+      (isHp ? 2 : 0);
+
+    // P1 — Unquoted (Submitted). Primary = RFQ submission age.
     if (rfq.stage === "submitted") {
-      const waiting = diffDays(rfq.stageDate);
-      if (crdStale) {
+      if (submittedAge >= 2) {
+        // Highest class within P1
         actions.push({
-          id: rfq.id, score: 100 + Math.min(waiting, 10) + value / 1000 + (rfq.firstTime ? 8 : 0) + (isAttn ? 12 : 0),
-          verb: "Quote now", client: shortClient,
-          why: rfq.firstTime ? "CRD >2d past · New client" : "CRD >2d past — cargo ready",
+          id: rfq.id,
+          score: 100 + Math.min(submittedAge, 14) + prefs(true) + (isRequote ? 3 : 0),
+          verb: isRequote ? "Requote" : "Quote now",
+          client: shortClient,
+          why: isRequote
+            ? `${submittedAge}d since submitted · requote needed`
+            : `${submittedAge}d since submitted — still unquoted`,
           stage: "submitted", value, bucket: "P1_quote"
         });
-      } else if (isRequote) {
+      } else if (isRequote || isAttn || isHp) {
+        // ≤2d only surfaces in Do next if flagged / requote
         actions.push({
-          id: rfq.id, score: 92 + waiting + value / 1500,
-          verb: "Requote", client: shortClient,
-          why: "prior quote declined — revise",
-          stage: "submitted", value, bucket: "P1_quote"
-        });
-      } else if (waiting >= 2 || isAttn || isHp) {
-        actions.push({
-          id: rfq.id, score: 88 + waiting + (isAttn ? 10 : 0) + (isHp ? 5 : 0),
-          verb: "Quote now", client: shortClient,
-          why: waiting >= 2 ? `${waiting}d waiting for quote` : "flagged — needs quote",
+          id: rfq.id,
+          score: 88 + prefs(true) + (isRequote ? 4 : 0),
+          verb: isRequote ? "Requote" : "Quote now",
+          client: shortClient,
+          why: isRequote ? "requote — prior quote declined" : "flagged — needs quote",
           stage: "submitted", value, bucket: "P1_quote"
         });
       }
+      // Fresh ≤2d unflagged Submitted: See-all only via optional low score — omit from ranked actions
     }
 
-    // P2 — Send booking (Accepted)
+    // P2 — Send booking (Accepted ≥1d, no booking)
     if (rfq.stage === "accepted") {
-      const since = diffDays(rfq.stageDate);
-      if (since >= 1) {
+      const sinceAccept = diffDays(rfq.stageDate);
+      if (sinceAccept >= 1) {
         actions.push({
-          id: rfq.id, score: 75 + since * 5 + value / 2000,
-          verb: "Send booking", client: shortClient,
-          why: `${since}d accepted — no booking`,
+          id: rfq.id,
+          score: 78 + Math.min(sinceAccept, 10) * 2 + prefs(false),
+          verb: "Send booking",
+          client: shortClient,
+          why: `${sinceAccept}d after accept — no booking email`,
           stage: "accepted", value, bucket: "P2_booking"
         });
       }
     }
 
-    // P3 — Follow up with clients (Awaiting)
+    // P3 — Follow up (Awaiting): validity risk OR client silent ≥2d
     if (rfq.stage === "awaiting") {
-      const daysLeft = diffDays(rfq.stageDate);
+      const daysPastValidity = diffDays(rfq.stageDate); // ≥0 means validity today or past
       const elapsed = rfq.quoteSentDate ? diffDays(rfq.quoteSentDate) : 0;
-      if (daysLeft >= 0) {
+      if (daysPastValidity >= 0) {
         actions.push({
-          id: rfq.id, score: 65 + value / 1000 + (isAttn ? 10 : 0) + (isHp ? 5 : 0),
-          verb: "Follow up", client: shortClient,
-          why: daysLeft === 0 ? "validity ends today" : `${daysLeft}d past validity`,
+          id: rfq.id,
+          score: 68 + Math.min(daysPastValidity, 8) + prefs(false),
+          verb: "Follow up",
+          client: shortClient,
+          why: daysPastValidity === 0 ? "validity ends today" : `${daysPastValidity}d past validity`,
           stage: "awaiting", value, bucket: "P3_followup"
         });
-      } else if (elapsed >= 5 || isAttn) {
+      } else if (elapsed >= 2 || isAttn) {
         actions.push({
-          id: rfq.id, score: 55 + elapsed + (isAttn ? 10 : 0),
-          verb: "Follow up", client: shortClient,
+          id: rfq.id,
+          score: 58 + Math.min(elapsed, 10) + prefs(false),
+          verb: "Follow up",
+          client: shortClient,
           why: `${elapsed}d waiting on client`,
           stage: "awaiting", value, bucket: "P3_followup"
         });
       }
     }
 
-    // P4 — Expired: reissue
+    // P4 — Reissue (Expired)
     if (rfq.stage === "expired") {
       if (rfq.mode === "Air" && !includeAirExpired) return;
-      const since = diffDays(rfq.stageDate);
+      const sinceExpiry = diffDays(rfq.stageDate);
       actions.push({
-        id: rfq.id, score: 40 + Math.min(since, 10) + (rfq.firstTime ? 8 : 0),
-        verb: "Reissue", client: shortClient,
-        why: rfq.firstTime ? "expired · New client" : `${since}d expired`,
+        id: rfq.id,
+        score: 42 + Math.min(sinceExpiry, 8) + (rfq.firstTime ? 5 : 0) + Math.min((value || 0) / 3000, 5),
+        verb: "Reissue",
+        client: shortClient,
+        why: rfq.firstTime ? "expired · New client" : `${sinceExpiry}d expired`,
         stage: "expired", value, bucket: "P4_expired"
       });
     }
 
-    // Secondary — Rejected win-back (below expired unless very recent / high $)
+    // P5 — Win back (Rejected): more recent first
     if (rfq.stage === "rejected") {
-      const since = diffDays(rfq.stageDate);
+      const sinceReject = diffDays(rfq.stageDate);
       const reason = (rfq.rejectionReason || "").toLowerCase();
-      let why = since + "d since rejected";
+      let why = `${sinceReject}d since rejected`;
       if (reason.includes("competitor")) why = "lost to competitor";
       else if (reason.includes("rate") || reason.includes("budget")) why = "rate / budget gap";
       else if (reason.includes("ocean") || reason.includes("air")) why = "mode mismatch";
+      // Recency inverted into score: 0d reject >> older
       actions.push({
-        id: rfq.id, score: (since <= 2 ? 38 : 28) + value / 2000 + (isAttn ? 8 : 0),
-        verb: "Win back", client: shortClient,
+        id: rfq.id,
+        score: 34 - Math.min(sinceReject, 14) + prefs(false),
+        verb: "Win back",
+        client: shortClient,
         why, stage: "rejected", value, bucket: "P5_winback"
       });
     }
@@ -3686,23 +3707,22 @@ function getAstraPipelinePulse() {
   let pendingToQuote = 0;
   let pendingBeyond2d = 0;
   let newRejections = 0;
-  let crdStaleCleanup = 0; // CRD passed ≥2 days, still cluttering open lanes
+  let crdStaleCleanup = 0; // CRD ≥2d past on open lanes (excl. Draft, Accepted)
 
   RFQS.forEach(rfq => {
     if (rfq.stage === "draft") return;
 
-    // New RFQs since yesterday (created in last 1 day)
     if (rfq.rfqDate && diffDays(rfq.rfqDate) <= 1) newSinceYesterday++;
 
     if (rfq.stage === "submitted") {
       pendingToQuote++;
-      if (diffDays(rfq.stageDate) >= 2) pendingBeyond2d++;
+      const submittedAge = rfq.rfqDate ? diffDays(rfq.rfqDate) : diffDays(rfq.stageDate);
+      if (submittedAge >= 2) pendingBeyond2d++;
     }
 
-    // New rejections: rejected in last 1–2 days
     if (rfq.stage === "rejected" && diffDays(rfq.stageDate) <= 2) newRejections++;
 
-    // Board cleanup: CRD ≥2 days past on open quoting work (not Accepted/Draft)
+    // P6 cleanup count: CRD ≥2d across Submitted / Awaiting / Expired / Rejected
     if (rfq.stage !== "accepted" && crdHasPassed(rfq)) crdStaleCleanup++;
   });
 
@@ -3714,7 +3734,6 @@ function buildAstraNarrativeHtml() {
   const parts = [];
   parts.push(`<b>${p.newSinceYesterday}</b> new since yesterday`);
 
-  // "6 pending to quote, of which 5 already >2d"
   let pendingClause = `<b>${p.pendingToQuote}</b> pending to quote`;
   if (p.pendingToQuote > 0 && p.pendingBeyond2d > 0) {
     pendingClause += `, of which <span class="hot">${p.pendingBeyond2d} already &gt;2d</span>`;
@@ -3727,7 +3746,7 @@ function buildAstraNarrativeHtml() {
     parts.push(`no new rejections`);
   }
 
-  // Cleanup cue when board is cluttered with stale-CRD cards
+  // P6 — always append when threshold exceeded (independent of other pulse content)
   if (p.crdStaleCleanup > 6) {
     parts.push(`<span class="hot">clean up board — <b>${p.crdStaleCleanup}</b> with CRD &gt;2d past</span>`);
   }
@@ -3743,7 +3762,7 @@ function getAstraBriefStats() {
     if (rfq.stage === "awaiting") {
       const daysLeft = diffDays(rfq.stageDate);
       const elapsed = rfq.quoteSentDate ? diffDays(rfq.quoteSentDate) : 0;
-      if (daysLeft >= 0 || elapsed >= 5) {
+      if (daysLeft >= 0 || elapsed >= 2) {
         followUps++;
         atRisk += value;
       }
