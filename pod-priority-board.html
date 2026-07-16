@@ -5247,7 +5247,7 @@ function renderSummary(rfqs) {
   const expiredCount = rfqs.filter(r => r.stage === "expired").length;
   const rejectedCount = rfqs.filter(r => r.stage === "rejected").length;
   const acceptedCount = rfqs.filter(r => r.stage === "accepted").length;
-  const crdPassedCount = rfqs.filter(r => r.crd && diffDays(r.crd) > 0 && r.stage === "submitted").length;
+  const crdPassedCount = rfqs.filter(r => crdHasPassed(r) && r.stage === "submitted").length;
   const firstTimeCount = rfqs.filter(r => r.firstTime).length;
 
   let html = `
@@ -5899,7 +5899,7 @@ function renderTableView() {
     ).join("");
 
     const flags = [];
-    const hasCrdPassed = r.crd && diffDays(r.crd) > 0 && r.stages.includes("submitted");
+    const hasCrdPassed = crdHasPassed(r) && r.stages.includes("submitted");
     if (r.firstTime) flags.push(`<span class="tv-flag first-time">1st client</span>`);
     if (hasCrdPassed) flags.push(`<span class="tv-flag delayed">CRD passed</span>`);
     if (r.stages.includes("rejected")) flags.push(`<span class="tv-flag delayed">Rejected</span>`);
