@@ -364,13 +364,27 @@
   .astra-stat.hot b { color: var(--red); }
   .astra-stat.warn b { color: var(--orange); }
 
-  .astra-actions {
+  .astra-main {
     flex: 1;
     min-width: 0;
     display: flex;
     flex-direction: column;
     gap: 4px;
   }
+  .astra-narrative {
+    font-size: 12px;
+    line-height: 1.35;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+  .astra-narrative .sep {
+    color: var(--text-secondary);
+    margin: 0 5px;
+    font-weight: 400;
+  }
+  .astra-narrative b { font-weight: 600; }
+  .astra-narrative .hot { color: var(--red); font-weight: 600; }
+
   .astra-actions-label {
     font-size: 10px;
     font-weight: 600;
@@ -464,6 +478,43 @@
     font-size: 12px;
     color: var(--text-secondary);
     padding: 8px 0;
+  }
+  .astra-see-all {
+    align-self: flex-end;
+    margin-top: 2px;
+    padding: 3px 8px;
+    border: none;
+    background: transparent;
+    color: var(--primary);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .astra-see-all:hover { text-decoration: underline; }
+
+  .astra-drawer-group {
+    margin-bottom: 14px;
+  }
+  .astra-drawer-group-title {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--border-light);
+  }
+  .astra-drawer-narrative {
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--text);
+    padding: 10px 12px;
+    background: var(--primary-lighter);
+    border: 1px solid var(--primary-light);
+    border-radius: 8px;
+    margin-bottom: 14px;
   }
 
   /* Filter bar */
@@ -3071,11 +3122,26 @@
         </div>
         <div class="astra-stats" id="astraStats"></div>
       </div>
-      <div class="astra-actions">
+      <div class="astra-main">
+        <div class="astra-narrative" id="astraNarrative"></div>
         <div class="astra-actions-label">Do next</div>
         <div id="astraActionList"></div>
+        <button type="button" class="astra-see-all" id="astraSeeAll" onclick="openAstraSeeAll()">See all</button>
       </div>
     </div>
+
+    <!-- Astra See-all drawer -->
+    <div class="proj-drawer-overlay" id="astraDrawerOverlay" onclick="closeAstraSeeAll()"></div>
+    <aside class="proj-drawer" id="astraDrawer" aria-label="Astra full action list">
+      <div class="proj-drawer-header">
+        <div>
+          <div class="proj-drawer-title">Astra — all next actions</div>
+          <div class="proj-drawer-sub">Ranked across your quoting pipeline</div>
+        </div>
+        <button class="proj-drawer-close" onclick="closeAstraSeeAll()" title="Close">✕</button>
+      </div>
+      <div class="proj-drawer-body" id="astraDrawerBody"></div>
+    </aside>
 
     <!-- Projections upload audit drawer -->
     <div class="proj-drawer-overlay" id="projDrawerOverlay" onclick="closeProjHistory()"></div>
@@ -3504,7 +3570,7 @@ function astraFmtK(n) {
   return "$" + n.toLocaleString("en-US");
 }
 
-function getAstraNextActions() {
+function getAstraNextActions(limit) {
   const actions = [];
 
   RFQS.forEach(rfq => {
@@ -3518,7 +3584,7 @@ function getAstraNextActions() {
 
     // Awaiting: validity today/past, or long elapsed
     if (rfq.stage === "awaiting") {
-      const daysLeft = diffDays(rfq.stageDate); // positive = past validity when stageDate is in past
+      const daysLeft = diffDays(rfq.stageDate);
       const elapsed = rfq.quoteSentDate ? diffDays(rfq.quoteSentDate) : 0;
       if (daysLeft >= 0) {
         actions.push({
@@ -3577,7 +3643,7 @@ function getAstraNextActions() {
       }
     }
 
-    // Rejected: win-back if recent or high value
+    // Rejected: win-back
     if (rfq.stage === "rejected") {
       const since = diffDays(rfq.stageDate);
       const reason = (rfq.rejectionReason || "").toLowerCase();
@@ -3605,13 +3671,52 @@ function getAstraNextActions() {
     }
   });
 
-  // Deduplicate by RFQ (keep highest score), then top 3
   const best = new Map();
   actions.forEach(a => {
     const prev = best.get(a.id);
     if (!prev || a.score > prev.score) best.set(a.id, a);
   });
-  return [...best.values()].sort((a, b) => b.score - a.score).slice(0, 3);
+  const ranked = [...best.values()].sort((a, b) => b.score - a.score);
+  if (limit == null || limit <= 0) return ranked;
+  return ranked.slice(0, limit);
+}
+
+function getAstraPipelinePulse() {
+  let newSinceYesterday = 0;
+  let pendingToQuote = 0;
+  let pendingBeyond2d = 0;
+  let newRejections = 0;
+
+  RFQS.forEach(rfq => {
+    if (rfq.stage === "draft") return;
+
+    // New RFQs since yesterday (created in last 1 day)
+    if (rfq.rfqDate && diffDays(rfq.rfqDate) <= 1) newSinceYesterday++;
+
+    if (rfq.stage === "submitted") {
+      pendingToQuote++;
+      if (diffDays(rfq.stageDate) >= 2) pendingBeyond2d++;
+    }
+
+    // New rejections: rejected in last 1–2 days
+    if (rfq.stage === "rejected" && diffDays(rfq.stageDate) <= 2) newRejections++;
+  });
+
+  return { newSinceYesterday, pendingToQuote, pendingBeyond2d, newRejections };
+}
+
+function buildAstraNarrativeHtml() {
+  const p = getAstraPipelinePulse();
+  const parts = [];
+  parts.push(`<b>${p.newSinceYesterday}</b> new since yesterday`);
+  parts.push(`<b>${p.pendingToQuote}</b> pending to quote` +
+    (p.pendingBeyond2d > 0 ? ` · <span class="hot">${p.pendingBeyond2d} already &gt;2d</span>` : ""));
+  if (p.newRejections > 0) {
+    parts.push(`<span class="hot"><b>${p.newRejections}</b> new rejection${p.newRejections === 1 ? "" : "s"}</span>`);
+  } else {
+    parts.push(`no new rejections`);
+  }
+  return parts.join(`<span class="sep">·</span>`);
 }
 
 function getAstraBriefStats() {
@@ -3642,12 +3747,29 @@ function getAstraBriefStats() {
   return { followUps, bookingPending, atRisk };
 }
 
+function astraActionRowHtml(a, i) {
+  const rankClass = i < 3 ? ` r${i + 1}` : "";
+  return `
+    <button type="button" class="astra-action" onclick="focusAstraAction('${a.id}')" title="Open ${a.id}">
+      <span class="astra-action-rank${rankClass}">${i + 1}</span>
+      <span class="astra-action-verb">${a.verb}</span>
+      <span class="astra-action-body"><b>${a.client}</b> <span class="why">· ${a.why}</span></span>
+      <span class="astra-action-meta">
+        <span class="astra-stage-chip ${a.stage}">${a.stage}</span>
+        <span class="astra-action-value">${astraFmtK(a.value)}</span>
+      </span>
+    </button>`;
+}
+
 function renderAstraBrief() {
   const el = document.getElementById("astraBrief");
   if (!el) return;
   const show = activePipeline === "quoting";
   el.classList.toggle("visible", show);
-  if (!show) return;
+  if (!show) {
+    closeAstraSeeAll();
+    return;
+  }
 
   const stats = getAstraBriefStats();
   document.getElementById("astraStats").innerHTML = `
@@ -3656,28 +3778,67 @@ function renderAstraBrief() {
     <div class="astra-stat"><b>${stats.bookingPending}</b> booking pending</div>
   `;
 
-  const actions = getAstraNextActions();
+  document.getElementById("astraNarrative").innerHTML = buildAstraNarrativeHtml();
+
+  const allActions = getAstraNextActions(0);
+  const top = allActions.slice(0, 3);
   const list = document.getElementById("astraActionList");
-  if (!actions.length) {
+  const seeAllBtn = document.getElementById("astraSeeAll");
+
+  if (!top.length) {
     list.innerHTML = `<div class="astra-empty">No urgent actions — pipeline looks healthy.</div>`;
+    seeAllBtn.style.display = "none";
     return;
   }
 
-  list.innerHTML = actions.map((a, i) => `
-    <button type="button" class="astra-action" onclick="focusAstraAction('${a.id}')" title="Open ${a.id}">
-      <span class="astra-action-rank r${i + 1}">${i + 1}</span>
-      <span class="astra-action-verb">${a.verb}</span>
-      <span class="astra-action-body"><b>${a.client}</b> <span class="why">· ${a.why}</span></span>
-      <span class="astra-action-meta">
-        <span class="astra-stage-chip ${a.stage}">${a.stage}</span>
-        <span class="astra-action-value">${astraFmtK(a.value)}</span>
-      </span>
-    </button>
-  `).join("");
+  list.innerHTML = top.map((a, i) => astraActionRowHtml(a, i)).join("");
+  seeAllBtn.style.display = "inline-block";
+  seeAllBtn.textContent = `See all (${allActions.length})`;
+}
+
+function openAstraSeeAll() {
+  const allActions = getAstraNextActions(0);
+  const body = document.getElementById("astraDrawerBody");
+  const narrative = buildAstraNarrativeHtml();
+
+  // Group by verb for scanability
+  const order = ["Follow up", "Quote now", "Requote", "Send booking", "Win back", "Reissue"];
+  const groups = {};
+  allActions.forEach(a => {
+    if (!groups[a.verb]) groups[a.verb] = [];
+    groups[a.verb].push(a);
+  });
+
+  let html = `<div class="astra-drawer-narrative">${narrative}</div>`;
+  if (!allActions.length) {
+    html += `<div class="astra-empty">No urgent actions right now.</div>`;
+  } else {
+    let rank = 0;
+    order.forEach(verb => {
+      const items = groups[verb];
+      if (!items || !items.length) return;
+      html += `<div class="astra-drawer-group"><div class="astra-drawer-group-title">${verb} (${items.length})</div>`;
+      items.forEach(a => {
+        html += astraActionRowHtml(a, rank++);
+      });
+      html += `</div>`;
+    });
+  }
+
+  body.innerHTML = html;
+  document.getElementById("astraDrawer").classList.add("open");
+  document.getElementById("astraDrawerOverlay").classList.add("open");
+}
+
+function closeAstraSeeAll() {
+  const drawer = document.getElementById("astraDrawer");
+  const overlay = document.getElementById("astraDrawerOverlay");
+  if (drawer) drawer.classList.remove("open");
+  if (overlay) overlay.classList.remove("open");
 }
 
 function focusAstraAction(rfqId) {
-  // Clear heavy filters so the card is visible, then open RFQ stub
+  closeAstraSeeAll();
   const search = document.getElementById("searchInput");
   if (search) search.value = rfqId;
   hpFilter = false;
@@ -3689,7 +3850,6 @@ function focusAstraAction(rfqId) {
     if (b) b.classList.remove("active");
   });
   applyFilters();
-  // Flash the matching card if present
   requestAnimationFrame(() => {
     const card = document.querySelector(`.rfq-card[data-search*="${rfqId}"]`);
     if (card) {
