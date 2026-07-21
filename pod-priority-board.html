@@ -1084,6 +1084,45 @@
     color: var(--text-secondary);
   }
 
+  .rfq-assignee-select {
+    max-width: 118px;
+    padding: 2px 4px;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    font-size: 11px;
+    font-family: inherit;
+    color: var(--text-secondary);
+    background: transparent;
+    cursor: pointer;
+    outline: none;
+  }
+  .rfq-assignee-select:hover,
+  .rfq-assignee-select:focus {
+    border-color: var(--border);
+    background: var(--card);
+    color: var(--text);
+  }
+
+  .demo-badge {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: #f3e8ff;
+    color: #7c3aed;
+    border: 1px solid #e9d5ff;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .rfq-card.is-demo {
+    border-style: dashed;
+    border-color: #d8b4fe;
+    background: #fdfbff;
+  }
+
   .avatar-xs {
     width: 20px; height: 20px;
     border-radius: 50%;
@@ -3059,7 +3098,7 @@
       <h1>Pod Priority Board</h1>
       <div class="header-pod-info">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" style="opacity:0.5"><path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path fill-rule="evenodd" d="M5.216 14A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216z"/><path d="M4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/></svg>
-        <select class="pod-select" id="podSelect" aria-label="Pod">
+        <select class="pod-select" id="podSelect" aria-label="Pod" onchange="onPodSelectChange()">
           <option value="pod1">Pod 1 - Jessica Portillo</option>
           <option value="pod2">Pod 2 - Kathy Keathley</option>
           <option value="pod3">Pod 3 - Christine Sullivan</option>
@@ -3182,6 +3221,7 @@
       <button class="filter-toggle-btn" id="attnToggle" onclick="toggleNeedsAttention()" title="Show only cards flagged as needs attention">! Needs attention</button>
       <button class="filter-toggle-btn" id="requoteToggle" onclick="toggleRequotes()" title="Show only requotes">↻ Requotes</button>
       <button class="filter-toggle-btn" id="crdToggle" onclick="toggleCrdPassed()" title="Show only RFQs whose CRD passed ≥2 days ago">⚑ CRD passed?</button>
+      <button class="filter-toggle-btn" id="demoToggle" onclick="toggleIncludeDemoRfqs()" title="Show demo / sandbox RFQs on the board">Include demo RFQs</button>
       <div class="filter-divider"></div>
       <input type="text" class="search-input-sm" placeholder="Search by RFQ ID, client, route..." id="searchInput" oninput="applyFilters()">
       <button class="clear-filters-btn" id="clearBtn" onclick="clearFilters()">Clear all</button>
@@ -3405,7 +3445,7 @@ const STAGES = [
   { key: "accepted", label: "Accepted", stageDataLabel: "Accepted" },
   // Aside bucket — not part of the direct Submitted → Accepted flow
   { key: "draft", label: "Draft", stageDataLabel: "Draft", aside: true },
-  { key: "expired", label: "Quote Expired", stageDataLabel: "Expired", aside: true }
+  { key: "expired", label: "Expired (requote pending)", stageDataLabel: "Expired", aside: true }
 ];
 
 const TEAM = [
@@ -3416,6 +3456,9 @@ const TEAM = [
   { name: "Lisa Wang", role: "Origin Ops", color: "#d97706" },
   { name: "Rachel Torres", role: "Dest Ops", color: "#e11d48" }
 ];
+
+// Session overrides for quoting-card assignee changes
+const rfqAssigneeOverrides = {};
 
 const today = new Date(2026, 3, 1);
 
@@ -3575,6 +3618,7 @@ function getAstraNextActions(limit) {
 
   RFQS.forEach(rfq => {
     if (rfq.stage === "draft") return;
+    if (rfq.demo && !includeDemoRfqs) return;
     const value = getLowestQuotedValue(rfq) || rfq.quotedValue || 0;
     const crdStale = crdHasPassed(rfq); // CRD ≥2d past — tiebreaker only within P1
     const isAttn = typeof rfqAttention !== "undefined" && !!rfqAttention[rfq.id];
@@ -3711,6 +3755,7 @@ function getAstraPipelinePulse() {
 
   RFQS.forEach(rfq => {
     if (rfq.stage === "draft") return;
+    if (rfq.demo && !includeDemoRfqs) return;
 
     if (rfq.rfqDate && diffDays(rfq.rfqDate) <= 1) newSinceYesterday++;
 
@@ -3758,6 +3803,7 @@ function getAstraBriefStats() {
   let followUps = 0, bookingPending = 0, atRisk = 0;
 
   RFQS.forEach(rfq => {
+    if (rfq.demo && !includeDemoRfqs) return;
     const value = getLowestQuotedValue(rfq) || rfq.quotedValue || 0;
     if (rfq.stage === "awaiting") {
       const daysLeft = diffDays(rfq.stageDate);
@@ -4069,7 +4115,7 @@ const RFQS = [
   // Draft — RFQs saved but not yet submitted for quote
   { id: "RFQ-4220", client: "Alpine Trading Group", contact: "Thomas Weber", origin: "Munich", destination: "Chicago", mode: "Air", assignee: "Jessica Park", stage: "draft", stageDate: daysAgo(0), rfqDate: daysAgo(0), shipperPo: "", notes: "Waiting on final shipment details from client" },
   { id: "RFQ-4221", client: "Pacific Cargo Lines", contact: "Amy Zhao", origin: "Singapore", destination: "Seattle", mode: "FCL", assignee: "Kathy Simmons", stage: "draft", stageDate: daysAgo(1), rfqDate: daysAgo(1), shipperPo: "", notes: "Need to confirm cargo dimensions" },
-  { id: "RFQ-4222", client: "Nordic Supply Chain AB", contact: "Erik Lindgren", origin: "Stockholm", destination: "Boston", mode: "LCL", assignee: "Lisa Wang", stage: "draft", stageDate: daysAgo(2), rfqDate: daysAgo(2), shipperPo: "NSC-1150", notes: "" },
+  { id: "RFQ-4222", client: "Nordic Supply Chain AB", contact: "Erik Lindgren", origin: "Stockholm", destination: "Boston", mode: "LCL", assignee: "Lisa Wang", stage: "draft", stageDate: daysAgo(2), rfqDate: daysAgo(2), shipperPo: "NSC-1150", notes: "", demo: true },
 
   // Submitted (SUBMITTED_FOR_QUOTE) — fresh RFQs awaiting quote preparation
   { id: "RFQ-4201", client: "Global Freight Solutions", contact: "John Mitchell", origin: "Shanghai", destination: "Los Angeles", mode: "FCL", shipments: 3, quotedValue: 28500, assignee: "Kathy Simmons", stage: "submitted", stageDate: daysAgo(1), rfqDate: daysAgo(1), shipperPo: "GFS-PO-2290", crd: daysFromNow(10), quoteSentDate: null, approvalStatus: null, notes: "", firstTime: false },
@@ -4082,19 +4128,19 @@ const RFQS = [
 
   // Awaiting Client (AWAITING_CLIENT_RESPONSE) — quote sent, waiting on client decision
   { id: "RFQ-4180", client: "Nordic Supply Chain AB", contact: "Erik Lindgren", origin: "Rotterdam", destination: "Miami", mode: "FCL", shipments: 2, quotedValue: 18400, assignee: "Kathy Simmons", stage: "awaiting", stageDate: daysFromNow(3), rfqDate: daysAgo(8), shipperPo: "NSC-1102", crd: daysFromNow(6), quoteSentDate: daysAgo(5), approvalStatus: null, notes: "Client comparing with competitor quote", firstTime: false, quoteHistory: [{date: daysAgo(14), value: 19200}, {date: daysAgo(5), value: 18400}] },
-  { id: "RFQ-4182", client: "Eagle Express Freight", contact: "Tom Bradley", origin: "Shanghai", destination: "Seattle", mode: "Inspections", shipments: 1, quotedValue: 3200, assignee: "James Chen", stage: "awaiting", stageDate: daysFromNow(7), rfqDate: daysAgo(6), shipperPo: "EEF-5591", crd: daysFromNow(12), quoteSentDate: daysAgo(4), approvalStatus: null, notes: "", firstTime: false },
+  { id: "RFQ-4182", client: "Eagle Express Freight", contact: "Tom Bradley", origin: "Shanghai", destination: "Seattle", mode: "Inspections", shipments: 1, quotedValue: 3200, assignee: "James Chen", stage: "awaiting", stageDate: daysFromNow(7), rfqDate: daysAgo(6), shipperPo: "EEF-5591", crd: daysFromNow(12), quoteSentDate: daysAgo(4), approvalStatus: null, notes: "", firstTime: false, demo: true },
   { id: "RFQ-4188", client: "TransAtlantic Logistics", contact: "Sofia Petrov", origin: "Ningbo", destination: "Charleston", mode: "FCL", shipments: 3, quotedValue: 26800, assignee: "Jessica Park", stage: "awaiting", stageDate: daysFromNow(1), rfqDate: daysAgo(10), shipperPo: "TAL-3304", crd: daysFromNow(3), quoteSentDate: daysAgo(7), approvalStatus: null, notes: "Sent 2 options — air + ocean", firstTime: false, quoteHistory: [{date: daysAgo(18), value: 28500}, {date: daysAgo(12), value: 27200}, {date: daysAgo(7), value: 26800}] },
   { id: "RFQ-4190", client: "Maple Leaf Imports", contact: "Diane Tremblay", origin: "Ho Chi Minh", destination: "Vancouver", mode: "Air", shipments: 1, quotedValue: 9500, assignee: "Maria Lopez", stage: "awaiting", stageDate: daysFromNow(12), rfqDate: daysAgo(4), shipperPo: "MLI-8823", crd: daysFromNow(8), quoteSentDate: daysAgo(2), approvalStatus: null, notes: "", firstTime: true },
   { id: "RFQ-4195", client: "Global Freight Solutions", contact: "John Mitchell", origin: "Yantian", destination: "Long Beach", mode: "FCL", shipments: 2, quotedValue: 22000, assignee: "Jessica Park", stage: "awaiting", stageDate: daysFromNow(0), rfqDate: daysAgo(14), shipperPo: "GFS-PO-2185", crd: daysAgo(2), quoteSentDate: daysAgo(10), approvalStatus: null, notes: "Validity expiring today — follow up", firstTime: false },
 
   // Quote Expired (derived: QRD expired while CRD loops back to SUBMITTED_FOR_QUOTE)
   { id: "RFQ-4120", client: "Silk Road Logistics", contact: "Wei Zhang", origin: "Qingdao", destination: "Oakland", mode: "FCL", shipments: 2, quotedValue: 15600, assignee: "Lisa Wang", stage: "expired", stageDate: daysAgo(4), rfqDate: daysAgo(18), shipperPo: "SRL-7710", crd: daysAgo(2), quoteSentDate: daysAgo(14), approvalStatus: null, notes: "Client went silent — try calling", firstTime: false, quoteHistory: [{date: daysAgo(25), value: 16800}, {date: daysAgo(14), value: 15600}] },
-  { id: "RFQ-4125", client: "Pacific Cargo Lines", contact: "Amy Zhao", origin: "Taipei", destination: "Newark", mode: "Inspections", shipments: 1, quotedValue: 2800, assignee: "Kathy Simmons", stage: "expired", stageDate: daysAgo(8), rfqDate: daysAgo(22), shipperPo: "PCL-8905", crd: daysAgo(6), quoteSentDate: daysAgo(18), approvalStatus: null, notes: "", firstTime: false, quoteHistory: [{date: daysAgo(18), value: 2800}] },
+  { id: "RFQ-4125", client: "Pacific Cargo Lines", contact: "Amy Zhao", origin: "Taipei", destination: "Newark", mode: "Inspections", shipments: 1, quotedValue: 2800, assignee: "Kathy Simmons", stage: "expired", stageDate: daysAgo(8), rfqDate: daysAgo(22), shipperPo: "PCL-8905", crd: daysAgo(6), quoteSentDate: daysAgo(18), approvalStatus: null, notes: "", firstTime: false, demo: true, quoteHistory: [{date: daysAgo(18), value: 2800}] },
   { id: "RFQ-4130", client: "Caspian Freight Co.", contact: "Leila Mammadova", origin: "Istanbul", destination: "Houston", mode: "Air", shipments: 1, quotedValue: 7400, assignee: "James Chen", stage: "expired", stageDate: daysAgo(2), rfqDate: daysAgo(12), shipperPo: "CSP-2201", crd: daysAgo(1), quoteSentDate: daysAgo(9), approvalStatus: null, notes: "New client — follow up for relationship", firstTime: true, quoteHistory: [{date: daysAgo(20), value: 8100}, {date: daysAgo(9), value: 7400}] },
 
   // Rejected — client declined quote, RFQ stays on board until explicitly cancelled
   { id: "RFQ-4050", client: "Global Freight Solutions", contact: "John Mitchell", origin: "Yantian", destination: "Long Beach", mode: "FCL", shipments: 2, quotedValue: 22000, assignee: "Jessica Park", stage: "rejected", stageDate: daysAgo(3), rfqDate: daysAgo(30), shipperPo: "GFS-PO-2185", crd: daysAgo(16), quoteSentDate: daysAgo(28), approvalStatus: null, notes: "Client chose competitor — try to win back", firstTime: false, rejectionReason: "Went with a competitor — lower rate offered", quoteHistory: [{date: daysAgo(28), value: 19500}, {date: daysAgo(20), value: 22000}] },
-  { id: "RFQ-3990", client: "TransAtlantic Logistics", contact: "Sofia Petrov", origin: "Ningbo", destination: "Los Angeles", mode: "FCL", shipments: 2, quotedValue: 19200, assignee: "James Chen", stage: "rejected", stageDate: daysAgo(5), rfqDate: daysAgo(35), shipperPo: "TAL-3280", crd: daysAgo(20), quoteSentDate: daysAgo(32), approvalStatus: null, notes: "Rate too high — may re-quote if carrier adjusts", firstTime: false, rejectionReason: "Rate too high compared to budget", quoteHistory: [{date: daysAgo(32), value: 20500}, {date: daysAgo(25), value: 19200}] },
+  { id: "RFQ-3990", client: "TransAtlantic Logistics", contact: "Sofia Petrov", origin: "Ningbo", destination: "Los Angeles", mode: "FCL", shipments: 2, quotedValue: 19200, assignee: "James Chen", stage: "rejected", stageDate: daysAgo(5), rfqDate: daysAgo(35), shipperPo: "TAL-3280", crd: daysAgo(20), quoteSentDate: daysAgo(32), approvalStatus: null, notes: "Rate too high — may re-quote if carrier adjusts", firstTime: false, demo: true, rejectionReason: "Rate too high compared to budget", quoteHistory: [{date: daysAgo(32), value: 20500}, {date: daysAgo(25), value: 19200}] },
   { id: "RFQ-4100", client: "Maple Leaf Imports", contact: "Diane Tremblay", origin: "Ho Chi Minh", destination: "Vancouver", mode: "Air", shipments: 1, quotedValue: 9500, assignee: "Maria Lopez", stage: "rejected", stageDate: daysAgo(1), rfqDate: daysAgo(10), shipperPo: "MLI-8830", crd: daysFromNow(3), quoteSentDate: daysAgo(6), approvalStatus: null, notes: "Wants ocean instead — check feasibility", firstTime: true, rejectionReason: "Client prefers ocean freight — air too expensive", quoteHistory: [{date: daysAgo(6), value: 9500}] },
 
   // Accepted — quote accepted, stays until booking email is sent
@@ -4163,7 +4209,68 @@ function getDaysBadgeText(rfq) {
 }
 
 function getTeamMember(name) {
-  return TEAM.find(t => t.name === name) || TEAM[0];
+  const fromTeam = TEAM.find(t => t.name === name);
+  if (fromTeam) return fromTeam;
+  if (typeof ALL_USERS !== "undefined") {
+    const u = ALL_USERS.find(x => x.name === name);
+    if (u) return { name: u.name, role: "AM", color: u.color };
+  }
+  return TEAM[0];
+}
+
+function getEffectiveAssignee(rfq) {
+  return rfqAssigneeOverrides[rfq.id] || rfq.assignee;
+}
+
+function getSelectedPodId() {
+  return document.getElementById("podSelect")?.value || "pod1";
+}
+
+function getPodQuotingAssignees() {
+  if (typeof pods === "undefined") return [];
+  const pod = pods.find(p => p.id === getSelectedPodId()) || pods[0];
+  if (!pod || !pod.roles) return [];
+  const ids = [];
+  if (pod.roles.accountManager) ids.push(pod.roles.accountManager);
+  const assoc = pod.roles.associateAM || pod.roles.associateAMs;
+  if (assoc) {
+    if (Array.isArray(assoc)) ids.push(...assoc);
+    else ids.push(assoc);
+  }
+  const seen = new Set();
+  return ids.map(getUser).filter(u => {
+    if (!u || seen.has(u.id)) return false;
+    seen.add(u.id);
+    return true;
+  });
+}
+
+function buildAssigneeSelectHTML(rfq) {
+  const current = getEffectiveAssignee(rfq);
+  const members = getPodQuotingAssignees();
+  const options = members.length
+    ? members
+    : [{ name: current, color: getTeamMember(current).color }];
+  // Ensure current assignee is always selectable even if not in pod roles
+  if (!options.some(m => m.name === current)) {
+    options.unshift({ name: current, color: getTeamMember(current).color });
+  }
+  const opts = options.map(m =>
+    `<option value="${m.name}" ${m.name === current ? "selected" : ""}>${m.name}</option>`
+  ).join("");
+  return `<select class="rfq-assignee-select" onclick="event.stopPropagation()" onchange="changeBoardAssignee('${rfq.id}', this.value)" title="Change assignee (AM / Associate of this pod)">${opts}</select>`;
+}
+
+function changeBoardAssignee(rfqId, name) {
+  rfqAssigneeOverrides[rfqId] = name;
+  const rfq = RFQS.find(r => r.id === rfqId);
+  if (rfq) rfq.assignee = name;
+  applyFilters();
+  if (typeof showToast === "function") showToast(`Assignee updated to ${name}`, "success");
+}
+
+function onPodSelectChange() {
+  applyFilters();
 }
 
 function modeClass(mode) {
@@ -4249,18 +4356,24 @@ function isDeletableCard(rfq) {
 }
 
 function buildCardHTML(rfq) {
+  const assigneeName = getEffectiveAssignee(rfq);
+  const isDemo = !!rfq.demo;
+  const demoBadge = isDemo ? `<span class="demo-badge" title="Demo / sandbox RFQ">Demo</span>` : "";
+  const demoClass = isDemo ? " is-demo" : "";
+
   // Handle draft RFQs with minimal display
   if (rfq.stage === "draft") {
-    const tm = getTeamMember(rfq.assignee);
-    const initials = rfq.assignee.split(" ").map(w => w[0]).join("");
+    const tm = getTeamMember(assigneeName);
+    const initials = assigneeName.split(" ").map(w => w[0]).join("");
     
     return `
-      <div class="rfq-card" onclick="deleteDraftRfq('${rfq.id}')" title="Click to delete this draft RFQ" data-client="${rfq.client}" data-assignee="${rfq.assignee}" data-mode="${rfq.mode}" data-search="${rfq.id} ${rfq.client} ${rfq.origin} ${rfq.destination} ${rfq.assignee}">
+      <div class="rfq-card${demoClass}" onclick="deleteDraftRfq('${rfq.id}')" title="Click to delete this draft RFQ" data-client="${rfq.client}" data-assignee="${assigneeName}" data-mode="${rfq.mode}" data-search="${rfq.id} ${rfq.client} ${rfq.origin} ${rfq.destination} ${assigneeName}">
         <div class="rfq-card-header">
           <div class="rfq-title-wrap">
             <div class="rfq-client-row">
               <span class="rfq-title-primary" title="${rfqName(rfq).replace(/"/g, "&quot;")}">${rfqName(rfq)}</span>
               ${rfq.firstTime ? `<span class="new-badge" title="New client">New</span>` : ""}
+              ${demoBadge}
             </div>
             <div class="rfq-client-line">${rfq.client}</div>
             <div class="rfq-id">${silqId(rfq)}</div>
@@ -4280,14 +4393,14 @@ function buildCardHTML(rfq) {
         <div class="rfq-footer">
           <div class="rfq-assignee">
             <div class="avatar-xs" style="background:${tm.color}">${initials}</div>
-            <span class="assignee-name">${rfq.assignee}</span>
+            ${buildAssigneeSelectHTML(rfq)}
           </div>
         </div>
       </div>`;
   }
 
-  const tm = getTeamMember(rfq.assignee);
-  const initials = rfq.assignee.split(" ").map(w => w[0]).join("");
+  const tm = getTeamMember(assigneeName);
+  const initials = assigneeName.split(" ").map(w => w[0]).join("");
   const isFirstTime = rfq.firstTime;
   const isRejected = rfq.stage === "rejected";
   const isAccepted = rfq.stage === "accepted";
@@ -4310,7 +4423,7 @@ function buildCardHTML(rfq) {
   if (isDeletable) flags += `<button class="card-del-btn" onclick="event.stopPropagation();deleteRfq('${rfq.id}')" title="${crdPassed ? "CRD passed — delete this RFQ" : "Delete this expired RFQ"}">🗑</button>`;
 
   return `
-    <div class="rfq-card${highlightClass}" onclick="reviewQuotesDialog('${rfq.id}')" data-client="${rfq.client}" data-assignee="${rfq.assignee}" data-mode="${rfq.mode}" data-lane="${rfq.origin}-${rfq.destination}" data-search="${rfq.id} ${rfq.client} ${rfq.origin} ${rfq.destination} ${rfq.assignee}">
+    <div class="rfq-card${highlightClass}${demoClass}" onclick="reviewQuotesDialog('${rfq.id}')" data-client="${rfq.client}" data-assignee="${assigneeName}" data-mode="${rfq.mode}" data-lane="${rfq.origin}-${rfq.destination}" data-search="${rfq.id} ${rfq.client} ${rfq.origin} ${rfq.destination} ${assigneeName}">
       ${linkIconHtml(`event.stopPropagation();reviewQuotesDialog('${rfq.id}')`)}
       <div class="rfq-card-header">
         <div class="rfq-title-wrap">
@@ -4318,6 +4431,7 @@ function buildCardHTML(rfq) {
             ${isRequote ? `<span class="requote-inline" title="Requote — revised quote issued">↻</span>` : ""}
             <span class="rfq-title-primary" title="${rfqName(rfq).replace(/"/g, "&quot;")}">${rfqName(rfq)}</span>
             ${isFirstTime ? `<span class="new-badge" title="New client">New</span>` : ""}
+            ${demoBadge}
           </div>
           <div class="rfq-client-line">${rfq.client}</div>
           <div class="rfq-id">${silqId(rfq)}</div>
@@ -4339,7 +4453,7 @@ function buildCardHTML(rfq) {
       <div class="rfq-footer">
         <div class="rfq-assignee">
           <div class="avatar-xs" style="background:${tm.color}">${initials}</div>
-          ${rfq.assignee}
+          ${buildAssigneeSelectHTML(rfq)}
         </div>
         <span class="rfq-days ${getDaysClass(rfq)}">${getDaysBadgeText(rfq)}</span>
       </div>
@@ -5030,10 +5144,17 @@ function fmtK(n) {
   return "$" + n.toLocaleString("en-US");
 }
 
-let includeAirExpired = false;  // controlled by the toggle inside the Quote Expired lane
+let includeAirExpired = false;  // controlled by the toggle inside the Expired (requote pending) lane
+let includeDemoRfqs = false;    // filter chip — demo RFQs hidden by default
 
 function toggleIncludeAirExpired() {
   includeAirExpired = !includeAirExpired;
+  applyFilters();
+}
+
+function toggleIncludeDemoRfqs() {
+  includeDemoRfqs = !includeDemoRfqs;
+  document.getElementById("demoToggle").classList.toggle("active", includeDemoRfqs);
   applyFilters();
 }
 
@@ -5221,7 +5342,7 @@ function renderBoard(rfqs) {
           <span class="lane-stat-label">${valueLabelHTML}</span>
         </div>` : "";
 
-    // Include-Air toggle lives inside the Quote Expired lane
+    // Include-Air toggle lives inside the Expired (requote pending) lane
     const airExpiredTotal = RFQS.filter(r => r.stage === "expired" && r.mode === "Air").length;
     const controlHTML = (!isOps && stage.key === "expired") ? `
       <div class="lane-control">
@@ -5376,18 +5497,20 @@ function applyFilters() {
   const source = isOps ? OPS_SHIPMENTS : RFQS;
   let filtered = source;
 
-  if (team) filtered = filtered.filter(r => isOps ? (r.type === "inspection" ? r.inspector === team : (r.originOps === team || r.destOps === team)) : r.assignee === team);
+  if (team) filtered = filtered.filter(r => isOps ? (r.type === "inspection" ? r.inspector === team : (r.originOps === team || r.destOps === team)) : getEffectiveAssignee(r) === team);
   if (client) filtered = filtered.filter(r => r.client === client);
   if (mode) filtered = filtered.filter(r => r.mode === mode);
   if (!isOps && hpFilter) filtered = filtered.filter(r => isHighPriority(r));
   if (!isOps && attnFilter) filtered = filtered.filter(r => rfqAttention[r.id]);
   if (!isOps && requoteFilter) filtered = filtered.filter(r => isRequoteRfq(r));
   if (!isOps && crdFilter) filtered = filtered.filter(r => crdHasPassed(r));
+  // Demo RFQs hidden unless "Include demo RFQs" is on
+  if (!isOps && !includeDemoRfqs) filtered = filtered.filter(r => !r.demo);
   if (search) {
     filtered = filtered.filter(r => {
       const haystack = isOps
         ? (r.type === "inspection" ? `${r.id} ${r.silqId} ${r.client} ${r.location} ${r.inspector}` : `${r.id} ${r.silqId} ${r.client} ${r.origin} ${r.destination} ${r.originOps} ${r.destOps}`)
-        : `${r.id} ${r.client} ${r.origin} ${r.destination} ${r.assignee}`;
+        : `${r.id} ${r.client} ${r.origin} ${r.destination} ${getEffectiveAssignee(r)}`;
       return haystack.toLowerCase().includes(search);
     });
   }
@@ -5429,18 +5552,19 @@ function clearFilters() {
   document.getElementById("filterSort").value = "recent";
   document.getElementById("searchInput").value = "";
   includeAirExpired = false;
+  includeDemoRfqs = false;
   hpFilter = false; attnFilter = false; requoteFilter = false; crdFilter = false;
   document.getElementById("hpToggle").classList.remove("active");
   document.getElementById("attnToggle").classList.remove("active");
   document.getElementById("requoteToggle").classList.remove("active");
   document.getElementById("crdToggle").classList.remove("active");
+  const demoBtn = document.getElementById("demoToggle");
+  if (demoBtn) demoBtn.classList.remove("active");
   document.getElementById("clearBtn").classList.remove("visible");
   opsDelayedFilter = false;
   const dbtn = document.getElementById("opsDelayedBtn");
   if (dbtn) dbtn.classList.remove("active");
-  const source = activePipeline === "ops" ? OPS_SHIPMENTS : RFQS;
-  renderBoard(source);
-  renderSummary(source);
+  applyFilters();
 }
 
 /* ── Table View ────────────────────────────── */
@@ -5533,8 +5657,6 @@ const rfqNotes = {};
 const rfqAttention = { "RFQ-4212": true, "RFQ-4195": true, "RFQ-4050": true };
 const rfqDeadlines = {};
 RFQS.forEach(r => { if (r.notes) rfqNotes[r.id] = r.notes; });
-
-const rfqAssigneeOverrides = {};
 
 const TABLE_COLUMNS = [
   { key: "assignee",  label: "Assignee",      defaultOn: true },
