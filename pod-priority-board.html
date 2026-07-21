@@ -1159,6 +1159,34 @@
     color: var(--text);
     font-weight: 600;
   }
+
+  .rfq-crd {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .rfq-crd .crd-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    background: var(--gray-bg);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  .rfq-crd strong { color: var(--text); font-weight: 600; }
+  .rfq-crd.crd-today strong { color: #b45309; }
+  .rfq-crd.crd-past strong,
+  .rfq-crd.crd-stale strong { color: #b45309; }
+  .rfq-crd.crd-stale .crd-label {
+    background: #fffbeb;
+    color: #b45309;
+    border: 1px solid #fde68a;
+  }
   .rfq-rejection-reason {
     font-size: 10px;
     color: #be185d;
@@ -4161,6 +4189,26 @@ function getStageDataDisplay(rfq) {
   return "";
 }
 
+/** CRD date line on Action cards (Submitted / Awaiting / Rejected / Accepted / Expired). */
+function getCrdCardDisplay(rfq) {
+  if (!rfq.crd) {
+    return `<div class="rfq-crd"><span class="crd-label">CRD</span> <span>—</span></div>`;
+  }
+  const days = diffDays(rfq.crd);
+  let rel = "";
+  let cls = "";
+  if (days > 0) {
+    rel = ` · ${days}d past`;
+    cls = days >= 2 ? " crd-stale" : " crd-past";
+  } else if (days === 0) {
+    rel = " · today";
+    cls = " crd-today";
+  } else {
+    rel = ` · in ${Math.abs(days)}d`;
+  }
+  return `<div class="rfq-crd${cls}" title="Cargo Ready Date"><span class="crd-label">CRD</span> <strong>${formatDate(rfq.crd)}</strong><span>${rel}</span></div>`;
+}
+
 function getDaysClass(rfq) {
   let days;
   switch (rfq.stage) {
@@ -4449,7 +4497,9 @@ function buildCardHTML(rfq) {
         <span class="shipment-count">${shipLabel}</span>
         ${valueDisplay ? `<span class="shipment-count" ${hasMultipleQuotes ? `title="${quoteCountText}"` : ''} style="${hasMultipleQuotes ? 'cursor: help; text-decoration: underline dotted;' : ''}">${valueDisplay}</span>` : ''}
       </div>
-      <div class="rfq-stage-data">${getStageDataDisplay(rfq)}</div>${buildOpsTracker(rfq)}
+      <div class="rfq-stage-data">${getStageDataDisplay(rfq)}</div>
+      ${getCrdCardDisplay(rfq)}
+      ${buildOpsTracker(rfq)}
       <div class="rfq-footer">
         <div class="rfq-assignee">
           <div class="avatar-xs" style="background:${tm.color}">${initials}</div>
