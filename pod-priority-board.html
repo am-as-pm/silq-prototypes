@@ -314,68 +314,86 @@
     white-space: nowrap;
   }
 
-  /* Astra brief strip (below progress bar, Quoting only) */
+  /* Daily action summary strip (below progress bar, Quoting only) — deterministic */
   .astra-brief {
     display: none;
     padding: 10px 28px 12px;
     background: linear-gradient(180deg, #fefcfa 0%, var(--card) 100%);
     border-bottom: 1px solid var(--border);
-    gap: 14px;
-    align-items: stretch;
+    flex-direction: column;
+    gap: 6px;
   }
   .astra-brief.visible { display: flex; }
 
-  .astra-brief-aside {
-    flex-shrink: 0;
-    width: 148px;
+  .astra-brief-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .astra-brief-top-left {
+    flex: 1;
+    min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    padding-right: 14px;
-    border-right: 1px solid var(--border-light);
-  }
-  .astra-brand {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--text);
+    gap: 3px;
   }
   .astra-brand-mark {
     width: 18px; height: 18px;
     border-radius: 5px;
     background: var(--primary-light);
     color: var(--primary-dark);
-    display: flex; align-items: center; justify-content: center;
+    display: inline-flex; align-items: center; justify-content: center;
     font-size: 10px;
+    flex-shrink: 0;
   }
-  .astra-stats {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
+  .astra-chat-launch {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px 5px 6px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: border-color 0.12s, background 0.12s, box-shadow 0.12s;
   }
-  .astra-stat {
-    font-size: 11px;
+  .astra-chat-launch:hover {
+    border-color: var(--primary);
+    background: var(--primary-lighter);
+    box-shadow: 0 1px 4px rgba(200, 132, 46, 0.15);
+  }
+  .astra-chat-launch.active {
+    border-color: var(--primary);
+    background: var(--primary-light);
+    color: var(--primary-dark);
+  }
+  .astra-chat-launch .launch-hint {
+    font-size: 10px;
+    font-weight: 600;
     color: var(--text-secondary);
-    line-height: 1.3;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
   }
-  .astra-stat b { color: var(--text); font-weight: 600; }
-  .astra-stat.hot b { color: var(--red); }
-  .astra-stat.warn b { color: var(--orange); }
+  .astra-chat-launch:hover .launch-hint,
+  .astra-chat-launch.active .launch-hint { color: var(--primary-dark); }
 
-  .astra-main {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+  .astra-refreshed {
+    font-size: 10px;
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
   }
+  .astra-refreshed b { font-weight: 600; color: var(--text-secondary); }
+
   .astra-narrative {
     font-size: 12px;
     line-height: 1.35;
     color: var(--text);
-    margin-bottom: 2px;
   }
   .astra-narrative .sep {
     color: var(--text-secondary);
@@ -392,6 +410,20 @@
     letter-spacing: 0.4px;
     color: var(--text-secondary);
     margin-bottom: 1px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .astra-actions-label .rules-chip {
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: 0;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: var(--gray-bg);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-light);
   }
   .astra-action {
     display: flex;
@@ -516,6 +548,127 @@
     border-radius: 8px;
     margin-bottom: 14px;
   }
+  .drawer-panel-badge {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 4px;
+    margin-bottom: 6px;
+  }
+  .drawer-panel-badge.list {
+    background: #e8eeff;
+    color: #3b5bdb;
+  }
+  .drawer-panel-badge.chat {
+    background: var(--primary-light);
+    color: var(--primary-dark);
+  }
+
+  /* Astra chat panel (separate from Do-next See all list drawer) */
+  .astra-chat-drawer {
+    width: 400px;
+  }
+  .astra-chat-drawer .proj-drawer-header {
+    background: linear-gradient(180deg, #fef6eb 0%, var(--card) 100%);
+  }
+  .astra-chat-drawer .astra-chat-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 0;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .astra-chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .astra-chat-bubble {
+    max-width: 92%;
+    padding: 9px 12px;
+    border-radius: 10px;
+    font-size: 12.5px;
+    line-height: 1.4;
+  }
+  .astra-chat-bubble.bot {
+    align-self: flex-start;
+    background: var(--gray-bg);
+    color: var(--text);
+    border: 1px solid var(--border-light);
+  }
+  .astra-chat-bubble.user {
+    align-self: flex-end;
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    border: 1px solid #f0dcc0;
+  }
+  .astra-chat-bubble .chat-meta {
+    font-size: 10px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+  .astra-chat-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 0 16px 10px;
+  }
+  .astra-chat-chip {
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    font-size: 11px;
+    font-family: inherit;
+    padding: 5px 9px;
+    border-radius: 14px;
+    cursor: pointer;
+  }
+  .astra-chat-chip:hover {
+    border-color: var(--primary);
+    background: var(--primary-lighter);
+  }
+  .astra-chat-compose {
+    display: flex;
+    gap: 8px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+    background: var(--card);
+  }
+  .astra-chat-compose input {
+    flex: 1;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 12.5px;
+    font-family: inherit;
+    color: var(--text);
+    background: var(--bg);
+  }
+  .astra-chat-compose input:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+  .astra-chat-compose button {
+    border: none;
+    background: var(--primary);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: inherit;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .astra-chat-compose button:hover { filter: brightness(0.95); }
 
   /* Filter bar */
   .filter-bar {
@@ -3180,34 +3333,57 @@
       </div>
     </div>
 
-    <!-- Astra Pod Brief — ranked next actions for AMs -->
+    <!-- Daily action summary — deterministic pulse + Do next (Astra chat is a separate panel) -->
     <div class="astra-brief" id="astraBrief">
-      <div class="astra-brief-aside">
-        <div class="astra-brand">
+      <div class="astra-brief-top">
+        <div class="astra-brief-top-left">
+          <div class="astra-narrative" id="astraNarrative"></div>
+          <div class="astra-refreshed" id="astraRefreshed"></div>
+        </div>
+        <button type="button" class="astra-chat-launch" id="astraChatLaunch" onclick="openAstraChat()" title="Open Astra chat about this board">
           <span class="astra-brand-mark">✦</span>
           Astra
-        </div>
-        <div class="astra-stats" id="astraStats"></div>
+          <span class="launch-hint">Chat</span>
+        </button>
       </div>
-      <div class="astra-main">
-        <div class="astra-narrative" id="astraNarrative"></div>
-        <div class="astra-actions-label">Do next</div>
-        <div id="astraActionList"></div>
-        <button type="button" class="astra-see-all" id="astraSeeAll" onclick="openAstraSeeAll()">See all</button>
-      </div>
+      <div class="astra-actions-label">Do next <span class="rules-chip">Board rules</span></div>
+      <div id="astraActionList"></div>
+      <button type="button" class="astra-see-all" id="astraSeeAll" onclick="openAstraSeeAll()">See all</button>
     </div>
 
-    <!-- Astra See-all drawer -->
+    <!-- Do next — full ranked list (deterministic; not Astra chat) -->
     <div class="proj-drawer-overlay" id="astraDrawerOverlay" onclick="closeAstraSeeAll()"></div>
-    <aside class="proj-drawer" id="astraDrawer" aria-label="Astra full action list">
+    <aside class="proj-drawer" id="astraDrawer" aria-label="Full Do next action list">
       <div class="proj-drawer-header">
         <div>
-          <div class="proj-drawer-title">Astra — all next actions</div>
-          <div class="proj-drawer-sub">Ranked across your quoting pipeline</div>
+          <span class="drawer-panel-badge list">Action list</span>
+          <div class="proj-drawer-title">Do next — all actions</div>
+          <div class="proj-drawer-sub">Deterministic ranking from board rules · not Astra chat</div>
         </div>
         <button class="proj-drawer-close" onclick="closeAstraSeeAll()" title="Close">✕</button>
       </div>
       <div class="proj-drawer-body" id="astraDrawerBody"></div>
+    </aside>
+
+    <!-- Astra chat panel (separate from Do-next list) -->
+    <div class="proj-drawer-overlay" id="astraChatOverlay" onclick="closeAstraChat()"></div>
+    <aside class="proj-drawer astra-chat-drawer" id="astraChatDrawer" aria-label="Astra chat">
+      <div class="proj-drawer-header">
+        <div>
+          <span class="drawer-panel-badge chat">Astra chat</span>
+          <div class="proj-drawer-title"><span class="astra-brand-mark" style="display:inline-flex;vertical-align:middle;margin-right:6px">✦</span>Ask Astra</div>
+          <div class="proj-drawer-sub">Optional · uses the summary below as context · does not re-rank Do next</div>
+        </div>
+        <button class="proj-drawer-close" onclick="closeAstraChat()" title="Close">✕</button>
+      </div>
+      <div class="proj-drawer-body astra-chat-body" id="astraChatBody">
+        <div class="astra-chat-messages" id="astraChatMessages"></div>
+        <div class="astra-chat-suggestions" id="astraChatSuggestions"></div>
+        <div class="astra-chat-compose">
+          <input type="text" id="astraChatInput" placeholder="Ask about this board…" onkeydown="if(event.key==='Enter')sendAstraChat()" />
+          <button type="button" onclick="sendAstraChat()">Send</button>
+        </div>
+      </div>
     </aside>
 
     <!-- Projections upload audit drawer -->
@@ -3780,12 +3956,14 @@ function getAstraPipelinePulse() {
   let pendingBeyond2d = 0;
   let newRejections = 0;
   let crdStaleCleanup = 0; // CRD ≥2d past on open lanes (excl. Draft, Accepted)
+  const asOfUtc = getBoardAsOfUtcYmd();
 
   RFQS.forEach(rfq => {
     if (rfq.stage === "draft") return;
     if (rfq.demo && !includeDemoRfqs) return;
 
-    if (rfq.rfqDate && diffDays(rfq.rfqDate) <= 1) newSinceYesterday++;
+    // "New since yesterday" uses UTC calendar days (as-of = board clock, treated as UTC YMD)
+    if (rfq.rfqDate && isNewSinceYesterdayUtc(rfq.rfqDate, asOfUtc)) newSinceYesterday++;
 
     if (rfq.stage === "submitted") {
       pendingToQuote++;
@@ -3827,35 +4005,6 @@ function buildAstraNarrativeHtml() {
   return parts.join(`<span class="sep">·</span>`);
 }
 
-function getAstraBriefStats() {
-  let followUps = 0, bookingPending = 0, atRisk = 0;
-
-  RFQS.forEach(rfq => {
-    if (rfq.demo && !includeDemoRfqs) return;
-    const value = getLowestQuotedValue(rfq) || rfq.quotedValue || 0;
-    if (rfq.stage === "awaiting") {
-      const daysLeft = diffDays(rfq.stageDate);
-      const elapsed = rfq.quoteSentDate ? diffDays(rfq.quoteSentDate) : 0;
-      if (daysLeft >= 0 || elapsed >= 2) {
-        followUps++;
-        atRisk += value;
-      }
-    }
-    if (rfq.stage === "accepted" && diffDays(rfq.stageDate) >= 1) bookingPending++;
-    if (rfq.stage === "submitted" && crdHasPassed(rfq)) {
-      followUps++;
-      atRisk += value;
-    }
-    if (rfq.stage === "rejected" && diffDays(rfq.stageDate) <= 5) atRisk += value;
-    if (rfq.stage === "expired") {
-      if (rfq.mode === "Air" && !includeAirExpired) return;
-      atRisk += value;
-    }
-  });
-
-  return { followUps, bookingPending, atRisk };
-}
-
 function astraActionRowHtml(a, i) {
   const rankClass = i < 3 ? ` r${i + 1}` : "";
   return `
@@ -3870,6 +4019,43 @@ function astraActionRowHtml(a, i) {
     </button>`;
 }
 
+let astraSummaryRefreshedAt = null;
+
+/** Board demo clock as UTC calendar YMD (same encoding as RFQ date fields). */
+function getBoardAsOfUtcYmd() {
+  return daysAgo(0);
+}
+
+function parseYmdToUtcMs(ymd) {
+  if (!ymd) return NaN;
+  const [y, m, d] = ymd.split("-").map(Number);
+  return Date.UTC(y, m - 1, d);
+}
+
+function utcCalendarDaysBetween(earlierYmd, laterYmd) {
+  return Math.round((parseYmdToUtcMs(laterYmd) - parseYmdToUtcMs(earlierYmd)) / 86400000);
+}
+
+/** RFQ is "new since yesterday" when its rfq_date is today or yesterday in UTC calendar days. */
+function isNewSinceYesterdayUtc(rfqDateYmd, asOfUtcYmd) {
+  const age = utcCalendarDaysBetween(rfqDateYmd, asOfUtcYmd);
+  return age >= 0 && age <= 1;
+}
+
+function formatLastRefreshedUtc(date) {
+  const d = date || new Date();
+  const formatted = d.toLocaleString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: "UTC"
+  });
+  return `${formatted} UTC`;
+}
+
 function renderAstraBrief() {
   const el = document.getElementById("astraBrief");
   if (!el) return;
@@ -3877,17 +4063,17 @@ function renderAstraBrief() {
   el.classList.toggle("visible", show);
   if (!show) {
     closeAstraSeeAll();
+    closeAstraChat();
     return;
   }
 
-  const stats = getAstraBriefStats();
-  document.getElementById("astraStats").innerHTML = `
-    <div class="astra-stat hot"><b>${stats.followUps}</b> need action</div>
-    <div class="astra-stat warn"><b>${astraFmtK(stats.atRisk)}</b> at risk</div>
-    <div class="astra-stat"><b>${stats.bookingPending}</b> booking pending</div>
-  `;
-
+  // Deterministic summary regenerates on every render / page open
+  astraSummaryRefreshedAt = new Date();
   document.getElementById("astraNarrative").innerHTML = buildAstraNarrativeHtml();
+  const refreshedEl = document.getElementById("astraRefreshed");
+  if (refreshedEl) {
+    refreshedEl.innerHTML = `Last refreshed at <b>${formatLastRefreshedUtc(astraSummaryRefreshedAt)}</b> · new since yesterday = UTC`;
+  }
 
   const allActions = getAstraNextActions(0);
   const top = allActions.slice(0, 3);
@@ -3906,9 +4092,13 @@ function renderAstraBrief() {
 }
 
 function openAstraSeeAll() {
+  closeAstraChat();
   const allActions = getAstraNextActions(0);
   const body = document.getElementById("astraDrawerBody");
   const narrative = buildAstraNarrativeHtml();
+  const refreshed = astraSummaryRefreshedAt
+    ? `Last refreshed at ${formatLastRefreshedUtc(astraSummaryRefreshedAt)}`
+    : "";
 
   // Group by verb for scanability
   const order = ["Follow up", "Quote now", "Requote", "Send booking", "Win back", "Reissue"];
@@ -3918,7 +4108,7 @@ function openAstraSeeAll() {
     groups[a.verb].push(a);
   });
 
-  let html = `<div class="astra-drawer-narrative">${narrative}</div>`;
+  let html = `<div class="astra-drawer-narrative">${narrative}${refreshed ? `<div class="astra-refreshed" style="margin-top:6px">${refreshed}</div>` : ""}</div>`;
   if (!allActions.length) {
     html += `<div class="astra-empty">No urgent actions right now.</div>`;
   } else {
@@ -3946,8 +4136,86 @@ function closeAstraSeeAll() {
   if (overlay) overlay.classList.remove("open");
 }
 
+function openAstraChat() {
+  closeAstraSeeAll();
+  const launch = document.getElementById("astraChatLaunch");
+  if (launch) launch.classList.add("active");
+
+  const p = getAstraPipelinePulse();
+  const top = getAstraNextActions(3);
+  const msgs = document.getElementById("astraChatMessages");
+  const suggestions = document.getElementById("astraChatSuggestions");
+
+  const topLine = top.length
+    ? top.map((a, i) => `${i + 1}. ${a.verb} — ${a.client}`).join("<br>")
+    : "No urgent Do-next items right now.";
+
+  msgs.innerHTML = `
+    <div class="astra-chat-bubble bot">
+      <div class="chat-meta">✦ Astra</div>
+      I can help you interpret the board summary. Ranking stays rule-based — I won’t reorder Do next.<br><br>
+      <b>Pulse</b> (UTC “new since yesterday”)<br>
+      ${p.newSinceYesterday} new · ${p.pendingToQuote} pending to quote (${p.pendingBeyond2d} &gt;2d) · ${p.newRejections ? p.newRejections + " new rejection(s)" : "no new rejections"}
+      ${p.crdStaleCleanup > 6 ? `<br>Cleanup cue: ${p.crdStaleCleanup} with CRD &gt;2d past` : ""}
+      <br><br><b>Top Do next</b><br>${topLine}
+      ${astraSummaryRefreshedAt ? `<br><br><span style="font-size:10px;color:var(--text-secondary)">Summary last refreshed ${formatLastRefreshedUtc(astraSummaryRefreshedAt)}</span>` : ""}
+    </div>`;
+
+  const chips = [
+    "Why is #1 the top action?",
+    "What should I clear for CRD cleanup?",
+    "Summarize my Awaiting follow-ups"
+  ];
+  suggestions.innerHTML = chips.map(c =>
+    `<button type="button" class="astra-chat-chip" onclick="sendAstraChatPrompt(${JSON.stringify(c)})">${c}</button>`
+  ).join("");
+
+  document.getElementById("astraChatDrawer").classList.add("open");
+  document.getElementById("astraChatOverlay").classList.add("open");
+  const input = document.getElementById("astraChatInput");
+  if (input) { input.value = ""; input.focus(); }
+}
+
+function closeAstraChat() {
+  const drawer = document.getElementById("astraChatDrawer");
+  const overlay = document.getElementById("astraChatOverlay");
+  const launch = document.getElementById("astraChatLaunch");
+  if (drawer) drawer.classList.remove("open");
+  if (overlay) overlay.classList.remove("open");
+  if (launch) launch.classList.remove("active");
+}
+
+function sendAstraChatPrompt(text) {
+  const input = document.getElementById("astraChatInput");
+  if (input) input.value = text;
+  sendAstraChat();
+}
+
+function sendAstraChat() {
+  const input = document.getElementById("astraChatInput");
+  const msgs = document.getElementById("astraChatMessages");
+  if (!input || !msgs) return;
+  const text = input.value.trim();
+  if (!text) return;
+
+  msgs.insertAdjacentHTML("beforeend", `
+    <div class="astra-chat-bubble user">${text.replace(/</g, "&lt;")}</div>`);
+
+  const top = getAstraNextActions(1)[0];
+  const reply = top
+    ? `Prototype stub — in product I’d answer using the board facts. Right now #1 Do next is <b>${top.verb}</b> on <b>${top.client}</b> (${top.why}). Ranking stays deterministic.`
+    : `Prototype stub — no urgent Do-next items; ask about pulse metrics or open See all for the full rule-ranked list.`;
+
+  msgs.insertAdjacentHTML("beforeend", `
+    <div class="astra-chat-bubble bot"><div class="chat-meta">✦ Astra</div>${reply}</div>`);
+
+  input.value = "";
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
 function focusAstraAction(rfqId) {
   closeAstraSeeAll();
+  closeAstraChat();
   const search = document.getElementById("searchInput");
   if (search) search.value = rfqId;
   hpFilter = false;
