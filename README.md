@@ -21,6 +21,7 @@ Interactive HTML prototypes for Silq product features. Hosted via GitHub Pages.
 | `pod-priority-board.html` | Pod Priority Board (Kanban + Pod Health) | — |
 | `credit-limit-table.html` | Client Credit Limit Table (QuickBooks integration) | — |
 | `tag-management-system/` | Tag Management System (typed tags + settings) | AM |
+| `comments-audit-log/` | Comment Versioning & Audit Trail (roles + tracked changes) | AM |
 
 ## Adding a new prototype
 
@@ -84,6 +85,7 @@ silq-prototypes/
 ├── index.html                   Landing page (links to all prototypes)
 ├── pod-priority-board.html      Pod Priority Board prototype
 ├── credit-limit-table.html      Credit Limit Table prototype
+├── comments-audit-log/          Comment Versioning & Audit Trail (built Next.js app)
 ├── tag-management-system/       Tag Management System (built React app)
 ├── your-new-prototype.html      (add new prototypes here)
 └── README.md                    This file
