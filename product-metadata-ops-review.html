@@ -300,29 +300,6 @@
       margin-bottom: 6px;
     }
 
-    .future-grid {
-      display: grid;
-      gap: 10px;
-    }
-
-    .future-item {
-      display: grid;
-      grid-template-columns: 100px 1fr;
-      gap: 12px;
-      padding: 12px 14px;
-      background: var(--purple-soft);
-      border: 1px solid #ddd6fe;
-      border-radius: var(--radius-sm);
-      font-size: 14px;
-    }
-
-    .future-item .priority {
-      font-weight: 800;
-      font-size: 12px;
-      color: var(--purple);
-      text-transform: uppercase;
-    }
-
     .footer {
       text-align: center;
       color: var(--text-soft);
@@ -337,7 +314,6 @@
     @media (max-width: 720px) {
       .field-grid, .use-grid { grid-template-columns: 1fr; }
       .layer { grid-template-columns: 1fr; }
-      .future-item { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -658,71 +634,6 @@
           Material percentages (e.g. 60% cotton / 40% polyester) are not stored in a structured way for HTS logic.
         </li>
       </ul>
-    </section>
-
-    <section id="future">
-      <h2>Possible next steps (for discussion — not committed)</h2>
-      <p class="lead">
-        Based on internal planning, these are improvements we may prioritize.
-        Nothing here is final until Ops weighs in.
-      </p>
-
-      <div class="future-grid">
-        <div class="future-item">
-          <div class="priority">High priority</div>
-          <div>
-            <strong>Clearer SKU identity</strong> — separate SKU from other external IDs;
-            support standard barcodes (GTIN/UPC) where clients provide them.
-          </div>
-        </div>
-        <div class="future-item">
-          <div class="priority">High priority</div>
-          <div>
-            <strong>Customs-ready descriptions</strong> — a dedicated commercial description
-            separate from marketing copy, usable on customs filings.
-          </div>
-        </div>
-        <div class="future-item">
-          <div class="priority">High priority</div>
-          <div>
-            <strong>HTS and origin at SKU level</strong> — allow different codes/origins
-            per variation without splitting the product family.
-          </div>
-        </div>
-        <div class="future-item">
-          <div class="priority">High priority</div>
-          <div>
-            <strong>Shipment snapshot</strong> — lock product details on a shipment at
-            booking time so later catalog edits do not change history.
-          </div>
-        </div>
-        <div class="future-item">
-          <div class="priority">Medium priority</div>
-          <div>
-            <strong>Dimensions &amp; packaging</strong> — unit size, packaged size,
-            carton count, units per carton for freight planning.
-          </div>
-        </div>
-        <div class="future-item">
-          <div class="priority">Medium priority</div>
-          <div>
-            <strong>Compliance flags</strong> — battery, dangerous goods, CPSC, FDA,
-            and structured fabric/material percentages for apparel HTS.
-          </div>
-        </div>
-        <div class="future-item">
-          <div class="priority">Later</div>
-          <div>
-            <strong>Smarter document intake</strong> — read more from POs, packing lists,
-            and tech packs instead of manual re-entry (scope TBD after Ops input).
-          </div>
-        </div>
-      </div>
-
-      <div class="callout" style="margin-top: 20px;">
-        <strong>Next step:</strong> We will turn agreed priorities into a phased plan and share
-        an updated version of this document with what we are building in each phase.
-      </div>
     </section>
 
     <p class="footer">
