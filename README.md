@@ -22,6 +22,7 @@ Interactive HTML prototypes for Silq product features. Hosted via GitHub Pages.
 | `credit-limit-table.html` | Client Credit Limit Table (QuickBooks integration) | — |
 | `tag-management-system/` | Tag Management System (typed tags + settings) | AM |
 | `comments-audit-log/` | Comment Versioning & Audit Trail (roles + tracked changes) | AM |
+| `product-metadata-ops-review.html` | Product Information — Ops Review (catalog layers, sources, gaps, feedback) | AM |
 
 ## Adding a new prototype
 

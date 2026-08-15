@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Product Information in Silq — Operations Review</title>
+  <style>
+    :root {
+      --bg: #f4f6f8;
+      --surface: #ffffff;
+      --surface-2: #f8fafc;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --text-soft: #94a3b8;
+      --primary: #0f766e;
+      --primary-soft: #ccfbf1;
+      --primary-ink: #115e59;
+      --accent: #1d4ed8;
+      --accent-soft: #dbeafe;
+      --warn: #b45309;
+      --warn-soft: #ffedd5;
+      --ok: #15803d;
+      --ok-soft: #dcfce7;
+      --purple: #6d28d9;
+      --purple-soft: #ede9fe;
+      --shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 8px 24px rgba(15, 23, 42, 0.04);
+      --radius: 14px;
+      --radius-sm: 10px;
+      --font: "Segoe UI", "Avenir Next", "Helvetica Neue", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: var(--font);
+      color: var(--text);
+      background:
+        radial-gradient(1200px 500px at 10% -10%, #d1fae5 0%, transparent 55%),
+        radial-gradient(900px 420px at 100% 0%, #e0f2fe 0%, transparent 50%),
+        var(--bg);
+      min-height: 100vh;
+      line-height: 1.55;
+    }
+
+    .page {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 28px 20px 80px;
+    }
+
+    .header {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: calc(var(--radius) + 4px);
+      box-shadow: var(--shadow);
+      padding: 32px;
+      margin-bottom: 20px;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--primary-ink);
+      background: var(--primary-soft);
+      border-radius: 999px;
+      padding: 6px 12px;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(1.6rem, 2.5vw, 2.2rem);
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 16px;
+      max-width: 680px;
+    }
+
+    .purpose-box {
+      margin-top: 20px;
+      padding: 16px 18px;
+      background: linear-gradient(90deg, #f0fdfa, #ffffff);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--primary);
+      border-radius: var(--radius-sm);
+      font-size: 15px;
+    }
+
+    .purpose-box strong { color: var(--primary-ink); }
+
+    nav.toc {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
+      padding: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      position: sticky;
+      top: 12px;
+      z-index: 10;
+    }
+
+    nav.toc a {
+      text-decoration: none;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: 999px;
+      transition: 0.15s ease;
+    }
+
+    nav.toc a:hover {
+      background: var(--surface-2);
+      color: var(--text);
+    }
+
+    section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 28px;
+      margin-bottom: 16px;
+    }
+
+    section h2 {
+      margin: 0 0 8px;
+      font-size: 20px;
+      letter-spacing: -0.02em;
+    }
+
+    section .lead {
+      margin: 0 0 20px;
+      color: var(--text-muted);
+      font-size: 15px;
+    }
+
+    h3 {
+      margin: 24px 0 10px;
+      font-size: 16px;
+    }
+
+    h3:first-of-type { margin-top: 0; }
+
+    .layer-stack {
+      display: grid;
+      gap: 10px;
+      margin: 20px 0;
+    }
+
+    .layer {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 16px;
+      align-items: start;
+      padding: 16px 18px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+    }
+
+    .layer-num {
+      font-weight: 800;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--primary-ink);
+    }
+
+    .layer-title {
+      font-weight: 700;
+      font-size: 15px;
+      margin-bottom: 4px;
+    }
+
+    .layer-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin: 0;
+    }
+
+    .layer.l1 { background: #f0fdfa; border-color: #99f6e4; }
+    .layer.l2 { background: #eff6ff; border-color: #bfdbfe; }
+    .layer.l3 { background: #fff7ed; border-color: #fed7aa; }
+    .layer.l4 { background: #f5f3ff; border-color: #ddd6fe; }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .field-card {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+    }
+
+    .field-card h4 {
+      margin: 0 0 8px;
+      font-size: 14px;
+      color: var(--primary-ink);
+    }
+
+    .field-card ul {
+      margin: 0;
+      padding-left: 18px;
+      font-size: 14px;
+      color: var(--text);
+    }
+
+    .field-card li { margin-bottom: 4px; }
+
+    .flow {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin: 16px 0;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .flow-step {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px;
+    }
+
+    .flow-arrow {
+      color: var(--text-soft);
+      font-size: 18px;
+    }
+
+    table.simple {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      margin: 16px 0;
+    }
+
+    table.simple th,
+    table.simple td {
+      text-align: left;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    table.simple th {
+      background: var(--surface-2);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 999px;
+      margin-right: 4px;
+      margin-bottom: 4px;
+    }
+
+    .tag.upload { background: var(--primary-soft); color: var(--primary-ink); }
+    .tag.manual { background: #e2e8f0; color: #334155; }
+    .tag.auto { background: var(--accent-soft); color: var(--accent); }
+    .tag.partial { background: var(--warn-soft); color: var(--warn); }
+    .tag.none { background: #f1f5f9; color: var(--text-soft); }
+
+    .callout {
+      border-left: 4px solid var(--primary);
+      background: linear-gradient(90deg, #f0fdfa, #ffffff);
+      border: 1px solid var(--border);
+      border-left-width: 4px;
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      margin: 16px 0;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .callout.warn {
+      border-left-color: var(--warn);
+      background: linear-gradient(90deg, #fffbeb, #ffffff);
+    }
+
+    .callout strong { color: var(--text); }
+
+    .gap-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      gap: 10px;
+    }
+
+    .gap-list li {
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 14px;
+    }
+
+    .gap-list li strong { color: #9a3412; }
+
+    .use-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .use-item {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      font-size: 14px;
+    }
+
+    .use-item .icon {
+      font-size: 22px;
+      margin-bottom: 6px;
+    }
+
+    .feedback-section {
+      background: linear-gradient(180deg, #f0fdfa, #ffffff);
+      border-color: #99f6e4;
+    }
+
+    .question {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 16px 18px;
+      margin-bottom: 12px;
+    }
+
+    .question:last-child { margin-bottom: 0; }
+
+    .question-num {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--primary);
+      margin-bottom: 6px;
+    }
+
+    .question p {
+      margin: 0 0 10px;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .question .hint {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 400;
+      margin-top: 4px;
+    }
+
+    .notes-area {
+      width: 100%;
+      min-height: 72px;
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-family: var(--font);
+      font-size: 14px;
+      color: var(--text-muted);
+      background: var(--surface-2);
+      resize: vertical;
+    }
+
+    .notes-area:focus {
+      outline: 2px solid var(--primary-soft);
+      border-color: var(--primary);
+      color: var(--text);
+    }
+
+    .future-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .future-item {
+      display: grid;
+      grid-template-columns: 100px 1fr;
+      gap: 12px;
+      padding: 12px 14px;
+      background: var(--purple-soft);
+      border: 1px solid #ddd6fe;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+    }
+
+    .future-item .priority {
+      font-weight: 800;
+      font-size: 12px;
+      color: var(--purple);
+      text-transform: uppercase;
+    }
+
+    .footer {
+      text-align: center;
+      color: var(--text-soft);
+      font-size: 12px;
+      margin-top: 24px;
+    }
+
+    @media print {
+      nav.toc { position: static; }
+      .notes-area { border-style: solid; min-height: 60px; }
+      section { break-inside: avoid; }
+    }
+
+    @media (max-width: 720px) {
+      .field-grid, .use-grid { grid-template-columns: 1fr; }
+      .layer { grid-template-columns: 1fr; }
+      .future-item { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <div class="eyebrow">Operations review · August 2026</div>
+      <h1>Product Information in Silq</h1>
+      <p class="subtitle">
+        A plain-language guide to what product details we store today, where they come from,
+        and how they support your day-to-day work — plus questions where we need your input.
+      </p>
+      <div class="purpose-box">
+        <strong>Purpose of this document:</strong> We are reviewing how Silq stores product information
+        before making improvements. Please read through, note anything that feels wrong or incomplete,
+        and answer the feedback questions at the end. Your input directly shapes what we build next.
+      </div>
+    </header>
+
+    <nav class="toc" aria-label="Sections">
+      <a href="#overview">Overview</a>
+      <a href="#layers">Four layers</a>
+      <a href="#fields">What we store</a>
+      <a href="#sources">Where it comes from</a>
+      <a href="#uses">Where we use it</a>
+      <a href="#gaps">Gaps today</a>
+      <a href="#feedback">Your feedback</a>
+      <a href="#future">Possible next steps</a>
+    </nav>
+
+    <section id="overview">
+      <h2>Overview — why this matters</h2>
+      <p class="lead">
+        Every shipment in Silq is tied to product details: what it is, how much it weighs,
+        what it costs, where it was made, and how it should be classified for customs.
+        Getting this right affects quoting, inspections, booking freight, customs clearance,
+        client reporting, and audit trails.
+      </p>
+      <p>
+        Today, product information lives in <strong>four connected layers</strong> — from the
+        general product family down to the specific shipment line. Some details are shared
+        across all variations; others change per order or per shipment.
+      </p>
+      <div class="callout">
+        <strong>Simple example:</strong> “Men’s knitted cardigan” is the product family.
+        “Navy · Size M · SKU VOL2838” is one specific variation. The PO might say 500 units
+        at $8.75 each. Shipment 1 might ship 120 of those units.
+      </div>
+    </section>
+
+    <section id="layers">
+      <h2>The four layers of product information</h2>
+      <p class="lead">Think of these as nesting levels — each layer adds context for a specific project or shipment.</p>
+
+      <div class="layer-stack">
+        <div class="layer l1">
+          <div class="layer-num">Layer 1</div>
+          <div>
+            <div class="layer-title">Product family (master product)</div>
+            <p class="layer-desc">
+              The style or product line shared across all colors and sizes.
+              Example: “Men’s knitted cardigan” under client Acme Apparel.
+              Holds defaults like category, general HTS code, and country of origin.
+            </p>
+          </div>
+        </div>
+        <div class="layer l2">
+          <div class="layer-num">Layer 2</div>
+          <div>
+            <div class="layer-title">Product variation (SKU)</div>
+            <p class="layer-desc">
+              One sellable unit — a specific color, size, and identifier.
+              Example: Navy · Size M · VOL2838. Holds weights, volume, unit price,
+              fabric, fit, and artwork details that differ by SKU.
+            </p>
+          </div>
+        </div>
+        <div class="layer l3">
+          <div class="layer-num">Layer 3</div>
+          <div>
+            <div class="layer-title">Order / PO details</div>
+            <p class="layer-desc">
+              What was ordered on a specific project or purchase order —
+              quantity, FOB price, weights, and any order-specific overrides
+              (e.g. a different HTS code for this PO only).
+            </p>
+          </div>
+        </div>
+        <div class="layer l4">
+          <div class="layer-num">Layer 4</div>
+          <div>
+            <div class="layer-title">Shipment details</div>
+            <p class="layer-desc">
+              What actually ships on a given shipment — shipped quantity,
+              shipping-side price and weights. This is what shows on the
+              shipment products tab and feeds into cost and customs workflows.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow">
+        <span class="flow-step">Product family</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">SKU / variation</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">Order on project</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">Shipment line</span>
+      </div>
+    </section>
+
+    <section id="fields">
+      <h2>What information we store at each layer</h2>
+      <p class="lead">Grouped by business topic — not every product has every field filled in.</p>
+
+      <div class="field-grid">
+        <div class="field-card">
+          <h4>Identity & naming</h4>
+          <ul>
+            <li>Product name and description</li>
+            <li>Client style / external ID</li>
+            <li>SKU or variation ID</li>
+            <li>Variation display name</li>
+            <li>Product image</li>
+            <li>Brand (via legacy product groups)</li>
+          </ul>
+        </div>
+        <div class="field-card">
+          <h4>Classification</h4>
+          <ul>
+            <li>Product category (e.g. Apparel)</li>
+            <li>Product type (e.g. Knitwear)</li>
+            <li>HTS / tariff code</li>
+            <li>Country of origin</li>
+          </ul>
+        </div>
+        <div class="field-card">
+          <h4>Variation attributes (apparel-focused)</h4>
+          <ul>
+            <li>Color</li>
+            <li>Size</li>
+            <li>Fit type</li>
+            <li>Pattern type</li>
+            <li>Fabric / material (free text)</li>
+            <li>Construction details</li>
+            <li>Artwork reference</li>
+          </ul>
+        </div>
+        <div class="field-card">
+          <h4>Commercial & physical</h4>
+          <ul>
+            <li>Unit price (FOB in USD)</li>
+            <li>Net weight per unit</li>
+            <li>Gross weight per unit</li>
+            <li>Volume per unit (CBM)</li>
+            <li>PO quantity</li>
+            <li>Shipped quantity</li>
+          </ul>
+        </div>
+        <div class="field-card">
+          <h4>Order & shipment context</h4>
+          <ul>
+            <li>Which SILQ project</li>
+            <li>Which shipment</li>
+            <li>PO number (when linked)</li>
+            <li>Order-specific HTS override</li>
+            <li>Source of the data (manual, upload, etc.)</li>
+          </ul>
+        </div>
+        <div class="field-card">
+          <h4>Inspection results (on project)</h4>
+          <ul>
+            <li>Inspection type and date</li>
+            <li>Pass / Fail / Hold result</li>
+            <li>Order quantity from report</li>
+            <li>Ex-factory date</li>
+            <li>Summary for client-facing updates</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="sources">
+      <h2>Where product information comes from</h2>
+      <p class="lead">
+        Not everything is typed in by hand. Here is how data typically enters Silq today.
+      </p>
+
+      <table class="simple">
+        <thead>
+          <tr>
+            <th>Source</th>
+            <th>What it populates</th>
+            <th>How it works</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Product catalog spreadsheet</strong><br><span class="tag upload">Bulk upload</span></td>
+            <td>Product family, SKU details, and optionally PO qty &amp; shipped qty when a SILQ project or shipment ID is included</td>
+            <td>Ops or client uploads a TSV file. Silq validates HTS codes, colors, and sizes, then creates or updates products.</td>
+          </tr>
+          <tr>
+            <td><strong>Manual entry in Silq</strong><br><span class="tag manual">Manual</span></td>
+            <td>Any product, order, or shipment field</td>
+            <td>Team members add or edit products directly on projects and shipments.</td>
+          </tr>
+          <tr>
+            <td><strong>Inspection reports</strong><br><span class="tag auto">Auto-read</span></td>
+            <td>Inspection result summary on the project (pass/fail, dates, quantities)</td>
+            <td>When an inspection report is uploaded, Silq reads the document and stores key results — it does <em>not</em> change the core product catalog (name, HTS, weights, etc.).</td>
+          </tr>
+          <tr>
+            <td><strong>Accepted quote / demo project copy</strong><br><span class="tag manual">Manual trigger</span></td>
+            <td>Products and order details copied from a template or previous project</td>
+            <td>Used when setting up demo or cloned projects from an accepted quote.</td>
+          </tr>
+          <tr>
+            <td><strong>Legacy purchase orders</strong><br><span class="tag partial">Being phased out</span></td>
+            <td>PO numbers linked to products (historical data)</td>
+            <td>Older PO system was migrated into the current model. New PO numbers are added manually or via spreadsheet — there is no PO PDF parser today.</td>
+          </tr>
+          <tr>
+            <td><strong>Tech packs</strong><br><span class="tag none">Not parsed</span></td>
+            <td>Stored as documents only</td>
+            <td>Tech packs attach to workflow milestones but their contents are <em>not</em> automatically pulled into product fields.</td>
+          </tr>
+          <tr>
+            <td><strong>Customs entry (7501), commercial invoice, bills of lading</strong><br><span class="tag partial">Shipment-level</span></td>
+            <td>Used for customs validation and shipment totals — not for building the product catalog</td>
+            <td>These documents support clearance and shipment records. HTS on a 7501 can be checked against what is on the shipment, but the catalog is not updated from them.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout warn">
+        <strong>Important for Ops:</strong> The catalog spreadsheet is today’s main bulk-ingest path.
+        If a field is not in that template and not entered manually, Silq probably does not have it.
+      </div>
+    </section>
+
+    <section id="uses">
+      <h2>Where we use this information</h2>
+      <p class="lead">Product data is not just stored — it powers multiple workflows across Silq.</p>
+
+      <div class="use-grid">
+        <div class="use-item">
+          <div class="icon">📦</div>
+          <strong>Shipment products tab</strong><br>
+          Shows what is on each shipment — quantities, prices, weights — for ops and client visibility.
+        </div>
+        <div class="use-item">
+          <div class="icon">📋</div>
+          <strong>Project product lists</strong><br>
+          All products on a project with PO quantities, milestones, and inspection links.
+        </div>
+        <div class="use-item">
+          <div class="icon">🔍</div>
+          <strong>Inspections</strong><br>
+          Links inspection reports to specific products; stores parsed pass/fail and summary on the project.
+        </div>
+        <div class="use-item">
+          <div class="icon">🛃</div>
+          <strong>Customs clearance</strong><br>
+          HTS codes and product descriptions on shipments are checked against customs entry documents.
+        </div>
+        <div class="use-item">
+          <div class="icon">💰</div>
+          <strong>Cost &amp; analytics reports</strong><br>
+          Per-unit FOB, shipping, customs, and inspection costs rolled up for insights and client reporting.
+        </div>
+        <div class="use-item">
+          <div class="icon">🔎</div>
+          <strong>Product search</strong><br>
+          Find products across the org by name, SKU, category, color, size, HTS, and origin.
+        </div>
+        <div class="use-item">
+          <div class="icon">✅</div>
+          <strong>Milestones &amp; tasks</strong><br>
+          Adding a product to a project can automatically create the right workflow tasks.
+        </div>
+        <div class="use-item">
+          <div class="icon">📊</div>
+          <strong>Project overview</strong><br>
+          High-level view of product progress, quantities, and status across the project lifecycle.
+        </div>
+      </div>
+    </section>
+
+    <section id="gaps">
+      <h2>Known gaps — what we do not capture well today</h2>
+      <p class="lead">
+        These came up in our internal review. We want to confirm with Ops which ones
+        actually block your work vs. nice-to-have.
+      </p>
+
+      <ul class="gap-list">
+        <li>
+          <strong>HTS and country of origin live mostly at the product-family level.</strong>
+          If two SKUs in the same style need different HTS codes or origins, it is awkward today.
+        </li>
+        <li>
+          <strong>No package or carton dimensions.</strong>
+          We have volume per unit but not length/width/height, carton sizes, or units per carton —
+          information carriers and freight teams often need.
+        </li>
+        <li>
+          <strong>No dangerous goods or battery flags.</strong>
+          Products with lithium batteries or DG restrictions are not flagged in the catalog.
+        </li>
+        <li>
+          <strong>No regulatory flags (CPSC, FDA, etc.).</strong>
+          Consumer product or FDA-regulated items are not marked in product data.
+        </li>
+        <li>
+          <strong>Marketing description vs. customs description are the same thing.</strong>
+          There is no separate “commercial description” safe for customs filings.
+        </li>
+        <li>
+          <strong>Shipment product data can change if someone edits the catalog later.</strong>
+          We do not currently “freeze” what was on a shipment at booking time for audit purposes.
+        </li>
+        <li>
+          <strong>Tech packs and PO PDFs are not read automatically.</strong>
+          Details in those documents must be entered manually or via spreadsheet.
+        </li>
+        <li>
+          <strong>Apparel-focused variation fields.</strong>
+          Color, size, fit, and fabric work well for apparel; other categories (furniture, electronics, food) may need different attributes.
+        </li>
+        <li>
+          <strong>Fabric is free text, not structured.</strong>
+          Material percentages (e.g. 60% cotton / 40% polyester) are not stored in a structured way for HTS logic.
+        </li>
+      </ul>
+    </section>
+
+    <section id="feedback" class="feedback-section">
+      <h2>Your feedback — please review and respond</h2>
+      <p class="lead">
+        Add notes in the boxes below (they save in your browser for this session).
+        Bring this to your review meeting or send comments back to the product team.
+      </p>
+
+      <div class="question">
+        <div class="question-num">Question 1</div>
+        <p>Is the four-layer model (family → SKU → order → shipment) how you think about products day to day?</p>
+        <p class="hint">If not, describe how you naturally group product information.</p>
+        <textarea class="notes-area" placeholder="Your notes…" data-key="q1"></textarea>
+      </div>
+
+      <div class="question">
+        <div class="question-num">Question 2</div>
+        <p>Which fields are <em>must-have before a shipment can be booked</em> vs. nice-to-have?</p>
+        <p class="hint">e.g. HTS, weights, dimensions, PO qty, commercial description, origin, unit value.</p>
+        <textarea class="notes-area" placeholder="Must-have: … / Nice-to-have: …" data-key="q2"></textarea>
+      </div>
+
+      <div class="question">
+        <div class="question-num">Question 3</div>
+        <p>Where does product information usually enter your workflow today — spreadsheet, PO, tech pack, email, manual in Silq?</p>
+        <p class="hint">What is the most common source? What is most painful?</p>
+        <textarea class="notes-area" placeholder="Your notes…" data-key="q3"></textarea>
+      </div>
+
+      <div class="question">
+        <div class="question-num">Question 4</div>
+        <p>Which gaps listed above actually cause problems for your team?</p>
+        <p class="hint">Rank or call out the top 3 that cost you time or create risk.</p>
+        <textarea class="notes-area" placeholder="Top issues: 1. … 2. … 3. …" data-key="q4"></textarea>
+      </div>
+
+      <div class="question">
+        <div class="question-num">Question 5</div>
+        <p>Do you need product details to stay fixed on a shipment after booking, even if the catalog is updated later?</p>
+        <p class="hint">Important for customs audits and historical reporting.</p>
+        <textarea class="notes-area" placeholder="Yes / No / Depends on…" data-key="q5"></textarea>
+      </div>
+
+      <div class="question">
+        <div class="question-num">Question 6</div>
+        <p>What product categories do you handle beyond apparel? What extra fields would those need?</p>
+        <p class="hint">e.g. electronics (batteries), food (FDA), furniture (dimensions), cosmetics.</p>
+        <textarea class="notes-area" placeholder="Your notes…" data-key="q6"></textarea>
+      </div>
+
+      <div class="question">
+        <div class="question-num">Question 7</div>
+        <p>Anything missing from this document that you rely on today and we did not mention?</p>
+        <textarea class="notes-area" placeholder="Your notes…" data-key="q7"></textarea>
+      </div>
+    </section>
+
+    <section id="future">
+      <h2>Possible next steps (for discussion — not committed)</h2>
+      <p class="lead">
+        Based on internal planning and your feedback, these are improvements we may prioritize.
+        Nothing here is final until Ops weighs in.
+      </p>
+
+      <div class="future-grid">
+        <div class="future-item">
+          <div class="priority">High priority</div>
+          <div>
+            <strong>Clearer SKU identity</strong> — separate SKU from other external IDs;
+            support standard barcodes (GTIN/UPC) where clients provide them.
+          </div>
+        </div>
+        <div class="future-item">
+          <div class="priority">High priority</div>
+          <div>
+            <strong>Customs-ready descriptions</strong> — a dedicated commercial description
+            separate from marketing copy, usable on customs filings.
+          </div>
+        </div>
+        <div class="future-item">
+          <div class="priority">High priority</div>
+          <div>
+            <strong>HTS and origin at SKU level</strong> — allow different codes/origins
+            per variation without splitting the product family.
+          </div>
+        </div>
+        <div class="future-item">
+          <div class="priority">High priority</div>
+          <div>
+            <strong>Shipment snapshot</strong> — lock product details on a shipment at
+            booking time so later catalog edits do not change history.
+          </div>
+        </div>
+        <div class="future-item">
+          <div class="priority">Medium priority</div>
+          <div>
+            <strong>Dimensions &amp; packaging</strong> — unit size, packaged size,
+            carton count, units per carton for freight planning.
+          </div>
+        </div>
+        <div class="future-item">
+          <div class="priority">Medium priority</div>
+          <div>
+            <strong>Compliance flags</strong> — battery, dangerous goods, CPSC, FDA,
+            and structured fabric/material percentages for apparel HTS.
+          </div>
+        </div>
+        <div class="future-item">
+          <div class="priority">Later</div>
+          <div>
+            <strong>Smarter document intake</strong> — read more from POs, packing lists,
+            and tech packs instead of manual re-entry (scope TBD after Ops input).
+          </div>
+        </div>
+      </div>
+
+      <div class="callout" style="margin-top: 20px;">
+        <strong>Next step:</strong> After collecting Ops feedback, we will turn priorities
+        into a phased plan and share an updated version of this document with what we are
+        building in each phase.
+      </div>
+    </section>
+
+    <p class="footer">
+      Silq · Product Information Operations Review · Draft for internal feedback · August 2026<br>
+      Open this file in any browser · Notes in the feedback section are saved locally on your device
+    </p>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "silq_ops_product_metadata_feedback_v1";
+
+    function loadNotes() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+        document.querySelectorAll(".notes-area").forEach((el) => {
+          const key = el.dataset.key;
+          if (saved[key]) el.value = saved[key];
+        });
+      } catch (_) {}
+    }
+
+    function saveNotes() {
+      const data = {};
+      document.querySelectorAll(".notes-area").forEach((el) => {
+        data[el.dataset.key] = el.value;
+      });
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      } catch (_) {}
+    }
+
+    document.querySelectorAll(".notes-area").forEach((el) => {
+      el.addEventListener("input", saveNotes);
+    });
+
+    loadNotes();
+  </script>
+</body>
+</html>
