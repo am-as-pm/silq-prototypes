@@ -86,48 +86,6 @@
       max-width: 680px;
     }
 
-    .purpose-box {
-      margin-top: 20px;
-      padding: 16px 18px;
-      background: linear-gradient(90deg, #f0fdfa, #ffffff);
-      border: 1px solid var(--border);
-      border-left: 4px solid var(--primary);
-      border-radius: var(--radius-sm);
-      font-size: 15px;
-    }
-
-    .purpose-box strong { color: var(--primary-ink); }
-
-    nav.toc {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 20px;
-      padding: 12px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      position: sticky;
-      top: 12px;
-      z-index: 10;
-    }
-
-    nav.toc a {
-      text-decoration: none;
-      color: var(--text-muted);
-      font-size: 13px;
-      font-weight: 600;
-      padding: 8px 14px;
-      border-radius: 999px;
-      transition: 0.15s ease;
-    }
-
-    nav.toc a:hover {
-      background: var(--surface-2);
-      color: var(--text);
-    }
-
     section {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -342,62 +300,6 @@
       margin-bottom: 6px;
     }
 
-    .feedback-section {
-      background: linear-gradient(180deg, #f0fdfa, #ffffff);
-      border-color: #99f6e4;
-    }
-
-    .question {
-      background: white;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 16px 18px;
-      margin-bottom: 12px;
-    }
-
-    .question:last-child { margin-bottom: 0; }
-
-    .question-num {
-      font-size: 11px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--primary);
-      margin-bottom: 6px;
-    }
-
-    .question p {
-      margin: 0 0 10px;
-      font-size: 15px;
-      font-weight: 600;
-    }
-
-    .question .hint {
-      font-size: 13px;
-      color: var(--text-muted);
-      font-weight: 400;
-      margin-top: 4px;
-    }
-
-    .notes-area {
-      width: 100%;
-      min-height: 72px;
-      border: 1px dashed var(--border);
-      border-radius: 8px;
-      padding: 10px 12px;
-      font-family: var(--font);
-      font-size: 14px;
-      color: var(--text-muted);
-      background: var(--surface-2);
-      resize: vertical;
-    }
-
-    .notes-area:focus {
-      outline: 2px solid var(--primary-soft);
-      border-color: var(--primary);
-      color: var(--text);
-    }
-
     .future-grid {
       display: grid;
       gap: 10px;
@@ -429,8 +331,6 @@
     }
 
     @media print {
-      nav.toc { position: static; }
-      .notes-area { border-style: solid; min-height: 60px; }
       section { break-inside: avoid; }
     }
 
@@ -448,25 +348,9 @@
       <h1>Product Information in Silq</h1>
       <p class="subtitle">
         A plain-language guide to what product details we store today, where they come from,
-        and how they support your day-to-day work — plus questions where we need your input.
+        and how they support your day-to-day work.
       </p>
-      <div class="purpose-box">
-        <strong>Purpose of this document:</strong> We are reviewing how Silq stores product information
-        before making improvements. Please read through, note anything that feels wrong or incomplete,
-        and answer the feedback questions at the end. Your input directly shapes what we build next.
-      </div>
     </header>
-
-    <nav class="toc" aria-label="Sections">
-      <a href="#overview">Overview</a>
-      <a href="#layers">Four layers</a>
-      <a href="#fields">What we store</a>
-      <a href="#sources">Where it comes from</a>
-      <a href="#uses">Where we use it</a>
-      <a href="#gaps">Gaps today</a>
-      <a href="#feedback">Your feedback</a>
-      <a href="#future">Possible next steps</a>
-    </nav>
 
     <section id="overview">
       <h2>Overview — why this matters</h2>
@@ -776,66 +660,10 @@
       </ul>
     </section>
 
-    <section id="feedback" class="feedback-section">
-      <h2>Your feedback — please review and respond</h2>
-      <p class="lead">
-        Add notes in the boxes below (they save in your browser for this session).
-        Bring this to your review meeting or send comments back to the product team.
-      </p>
-
-      <div class="question">
-        <div class="question-num">Question 1</div>
-        <p>Is the four-layer model (family → SKU → order → shipment) how you think about products day to day?</p>
-        <p class="hint">If not, describe how you naturally group product information.</p>
-        <textarea class="notes-area" placeholder="Your notes…" data-key="q1"></textarea>
-      </div>
-
-      <div class="question">
-        <div class="question-num">Question 2</div>
-        <p>Which fields are <em>must-have before a shipment can be booked</em> vs. nice-to-have?</p>
-        <p class="hint">e.g. HTS, weights, dimensions, PO qty, commercial description, origin, unit value.</p>
-        <textarea class="notes-area" placeholder="Must-have: … / Nice-to-have: …" data-key="q2"></textarea>
-      </div>
-
-      <div class="question">
-        <div class="question-num">Question 3</div>
-        <p>Where does product information usually enter your workflow today — spreadsheet, PO, tech pack, email, manual in Silq?</p>
-        <p class="hint">What is the most common source? What is most painful?</p>
-        <textarea class="notes-area" placeholder="Your notes…" data-key="q3"></textarea>
-      </div>
-
-      <div class="question">
-        <div class="question-num">Question 4</div>
-        <p>Which gaps listed above actually cause problems for your team?</p>
-        <p class="hint">Rank or call out the top 3 that cost you time or create risk.</p>
-        <textarea class="notes-area" placeholder="Top issues: 1. … 2. … 3. …" data-key="q4"></textarea>
-      </div>
-
-      <div class="question">
-        <div class="question-num">Question 5</div>
-        <p>Do you need product details to stay fixed on a shipment after booking, even if the catalog is updated later?</p>
-        <p class="hint">Important for customs audits and historical reporting.</p>
-        <textarea class="notes-area" placeholder="Yes / No / Depends on…" data-key="q5"></textarea>
-      </div>
-
-      <div class="question">
-        <div class="question-num">Question 6</div>
-        <p>What product categories do you handle beyond apparel? What extra fields would those need?</p>
-        <p class="hint">e.g. electronics (batteries), food (FDA), furniture (dimensions), cosmetics.</p>
-        <textarea class="notes-area" placeholder="Your notes…" data-key="q6"></textarea>
-      </div>
-
-      <div class="question">
-        <div class="question-num">Question 7</div>
-        <p>Anything missing from this document that you rely on today and we did not mention?</p>
-        <textarea class="notes-area" placeholder="Your notes…" data-key="q7"></textarea>
-      </div>
-    </section>
-
     <section id="future">
       <h2>Possible next steps (for discussion — not committed)</h2>
       <p class="lead">
-        Based on internal planning and your feedback, these are improvements we may prioritize.
+        Based on internal planning, these are improvements we may prioritize.
         Nothing here is final until Ops weighs in.
       </p>
 
@@ -892,46 +720,14 @@
       </div>
 
       <div class="callout" style="margin-top: 20px;">
-        <strong>Next step:</strong> After collecting Ops feedback, we will turn priorities
-        into a phased plan and share an updated version of this document with what we are
-        building in each phase.
+        <strong>Next step:</strong> We will turn agreed priorities into a phased plan and share
+        an updated version of this document with what we are building in each phase.
       </div>
     </section>
 
     <p class="footer">
-      Silq · Product Information Operations Review · Draft for internal feedback · August 2026<br>
-      Open this file in any browser · Notes in the feedback section are saved locally on your device
+      Silq · Product Information Operations Review · August 2026
     </p>
   </div>
-
-  <script>
-    const STORAGE_KEY = "silq_ops_product_metadata_feedback_v1";
-
-    function loadNotes() {
-      try {
-        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-        document.querySelectorAll(".notes-area").forEach((el) => {
-          const key = el.dataset.key;
-          if (saved[key]) el.value = saved[key];
-        });
-      } catch (_) {}
-    }
-
-    function saveNotes() {
-      const data = {};
-      document.querySelectorAll(".notes-area").forEach((el) => {
-        data[el.dataset.key] = el.value;
-      });
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-      } catch (_) {}
-    }
-
-    document.querySelectorAll(".notes-area").forEach((el) => {
-      el.addEventListener("input", saveNotes);
-    });
-
-    loadNotes();
-  </script>
 </body>
 </html>
