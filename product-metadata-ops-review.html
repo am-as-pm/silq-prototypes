@@ -468,24 +468,6 @@
 
     .callout strong { color: var(--text); }
 
-    .gap-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      display: grid;
-      gap: 10px;
-    }
-
-    .gap-list li {
-      background: #fff7ed;
-      border: 1px solid #fed7aa;
-      border-radius: 10px;
-      padding: 12px 14px;
-      font-size: 14px;
-    }
-
-    .gap-list li strong { color: #9a3412; }
-
     .use-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -862,54 +844,6 @@
           High-level view of product progress, quantities, and status across the project lifecycle.
         </div>
       </div>
-    </section>
-
-    <section id="gaps">
-      <h2>Known gaps — what we do not capture well today</h2>
-      <p class="lead">
-        These came up in our internal review. We want to confirm with Ops which ones
-        actually block your work vs. nice-to-have.
-      </p>
-
-      <ul class="gap-list">
-        <li>
-          <strong>HTS and country of origin live mostly at the product-family level.</strong>
-          If two SKUs in the same style need different HTS codes or origins, it is awkward today.
-        </li>
-        <li>
-          <strong>No package or carton dimensions.</strong>
-          We have volume per unit but not length/width/height, carton sizes, or units per carton —
-          information carriers and freight teams often need.
-        </li>
-        <li>
-          <strong>No dangerous goods or battery flags.</strong>
-          Products with lithium batteries or DG restrictions are not flagged in the catalog.
-        </li>
-        <li>
-          <strong>No regulatory flags (CPSC, FDA, etc.).</strong>
-          Consumer product or FDA-regulated items are not marked in product data.
-        </li>
-        <li>
-          <strong>Marketing description vs. customs description are the same thing.</strong>
-          There is no separate “commercial description” safe for customs filings.
-        </li>
-        <li>
-          <strong>Shipment product data can change if someone edits the catalog later.</strong>
-          We do not currently “freeze” what was on a shipment at booking time for audit purposes.
-        </li>
-        <li>
-          <strong>Tech packs and PO PDFs are not read automatically.</strong>
-          Details in those documents must be entered manually or via spreadsheet.
-        </li>
-        <li>
-          <strong>Apparel-focused variation fields.</strong>
-          Color, size, fit, and fabric work well for apparel; other categories (furniture, electronics, food) may need different attributes.
-        </li>
-        <li>
-          <strong>Fabric is free text, not structured.</strong>
-          Material percentages (e.g. 60% cotton / 40% polyester) are not stored in a structured way for HTS logic.
-        </li>
-      </ul>
     </section>
 
     <p class="footer">
