@@ -498,6 +498,298 @@
       section { break-inside: avoid; }
     }
 
+    /* Product vs variation views */
+    .view-mode-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      margin-bottom: 20px;
+    }
+
+    .view-mode-bar p {
+      margin: 0;
+      font-size: 14px;
+      color: var(--text-muted);
+      max-width: 420px;
+    }
+
+    .view-toggle {
+      display: inline-flex;
+      padding: 4px;
+      background: #e2e8f0;
+      border-radius: 999px;
+      gap: 4px;
+    }
+
+    .view-toggle button {
+      border: 0;
+      background: transparent;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 8px 16px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+    }
+
+    .view-toggle button.active {
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+    }
+
+    .view-toggle button:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+
+    .view-panels { display: grid; gap: 20px; }
+
+    .view-panel {
+      display: none;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .view-panel.active { display: block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .view-panel-header {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .view-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 5px 10px;
+      border-radius: 999px;
+    }
+
+    .view-badge.product {
+      background: #ccfbf1;
+      color: #115e59;
+    }
+
+    .view-badge.variation {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .view-panel-header h3 {
+      margin: 0;
+      font-size: 15px;
+    }
+
+    .view-panel-header .hint {
+      font-size: 13px;
+      color: var(--text-muted);
+      width: 100%;
+    }
+
+    .product-card-mock {
+      border: 2px solid #5eead4;
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      background: linear-gradient(180deg, #f0fdfa 0%, #ffffff 100%);
+    }
+
+    .product-card-mock .title-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: baseline;
+      margin-bottom: 8px;
+    }
+
+    .product-card-mock .title-row h4 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .product-card-mock .meta {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .product-card-mock .stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .stat-chip {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .stat-chip.agg {
+      background: #fff7ed;
+      border-color: #fed7aa;
+      color: #9a3412;
+    }
+
+    .variation-rows {
+      display: grid;
+      gap: 10px;
+    }
+
+    .variation-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: start;
+      padding: 14px 16px;
+      border: 2px solid #93c5fd;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(180deg, #eff6ff 0%, #ffffff 100%);
+    }
+
+    .variation-row .v-title {
+      font-weight: 700;
+      font-size: 15px;
+      margin-bottom: 4px;
+    }
+
+    .variation-row .v-meta {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .variation-row .v-qty {
+      text-align: right;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .variation-row .v-qty strong {
+      display: block;
+      font-size: 18px;
+      color: var(--text);
+    }
+
+    .storage-map {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .storage-map-card {
+      padding: 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    .storage-map-card.product-side {
+      background: #f0fdfa;
+      border-color: #99f6e4;
+    }
+
+    .storage-map-card.variation-side {
+      background: #eff6ff;
+      border-color: #bfdbfe;
+    }
+
+    .storage-map-card strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+    }
+
+    .storage-map-card ul {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .storage-map-card li { margin-bottom: 3px; }
+
+    .compare-table-wrap {
+      overflow-x: auto;
+      margin-top: 20px;
+    }
+
+    table.compare {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    table.compare th,
+    table.compare td {
+      padding: 11px 12px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      text-align: left;
+    }
+
+    table.compare th {
+      background: var(--surface-2);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+
+    .level-pill {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 3px 7px;
+      border-radius: 999px;
+      margin-right: 4px;
+      white-space: nowrap;
+    }
+
+    .level-pill.l1 { background: #ccfbf1; color: #115e59; }
+    .level-pill.l2 { background: #dbeafe; color: #1e40af; }
+    .level-pill.l3 { background: #ffedd5; color: #9a3412; }
+    .level-pill.l12 { background: #ede9fe; color: #5b21b6; }
+    .level-pill.agg { background: #fef3c7; color: #92400e; }
+
+    .where-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .where-card {
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--surface-2);
+      font-size: 14px;
+    }
+
+    .where-card strong { display: block; margin-bottom: 6px; }
+
     @media (max-width: 720px) {
       .field-grid, .use-grid, .layers-rules { grid-template-columns: 1fr; }
       .example-steps { grid-template-columns: 1fr; }
@@ -505,6 +797,9 @@
       .example-step:last-child { border-bottom: 0; }
       .nest-box + .nest-box,
       .nest-box.n4 { width: 100%; }
+      .storage-map, .where-grid { grid-template-columns: 1fr; }
+      .view-mode-bar { flex-direction: column; align-items: stretch; }
+      .view-toggle { justify-content: center; }
     }
   </style>
 </head>
@@ -668,9 +963,210 @@
       </div>
     </section>
 
+    <section id="views">
+      <h2>Two ways to look at the same data</h2>
+      <p class="lead">
+        Silq can show product information grouped by <strong>product family</strong> (one style)
+        or broken out by <strong>variation</strong> (each color/size SKU). Both views read from the
+        same database — they just zoom to different levels. Use the toggle below to see the difference.
+      </p>
+
+      <div class="view-mode-bar">
+        <p><strong>Same cardigan, two lenses.</strong> Try switching views — notice what details appear, disappear, or get rolled up.</p>
+        <div class="view-toggle" role="tablist" aria-label="Product data view mode">
+          <button type="button" class="active" role="tab" aria-selected="true" data-view="product" id="tab-product">View by product</button>
+          <button type="button" role="tab" aria-selected="false" data-view="variation" id="tab-variation">View by variations</button>
+        </div>
+      </div>
+
+      <div class="view-panels">
+        <div class="view-panel active" id="panel-product" role="tabpanel" aria-labelledby="tab-product">
+          <div class="view-panel-header">
+            <span class="view-badge product">Product level</span>
+            <h3>One row per product family on a project</h3>
+            <span class="hint">Layer 1 (product family) + project link. Quantities and prices from all variations are combined.</span>
+          </div>
+          <div class="product-card-mock">
+            <div class="title-row">
+              <h4>Men’s Knitted Cardigan</h4>
+              <span class="stat-chip">Style ID: STYLE-4421</span>
+            </div>
+            <div class="meta">Apparel · Knitwear · HTS 6110.20 · Origin: Bangladesh</div>
+            <div class="stats">
+              <span class="stat-chip">3 variations on this project</span>
+              <span class="stat-chip agg">500 units total (PO qty)</span>
+              <span class="stat-chip agg">$8.83 avg FOB</span>
+              <span class="stat-chip">Inspection: Pass</span>
+            </div>
+          </div>
+          <div class="storage-map">
+            <div class="storage-map-card product-side">
+              <strong>What you see here</strong>
+              <ul>
+                <li>Product name &amp; description</li>
+                <li>Category, type, default HTS, origin</li>
+                <li>Style / external ID (shared across variations)</li>
+                <li>Inspection results &amp; project tasks</li>
+                <li>Documents &amp; comments on the product</li>
+              </ul>
+            </div>
+            <div class="storage-map-card product-side">
+              <strong>What is rolled up (not shown per SKU)</strong>
+              <ul>
+                <li>Total PO quantity across all colors/sizes</li>
+                <li>Average FOB when variations differ in price</li>
+                <li>Total shipped quantity on the project</li>
+                <li>Color, size, fabric — hidden unless you expand</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="view-panel" id="panel-variation" role="tabpanel" aria-labelledby="tab-variation">
+          <div class="view-panel-header">
+            <span class="view-badge variation">Variation level</span>
+            <h3>One row per SKU (color / size combo)</h3>
+            <span class="hint">Layer 2 (SKU in catalog) + Layer 3 (order on project). Each variation has its own qty, price, and weights.</span>
+          </div>
+          <div class="variation-rows">
+            <div class="variation-row">
+              <div>
+                <div class="v-title">Men’s Knitted Cardigan — Navy · M</div>
+                <div class="v-meta">SKU VOL2838 · 60% cotton / 40% poly · 0.42 kg net · $8.75 FOB</div>
+              </div>
+              <div class="v-qty"><strong>200</strong> PO qty</div>
+            </div>
+            <div class="variation-row">
+              <div>
+                <div class="v-title">Men’s Knitted Cardigan — Navy · L</div>
+                <div class="v-meta">SKU VOL2839 · 60% cotton / 40% poly · 0.44 kg net · $8.75 FOB</div>
+              </div>
+              <div class="v-qty"><strong>150</strong> PO qty</div>
+            </div>
+            <div class="variation-row">
+              <div>
+                <div class="v-title">Men’s Knitted Cardigan — Charcoal · M</div>
+                <div class="v-meta">SKU VOL2840 · 60% cotton / 40% poly · 0.42 kg net · $9.00 FOB</div>
+              </div>
+              <div class="v-qty"><strong>150</strong> PO qty</div>
+            </div>
+          </div>
+          <div class="storage-map">
+            <div class="storage-map-card variation-side">
+              <strong>What you see here</strong>
+              <ul>
+                <li>Color, size, fit, fabric, pattern</li>
+                <li>Variation name &amp; SKU / variation ID</li>
+                <li>Price, weight &amp; volume per unit</li>
+                <li>PO quantity for this specific SKU</li>
+                <li>Shipped qty per variation on each shipment</li>
+              </ul>
+            </div>
+            <div class="storage-map-card variation-side">
+              <strong>What stays on the product level</strong>
+              <ul>
+                <li>Category &amp; product type (inherited)</li>
+                <li>Default HTS &amp; origin (unless overridden on order)</li>
+                <li>Product image (usually shared)</li>
+                <li>Inspection summary (stored once per product on project)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="compare-table-wrap">
+        <table class="compare">
+          <thead>
+            <tr>
+              <th>Information</th>
+              <th>View by product</th>
+              <th>View by variations</th>
+              <th>Stored at</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Product name &amp; description</strong></td>
+              <td>Shown once per style</td>
+              <td>Repeated on each SKU row (with color/size appended)</td>
+              <td><span class="level-pill l1">Layer 1</span></td>
+            </tr>
+            <tr>
+              <td><strong>Category, type, default HTS, origin</strong></td>
+              <td>Shown on the product card</td>
+              <td>Inherited — same for all variations unless overridden</td>
+              <td><span class="level-pill l1">Layer 1</span></td>
+            </tr>
+            <tr>
+              <td><strong>Style / external ID</strong></td>
+              <td>One ID for the whole family</td>
+              <td>Usually the same; variation may have its own SKU ID</td>
+              <td><span class="level-pill l1">Layer 1</span> + <span class="level-pill l2">Layer 2</span></td>
+            </tr>
+            <tr>
+              <td><strong>Color, size, fabric, fit</strong></td>
+              <td>Not shown (count only, e.g. “3 variations”)</td>
+              <td>Shown on each row</td>
+              <td><span class="level-pill l2">Layer 2</span></td>
+            </tr>
+            <tr>
+              <td><strong>Unit price, weight, volume</strong></td>
+              <td>Averaged or summed across variations</td>
+              <td>Exact value per SKU</td>
+              <td><span class="level-pill l2">Layer 2</span> catalog · <span class="level-pill l3">Layer 3</span> on order</td>
+            </tr>
+            <tr>
+              <td><strong>PO quantity</strong></td>
+              <td>Total across all variations</td>
+              <td>Per variation (e.g. 200 Navy M, 150 Navy L)</td>
+              <td><span class="level-pill l3">Layer 3</span></td>
+            </tr>
+            <tr>
+              <td><strong>Shipped quantity</strong></td>
+              <td>Total on project or shipment</td>
+              <td>Per variation per shipment</td>
+              <td><span class="level-pill l3">Layer 3</span> + Layer 4</td>
+            </tr>
+            <tr>
+              <td><strong>Inspection pass/fail &amp; summary</strong></td>
+              <td>Shown on product-on-project</td>
+              <td>Not split by variation today</td>
+              <td><span class="level-pill l12">Product on project</span></td>
+            </tr>
+            <tr>
+              <td><strong>PO number</strong></td>
+              <td>May appear once per product</td>
+              <td>Can differ per variation if linked separately</td>
+              <td><span class="level-pill l3">Layer 3</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="where-grid">
+        <div class="where-card">
+          <strong>Where “View by product” appears in Silq</strong>
+          Project product list · Product detail page (tasks, inspections, docs) · Product catalog picker when adding products · Cost &amp; analytics reports (one row per product on project)
+        </div>
+        <div class="where-card">
+          <strong>Where “View by variations” appears in Silq</strong>
+          Adding/editing products on a project · Shipment products tab · Catalog spreadsheet (one row per variation) · Bulk upload qty &amp; price columns
+        </div>
+      </div>
+
+      <div class="callout" style="margin-top: 20px;">
+        <strong>Rule of thumb for Ops:</strong>
+        If it can differ by color or size, enter it at the <em>variation</em> level in the catalog spreadsheet
+        (<code>variation_name</code>, <code>color</code>, <code>size</code>, etc.).
+        Shared details (HTS, category, product name) belong on the <em>product</em> row.
+        When you only see totals, Silq is showing the product view — expand or switch to variations to audit individual SKUs.
+      </div>
+    </section>
+
     <section id="fields">
       <h2>What information we store at each layer</h2>
-      <p class="lead">Grouped by business topic — not every product has every field filled in.</p>
+      <p class="lead">Grouped by business topic — not every product has every field filled in. See <a href="#views">Two ways to look at the same data</a> for which level each field lives at.</p>
 
       <div class="field-grid">
         <div class="field-card">
@@ -850,5 +1346,29 @@
       Silq · Product Information Operations Review · August 2026
     </p>
   </div>
+
+  <script>
+    (function () {
+      var buttons = document.querySelectorAll('.view-toggle button');
+      var panels = {
+        product: document.getElementById('panel-product'),
+        variation: document.getElementById('panel-variation')
+      };
+
+      buttons.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var view = btn.getAttribute('data-view');
+          buttons.forEach(function (b) {
+            var active = b === btn;
+            b.classList.toggle('active', active);
+            b.setAttribute('aria-selected', active ? 'true' : 'false');
+          });
+          Object.keys(panels).forEach(function (key) {
+            panels[key].classList.toggle('active', key === view);
+          });
+        });
+      });
+    })();
+  </script>
 </body>
 </html>
