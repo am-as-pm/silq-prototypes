@@ -114,46 +114,273 @@
 
     h3:first-of-type { margin-top: 0; }
 
-    .layer-stack {
+    /* Four layers — visual explainer */
+    .layers-visual {
       display: grid;
-      gap: 10px;
-      margin: 20px 0;
+      gap: 28px;
+      margin-top: 8px;
     }
 
-    .layer {
-      display: grid;
-      grid-template-columns: 140px 1fr;
-      gap: 16px;
-      align-items: start;
+    .layers-analogy {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
       padding: 16px 18px;
-      border-radius: var(--radius-sm);
+      background: var(--surface-2);
       border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      color: var(--text-muted);
     }
 
-    .layer-num {
-      font-weight: 800;
-      font-size: 13px;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
+    .layers-analogy-icon {
+      flex-shrink: 0;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: var(--primary-soft);
       color: var(--primary-ink);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
     }
 
-    .layer-title {
-      font-weight: 700;
+    .layers-analogy strong { color: var(--text); }
+
+    .nest-diagram {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      padding: 8px 0 4px;
+    }
+
+    .nest-box {
+      width: 100%;
+      border-radius: 16px;
+      padding: 20px 22px 22px;
+      position: relative;
+      border: 2px solid;
+    }
+
+    .nest-box + .nest-box {
+      margin-top: -6px;
+      width: calc(100% - 32px);
+    }
+
+    .nest-box.n1 {
+      background: linear-gradient(180deg, #f0fdfa 0%, #ffffff 100%);
+      border-color: #5eead4;
+      z-index: 1;
+    }
+
+    .nest-box.n2 {
+      background: linear-gradient(180deg, #eff6ff 0%, #ffffff 100%);
+      border-color: #93c5fd;
+      z-index: 2;
+    }
+
+    .nest-box.n3 {
+      background: linear-gradient(180deg, #fff7ed 0%, #ffffff 100%);
+      border-color: #fdba74;
+      z-index: 3;
+    }
+
+    .nest-box.n4 {
+      background: linear-gradient(180deg, #f5f3ff 0%, #ffffff 100%);
+      border-color: #c4b5fd;
+      z-index: 4;
+      width: calc(100% - 64px);
+    }
+
+    .nest-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 6px;
+    }
+
+    .nest-box.n1 .nest-label { color: #0f766e; }
+    .nest-box.n2 .nest-label { color: #1d4ed8; }
+    .nest-box.n3 .nest-label { color: #c2410c; }
+    .nest-box.n4 .nest-label { color: #6d28d9; }
+
+    .nest-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       font-size: 15px;
+      background: rgba(255,255,255,0.85);
+    }
+
+    .nest-title {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
       margin-bottom: 4px;
     }
 
-    .layer-desc {
+    .nest-example {
       font-size: 14px;
       color: var(--text-muted);
-      margin: 0;
+      margin: 0 0 10px;
     }
 
-    .layer.l1 { background: #f0fdfa; border-color: #99f6e4; }
-    .layer.l2 { background: #eff6ff; border-color: #bfdbfe; }
-    .layer.l3 { background: #fff7ed; border-color: #fed7aa; }
-    .layer.l4 { background: #f5f3ff; border-color: #ddd6fe; }
+    .nest-example em {
+      font-style: normal;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .nest-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .nest-chip {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.9);
+      border: 1px solid rgba(0,0,0,0.06);
+      color: var(--text);
+    }
+
+    .nest-arrow {
+      text-align: center;
+      color: var(--text-soft);
+      font-size: 13px;
+      font-weight: 700;
+      padding: 6px 0;
+      letter-spacing: 0.02em;
+    }
+
+    .example-walkthrough {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .example-walkthrough-header {
+      background: var(--surface-2);
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .example-walkthrough-header span {
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    .example-steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .example-step {
+      padding: 16px 14px;
+      border-right: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    .example-step:last-child { border-right: 0; }
+
+    .example-step-num {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
+    }
+
+    .example-step.n1 .example-step-num { color: #0f766e; }
+    .example-step.n2 .example-step-num { color: #1d4ed8; }
+    .example-step.n3 .example-step-num { color: #c2410c; }
+    .example-step.n4 .example-step-num { color: #6d28d9; }
+
+    .example-step-label {
+      font-weight: 700;
+      font-size: 12px;
+      margin-bottom: 10px;
+      line-height: 1.35;
+    }
+
+    .example-kv {
+      display: grid;
+      gap: 6px;
+    }
+
+    .example-kv-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2px;
+    }
+
+    .example-kv-row .k {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-soft);
+      font-weight: 600;
+    }
+
+    .example-kv-row .v {
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.35;
+    }
+
+    .layers-rules {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .layer-rule {
+      display: flex;
+      gap: 12px;
+      padding: 14px 16px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+    }
+
+    .layer-rule-icon {
+      flex-shrink: 0;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .layer-rule p {
+      margin: 0;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    .layer-rule strong {
+      display: block;
+      color: var(--text);
+      font-size: 13px;
+      margin-bottom: 2px;
+    }
 
     .field-grid {
       display: grid;
@@ -182,28 +409,6 @@
     }
 
     .field-card li { margin-bottom: 4px; }
-
-    .flow {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 8px;
-      margin: 16px 0;
-      font-size: 14px;
-      font-weight: 600;
-    }
-
-    .flow-step {
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 10px 14px;
-    }
-
-    .flow-arrow {
-      color: var(--text-soft);
-      font-size: 18px;
-    }
 
     table.simple {
       width: 100%;
@@ -312,8 +517,12 @@
     }
 
     @media (max-width: 720px) {
-      .field-grid, .use-grid { grid-template-columns: 1fr; }
-      .layer { grid-template-columns: 1fr; }
+      .field-grid, .use-grid, .layers-rules { grid-template-columns: 1fr; }
+      .example-steps { grid-template-columns: 1fr; }
+      .example-step { border-right: 0; border-bottom: 1px solid var(--border); }
+      .example-step:last-child { border-bottom: 0; }
+      .nest-box + .nest-box,
+      .nest-box.n4 { width: 100%; }
     }
   </style>
 </head>
@@ -328,85 +537,152 @@
       </p>
     </header>
 
-    <section id="overview">
-      <h2>Overview — why this matters</h2>
-      <p class="lead">
-        Every shipment in Silq is tied to product details: what it is, how much it weighs,
-        what it costs, where it was made, and how it should be classified for customs.
-        Getting this right affects quoting, inspections, booking freight, customs clearance,
-        client reporting, and audit trails.
-      </p>
-      <p>
-        Today, product information lives in <strong>four connected layers</strong> — from the
-        general product family down to the specific shipment line. Some details are shared
-        across all variations; others change per order or per shipment.
-      </p>
-      <div class="callout">
-        <strong>Simple example:</strong> “Men’s knitted cardigan” is the product family.
-        “Navy · Size M · SKU VOL2838” is one specific variation. The PO might say 500 units
-        at $8.75 each. Shipment 1 might ship 120 of those units.
-      </div>
-    </section>
-
     <section id="layers">
       <h2>The four layers of product information</h2>
-      <p class="lead">Think of these as nesting levels — each layer adds context for a specific project or shipment.</p>
+      <p class="lead">
+        Silq stores product details in four levels — from the broadest (the whole style)
+        down to the most specific (what ships on one shipment). Each level sits inside the one above it.
+      </p>
 
-      <div class="layer-stack">
-        <div class="layer l1">
-          <div class="layer-num">Layer 1</div>
+      <div class="layers-visual">
+        <div class="layers-analogy">
+          <div class="layers-analogy-icon">🎯</div>
           <div>
-            <div class="layer-title">Product family (master product)</div>
-            <p class="layer-desc">
-              The style or product line shared across all colors and sizes.
-              Example: “Men’s knitted cardigan” under client Acme Apparel.
-              Holds defaults like category, general HTS code, and country of origin.
-            </p>
+            <strong>Think of it like zooming in on a map.</strong>
+            Layer 1 is the whole product line. Layer 2 is one SKU. Layer 3 is what was ordered on a project.
+            Layer 4 is what actually leaves on a specific shipment. Details get more specific as you go down.
           </div>
         </div>
-        <div class="layer l2">
-          <div class="layer-num">Layer 2</div>
-          <div>
-            <div class="layer-title">Product variation (SKU)</div>
-            <p class="layer-desc">
-              One sellable unit — a specific color, size, and identifier.
-              Example: Navy · Size M · VOL2838. Holds weights, volume, unit price,
-              fabric, fit, and artwork details that differ by SKU.
-            </p>
-          </div>
-        </div>
-        <div class="layer l3">
-          <div class="layer-num">Layer 3</div>
-          <div>
-            <div class="layer-title">Order / PO details</div>
-            <p class="layer-desc">
-              What was ordered on a specific project or purchase order —
-              quantity, FOB price, weights, and any order-specific overrides
-              (e.g. a different HTS code for this PO only).
-            </p>
-          </div>
-        </div>
-        <div class="layer l4">
-          <div class="layer-num">Layer 4</div>
-          <div>
-            <div class="layer-title">Shipment details</div>
-            <p class="layer-desc">
-              What actually ships on a given shipment — shipped quantity,
-              shipping-side price and weights. This is what shows on the
-              shipment products tab and feeds into cost and customs workflows.
-            </p>
-          </div>
-        </div>
-      </div>
 
-      <div class="flow">
-        <span class="flow-step">Product family</span>
-        <span class="flow-arrow">→</span>
-        <span class="flow-step">SKU / variation</span>
-        <span class="flow-arrow">→</span>
-        <span class="flow-step">Order on project</span>
-        <span class="flow-arrow">→</span>
-        <span class="flow-step">Shipment line</span>
+        <div class="nest-diagram" aria-label="Nested diagram showing four layers of product information">
+          <div class="nest-box n1">
+            <div class="nest-label"><span class="nest-icon">👔</span> Layer 1 · Product family</div>
+            <div class="nest-title">The style everyone shares</div>
+            <p class="nest-example">Example: <em>Men’s Knitted Cardigan</em> for Acme Apparel</p>
+            <div class="nest-chips">
+              <span class="nest-chip">Category &amp; type</span>
+              <span class="nest-chip">Default HTS</span>
+              <span class="nest-chip">Country of origin</span>
+              <span class="nest-chip">Description</span>
+            </div>
+
+            <div class="nest-box n2">
+              <div class="nest-label"><span class="nest-icon">🏷️</span> Layer 2 · SKU / variation</div>
+              <div class="nest-title">One sellable version</div>
+              <p class="nest-example">Example: <em>Navy · Size M · SKU VOL2838</em></p>
+              <div class="nest-chips">
+                <span class="nest-chip">Color &amp; size</span>
+                <span class="nest-chip">Fabric &amp; fit</span>
+                <span class="nest-chip">Weight &amp; volume</span>
+                <span class="nest-chip">Unit price</span>
+              </div>
+
+              <div class="nest-box n3">
+                <div class="nest-label"><span class="nest-icon">📋</span> Layer 3 · Order on project</div>
+                <div class="nest-title">What the client ordered</div>
+                <p class="nest-example">Example: <em>500 units @ $8.75</em> on project SILQ-1234567</p>
+                <div class="nest-chips">
+                  <span class="nest-chip">PO quantity</span>
+                  <span class="nest-chip">Order FOB</span>
+                  <span class="nest-chip">PO number</span>
+                  <span class="nest-chip">HTS override</span>
+                </div>
+
+                <div class="nest-box n4">
+                  <div class="nest-label"><span class="nest-icon">📦</span> Layer 4 · Shipment</div>
+                  <div class="nest-title">What ships this time</div>
+                  <p class="nest-example">Example: <em>120 units</em> on shipment SILQ-1234567S1</p>
+                  <div class="nest-chips">
+                    <span class="nest-chip">Shipped qty</span>
+                    <span class="nest-chip">Shipping weights</span>
+                    <span class="nest-chip">Shipment products tab</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="nest-arrow">↓ Same product, four levels of detail ↓</div>
+
+        <div class="example-walkthrough">
+          <div class="example-walkthrough-header">
+            One product, end to end <span>— cardigan example</span>
+          </div>
+          <div class="example-steps">
+            <div class="example-step n1">
+              <div class="example-step-num">Layer 1</div>
+              <div class="example-step-label">Product family</div>
+              <div class="example-kv">
+                <div class="example-kv-row"><div class="k">Name</div><div class="v">Men’s Knitted Cardigan</div></div>
+                <div class="example-kv-row"><div class="k">Category</div><div class="v">Apparel · Knitwear</div></div>
+                <div class="example-kv-row"><div class="k">Default HTS</div><div class="v">6110.20</div></div>
+                <div class="example-kv-row"><div class="k">Origin</div><div class="v">Bangladesh</div></div>
+              </div>
+            </div>
+            <div class="example-step n2">
+              <div class="example-step-num">Layer 2</div>
+              <div class="example-step-label">SKU</div>
+              <div class="example-kv">
+                <div class="example-kv-row"><div class="k">SKU</div><div class="v">VOL2838</div></div>
+                <div class="example-kv-row"><div class="k">Color / size</div><div class="v">Navy · M</div></div>
+                <div class="example-kv-row"><div class="k">Fabric</div><div class="v">60% cotton, 40% poly</div></div>
+                <div class="example-kv-row"><div class="k">Weight</div><div class="v">0.42 kg net / unit</div></div>
+              </div>
+            </div>
+            <div class="example-step n3">
+              <div class="example-step-num">Layer 3</div>
+              <div class="example-step-label">Order</div>
+              <div class="example-kv">
+                <div class="example-kv-row"><div class="k">Project</div><div class="v">SILQ-1234567</div></div>
+                <div class="example-kv-row"><div class="k">PO qty</div><div class="v">500 units</div></div>
+                <div class="example-kv-row"><div class="k">FOB</div><div class="v">$8.75 / unit</div></div>
+                <div class="example-kv-row"><div class="k">PO #</div><div class="v">PO-2026-0142</div></div>
+              </div>
+            </div>
+            <div class="example-step n4">
+              <div class="example-step-num">Layer 4</div>
+              <div class="example-step-label">Shipment</div>
+              <div class="example-kv">
+                <div class="example-kv-row"><div class="k">Shipment</div><div class="v">SILQ-1234567S1</div></div>
+                <div class="example-kv-row"><div class="k">Shipped</div><div class="v">120 units</div></div>
+                <div class="example-kv-row"><div class="k">Value</div><div class="v">$8.75 / unit</div></div>
+                <div class="example-kv-row"><div class="k">Shows on</div><div class="v">Products tab</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="layers-rules">
+          <div class="layer-rule">
+            <div class="layer-rule-icon" style="background:#ccfbf1;">1→2</div>
+            <div>
+              <strong>One family, many SKUs</strong>
+              <p>Layer 1 is shared. Each color/size combo is its own Layer 2 variation.</p>
+            </div>
+          </div>
+          <div class="layer-rule">
+            <div class="layer-rule-icon" style="background:#dbeafe;">2→3</div>
+            <div>
+              <strong>Same SKU, different orders</strong>
+              <p>Layer 3 adds project-specific qty and price — the same SKU can appear on multiple projects.</p>
+            </div>
+          </div>
+          <div class="layer-rule">
+            <div class="layer-rule-icon" style="background:#ffedd5;">3→4</div>
+            <div>
+              <strong>Order ≠ shipment</strong>
+              <p>You might order 500 units but ship 120 now and 380 later — each shipment is Layer 4.</p>
+            </div>
+          </div>
+          <div class="layer-rule">
+            <div class="layer-rule-icon" style="background:#ede9fe;">✓</div>
+            <div>
+              <strong>When in doubt, go more specific</strong>
+              <p>If something can differ by color, PO, or shipment, it belongs on Layer 2, 3, or 4 — not Layer 1.</p>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
