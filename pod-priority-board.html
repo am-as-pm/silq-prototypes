@@ -34,6 +34,7 @@
     --blue-bg: #eff6ff;
     --blue-light: #dbeafe;
     --lane-draft: #fafaf9;
+    --lane-shipperBookings: #f3f0ff;
     --lane-submitted: #f0f4ff;
     --lane-awaiting: #fefce8;
     --lane-expired: #fef2f2;
@@ -313,6 +314,362 @@
     color: var(--text);
     white-space: nowrap;
   }
+
+  /* Daily action summary strip (below progress bar, Quoting only) — deterministic */
+  .astra-brief {
+    display: none;
+    padding: 10px 28px 12px;
+    background: linear-gradient(180deg, #fefcfa 0%, var(--card) 100%);
+    border-bottom: 1px solid var(--border);
+    flex-direction: column;
+    gap: 6px;
+  }
+  .astra-brief.visible { display: flex; }
+
+  .astra-brief-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .astra-brief-top-left {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .astra-brand-mark {
+    width: 18px; height: 18px;
+    border-radius: 5px;
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 10px;
+    flex-shrink: 0;
+  }
+  .astra-chat-launch {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px 5px 6px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: border-color 0.12s, background 0.12s, box-shadow 0.12s;
+  }
+  .astra-chat-launch:hover {
+    border-color: var(--primary);
+    background: var(--primary-lighter);
+    box-shadow: 0 1px 4px rgba(200, 132, 46, 0.15);
+  }
+  .astra-chat-launch.active {
+    border-color: var(--primary);
+    background: var(--primary-light);
+    color: var(--primary-dark);
+  }
+  .astra-chat-launch .launch-hint {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .astra-chat-launch:hover .launch-hint,
+  .astra-chat-launch.active .launch-hint { color: var(--primary-dark); }
+
+  .astra-refreshed {
+    font-size: 10px;
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+  }
+  .astra-refreshed b { font-weight: 600; color: var(--text-secondary); }
+
+  .astra-narrative {
+    font-size: 12px;
+    line-height: 1.35;
+    color: var(--text);
+  }
+  .astra-narrative .sep {
+    color: var(--text-secondary);
+    margin: 0 5px;
+    font-weight: 400;
+  }
+  .astra-narrative b { font-weight: 600; }
+  .astra-narrative .hot { color: var(--red); font-weight: 600; }
+
+  .astra-actions-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--text-secondary);
+    margin-bottom: 1px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .astra-actions-label .rules-chip {
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: 0;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: var(--gray-bg);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-light);
+  }
+  .astra-action {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 8px;
+    border-radius: 7px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background 0.12s, border-color 0.12s;
+    font-size: 12px;
+    line-height: 1.25;
+    background: transparent;
+    font-family: inherit;
+    color: var(--text);
+    text-align: left;
+    width: 100%;
+  }
+  .astra-action:hover {
+    background: var(--primary-lighter);
+    border-color: var(--primary-light);
+  }
+  .astra-action-rank {
+    width: 16px; height: 16px;
+    border-radius: 4px;
+    background: var(--gray-bg);
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .astra-action-rank.r1 { background: #fee2e2; color: #b91c1c; }
+  .astra-action-rank.r2 { background: #ffedd5; color: #c2410c; }
+  .astra-action-rank.r3 { background: #fef3c7; color: #a16207; }
+  .astra-action-verb {
+    font-weight: 600;
+    color: var(--text);
+    flex-shrink: 0;
+    min-width: 78px;
+  }
+  .astra-action-body {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text);
+  }
+  .astra-action-body .why {
+    color: var(--text-secondary);
+    font-weight: 400;
+  }
+  .astra-action-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .astra-stage-chip {
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: var(--gray-bg);
+    color: var(--text-secondary);
+  }
+  .astra-stage-chip.awaiting { background: #fef9e7; color: #a16207; }
+  .astra-stage-chip.submitted { background: #e8eeff; color: #3b5bdb; }
+  .astra-stage-chip.accepted { background: #e6f7ed; color: #1e7a42; }
+  .astra-stage-chip.rejected { background: #fce7f3; color: #be185d; }
+  .astra-stage-chip.expired { background: #fde8e8; color: #c44b3f; }
+  .astra-action-value {
+    font-size: 11px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--text);
+    min-width: 42px;
+    text-align: right;
+  }
+  .astra-empty {
+    font-size: 12px;
+    color: var(--text-secondary);
+    padding: 8px 0;
+  }
+  .astra-see-all {
+    align-self: flex-end;
+    margin-top: 2px;
+    padding: 3px 8px;
+    border: none;
+    background: transparent;
+    color: var(--primary);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .astra-see-all:hover { text-decoration: underline; }
+
+  .astra-drawer-group {
+    margin-bottom: 14px;
+  }
+  .astra-drawer-group-title {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--border-light);
+  }
+  .astra-drawer-narrative {
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--text);
+    padding: 10px 12px;
+    background: var(--primary-lighter);
+    border: 1px solid var(--primary-light);
+    border-radius: 8px;
+    margin-bottom: 14px;
+  }
+  .drawer-panel-badge {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 4px;
+    margin-bottom: 6px;
+  }
+  .drawer-panel-badge.list {
+    background: #e8eeff;
+    color: #3b5bdb;
+  }
+  .drawer-panel-badge.chat {
+    background: var(--primary-light);
+    color: var(--primary-dark);
+  }
+
+  /* Astra chat panel (separate from Do-next See all list drawer) */
+  .astra-chat-drawer {
+    width: 400px;
+  }
+  .astra-chat-drawer .proj-drawer-header {
+    background: linear-gradient(180deg, #fef6eb 0%, var(--card) 100%);
+  }
+  .astra-chat-drawer .astra-chat-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 0;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .astra-chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .astra-chat-bubble {
+    max-width: 92%;
+    padding: 9px 12px;
+    border-radius: 10px;
+    font-size: 12.5px;
+    line-height: 1.4;
+  }
+  .astra-chat-bubble.bot {
+    align-self: flex-start;
+    background: var(--gray-bg);
+    color: var(--text);
+    border: 1px solid var(--border-light);
+  }
+  .astra-chat-bubble.user {
+    align-self: flex-end;
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    border: 1px solid #f0dcc0;
+  }
+  .astra-chat-bubble .chat-meta {
+    font-size: 10px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+  .astra-chat-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 0 16px 10px;
+  }
+  .astra-chat-chip {
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    font-size: 11px;
+    font-family: inherit;
+    padding: 5px 9px;
+    border-radius: 14px;
+    cursor: pointer;
+  }
+  .astra-chat-chip:hover {
+    border-color: var(--primary);
+    background: var(--primary-lighter);
+  }
+  .astra-chat-compose {
+    display: flex;
+    gap: 8px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+    background: var(--card);
+  }
+  .astra-chat-compose input {
+    flex: 1;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 12.5px;
+    font-family: inherit;
+    color: var(--text);
+    background: var(--bg);
+  }
+  .astra-chat-compose input:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+  .astra-chat-compose button {
+    border: none;
+    background: var(--primary);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: inherit;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .astra-chat-compose button:hover { filter: brightness(0.95); }
 
   /* Filter bar */
   .filter-bar {
@@ -881,6 +1238,45 @@
     color: var(--text-secondary);
   }
 
+  .rfq-assignee-select {
+    max-width: 118px;
+    padding: 2px 4px;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    font-size: 11px;
+    font-family: inherit;
+    color: var(--text-secondary);
+    background: transparent;
+    cursor: pointer;
+    outline: none;
+  }
+  .rfq-assignee-select:hover,
+  .rfq-assignee-select:focus {
+    border-color: var(--border);
+    background: var(--card);
+    color: var(--text);
+  }
+
+  .demo-badge {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: #f3e8ff;
+    color: #7c3aed;
+    border: 1px solid #e9d5ff;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .rfq-card.is-demo {
+    border-style: dashed;
+    border-color: #d8b4fe;
+    background: #fdfbff;
+  }
+
   .avatar-xs {
     width: 20px; height: 20px;
     border-radius: 50%;
@@ -917,6 +1313,34 @@
     color: var(--text);
     font-weight: 600;
   }
+
+  .rfq-crd {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .rfq-crd .crd-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    background: var(--gray-bg);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  .rfq-crd strong { color: var(--text); font-weight: 600; }
+  .rfq-crd.crd-today strong { color: #b45309; }
+  .rfq-crd.crd-past strong,
+  .rfq-crd.crd-stale strong { color: #b45309; }
+  .rfq-crd.crd-stale .crd-label {
+    background: #fffbeb;
+    color: #b45309;
+    border: 1px solid #fde68a;
+  }
   .rfq-rejection-reason {
     font-size: 10px;
     color: #be185d;
@@ -941,6 +1365,49 @@
   }
 
   .rfq-card:hover .link-icon { opacity: 1; }
+
+  .booking-goto-wrap {
+    position: absolute;
+    bottom: 14px;
+    right: 14px;
+    z-index: 3;
+  }
+  .booking-goto-wrap .link-icon {
+    position: static;
+    opacity: 0;
+  }
+  .rfq-card:hover .booking-goto-wrap .link-icon,
+  .booking-goto-wrap.open .link-icon { opacity: 1; }
+  .booking-menu {
+    display: none;
+    position: absolute;
+    bottom: 22px;
+    right: 0;
+    min-width: 148px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(45, 42, 38, 0.12);
+    padding: 4px;
+    z-index: 10;
+  }
+  .booking-goto-wrap.open .booking-menu { display: block; }
+  .booking-menu button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    border: none;
+    background: transparent;
+    padding: 8px 10px;
+    font-size: 12px;
+    font-family: inherit;
+    color: var(--text);
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .booking-menu button:hover { background: var(--bg); }
+  .booking-menu button.danger { color: var(--red); }
+
 
   /* Planned / Estimated / Actual date type chips */
   .date-type-chip {
@@ -974,6 +1441,8 @@
   /* Lane color accents */
   .lane[data-stage="draft"] .lane-header { background: var(--lane-draft); }
   .lane[data-stage="draft"] .lane-dot { background: #a8a29e; }
+  .lane[data-stage="shipperBookings"] .lane-header { background: var(--lane-shipperBookings); }
+  .lane[data-stage="shipperBookings"] .lane-dot { background: #7c3aed; }
   .lane[data-stage="submitted"] .lane-header { background: var(--lane-submitted); }
   .lane[data-stage="submitted"] .lane-dot { background: #6366f1; }
   .lane[data-stage="awaiting"] .lane-header { background: var(--lane-awaiting); }
@@ -2856,7 +3325,7 @@
       <h1>Pod Priority Board</h1>
       <div class="header-pod-info">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" style="opacity:0.5"><path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path fill-rule="evenodd" d="M5.216 14A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216z"/><path d="M4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/></svg>
-        <select class="pod-select" id="podSelect" aria-label="Pod">
+        <select class="pod-select" id="podSelect" aria-label="Pod" onchange="onPodSelectChange()">
           <option value="pod1">Pod 1 - Jessica Portillo</option>
           <option value="pod2">Pod 2 - Kathy Keathley</option>
           <option value="pod3">Pod 3 - Christine Sullivan</option>
@@ -2910,6 +3379,59 @@
       </div>
     </div>
 
+    <!-- Daily action summary — deterministic pulse + Do next (Astra chat is a separate panel) -->
+    <div class="astra-brief" id="astraBrief">
+      <div class="astra-brief-top">
+        <div class="astra-brief-top-left">
+          <div class="astra-narrative" id="astraNarrative"></div>
+          <div class="astra-refreshed" id="astraRefreshed"></div>
+        </div>
+        <button type="button" class="astra-chat-launch" id="astraChatLaunch" onclick="openAstraChat()" title="Open Astra chat about this board">
+          <span class="astra-brand-mark">✦</span>
+          Astra
+          <span class="launch-hint">Chat</span>
+        </button>
+      </div>
+      <div class="astra-actions-label">Do next <span class="rules-chip">Board rules</span></div>
+      <div id="astraActionList"></div>
+      <button type="button" class="astra-see-all" id="astraSeeAll" onclick="openAstraSeeAll()">See all</button>
+    </div>
+
+    <!-- Do next — full ranked list (deterministic; not Astra chat) -->
+    <div class="proj-drawer-overlay" id="astraDrawerOverlay" onclick="closeAstraSeeAll()"></div>
+    <aside class="proj-drawer" id="astraDrawer" aria-label="Full Do next action list">
+      <div class="proj-drawer-header">
+        <div>
+          <span class="drawer-panel-badge list">Action list</span>
+          <div class="proj-drawer-title">Do next — all actions</div>
+          <div class="proj-drawer-sub">Deterministic ranking from board rules · not Astra chat</div>
+        </div>
+        <button class="proj-drawer-close" onclick="closeAstraSeeAll()" title="Close">✕</button>
+      </div>
+      <div class="proj-drawer-body" id="astraDrawerBody"></div>
+    </aside>
+
+    <!-- Astra chat panel (separate from Do-next list) -->
+    <div class="proj-drawer-overlay" id="astraChatOverlay" onclick="closeAstraChat()"></div>
+    <aside class="proj-drawer astra-chat-drawer" id="astraChatDrawer" aria-label="Astra chat">
+      <div class="proj-drawer-header">
+        <div>
+          <span class="drawer-panel-badge chat">Astra chat</span>
+          <div class="proj-drawer-title"><span class="astra-brand-mark" style="display:inline-flex;vertical-align:middle;margin-right:6px">✦</span>Ask Astra</div>
+          <div class="proj-drawer-sub">Optional · uses the summary below as context · does not re-rank Do next</div>
+        </div>
+        <button class="proj-drawer-close" onclick="closeAstraChat()" title="Close">✕</button>
+      </div>
+      <div class="proj-drawer-body astra-chat-body" id="astraChatBody">
+        <div class="astra-chat-messages" id="astraChatMessages"></div>
+        <div class="astra-chat-suggestions" id="astraChatSuggestions"></div>
+        <div class="astra-chat-compose">
+          <input type="text" id="astraChatInput" placeholder="Ask about this board…" onkeydown="if(event.key==='Enter')sendAstraChat()" />
+          <button type="button" onclick="sendAstraChat()">Send</button>
+        </div>
+      </div>
+    </aside>
+
     <!-- Projections upload audit drawer -->
     <div class="proj-drawer-overlay" id="projDrawerOverlay" onclick="closeProjHistory()"></div>
     <aside class="proj-drawer" id="projDrawer" aria-label="Projections upload history">
@@ -2948,7 +3470,8 @@
       <button class="filter-toggle-btn" id="hpToggle" onclick="toggleHighPriority()" title="Show only high-priority projects">★ High priority</button>
       <button class="filter-toggle-btn" id="attnToggle" onclick="toggleNeedsAttention()" title="Show only cards flagged as needs attention">! Needs attention</button>
       <button class="filter-toggle-btn" id="requoteToggle" onclick="toggleRequotes()" title="Show only requotes">↻ Requotes</button>
-      <button class="filter-toggle-btn" id="crdToggle" onclick="toggleCrdPassed()" title="Show only RFQs whose CRD has passed">⚑ CRD passed?</button>
+      <button class="filter-toggle-btn" id="crdToggle" onclick="toggleCrdPassed()" title="Show only RFQs whose CRD passed ≥2 days ago">⚑ CRD passed?</button>
+      <button class="filter-toggle-btn" id="demoToggle" onclick="toggleIncludeDemoRfqs()" title="Show demo / sandbox RFQs on the board">Include demo RFQs</button>
       <div class="filter-divider"></div>
       <input type="text" class="search-input-sm" placeholder="Search by RFQ ID, client, route..." id="searchInput" oninput="applyFilters()">
       <button class="clear-filters-btn" id="clearBtn" onclick="clearFilters()">Clear all</button>
@@ -3166,13 +3689,14 @@
 
 <script>
 const STAGES = [
+  { key: "shipperBookings", label: "Shipper bookings", stageDataLabel: "Received" },
   { key: "submitted", label: "Submitted for Quote", stageDataLabel: "Received" },
   { key: "awaiting", label: "Awaiting Client Response", stageDataLabel: "Validity" },
   { key: "rejected", label: "Rejected", stageDataLabel: "Rejected" },
   { key: "accepted", label: "Accepted", stageDataLabel: "Accepted" },
   // Aside bucket — not part of the direct Submitted → Accepted flow
   { key: "draft", label: "Draft", stageDataLabel: "Draft", aside: true },
-  { key: "expired", label: "Quote Expired", stageDataLabel: "Expired", aside: true }
+  { key: "expired", label: "Expired (requote pending)", stageDataLabel: "Expired", aside: true }
 ];
 
 const TEAM = [
@@ -3183,6 +3707,9 @@ const TEAM = [
   { name: "Lisa Wang", role: "Origin Ops", color: "#d97706" },
   { name: "Rachel Torres", role: "Dest Ops", color: "#e11d48" }
 ];
+
+// Session overrides for quoting-card assignee changes
+const rfqAssigneeOverrides = {};
 
 const today = new Date(2026, 3, 1);
 
@@ -3327,6 +3854,436 @@ function updateProgressBar() {
   document.getElementById("legAir").textContent = usd(airVal);
   document.getElementById("legOcean").textContent = usd(oceanVal);
   document.getElementById("legInsp").textContent = usd(inspVal);
+
+  renderAstraBrief();
+}
+
+function astraFmtK(n) {
+  if (n == null || isNaN(n)) return "—";
+  if (n >= 1000) return "$" + (n / 1000).toFixed(n % 1000 === 0 ? 0 : 1) + "k";
+  return "$" + n.toLocaleString("en-US");
+}
+
+function getAstraNextActions(limit) {
+  const actions = [];
+
+  RFQS.forEach(rfq => {
+    if (rfq.stage === "draft") return;
+    if (rfq.demo && !includeDemoRfqs) return;
+    const value = getLowestQuotedValue(rfq) || rfq.quotedValue || 0;
+    const crdStale = crdHasPassed(rfq); // CRD ≥2d past — tiebreaker only within P1
+    const isAttn = typeof rfqAttention !== "undefined" && !!rfqAttention[rfq.id];
+    const isHp = typeof isHighPriority === "function" && isHighPriority(rfq);
+    const isRequote = rfq.requote === true || (rfq.quoteHistory && rfq.quoteHistory.length >= 1 && rfq.stage === "submitted");
+    const shortClient = rfq.client.length > 22 ? rfq.client.slice(0, 20) + "…" : rfq.client;
+    const submittedAge = rfq.rfqDate ? diffDays(rfq.rfqDate) : diffDays(rfq.stageDate);
+
+    // Within-bucket preference additives (shared)
+    const prefs = (crdBoost = false) =>
+      (crdBoost && crdStale ? 6 : 0) +
+      Math.min((value || 0) / 2500, 8) +
+      (rfq.firstTime ? 5 : 0) +
+      (isAttn ? 4 : 0) +
+      (isHp ? 2 : 0);
+
+    // P1 — Unquoted (Submitted). Primary = RFQ submission age.
+    if (rfq.stage === "submitted") {
+      if (submittedAge >= 2) {
+        // Highest class within P1
+        actions.push({
+          id: rfq.id,
+          score: 100 + Math.min(submittedAge, 14) + prefs(true) + (isRequote ? 3 : 0),
+          verb: isRequote ? "Requote" : "Quote now",
+          client: shortClient,
+          why: isRequote
+            ? `${submittedAge}d since submitted · requote needed`
+            : `${submittedAge}d since submitted — still unquoted`,
+          stage: "submitted", value, bucket: "P1_quote"
+        });
+      } else if (isRequote || isAttn || isHp) {
+        // ≤2d only surfaces in Do next if flagged / requote
+        actions.push({
+          id: rfq.id,
+          score: 88 + prefs(true) + (isRequote ? 4 : 0),
+          verb: isRequote ? "Requote" : "Quote now",
+          client: shortClient,
+          why: isRequote ? "requote — prior quote declined" : "flagged — needs quote",
+          stage: "submitted", value, bucket: "P1_quote"
+        });
+      }
+      // Fresh ≤2d unflagged Submitted: See-all only via optional low score — omit from ranked actions
+    }
+
+    // P2 — Send booking (Accepted ≥1d, no booking)
+    if (rfq.stage === "accepted") {
+      const sinceAccept = diffDays(rfq.stageDate);
+      if (sinceAccept >= 1) {
+        actions.push({
+          id: rfq.id,
+          score: 78 + Math.min(sinceAccept, 10) * 2 + prefs(false),
+          verb: "Send booking",
+          client: shortClient,
+          why: `${sinceAccept}d after accept — no booking email`,
+          stage: "accepted", value, bucket: "P2_booking"
+        });
+      }
+    }
+
+    // P3 — Follow up (Awaiting): validity risk OR client silent ≥2d
+    if (rfq.stage === "awaiting") {
+      const daysPastValidity = diffDays(rfq.stageDate); // ≥0 means validity today or past
+      const elapsed = rfq.quoteSentDate ? diffDays(rfq.quoteSentDate) : 0;
+      if (daysPastValidity >= 0) {
+        actions.push({
+          id: rfq.id,
+          score: 68 + Math.min(daysPastValidity, 8) + prefs(false),
+          verb: "Follow up",
+          client: shortClient,
+          why: daysPastValidity === 0 ? "validity ends today" : `${daysPastValidity}d past validity`,
+          stage: "awaiting", value, bucket: "P3_followup"
+        });
+      } else if (elapsed >= 2 || isAttn) {
+        actions.push({
+          id: rfq.id,
+          score: 58 + Math.min(elapsed, 10) + prefs(false),
+          verb: "Follow up",
+          client: shortClient,
+          why: `${elapsed}d waiting on client`,
+          stage: "awaiting", value, bucket: "P3_followup"
+        });
+      }
+    }
+
+    // P4 — Reissue (Expired)
+    if (rfq.stage === "expired") {
+      if (rfq.mode === "Air" && !includeAirExpired) return;
+      const sinceExpiry = diffDays(rfq.stageDate);
+      actions.push({
+        id: rfq.id,
+        score: 42 + Math.min(sinceExpiry, 8) + (rfq.firstTime ? 5 : 0) + Math.min((value || 0) / 3000, 5),
+        verb: "Reissue",
+        client: shortClient,
+        why: rfq.firstTime ? "expired · New client" : `${sinceExpiry}d expired`,
+        stage: "expired", value, bucket: "P4_expired"
+      });
+    }
+
+    // P5 — Win back (Rejected): more recent first
+    if (rfq.stage === "rejected") {
+      const sinceReject = diffDays(rfq.stageDate);
+      const reason = (rfq.rejectionReason || "").toLowerCase();
+      let why = `${sinceReject}d since rejected`;
+      if (reason.includes("competitor")) why = "lost to competitor";
+      else if (reason.includes("rate") || reason.includes("budget")) why = "rate / budget gap";
+      else if (reason.includes("ocean") || reason.includes("air")) why = "mode mismatch";
+      // Recency inverted into score: 0d reject >> older
+      actions.push({
+        id: rfq.id,
+        score: 34 - Math.min(sinceReject, 14) + prefs(false),
+        verb: "Win back",
+        client: shortClient,
+        why, stage: "rejected", value, bucket: "P5_winback"
+      });
+    }
+  });
+
+  const best = new Map();
+  actions.forEach(a => {
+    const prev = best.get(a.id);
+    if (!prev || a.score > prev.score) best.set(a.id, a);
+  });
+  const ranked = [...best.values()].sort((a, b) => b.score - a.score);
+  if (limit == null || limit <= 0) return ranked;
+  return ranked.slice(0, limit);
+}
+
+function getAstraPipelinePulse() {
+  let newSinceYesterday = 0;
+  let pendingToQuote = 0;
+  let pendingBeyond2d = 0;
+  let newRejections = 0;
+  let crdStaleCleanup = 0; // CRD ≥2d past on open lanes (excl. Draft, Accepted)
+  const asOfUtc = getBoardAsOfUtcYmd();
+
+  RFQS.forEach(rfq => {
+    if (rfq.stage === "draft") return;
+    if (rfq.demo && !includeDemoRfqs) return;
+
+    // "New since yesterday" uses UTC calendar days (as-of = board clock, treated as UTC YMD)
+    if (rfq.rfqDate && isNewSinceYesterdayUtc(rfq.rfqDate, asOfUtc)) newSinceYesterday++;
+
+    if (rfq.stage === "submitted") {
+      pendingToQuote++;
+      const submittedAge = rfq.rfqDate ? diffDays(rfq.rfqDate) : diffDays(rfq.stageDate);
+      if (submittedAge >= 2) pendingBeyond2d++;
+    }
+
+    if (rfq.stage === "rejected" && diffDays(rfq.stageDate) <= 2) newRejections++;
+
+    // P6 cleanup count: CRD ≥2d across Submitted / Awaiting / Expired / Rejected
+    if (rfq.stage !== "accepted" && crdHasPassed(rfq)) crdStaleCleanup++;
+  });
+
+  return { newSinceYesterday, pendingToQuote, pendingBeyond2d, newRejections, crdStaleCleanup };
+}
+
+function buildAstraNarrativeHtml() {
+  const p = getAstraPipelinePulse();
+  const parts = [];
+  parts.push(`<b>${p.newSinceYesterday}</b> new since yesterday`);
+
+  let pendingClause = `<b>${p.pendingToQuote}</b> pending to quote`;
+  if (p.pendingToQuote > 0 && p.pendingBeyond2d > 0) {
+    pendingClause += `, of which <span class="hot">${p.pendingBeyond2d} already &gt;2d</span>`;
+  }
+  parts.push(pendingClause);
+
+  if (p.newRejections > 0) {
+    parts.push(`<span class="hot"><b>${p.newRejections}</b> new rejection${p.newRejections === 1 ? "" : "s"}</span>`);
+  } else {
+    parts.push(`no new rejections`);
+  }
+
+  // P6 — always append when threshold exceeded (independent of other pulse content)
+  if (p.crdStaleCleanup > 6) {
+    parts.push(`<span class="hot">clean up board — <b>${p.crdStaleCleanup}</b> with CRD &gt;2d past</span>`);
+  }
+
+  return parts.join(`<span class="sep">·</span>`);
+}
+
+function astraActionRowHtml(a, i) {
+  const rankClass = i < 3 ? ` r${i + 1}` : "";
+  return `
+    <button type="button" class="astra-action" onclick="focusAstraAction('${a.id}')" title="Open ${a.id}">
+      <span class="astra-action-rank${rankClass}">${i + 1}</span>
+      <span class="astra-action-verb">${a.verb}</span>
+      <span class="astra-action-body"><b>${a.client}</b> <span class="why">· ${a.why}</span></span>
+      <span class="astra-action-meta">
+        <span class="astra-stage-chip ${a.stage}">${a.stage}</span>
+        <span class="astra-action-value">${astraFmtK(a.value)}</span>
+      </span>
+    </button>`;
+}
+
+let astraSummaryRefreshedAt = null;
+
+/** Board demo clock as UTC calendar YMD (same encoding as RFQ date fields). */
+function getBoardAsOfUtcYmd() {
+  return daysAgo(0);
+}
+
+function parseYmdToUtcMs(ymd) {
+  if (!ymd) return NaN;
+  const [y, m, d] = ymd.split("-").map(Number);
+  return Date.UTC(y, m - 1, d);
+}
+
+function utcCalendarDaysBetween(earlierYmd, laterYmd) {
+  return Math.round((parseYmdToUtcMs(laterYmd) - parseYmdToUtcMs(earlierYmd)) / 86400000);
+}
+
+/** RFQ is "new since yesterday" when its rfq_date is today or yesterday in UTC calendar days. */
+function isNewSinceYesterdayUtc(rfqDateYmd, asOfUtcYmd) {
+  const age = utcCalendarDaysBetween(rfqDateYmd, asOfUtcYmd);
+  return age >= 0 && age <= 1;
+}
+
+function formatLastRefreshedUtc(date) {
+  const d = date || new Date();
+  const formatted = d.toLocaleString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: "UTC"
+  });
+  return `${formatted} UTC`;
+}
+
+function renderAstraBrief() {
+  const el = document.getElementById("astraBrief");
+  if (!el) return;
+  const show = activePipeline === "quoting";
+  el.classList.toggle("visible", show);
+  if (!show) {
+    closeAstraSeeAll();
+    closeAstraChat();
+    return;
+  }
+
+  // Deterministic summary regenerates on every render / page open
+  astraSummaryRefreshedAt = new Date();
+  document.getElementById("astraNarrative").innerHTML = buildAstraNarrativeHtml();
+  const refreshedEl = document.getElementById("astraRefreshed");
+  if (refreshedEl) {
+    refreshedEl.innerHTML = `Last refreshed at <b>${formatLastRefreshedUtc(astraSummaryRefreshedAt)}</b> · new since yesterday = UTC`;
+  }
+
+  const allActions = getAstraNextActions(0);
+  const top = allActions.slice(0, 3);
+  const list = document.getElementById("astraActionList");
+  const seeAllBtn = document.getElementById("astraSeeAll");
+
+  if (!top.length) {
+    list.innerHTML = `<div class="astra-empty">No urgent actions — pipeline looks healthy.</div>`;
+    seeAllBtn.style.display = "none";
+    return;
+  }
+
+  list.innerHTML = top.map((a, i) => astraActionRowHtml(a, i)).join("");
+  seeAllBtn.style.display = "inline-block";
+  seeAllBtn.textContent = `See all (${allActions.length})`;
+}
+
+function openAstraSeeAll() {
+  closeAstraChat();
+  const allActions = getAstraNextActions(0);
+  const body = document.getElementById("astraDrawerBody");
+  const narrative = buildAstraNarrativeHtml();
+  const refreshed = astraSummaryRefreshedAt
+    ? `Last refreshed at ${formatLastRefreshedUtc(astraSummaryRefreshedAt)}`
+    : "";
+
+  // Group by verb for scanability
+  const order = ["Follow up", "Quote now", "Requote", "Send booking", "Win back", "Reissue"];
+  const groups = {};
+  allActions.forEach(a => {
+    if (!groups[a.verb]) groups[a.verb] = [];
+    groups[a.verb].push(a);
+  });
+
+  let html = `<div class="astra-drawer-narrative">${narrative}${refreshed ? `<div class="astra-refreshed" style="margin-top:6px">${refreshed}</div>` : ""}</div>`;
+  if (!allActions.length) {
+    html += `<div class="astra-empty">No urgent actions right now.</div>`;
+  } else {
+    let rank = 0;
+    order.forEach(verb => {
+      const items = groups[verb];
+      if (!items || !items.length) return;
+      html += `<div class="astra-drawer-group"><div class="astra-drawer-group-title">${verb} (${items.length})</div>`;
+      items.forEach(a => {
+        html += astraActionRowHtml(a, rank++);
+      });
+      html += `</div>`;
+    });
+  }
+
+  body.innerHTML = html;
+  document.getElementById("astraDrawer").classList.add("open");
+  document.getElementById("astraDrawerOverlay").classList.add("open");
+}
+
+function closeAstraSeeAll() {
+  const drawer = document.getElementById("astraDrawer");
+  const overlay = document.getElementById("astraDrawerOverlay");
+  if (drawer) drawer.classList.remove("open");
+  if (overlay) overlay.classList.remove("open");
+}
+
+function openAstraChat() {
+  closeAstraSeeAll();
+  const launch = document.getElementById("astraChatLaunch");
+  if (launch) launch.classList.add("active");
+
+  const p = getAstraPipelinePulse();
+  const top = getAstraNextActions(3);
+  const msgs = document.getElementById("astraChatMessages");
+  const suggestions = document.getElementById("astraChatSuggestions");
+
+  const topLine = top.length
+    ? top.map((a, i) => `${i + 1}. ${a.verb} — ${a.client}`).join("<br>")
+    : "No urgent Do-next items right now.";
+
+  msgs.innerHTML = `
+    <div class="astra-chat-bubble bot">
+      <div class="chat-meta">✦ Astra</div>
+      I can help you interpret the board summary. Ranking stays rule-based — I won’t reorder Do next.<br><br>
+      <b>Pulse</b> (UTC “new since yesterday”)<br>
+      ${p.newSinceYesterday} new · ${p.pendingToQuote} pending to quote (${p.pendingBeyond2d} &gt;2d) · ${p.newRejections ? p.newRejections + " new rejection(s)" : "no new rejections"}
+      ${p.crdStaleCleanup > 6 ? `<br>Cleanup cue: ${p.crdStaleCleanup} with CRD &gt;2d past` : ""}
+      <br><br><b>Top Do next</b><br>${topLine}
+      ${astraSummaryRefreshedAt ? `<br><br><span style="font-size:10px;color:var(--text-secondary)">Summary last refreshed ${formatLastRefreshedUtc(astraSummaryRefreshedAt)}</span>` : ""}
+    </div>`;
+
+  const chips = [
+    "Why is #1 the top action?",
+    "What should I clear for CRD cleanup?",
+    "Summarize my Awaiting follow-ups"
+  ];
+  suggestions.innerHTML = chips.map(c =>
+    `<button type="button" class="astra-chat-chip" onclick="sendAstraChatPrompt(${JSON.stringify(c)})">${c}</button>`
+  ).join("");
+
+  document.getElementById("astraChatDrawer").classList.add("open");
+  document.getElementById("astraChatOverlay").classList.add("open");
+  const input = document.getElementById("astraChatInput");
+  if (input) { input.value = ""; input.focus(); }
+}
+
+function closeAstraChat() {
+  const drawer = document.getElementById("astraChatDrawer");
+  const overlay = document.getElementById("astraChatOverlay");
+  const launch = document.getElementById("astraChatLaunch");
+  if (drawer) drawer.classList.remove("open");
+  if (overlay) overlay.classList.remove("open");
+  if (launch) launch.classList.remove("active");
+}
+
+function sendAstraChatPrompt(text) {
+  const input = document.getElementById("astraChatInput");
+  if (input) input.value = text;
+  sendAstraChat();
+}
+
+function sendAstraChat() {
+  const input = document.getElementById("astraChatInput");
+  const msgs = document.getElementById("astraChatMessages");
+  if (!input || !msgs) return;
+  const text = input.value.trim();
+  if (!text) return;
+
+  msgs.insertAdjacentHTML("beforeend", `
+    <div class="astra-chat-bubble user">${text.replace(/</g, "&lt;")}</div>`);
+
+  const top = getAstraNextActions(1)[0];
+  const reply = top
+    ? `Prototype stub — in product I’d answer using the board facts. Right now #1 Do next is <b>${top.verb}</b> on <b>${top.client}</b> (${top.why}). Ranking stays deterministic.`
+    : `Prototype stub — no urgent Do-next items; ask about pulse metrics or open See all for the full rule-ranked list.`;
+
+  msgs.insertAdjacentHTML("beforeend", `
+    <div class="astra-chat-bubble bot"><div class="chat-meta">✦ Astra</div>${reply}</div>`);
+
+  input.value = "";
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function focusAstraAction(rfqId) {
+  closeAstraSeeAll();
+  closeAstraChat();
+  const search = document.getElementById("searchInput");
+  if (search) search.value = rfqId;
+  hpFilter = false;
+  attnFilter = false;
+  requoteFilter = false;
+  crdFilter = false;
+  ["hpToggle", "attnToggle", "requoteToggle", "crdToggle"].forEach(id => {
+    const b = document.getElementById(id);
+    if (b) b.classList.remove("active");
+  });
+  applyFilters();
+  requestAnimationFrame(() => {
+    const card = document.querySelector(`.rfq-card[data-search*="${rfqId}"]`);
+    if (card) {
+      card.scrollIntoView({ behavior: "smooth", block: "center" });
+      card.style.outline = "2px solid var(--primary)";
+      setTimeout(() => { card.style.outline = ""; }, 1600);
+    }
+  });
+  if (typeof reviewQuotesDialog === "function") reviewQuotesDialog(rfqId);
+  else if (typeof openRfq === "function") openRfq(rfqId);
 }
 
 // Booking Target Management Functions
@@ -3501,7 +4458,13 @@ const RFQS = [
   // Draft — RFQs saved but not yet submitted for quote
   { id: "RFQ-4220", client: "Alpine Trading Group", contact: "Thomas Weber", origin: "Munich", destination: "Chicago", mode: "Air", assignee: "Jessica Park", stage: "draft", stageDate: daysAgo(0), rfqDate: daysAgo(0), shipperPo: "", notes: "Waiting on final shipment details from client" },
   { id: "RFQ-4221", client: "Pacific Cargo Lines", contact: "Amy Zhao", origin: "Singapore", destination: "Seattle", mode: "FCL", assignee: "Kathy Simmons", stage: "draft", stageDate: daysAgo(1), rfqDate: daysAgo(1), shipperPo: "", notes: "Need to confirm cargo dimensions" },
-  { id: "RFQ-4222", client: "Nordic Supply Chain AB", contact: "Erik Lindgren", origin: "Stockholm", destination: "Boston", mode: "LCL", assignee: "Lisa Wang", stage: "draft", stageDate: daysAgo(2), rfqDate: daysAgo(2), shipperPo: "NSC-1150", notes: "" },
+  { id: "RFQ-4222", client: "Nordic Supply Chain AB", contact: "Erik Lindgren", origin: "Stockholm", destination: "Boston", mode: "LCL", assignee: "Lisa Wang", stage: "draft", stageDate: daysAgo(2), rfqDate: daysAgo(2), shipperPo: "NSC-1150", notes: "", demo: true },
+
+  // Shipper bookings — inbound bookings before RFQ conversion
+  { id: "BK-88401", name: "Q2 apparel restock — LA", client: "Global Freight Solutions", contact: "John Mitchell", origin: "Shanghai", destination: "Los Angeles", mode: "FCL", shipments: 2, quotedValue: 0, assignee: "Kathy Simmons", stage: "shipperBookings", stageDate: daysAgo(0), rfqDate: daysAgo(0), shipperPo: "GFS-BK-110", crd: daysFromNow(12), quoteSentDate: null, approvalStatus: null, notes: "", firstTime: false },
+  { id: "BK-88412", name: "Machine parts — Houston air", client: "Vertex Trading LLC", contact: "Priya Sharma", origin: "Mumbai", destination: "Houston", mode: "Air", shipments: 1, quotedValue: 0, assignee: "Jessica Park", stage: "shipperBookings", stageDate: daysAgo(2), rfqDate: daysAgo(2), shipperPo: "VTX-BK-88", crd: daysFromNow(5), quoteSentDate: null, approvalStatus: null, notes: "Shipper requested convert once dims confirmed", firstTime: true },
+  { id: "BK-88420", name: "Inspection lot — Savannah", client: "Horizon Shipping Co.", contact: "Derek Müller", origin: "Hamburg", destination: "Savannah", mode: "Inspections", shipments: 1, quotedValue: 0, assignee: "Maria Lopez", stage: "shipperBookings", stageDate: daysAgo(1), rfqDate: daysAgo(1), shipperPo: "", crd: daysFromNow(9), quoteSentDate: null, approvalStatus: null, notes: "", firstTime: false },
+  { id: "BK-88433", name: "Electronics FCL — Newark", client: "Pacific Cargo Lines", contact: "Amy Zhao", origin: "Shenzhen", destination: "Newark", mode: "FCL", shipments: 3, quotedValue: 0, assignee: "James Chen", stage: "shipperBookings", stageDate: daysAgo(4), rfqDate: daysAgo(4), shipperPo: "PCL-BK-441", crd: daysAgo(0), quoteSentDate: null, approvalStatus: null, notes: "", firstTime: false, demo: true },
 
   // Submitted (SUBMITTED_FOR_QUOTE) — fresh RFQs awaiting quote preparation
   { id: "RFQ-4201", client: "Global Freight Solutions", contact: "John Mitchell", origin: "Shanghai", destination: "Los Angeles", mode: "FCL", shipments: 3, quotedValue: 28500, assignee: "Kathy Simmons", stage: "submitted", stageDate: daysAgo(1), rfqDate: daysAgo(1), shipperPo: "GFS-PO-2290", crd: daysFromNow(10), quoteSentDate: null, approvalStatus: null, notes: "", firstTime: false },
@@ -3514,19 +4477,19 @@ const RFQS = [
 
   // Awaiting Client (AWAITING_CLIENT_RESPONSE) — quote sent, waiting on client decision
   { id: "RFQ-4180", client: "Nordic Supply Chain AB", contact: "Erik Lindgren", origin: "Rotterdam", destination: "Miami", mode: "FCL", shipments: 2, quotedValue: 18400, assignee: "Kathy Simmons", stage: "awaiting", stageDate: daysFromNow(3), rfqDate: daysAgo(8), shipperPo: "NSC-1102", crd: daysFromNow(6), quoteSentDate: daysAgo(5), approvalStatus: null, notes: "Client comparing with competitor quote", firstTime: false, quoteHistory: [{date: daysAgo(14), value: 19200}, {date: daysAgo(5), value: 18400}] },
-  { id: "RFQ-4182", client: "Eagle Express Freight", contact: "Tom Bradley", origin: "Shanghai", destination: "Seattle", mode: "Inspections", shipments: 1, quotedValue: 3200, assignee: "James Chen", stage: "awaiting", stageDate: daysFromNow(7), rfqDate: daysAgo(6), shipperPo: "EEF-5591", crd: daysFromNow(12), quoteSentDate: daysAgo(4), approvalStatus: null, notes: "", firstTime: false },
+  { id: "RFQ-4182", client: "Eagle Express Freight", contact: "Tom Bradley", origin: "Shanghai", destination: "Seattle", mode: "Inspections", shipments: 1, quotedValue: 3200, assignee: "James Chen", stage: "awaiting", stageDate: daysFromNow(7), rfqDate: daysAgo(6), shipperPo: "EEF-5591", crd: daysFromNow(12), quoteSentDate: daysAgo(4), approvalStatus: null, notes: "", firstTime: false, demo: true },
   { id: "RFQ-4188", client: "TransAtlantic Logistics", contact: "Sofia Petrov", origin: "Ningbo", destination: "Charleston", mode: "FCL", shipments: 3, quotedValue: 26800, assignee: "Jessica Park", stage: "awaiting", stageDate: daysFromNow(1), rfqDate: daysAgo(10), shipperPo: "TAL-3304", crd: daysFromNow(3), quoteSentDate: daysAgo(7), approvalStatus: null, notes: "Sent 2 options — air + ocean", firstTime: false, quoteHistory: [{date: daysAgo(18), value: 28500}, {date: daysAgo(12), value: 27200}, {date: daysAgo(7), value: 26800}] },
   { id: "RFQ-4190", client: "Maple Leaf Imports", contact: "Diane Tremblay", origin: "Ho Chi Minh", destination: "Vancouver", mode: "Air", shipments: 1, quotedValue: 9500, assignee: "Maria Lopez", stage: "awaiting", stageDate: daysFromNow(12), rfqDate: daysAgo(4), shipperPo: "MLI-8823", crd: daysFromNow(8), quoteSentDate: daysAgo(2), approvalStatus: null, notes: "", firstTime: true },
   { id: "RFQ-4195", client: "Global Freight Solutions", contact: "John Mitchell", origin: "Yantian", destination: "Long Beach", mode: "FCL", shipments: 2, quotedValue: 22000, assignee: "Jessica Park", stage: "awaiting", stageDate: daysFromNow(0), rfqDate: daysAgo(14), shipperPo: "GFS-PO-2185", crd: daysAgo(2), quoteSentDate: daysAgo(10), approvalStatus: null, notes: "Validity expiring today — follow up", firstTime: false },
 
   // Quote Expired (derived: QRD expired while CRD loops back to SUBMITTED_FOR_QUOTE)
   { id: "RFQ-4120", client: "Silk Road Logistics", contact: "Wei Zhang", origin: "Qingdao", destination: "Oakland", mode: "FCL", shipments: 2, quotedValue: 15600, assignee: "Lisa Wang", stage: "expired", stageDate: daysAgo(4), rfqDate: daysAgo(18), shipperPo: "SRL-7710", crd: daysAgo(2), quoteSentDate: daysAgo(14), approvalStatus: null, notes: "Client went silent — try calling", firstTime: false, quoteHistory: [{date: daysAgo(25), value: 16800}, {date: daysAgo(14), value: 15600}] },
-  { id: "RFQ-4125", client: "Pacific Cargo Lines", contact: "Amy Zhao", origin: "Taipei", destination: "Newark", mode: "Inspections", shipments: 1, quotedValue: 2800, assignee: "Kathy Simmons", stage: "expired", stageDate: daysAgo(8), rfqDate: daysAgo(22), shipperPo: "PCL-8905", crd: daysAgo(6), quoteSentDate: daysAgo(18), approvalStatus: null, notes: "", firstTime: false, quoteHistory: [{date: daysAgo(18), value: 2800}] },
+  { id: "RFQ-4125", client: "Pacific Cargo Lines", contact: "Amy Zhao", origin: "Taipei", destination: "Newark", mode: "Inspections", shipments: 1, quotedValue: 2800, assignee: "Kathy Simmons", stage: "expired", stageDate: daysAgo(8), rfqDate: daysAgo(22), shipperPo: "PCL-8905", crd: daysAgo(6), quoteSentDate: daysAgo(18), approvalStatus: null, notes: "", firstTime: false, demo: true, quoteHistory: [{date: daysAgo(18), value: 2800}] },
   { id: "RFQ-4130", client: "Caspian Freight Co.", contact: "Leila Mammadova", origin: "Istanbul", destination: "Houston", mode: "Air", shipments: 1, quotedValue: 7400, assignee: "James Chen", stage: "expired", stageDate: daysAgo(2), rfqDate: daysAgo(12), shipperPo: "CSP-2201", crd: daysAgo(1), quoteSentDate: daysAgo(9), approvalStatus: null, notes: "New client — follow up for relationship", firstTime: true, quoteHistory: [{date: daysAgo(20), value: 8100}, {date: daysAgo(9), value: 7400}] },
 
   // Rejected — client declined quote, RFQ stays on board until explicitly cancelled
   { id: "RFQ-4050", client: "Global Freight Solutions", contact: "John Mitchell", origin: "Yantian", destination: "Long Beach", mode: "FCL", shipments: 2, quotedValue: 22000, assignee: "Jessica Park", stage: "rejected", stageDate: daysAgo(3), rfqDate: daysAgo(30), shipperPo: "GFS-PO-2185", crd: daysAgo(16), quoteSentDate: daysAgo(28), approvalStatus: null, notes: "Client chose competitor — try to win back", firstTime: false, rejectionReason: "Went with a competitor — lower rate offered", quoteHistory: [{date: daysAgo(28), value: 19500}, {date: daysAgo(20), value: 22000}] },
-  { id: "RFQ-3990", client: "TransAtlantic Logistics", contact: "Sofia Petrov", origin: "Ningbo", destination: "Los Angeles", mode: "FCL", shipments: 2, quotedValue: 19200, assignee: "James Chen", stage: "rejected", stageDate: daysAgo(5), rfqDate: daysAgo(35), shipperPo: "TAL-3280", crd: daysAgo(20), quoteSentDate: daysAgo(32), approvalStatus: null, notes: "Rate too high — may re-quote if carrier adjusts", firstTime: false, rejectionReason: "Rate too high compared to budget", quoteHistory: [{date: daysAgo(32), value: 20500}, {date: daysAgo(25), value: 19200}] },
+  { id: "RFQ-3990", client: "TransAtlantic Logistics", contact: "Sofia Petrov", origin: "Ningbo", destination: "Los Angeles", mode: "FCL", shipments: 2, quotedValue: 19200, assignee: "James Chen", stage: "rejected", stageDate: daysAgo(5), rfqDate: daysAgo(35), shipperPo: "TAL-3280", crd: daysAgo(20), quoteSentDate: daysAgo(32), approvalStatus: null, notes: "Rate too high — may re-quote if carrier adjusts", firstTime: false, demo: true, rejectionReason: "Rate too high compared to budget", quoteHistory: [{date: daysAgo(32), value: 20500}, {date: daysAgo(25), value: 19200}] },
   { id: "RFQ-4100", client: "Maple Leaf Imports", contact: "Diane Tremblay", origin: "Ho Chi Minh", destination: "Vancouver", mode: "Air", shipments: 1, quotedValue: 9500, assignee: "Maria Lopez", stage: "rejected", stageDate: daysAgo(1), rfqDate: daysAgo(10), shipperPo: "MLI-8830", crd: daysFromNow(3), quoteSentDate: daysAgo(6), approvalStatus: null, notes: "Wants ocean instead — check feasibility", firstTime: true, rejectionReason: "Client prefers ocean freight — air too expensive", quoteHistory: [{date: daysAgo(6), value: 9500}] },
 
   // Accepted — quote accepted, stays until booking email is sent
@@ -3538,6 +4501,7 @@ const RFQS = [
 
 function getStageDataDisplay(rfq) {
   switch (rfq.stage) {
+    case "shipperBookings": return `Received: <strong>${formatDate(rfq.stageDate)}</strong>`;
     case "submitted": return `Received: <strong>${formatDate(rfq.stageDate)}</strong>`;
     case "awaiting": return `Valid until: <strong>${formatDate(rfq.stageDate)}</strong>`;
     case "expired": return `Expired: <strong>${diffDays(rfq.stageDate)}d ago</strong>`;
@@ -3547,9 +4511,30 @@ function getStageDataDisplay(rfq) {
   return "";
 }
 
+/** CRD date line on Action cards (Shipper bookings / Submitted / Awaiting / Rejected / Accepted / Expired). */
+function getCrdCardDisplay(rfq) {
+  if (!rfq.crd) {
+    return `<div class="rfq-crd"><span class="crd-label">CRD</span> <span>—</span></div>`;
+  }
+  const days = diffDays(rfq.crd);
+  let rel = "";
+  let cls = "";
+  if (days > 0) {
+    rel = ` · ${days}d past`;
+    cls = days >= 2 ? " crd-stale" : " crd-past";
+  } else if (days === 0) {
+    rel = " · today";
+    cls = " crd-today";
+  } else {
+    rel = ` · in ${Math.abs(days)}d`;
+  }
+  return `<div class="rfq-crd${cls}" title="Cargo Ready Date"><span class="crd-label">CRD</span> <strong>${formatDate(rfq.crd)}</strong><span>${rel}</span></div>`;
+}
+
 function getDaysClass(rfq) {
   let days;
   switch (rfq.stage) {
+    case "shipperBookings":
     case "submitted": days = diffDays(rfq.stageDate); break;
     case "awaiting": {
       const elapsed = diffDays(rfq.quoteSentDate || rfq.rfqDate);
@@ -3579,6 +4564,7 @@ function getDaysClass(rfq) {
 
 function getDaysBadgeText(rfq) {
   switch (rfq.stage) {
+    case "shipperBookings":
     case "submitted": return `${diffDays(rfq.stageDate)}d waiting`;
     case "awaiting": {
       const elapsed = diffDays(rfq.quoteSentDate || rfq.rfqDate);
@@ -3595,7 +4581,68 @@ function getDaysBadgeText(rfq) {
 }
 
 function getTeamMember(name) {
-  return TEAM.find(t => t.name === name) || TEAM[0];
+  const fromTeam = TEAM.find(t => t.name === name);
+  if (fromTeam) return fromTeam;
+  if (typeof ALL_USERS !== "undefined") {
+    const u = ALL_USERS.find(x => x.name === name);
+    if (u) return { name: u.name, role: "AM", color: u.color };
+  }
+  return TEAM[0];
+}
+
+function getEffectiveAssignee(rfq) {
+  return rfqAssigneeOverrides[rfq.id] || rfq.assignee;
+}
+
+function getSelectedPodId() {
+  return document.getElementById("podSelect")?.value || "pod1";
+}
+
+function getPodQuotingAssignees() {
+  if (typeof pods === "undefined") return [];
+  const pod = pods.find(p => p.id === getSelectedPodId()) || pods[0];
+  if (!pod || !pod.roles) return [];
+  const ids = [];
+  if (pod.roles.accountManager) ids.push(pod.roles.accountManager);
+  const assoc = pod.roles.associateAM || pod.roles.associateAMs;
+  if (assoc) {
+    if (Array.isArray(assoc)) ids.push(...assoc);
+    else ids.push(assoc);
+  }
+  const seen = new Set();
+  return ids.map(getUser).filter(u => {
+    if (!u || seen.has(u.id)) return false;
+    seen.add(u.id);
+    return true;
+  });
+}
+
+function buildAssigneeSelectHTML(rfq) {
+  const current = getEffectiveAssignee(rfq);
+  const members = getPodQuotingAssignees();
+  const options = members.length
+    ? members
+    : [{ name: current, color: getTeamMember(current).color }];
+  // Ensure current assignee is always selectable even if not in pod roles
+  if (!options.some(m => m.name === current)) {
+    options.unshift({ name: current, color: getTeamMember(current).color });
+  }
+  const opts = options.map(m =>
+    `<option value="${m.name}" ${m.name === current ? "selected" : ""}>${m.name}</option>`
+  ).join("");
+  return `<select class="rfq-assignee-select" onclick="event.stopPropagation()" onchange="changeBoardAssignee('${rfq.id}', this.value)" title="Change assignee (AM / Associate of this pod)">${opts}</select>`;
+}
+
+function changeBoardAssignee(rfqId, name) {
+  rfqAssigneeOverrides[rfqId] = name;
+  const rfq = RFQS.find(r => r.id === rfqId);
+  if (rfq) rfq.assignee = name;
+  applyFilters();
+  if (typeof showToast === "function") showToast(`Assignee updated to ${name}`, "success");
+}
+
+function onPodSelectChange() {
+  applyFilters();
 }
 
 function modeClass(mode) {
@@ -3659,6 +4706,49 @@ function reviewQuotesDialog(id) {
   alert(`Will navigate to review quotes page for this RFQ (${id})`);
 }
 
+function openBookingsPage(id) {
+  alert(`Will navigate to bookings page for this booking (${id})`);
+}
+
+function closeAllBookingMenus() {
+  document.querySelectorAll(".booking-goto-wrap.open").forEach(el => el.classList.remove("open"));
+}
+
+function toggleBookingMenu(id, event) {
+  if (event) event.stopPropagation();
+  const wrap = document.getElementById(`booking-goto-${id}`);
+  if (!wrap) return;
+  const wasOpen = wrap.classList.contains("open");
+  closeAllBookingMenus();
+  if (!wasOpen) wrap.classList.add("open");
+}
+
+function convertBookingToRfq(id) {
+  closeAllBookingMenus();
+  const booking = RFQS.find(r => r.id === id && r.stage === "shipperBookings");
+  if (!booking) return;
+  if (!confirm(`Convert booking ${id} to an RFQ?`)) return;
+  const digits = id.replace(/\D/g, "") || String(Date.now()).slice(-4);
+  booking.id = "RFQ-" + digits.slice(-4);
+  booking.stage = "submitted";
+  booking.quotedValue = booking.quotedValue || 0;
+  if (!booking.name) booking.name = `${booking.mode} booking`;
+  alert(`Converted ${id} → ${booking.id} in Submitted for Quote (prototype stub).`);
+  applyFilters();
+}
+
+function cancelBooking(id) {
+  closeAllBookingMenus();
+  if (!confirm(`Cancel booking ${id}? This can't be undone.`)) return;
+  const i = RFQS.findIndex(r => r.id === id && r.stage === "shipperBookings");
+  if (i > -1) {
+    RFQS.splice(i, 1);
+    applyFilters();
+  }
+}
+
+document.addEventListener("click", () => closeAllBookingMenus());
+
 // Shared requote check (used by the card marker and the Requotes filter)
 function isRequoteRfq(rfq) {
   return ["submitted", "awaiting", "rejected", "accepted"].includes(rfq.stage)
@@ -3681,18 +4771,24 @@ function isDeletableCard(rfq) {
 }
 
 function buildCardHTML(rfq) {
+  const assigneeName = getEffectiveAssignee(rfq);
+  const isDemo = !!rfq.demo;
+  const demoBadge = isDemo ? `<span class="demo-badge" title="Demo / sandbox RFQ">Demo</span>` : "";
+  const demoClass = isDemo ? " is-demo" : "";
+
   // Handle draft RFQs with minimal display
   if (rfq.stage === "draft") {
-    const tm = getTeamMember(rfq.assignee);
-    const initials = rfq.assignee.split(" ").map(w => w[0]).join("");
+    const tm = getTeamMember(assigneeName);
+    const initials = assigneeName.split(" ").map(w => w[0]).join("");
     
     return `
-      <div class="rfq-card" onclick="deleteDraftRfq('${rfq.id}')" title="Click to delete this draft RFQ" data-client="${rfq.client}" data-assignee="${rfq.assignee}" data-mode="${rfq.mode}" data-search="${rfq.id} ${rfq.client} ${rfq.origin} ${rfq.destination} ${rfq.assignee}">
+      <div class="rfq-card${demoClass}" onclick="deleteDraftRfq('${rfq.id}')" title="Click to delete this draft RFQ" data-client="${rfq.client}" data-assignee="${assigneeName}" data-mode="${rfq.mode}" data-search="${rfq.id} ${rfq.client} ${rfq.origin} ${rfq.destination} ${assigneeName}">
         <div class="rfq-card-header">
           <div class="rfq-title-wrap">
             <div class="rfq-client-row">
               <span class="rfq-title-primary" title="${rfqName(rfq).replace(/"/g, "&quot;")}">${rfqName(rfq)}</span>
               ${rfq.firstTime ? `<span class="new-badge" title="New client">New</span>` : ""}
+              ${demoBadge}
             </div>
             <div class="rfq-client-line">${rfq.client}</div>
             <div class="rfq-id">${silqId(rfq)}</div>
@@ -3712,26 +4808,26 @@ function buildCardHTML(rfq) {
         <div class="rfq-footer">
           <div class="rfq-assignee">
             <div class="avatar-xs" style="background:${tm.color}">${initials}</div>
-            <span class="assignee-name">${rfq.assignee}</span>
+            ${buildAssigneeSelectHTML(rfq)}
           </div>
         </div>
       </div>`;
   }
 
-  const tm = getTeamMember(rfq.assignee);
-  const initials = rfq.assignee.split(" ").map(w => w[0]).join("");
+  const tm = getTeamMember(assigneeName);
+  const initials = assigneeName.split(" ").map(w => w[0]).join("");
   const isFirstTime = rfq.firstTime;
   const isRejected = rfq.stage === "rejected";
   const isAccepted = rfq.stage === "accepted";
-  const crdPassed = rfq.crd && diffDays(rfq.crd) > 0;
+  const crdPassed = crdHasPassed(rfq);
   const shipLabel = rfq.shipments === 1 ? "1 shipment" : `${rfq.shipments} shipments`;
   
   // Get lowest quoted value
   const lowestValue = getLowestQuotedValue(rfq);
   const hasMultipleQuotes = rfq.quoteHistory && rfq.quoteHistory.length > 0;
   const quoteCountText = hasMultipleQuotes ? `Lowest of ${rfq.quoteHistory.length + 1} quotes` : '';
-  // Submitted RFQs have no quote yet — no cost estimate to show
-  const valueDisplay = (lowestValue && rfq.stage !== "submitted") ? `$${lowestValue.toLocaleString("en-US")}` : '';
+  // Submitted RFQs / shipper bookings have no quote yet — no cost estimate to show
+  const valueDisplay = (lowestValue && rfq.stage !== "submitted" && rfq.stage !== "shipperBookings") ? `$${lowestValue.toLocaleString("en-US")}` : '';
 
   const isAttn = rfqAttention[rfq.id];
   const isRequote = isRequoteRfq(rfq);
@@ -3741,18 +4837,33 @@ function buildCardHTML(rfq) {
   flags += `<button class="card-attn-btn${isAttn ? " active" : ""}" onclick="event.stopPropagation();toggleAttention('${rfq.id}',true)" title="${isAttn ? "Remove attention flag" : "Flag as needs attention"}">!</button>`;
   if (isDeletable) flags += `<button class="card-del-btn" onclick="event.stopPropagation();deleteRfq('${rfq.id}')" title="${crdPassed ? "CRD passed — delete this RFQ" : "Delete this expired RFQ"}">🗑</button>`;
 
+  const isBooking = rfq.stage === "shipperBookings";
+  const titlePrimary = isBooking ? (rfq.name || "Untitled booking") : rfqName(rfq);
+  const idPrimary = isBooking ? rfq.id : silqId(rfq);
+  const cardClick = isBooking ? `openBookingsPage('${rfq.id}')` : `reviewQuotesDialog('${rfq.id}')`;
+  const goToHtml = isBooking
+    ? `<div class="booking-goto-wrap" id="booking-goto-${rfq.id}" onclick="event.stopPropagation()">
+        ${LINK_ICON_SVG.replace('class="link-icon"', `class="link-icon" onclick="toggleBookingMenu('${rfq.id}', event)" title="Go to actions"`)}
+        <div class="booking-menu">
+          <button type="button" onclick="convertBookingToRfq('${rfq.id}')">Convert to RFQ</button>
+          <button type="button" class="danger" onclick="cancelBooking('${rfq.id}')">Cancel booking</button>
+        </div>
+      </div>`
+    : linkIconHtml(`event.stopPropagation();reviewQuotesDialog('${rfq.id}')`);
+
   return `
-    <div class="rfq-card${highlightClass}" onclick="reviewQuotesDialog('${rfq.id}')" data-client="${rfq.client}" data-assignee="${rfq.assignee}" data-mode="${rfq.mode}" data-lane="${rfq.origin}-${rfq.destination}" data-search="${rfq.id} ${rfq.client} ${rfq.origin} ${rfq.destination} ${rfq.assignee}">
-      ${linkIconHtml(`event.stopPropagation();reviewQuotesDialog('${rfq.id}')`)}
+    <div class="rfq-card${highlightClass}${demoClass}" onclick="${cardClick}" data-client="${rfq.client}" data-assignee="${assigneeName}" data-mode="${rfq.mode}" data-lane="${rfq.origin}-${rfq.destination}" data-search="${rfq.id} ${rfq.client} ${rfq.origin} ${rfq.destination} ${assigneeName} ${titlePrimary.replace(/"/g, "")}">
+      ${goToHtml}
       <div class="rfq-card-header">
         <div class="rfq-title-wrap">
           <div class="rfq-client-row">
             ${isRequote ? `<span class="requote-inline" title="Requote — revised quote issued">↻</span>` : ""}
-            <span class="rfq-title-primary" title="${rfqName(rfq).replace(/"/g, "&quot;")}">${rfqName(rfq)}</span>
+            <span class="rfq-title-primary" title="${titlePrimary.replace(/"/g, "&quot;")}">${titlePrimary}</span>
             ${isFirstTime ? `<span class="new-badge" title="New client">New</span>` : ""}
+            ${demoBadge}
           </div>
           <div class="rfq-client-line">${rfq.client}</div>
-          <div class="rfq-id">${silqId(rfq)}</div>
+          <div class="rfq-id">${idPrimary}</div>
         </div>
         <div class="rfq-flags">${flags}</div>
       </div>
@@ -3767,11 +4878,13 @@ function buildCardHTML(rfq) {
         <span class="shipment-count">${shipLabel}</span>
         ${valueDisplay ? `<span class="shipment-count" ${hasMultipleQuotes ? `title="${quoteCountText}"` : ''} style="${hasMultipleQuotes ? 'cursor: help; text-decoration: underline dotted;' : ''}">${valueDisplay}</span>` : ''}
       </div>
-      <div class="rfq-stage-data">${getStageDataDisplay(rfq)}</div>${buildOpsTracker(rfq)}
+      <div class="rfq-stage-data">${getStageDataDisplay(rfq)}</div>
+      ${getCrdCardDisplay(rfq)}
+      ${buildOpsTracker(rfq)}
       <div class="rfq-footer">
         <div class="rfq-assignee">
           <div class="avatar-xs" style="background:${tm.color}">${initials}</div>
-          ${rfq.assignee}
+          ${buildAssigneeSelectHTML(rfq)}
         </div>
         <span class="rfq-days ${getDaysClass(rfq)}">${getDaysBadgeText(rfq)}</span>
       </div>
@@ -4462,10 +5575,17 @@ function fmtK(n) {
   return "$" + n.toLocaleString("en-US");
 }
 
-let includeAirExpired = false;  // controlled by the toggle inside the Quote Expired lane
+let includeAirExpired = false;  // controlled by the toggle inside the Expired (requote pending) lane
+let includeDemoRfqs = false;    // filter chip — demo RFQs hidden by default
 
 function toggleIncludeAirExpired() {
   includeAirExpired = !includeAirExpired;
+  applyFilters();
+}
+
+function toggleIncludeDemoRfqs() {
+  includeDemoRfqs = !includeDemoRfqs;
+  document.getElementById("demoToggle").classList.toggle("active", includeDemoRfqs);
   applyFilters();
 }
 
@@ -4486,7 +5606,7 @@ const HIGH_PRIORITY = new Set(["RFQ-4212", "RFQ-4195", "RFQ-4188", "RFQ-4160", "
 function isHighPriority(rfq) { return rfq.highPriority === true || HIGH_PRIORITY.has(rfq.id); }
 
 let hpFilter = false, attnFilter = false, requoteFilter = false, crdFilter = false;
-function crdHasPassed(rfq) { return rfq.crd && diffDays(rfq.crd) > 0; }
+function crdHasPassed(rfq) { return rfq.crd && diffDays(rfq.crd) >= 2; }
 
 function toggleHighPriority() {
   hpFilter = !hpFilter;
@@ -4645,15 +5765,15 @@ function renderBoard(rfqs) {
       ? valueLabel
       : `${valueLabel}<span class="info-tip" data-tip="Lowest quote value per RFQ, summed across this stage">i</span>`;
 
-    // Submitted RFQs have no quote yet — omit the quoted-value stat for that lane
-    const showValueStat = !(stage.key === "submitted" && !isOps);
+    // Submitted RFQs / shipper bookings have no quote yet — omit the quoted-value stat for that lane
+    const showValueStat = !( (stage.key === "submitted" || stage.key === "shipperBookings") && !isOps);
     const valueStatHTML = showValueStat ? `
         <div class="lane-stat">
           <span class="lane-stat-value">${fmtK(totalValue)}</span>
           <span class="lane-stat-label">${valueLabelHTML}</span>
         </div>` : "";
 
-    // Include-Air toggle lives inside the Quote Expired lane
+    // Include-Air toggle lives inside the Expired (requote pending) lane
     const airExpiredTotal = RFQS.filter(r => r.stage === "expired" && r.mode === "Air").length;
     const controlHTML = (!isOps && stage.key === "expired") ? `
       <div class="lane-control">
@@ -4698,7 +5818,7 @@ function renderSummary(rfqs) {
   const expiredCount = rfqs.filter(r => r.stage === "expired").length;
   const rejectedCount = rfqs.filter(r => r.stage === "rejected").length;
   const acceptedCount = rfqs.filter(r => r.stage === "accepted").length;
-  const crdPassedCount = rfqs.filter(r => r.crd && diffDays(r.crd) > 0 && r.stage === "submitted").length;
+  const crdPassedCount = rfqs.filter(r => crdHasPassed(r) && r.stage === "submitted").length;
   const firstTimeCount = rfqs.filter(r => r.firstTime).length;
 
   let html = `
@@ -4808,18 +5928,20 @@ function applyFilters() {
   const source = isOps ? OPS_SHIPMENTS : RFQS;
   let filtered = source;
 
-  if (team) filtered = filtered.filter(r => isOps ? (r.type === "inspection" ? r.inspector === team : (r.originOps === team || r.destOps === team)) : r.assignee === team);
+  if (team) filtered = filtered.filter(r => isOps ? (r.type === "inspection" ? r.inspector === team : (r.originOps === team || r.destOps === team)) : getEffectiveAssignee(r) === team);
   if (client) filtered = filtered.filter(r => r.client === client);
   if (mode) filtered = filtered.filter(r => r.mode === mode);
   if (!isOps && hpFilter) filtered = filtered.filter(r => isHighPriority(r));
   if (!isOps && attnFilter) filtered = filtered.filter(r => rfqAttention[r.id]);
   if (!isOps && requoteFilter) filtered = filtered.filter(r => isRequoteRfq(r));
   if (!isOps && crdFilter) filtered = filtered.filter(r => crdHasPassed(r));
+  // Demo RFQs hidden unless "Include demo RFQs" is on
+  if (!isOps && !includeDemoRfqs) filtered = filtered.filter(r => !r.demo);
   if (search) {
     filtered = filtered.filter(r => {
       const haystack = isOps
         ? (r.type === "inspection" ? `${r.id} ${r.silqId} ${r.client} ${r.location} ${r.inspector}` : `${r.id} ${r.silqId} ${r.client} ${r.origin} ${r.destination} ${r.originOps} ${r.destOps}`)
-        : `${r.id} ${r.client} ${r.origin} ${r.destination} ${r.assignee}`;
+        : `${r.id} ${r.client} ${r.origin} ${r.destination} ${getEffectiveAssignee(r)}`;
       return haystack.toLowerCase().includes(search);
     });
   }
@@ -4861,18 +5983,19 @@ function clearFilters() {
   document.getElementById("filterSort").value = "recent";
   document.getElementById("searchInput").value = "";
   includeAirExpired = false;
+  includeDemoRfqs = false;
   hpFilter = false; attnFilter = false; requoteFilter = false; crdFilter = false;
   document.getElementById("hpToggle").classList.remove("active");
   document.getElementById("attnToggle").classList.remove("active");
   document.getElementById("requoteToggle").classList.remove("active");
   document.getElementById("crdToggle").classList.remove("active");
+  const demoBtn = document.getElementById("demoToggle");
+  if (demoBtn) demoBtn.classList.remove("active");
   document.getElementById("clearBtn").classList.remove("visible");
   opsDelayedFilter = false;
   const dbtn = document.getElementById("opsDelayedBtn");
   if (dbtn) dbtn.classList.remove("active");
-  const source = activePipeline === "ops" ? OPS_SHIPMENTS : RFQS;
-  renderBoard(source);
-  renderSummary(source);
+  applyFilters();
 }
 
 /* ── Table View ────────────────────────────── */
@@ -4965,8 +6088,6 @@ const rfqNotes = {};
 const rfqAttention = { "RFQ-4212": true, "RFQ-4195": true, "RFQ-4050": true };
 const rfqDeadlines = {};
 RFQS.forEach(r => { if (r.notes) rfqNotes[r.id] = r.notes; });
-
-const rfqAssigneeOverrides = {};
 
 const TABLE_COLUMNS = [
   { key: "assignee",  label: "Assignee",      defaultOn: true },
@@ -5350,7 +6471,7 @@ function renderTableView() {
     ).join("");
 
     const flags = [];
-    const hasCrdPassed = r.crd && diffDays(r.crd) > 0 && r.stages.includes("submitted");
+    const hasCrdPassed = crdHasPassed(r) && r.stages.includes("submitted");
     if (r.firstTime) flags.push(`<span class="tv-flag first-time">1st client</span>`);
     if (hasCrdPassed) flags.push(`<span class="tv-flag delayed">CRD passed</span>`);
     if (r.stages.includes("rejected")) flags.push(`<span class="tv-flag delayed">Rejected</span>`);
