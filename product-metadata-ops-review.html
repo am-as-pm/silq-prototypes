@@ -1,0 +1,2130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Product Information in Silq — Operations Review</title>
+  <style>
+    :root {
+      --bg: #f4f6f8;
+      --surface: #ffffff;
+      --surface-2: #f8fafc;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --text-soft: #94a3b8;
+      --primary: #0f766e;
+      --primary-soft: #ccfbf1;
+      --primary-ink: #115e59;
+      --accent: #1d4ed8;
+      --accent-soft: #dbeafe;
+      --warn: #b45309;
+      --warn-soft: #ffedd5;
+      --ok: #15803d;
+      --ok-soft: #dcfce7;
+      --purple: #6d28d9;
+      --purple-soft: #ede9fe;
+      --shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 8px 24px rgba(15, 23, 42, 0.04);
+      --radius: 14px;
+      --radius-sm: 10px;
+      --font: "Segoe UI", "Avenir Next", "Helvetica Neue", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: var(--font);
+      color: var(--text);
+      background:
+        radial-gradient(1200px 500px at 10% -10%, #d1fae5 0%, transparent 55%),
+        radial-gradient(900px 420px at 100% 0%, #e0f2fe 0%, transparent 50%),
+        var(--bg);
+      min-height: 100vh;
+      line-height: 1.55;
+    }
+
+    .page {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 28px 20px 80px;
+    }
+
+    .header {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: calc(var(--radius) + 4px);
+      box-shadow: var(--shadow);
+      padding: 32px;
+      margin-bottom: 20px;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--primary-ink);
+      background: var(--primary-soft);
+      border-radius: 999px;
+      padding: 6px 12px;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(1.6rem, 2.5vw, 2.2rem);
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 16px;
+      max-width: 680px;
+    }
+
+    section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 28px;
+      margin-bottom: 16px;
+    }
+
+    section h2 {
+      margin: 0 0 8px;
+      font-size: 20px;
+      letter-spacing: -0.02em;
+    }
+
+    section .lead {
+      margin: 0 0 20px;
+      color: var(--text-muted);
+      font-size: 15px;
+    }
+
+    h3 {
+      margin: 24px 0 10px;
+      font-size: 16px;
+    }
+
+    h3:first-of-type { margin-top: 0; }
+
+    /* Four layers — visual explainer */
+    .layers-visual {
+      display: grid;
+      gap: 28px;
+      margin-top: 8px;
+    }
+
+    .layers-analogy {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      padding: 16px 18px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .layers-analogy-icon {
+      flex-shrink: 0;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: var(--primary-soft);
+      color: var(--primary-ink);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+
+    .layers-analogy strong { color: var(--text); }
+
+    .nest-diagram {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      padding: 8px 0 4px;
+    }
+
+    .nest-box {
+      width: 100%;
+      border-radius: 16px;
+      padding: 20px 22px 22px;
+      position: relative;
+      border: 2px solid;
+    }
+
+    .nest-box + .nest-box {
+      margin-top: -6px;
+      width: calc(100% - 32px);
+    }
+
+    .nest-box.n1 {
+      background: linear-gradient(180deg, #f0fdfa 0%, #ffffff 100%);
+      border-color: #5eead4;
+      z-index: 1;
+    }
+
+    .nest-box.n2 {
+      background: linear-gradient(180deg, #eff6ff 0%, #ffffff 100%);
+      border-color: #93c5fd;
+      z-index: 2;
+    }
+
+    .nest-box.n3 {
+      background: linear-gradient(180deg, #fff7ed 0%, #ffffff 100%);
+      border-color: #fdba74;
+      z-index: 3;
+    }
+
+    .nest-box.n4 {
+      background: linear-gradient(180deg, #f5f3ff 0%, #ffffff 100%);
+      border-color: #c4b5fd;
+      z-index: 4;
+      width: calc(100% - 64px);
+    }
+
+    .nest-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 6px;
+    }
+
+    .nest-box.n1 .nest-label { color: #0f766e; }
+    .nest-box.n2 .nest-label { color: #1d4ed8; }
+    .nest-box.n3 .nest-label { color: #c2410c; }
+    .nest-box.n4 .nest-label { color: #6d28d9; }
+
+    .nest-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      background: rgba(255,255,255,0.85);
+    }
+
+    .nest-title {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+
+    .nest-example {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin: 0 0 10px;
+    }
+
+    .nest-example em {
+      font-style: normal;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .nest-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .nest-chip {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.9);
+      border: 1px solid rgba(0,0,0,0.06);
+      color: var(--text);
+    }
+
+    .nest-arrow {
+      text-align: center;
+      color: var(--text-soft);
+      font-size: 13px;
+      font-weight: 700;
+      padding: 6px 0;
+      letter-spacing: 0.02em;
+    }
+
+    .example-walkthrough {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .example-walkthrough-header {
+      background: var(--surface-2);
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .example-walkthrough-header span {
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    .example-steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .example-step {
+      padding: 16px 14px;
+      border-right: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    .example-step:last-child { border-right: 0; }
+
+    .example-step-num {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
+    }
+
+    .example-step.n1 .example-step-num { color: #0f766e; }
+    .example-step.n2 .example-step-num { color: #1d4ed8; }
+    .example-step.n3 .example-step-num { color: #c2410c; }
+    .example-step.n4 .example-step-num { color: #6d28d9; }
+
+    .example-step-label {
+      font-weight: 700;
+      font-size: 12px;
+      margin-bottom: 10px;
+      line-height: 1.35;
+    }
+
+    .example-kv {
+      display: grid;
+      gap: 6px;
+    }
+
+    .example-kv-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2px;
+    }
+
+    .example-kv-row .k {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-soft);
+      font-weight: 600;
+    }
+
+    .example-kv-row .v {
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.35;
+    }
+
+    .layers-rules {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .layer-rule {
+      display: flex;
+      gap: 12px;
+      padding: 14px 16px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+    }
+
+    .layer-rule-icon {
+      flex-shrink: 0;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .layer-rule p {
+      margin: 0;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    .layer-rule strong {
+      display: block;
+      color: var(--text);
+      font-size: 13px;
+      margin-bottom: 2px;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .field-card {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+    }
+
+    .field-card h4 {
+      margin: 0 0 8px;
+      font-size: 14px;
+      color: var(--primary-ink);
+    }
+
+    .field-card ul {
+      margin: 0;
+      padding-left: 18px;
+      font-size: 14px;
+      color: var(--text);
+    }
+
+    .field-card li { margin-bottom: 4px; }
+
+    table.simple {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      margin: 16px 0;
+    }
+
+    table.simple th,
+    table.simple td {
+      text-align: left;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    table.simple th {
+      background: var(--surface-2);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 999px;
+      margin-right: 4px;
+      margin-bottom: 4px;
+    }
+
+    .tag.upload { background: var(--primary-soft); color: var(--primary-ink); }
+    .tag.manual { background: #e2e8f0; color: #334155; }
+    .tag.auto { background: var(--accent-soft); color: var(--accent); }
+    .tag.partial { background: var(--warn-soft); color: var(--warn); }
+    .tag.none { background: #f1f5f9; color: var(--text-soft); }
+
+    .callout {
+      border-left: 4px solid var(--primary);
+      background: linear-gradient(90deg, #f0fdfa, #ffffff);
+      border: 1px solid var(--border);
+      border-left-width: 4px;
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      margin: 16px 0;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .callout.warn {
+      border-left-color: var(--warn);
+      background: linear-gradient(90deg, #fffbeb, #ffffff);
+    }
+
+    .callout strong { color: var(--text); }
+
+    .use-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .use-item {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      font-size: 14px;
+    }
+
+    .use-item .icon {
+      font-size: 22px;
+      margin-bottom: 6px;
+    }
+
+    .footer {
+      text-align: center;
+      color: var(--text-soft);
+      font-size: 12px;
+      margin-top: 24px;
+    }
+
+    @media print {
+      section { break-inside: avoid; }
+    }
+
+    /* Product Library */
+    .library-visual {
+      display: grid;
+      gap: 0;
+      margin-top: 8px;
+    }
+
+    .library-hero {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      padding: 20px 22px;
+      background: linear-gradient(135deg, #f0fdfa 0%, #ecfeff 50%, #ffffff 100%);
+      border: 2px solid #5eead4;
+      border-radius: var(--radius);
+      margin-bottom: 0;
+      position: relative;
+      z-index: 2;
+    }
+
+    .library-hero-icon {
+      flex-shrink: 0;
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      background: var(--primary);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      box-shadow: 0 4px 12px rgba(15, 118, 110, 0.25);
+    }
+
+    .library-hero h3 {
+      margin: 0 0 6px;
+      font-size: 18px;
+      color: var(--primary-ink);
+    }
+
+    .library-hero p {
+      margin: 0;
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .library-hero p strong { color: var(--text); }
+
+    .library-layers {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .library-layer-chip {
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      border: 1px solid;
+    }
+
+    .library-layer-chip.l1 {
+      background: #f0fdfa;
+      border-color: #99f6e4;
+    }
+
+    .library-layer-chip.l2 {
+      background: #eff6ff;
+      border-color: #bfdbfe;
+    }
+
+    .library-layer-chip strong {
+      display: block;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+    }
+
+    .library-layer-chip.l1 strong { color: #115e59; }
+    .library-layer-chip.l2 strong { color: #1e40af; }
+
+    .library-flow {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto 1fr;
+      gap: 8px;
+      align-items: stretch;
+      margin-top: -2px;
+      padding-top: 24px;
+    }
+
+    .library-flow-arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-soft);
+      font-size: 20px;
+      padding-top: 20px;
+    }
+
+    .flow-box {
+      border-radius: var(--radius-sm);
+      padding: 16px 14px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      font-size: 13px;
+      text-align: center;
+    }
+
+    .flow-box .flow-icon {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .flow-box strong {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+
+    .flow-box .flow-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .flow-box .flow-layers {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 999px;
+      display: inline-block;
+    }
+
+    .flow-box.library-box {
+      border-color: #5eead4;
+      background: linear-gradient(180deg, #f0fdfa, #fff);
+    }
+
+    .flow-box.library-box .flow-layers {
+      background: #ccfbf1;
+      color: #115e59;
+    }
+
+    .flow-box.project-box {
+      border-color: #fdba74;
+      background: linear-gradient(180deg, #fff7ed, #fff);
+    }
+
+    .flow-box.project-box .flow-layers {
+      background: #ffedd5;
+      color: #9a3412;
+    }
+
+    .flow-box.shipment-box {
+      border-color: #c4b5fd;
+      background: linear-gradient(180deg, #f5f3ff, #fff);
+    }
+
+    .flow-box.shipment-box .flow-layers {
+      background: #ede9fe;
+      color: #5b21b6;
+    }
+
+    .library-manage {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .library-manage-card {
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--surface-2);
+      font-size: 13px;
+    }
+
+    .library-manage-card .lm-icon {
+      font-size: 20px;
+      margin-bottom: 6px;
+    }
+
+    .library-manage-card strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 14px;
+    }
+
+    .library-manage-card p {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 720px) {
+      .library-flow {
+        grid-template-columns: 1fr;
+        gap: 4px;
+        padding-top: 16px;
+      }
+      .library-flow-arrow {
+        padding: 0;
+        transform: rotate(90deg);
+      }
+      .library-layers { grid-template-columns: 1fr; }
+      .library-manage { grid-template-columns: 1fr; }
+    }
+
+    /* Product family vs variations */
+    .fv-split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 8px;
+    }
+
+    .fv-card {
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      border: 2px solid;
+    }
+
+    .fv-card.family {
+      background: linear-gradient(180deg, #f0fdfa 0%, #fff 100%);
+      border-color: #5eead4;
+    }
+
+    .fv-card.variation {
+      background: linear-gradient(180deg, #eff6ff 0%, #fff 100%);
+      border-color: #93c5fd;
+    }
+
+    .fv-card .fv-badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 999px;
+      margin-bottom: 10px;
+    }
+
+    .fv-card.family .fv-badge { background: #ccfbf1; color: #115e59; }
+    .fv-card.variation .fv-badge { background: #dbeafe; color: #1e40af; }
+
+    .fv-card h3 {
+      margin: 0 0 8px;
+      font-size: 17px;
+    }
+
+    .fv-card .fv-tagline {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+      font-style: italic;
+    }
+
+    .fv-card ul {
+      margin: 0;
+      padding-left: 18px;
+      font-size: 14px;
+    }
+
+    .fv-card li { margin-bottom: 5px; }
+
+    .fv-rule {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      margin-top: 20px;
+      font-size: 14px;
+    }
+
+    .fv-rule-row {
+      display: contents;
+    }
+
+    .fv-rule-cell {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .fv-rule-cell.head {
+      background: var(--surface-2);
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+
+    .fv-rule-cell.family-col { background: #f0fdfa; }
+    .fv-rule-cell.variation-col { background: #eff6ff; }
+
+    .fv-rule-row:last-child .fv-rule-cell { border-bottom: 0; }
+
+    .example-gallery {
+      display: grid;
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    .example-block {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: var(--surface);
+    }
+
+    .example-block-header {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      padding: 12px 16px;
+      background: var(--surface-2);
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .example-block-header strong {
+      font-size: 15px;
+      color: var(--text);
+    }
+
+    .example-tree {
+      padding: 16px;
+    }
+
+    .example-family-node {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 14px 16px;
+      border: 2px solid #5eead4;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(90deg, #f0fdfa, #fff);
+      margin-bottom: 12px;
+    }
+
+    .example-family-node .ef-icon {
+      font-size: 28px;
+      line-height: 1;
+    }
+
+    .example-family-node .ef-body { flex: 1; min-width: 180px; }
+
+    .example-family-node .ef-name {
+      font-weight: 700;
+      font-size: 16px;
+      margin-bottom: 4px;
+    }
+
+    .example-family-node .ef-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .example-family-node .ef-fields {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .example-field-tag {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #ccfbf1;
+      color: #115e59;
+    }
+
+    .example-variations {
+      display: grid;
+      gap: 8px;
+      padding-left: 24px;
+      border-left: 3px solid #93c5fd;
+      margin-left: 20px;
+    }
+
+    .example-variation-node {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 10px;
+      align-items: start;
+      padding: 10px 12px;
+      border: 1px solid #bfdbfe;
+      border-radius: var(--radius-sm);
+      background: #f8fafc;
+      font-size: 13px;
+    }
+
+    .example-variation-node .ev-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #3b82f6;
+      margin-top: 6px;
+    }
+
+    .example-variation-node .ev-name { font-weight: 700; margin-bottom: 2px; }
+    .example-variation-node .ev-detail { color: var(--text-muted); font-size: 12px; }
+
+    .example-variation-node .ev-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 6px;
+    }
+
+    .example-field-tag.v {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .analogy-box {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      padding: 16px 18px;
+      margin-top: 20px;
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+    }
+
+    .analogy-box .ab-icon {
+      font-size: 28px;
+      flex-shrink: 0;
+    }
+
+    .analogy-box strong { color: #92400e; }
+
+    .fv-decision {
+      margin-top: 20px;
+      padding: 16px 18px;
+      background: var(--primary-soft);
+      border: 1px solid #99f6e4;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+    }
+
+    .fv-decision strong { color: var(--primary-ink); }
+
+    @media (max-width: 720px) {
+      .fv-split, .fv-rule { grid-template-columns: 1fr; }
+      .fv-rule-row { display: block; }
+      .example-variations { padding-left: 12px; margin-left: 8px; }
+    }
+
+    /* Summary vs detail views — side by side */
+    .views-intro {
+      padding: 14px 16px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 15px;
+      margin-bottom: 20px;
+    }
+
+    .views-intro strong { color: var(--text); }
+
+    .views-steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .views-step {
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+      font-size: 13px;
+    }
+
+    .views-step .step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .views-step strong {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .views-step p {
+      margin: 0;
+      color: var(--text-muted);
+    }
+
+    .views-compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .views-panel {
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 2px solid;
+    }
+
+    .views-panel.summary {
+      border-color: #5eead4;
+    }
+
+    .views-panel.detail {
+      border-color: #93c5fd;
+    }
+
+    .views-panel-head {
+      padding: 12px 14px;
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .views-panel.summary .views-panel-head {
+      background: #ccfbf1;
+      color: #115e59;
+    }
+
+    .views-panel.detail .views-panel-head {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .views-panel-sub {
+      padding: 8px 14px 12px;
+      font-size: 13px;
+      color: var(--text-muted);
+      background: var(--surface-2);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .mock-spreadsheet {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    .mock-spreadsheet th {
+      background: #f1f5f9;
+      text-align: left;
+      padding: 8px 10px;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .mock-spreadsheet td {
+      padding: 10px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    .mock-spreadsheet tr:last-child td { border-bottom: 0; }
+
+    .mock-spreadsheet .row-highlight {
+      background: #f0fdfa;
+    }
+
+    .mock-spreadsheet .row-detail {
+      background: #f8fafc;
+    }
+
+    .mock-spreadsheet .total-row {
+      background: #fff7ed;
+      font-weight: 700;
+    }
+
+    .mock-spreadsheet .muted {
+      color: var(--text-muted);
+      font-size: 11px;
+    }
+
+    .views-panel-foot {
+      padding: 10px 14px;
+      font-size: 12px;
+      color: var(--text-muted);
+      background: var(--surface-2);
+      border-top: 1px solid var(--border);
+    }
+
+    .views-panel-foot strong { color: var(--text); }
+
+    .views-vs-arrow {
+      display: none;
+    }
+
+    .views-glance {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .views-glance-item {
+      padding: 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    .views-glance-item .glance-q {
+      font-weight: 700;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .views-glance-item .glance-a {
+      display: grid;
+      gap: 6px;
+    }
+
+    .glance-row {
+      display: grid;
+      grid-template-columns: 72px 1fr;
+      gap: 8px;
+      align-items: start;
+    }
+
+    .glance-label {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      padding: 3px 6px;
+      border-radius: 4px;
+      text-align: center;
+    }
+
+    .glance-label.sum { background: #ccfbf1; color: #115e59; }
+    .glance-label.det { background: #dbeafe; color: #1e40af; }
+
+    .views-screens {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .views-screen-card {
+      padding: 14px 16px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    .views-screen-card.summary-card {
+      background: #f0fdfa;
+      border-color: #99f6e4;
+    }
+
+    .views-screen-card.detail-card {
+      background: #eff6ff;
+      border-color: #bfdbfe;
+    }
+
+    .views-screen-card strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .views-screen-card ul {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .views-screen-card li { margin-bottom: 4px; }
+
+    @media (min-width: 900px) {
+      .views-compare-wrap {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        gap: 12px;
+        align-items: center;
+      }
+      .views-vs-arrow {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        color: var(--text-soft);
+        font-weight: 300;
+      }
+      .views-compare { display: contents; }
+    }
+
+    @media (max-width: 720px) {
+      .field-grid, .use-grid, .layers-rules { grid-template-columns: 1fr; }
+      .example-steps { grid-template-columns: 1fr; }
+      .example-step { border-right: 0; border-bottom: 1px solid var(--border); }
+      .example-step:last-child { border-bottom: 0; }
+      .nest-box + .nest-box,
+      .nest-box.n4 { width: 100%; }
+      .storage-map, .where-grid { grid-template-columns: 1fr; }
+      .views-steps, .views-glance, .views-screens, .views-compare { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <div class="eyebrow">Operations review · August 2026</div>
+      <h1>Product Information in Silq</h1>
+    </header>
+
+    <section id="product-library">
+      <h2>The Product Library — our master catalog</h2>
+      <p class="lead">
+        The <strong>Product Library</strong> is Silq’s central repository: every
+        <a href="#family-vs-variation">product family</a> and
+        <a href="#family-vs-variation">variation</a> we maintain for a client lives here before it is used on any project or shipment.
+      </p>
+
+      <div class="library-visual">
+        <div class="library-hero">
+          <div class="library-hero-icon" aria-hidden="true">📚</div>
+          <div>
+            <h3>What the Product Library is</h3>
+            <p>
+              Think of it as the <strong>source of truth</strong> for product information at the
+              organization level. When Ops uploads a catalog spreadsheet or adds a product manually,
+              it is stored in the library first. Projects and shipments then <strong>pull from</strong>
+              this library — they do not replace it.
+            </p>
+            <div class="library-layers">
+              <div class="library-layer-chip l1">
+                <strong>Layer 1 · Product families</strong>
+                Styles shared across the catalog — name, category, HTS, origin, image
+              </div>
+              <div class="library-layer-chip l2">
+                <strong>Layer 2 · Variations / SKUs</strong>
+                Each color/size combo — fabric, weight, price, variation ID
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="library-flow" aria-label="How product information flows from library to project to shipment">
+          <div class="flow-box library-box">
+            <div class="flow-icon">📚</div>
+            <strong>Product Library</strong>
+            <div class="flow-sub">Maintained &amp; stored long-term</div>
+            <span class="flow-layers">Layers 1 &amp; 2</span>
+          </div>
+          <div class="library-flow-arrow" aria-hidden="true">→</div>
+          <div class="flow-box project-box">
+            <div class="flow-icon">📋</div>
+            <strong>Project</strong>
+            <div class="flow-sub">Add products · set PO qty &amp; price</div>
+            <span class="flow-layers">Layer 3</span>
+          </div>
+          <div class="library-flow-arrow" aria-hidden="true">→</div>
+          <div class="flow-box shipment-box">
+            <div class="flow-icon">📦</div>
+            <strong>Shipment</strong>
+            <div class="flow-sub">Ship specific quantities</div>
+            <span class="flow-layers">Layer 4</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="library-manage">
+        <div class="library-manage-card">
+          <div class="lm-icon">📤</div>
+          <strong>How we add to the library</strong>
+          <p>Catalog spreadsheet upload (TSV) is the main bulk path. Products can also be added or edited manually in Silq.</p>
+        </div>
+        <div class="library-manage-card">
+          <div class="lm-icon">🔍</div>
+          <strong>How we use the library</strong>
+          <p>When planning a project, search the library and pick products &amp; variations to add. Search works across name, SKU, HTS, color, and size.</p>
+        </div>
+        <div class="library-manage-card">
+          <div class="lm-icon">♻️</div>
+          <strong>How it stays consistent</strong>
+          <p>One library entry is reused across many projects. Updating the catalog updates the master record; project order lines keep their own qty &amp; price.</p>
+        </div>
+      </div>
+
+      <div class="callout" style="margin-top: 20px;">
+        <strong>Key distinction:</strong>
+        The library holds <em>what the product is</em> (identity, classification, SKU attributes).
+        Projects and shipments hold <em>what happened</em> (how many ordered, how many shipped, PO numbers, inspection on that project).
+      </div>
+    </section>
+
+    <section id="family-vs-variation">
+      <h2>Product family vs variations</h2>
+      <p class="lead">
+        Every item in the Product Library sits in one of two buckets: a <strong>product family</strong>
+        (the shared style) or a <strong>variation</strong> (one specific sellable version). Here is
+        how to tell them apart — with examples.
+      </p>
+
+      <div class="fv-split">
+        <div class="fv-card family">
+          <span class="fv-badge">Product family</span>
+          <h3>The shared style</h3>
+          <p class="fv-tagline">“What is this product line?”</p>
+          <ul>
+            <li>One record per style / product line</li>
+            <li>Same name, HTS, category for all versions</li>
+            <li>Holds details that <strong>don’t change</strong> by color or size</li>
+            <li>Often called the “parent” or “style”</li>
+          </ul>
+        </div>
+        <div class="fv-card variation">
+          <span class="fv-badge">Variation / SKU</span>
+          <h3>One sellable version</h3>
+          <p class="fv-tagline">“Which exact item are we shipping?”</p>
+          <ul>
+            <li>Many variations under one family</li>
+            <li>Each color / size combo is its own row</li>
+            <li>Holds details that <strong>can differ</strong> between versions</li>
+            <li>What you pick when adding qty to a project</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="fv-rule" role="table" aria-label="Quick comparison of product family vs variation">
+        <div class="fv-rule-row">
+          <div class="fv-rule-cell head">Question</div>
+          <div class="fv-rule-cell head family-col">Product family</div>
+          <div class="fv-rule-cell head variation-col">Variation</div>
+        </div>
+        <div class="fv-rule-row">
+          <div class="fv-rule-cell"><strong>Think of it as…</strong></div>
+          <div class="fv-rule-cell family-col">The style</div>
+          <div class="fv-rule-cell variation-col">A specific color / size combo</div>
+        </div>
+        <div class="fv-rule-row">
+          <div class="fv-rule-cell"><strong>How many?</strong></div>
+          <div class="fv-rule-cell family-col">One per style</div>
+          <div class="fv-rule-cell variation-col">Many per family</div>
+        </div>
+        <div class="fv-rule-row">
+          <div class="fv-rule-cell"><strong>Example</strong></div>
+          <div class="fv-rule-cell family-col">Men’s Knitted Cardigan</div>
+          <div class="fv-rule-cell variation-col">Navy · Size M · SKU VOL2838</div>
+        </div>
+        <div class="fv-rule-row">
+          <div class="fv-rule-cell"><strong>Stored where?</strong></div>
+          <div class="fv-rule-cell family-col">Product Library · Layer 1</div>
+          <div class="fv-rule-cell variation-col">Product Library · Layer 2</div>
+        </div>
+      </div>
+
+      <h3 style="margin-top: 28px;">Examples — one family, many variations</h3>
+      <p class="lead" style="margin-bottom: 16px;">Each block shows a product family (top) and the variations nested underneath it.</p>
+
+      <div class="example-gallery">
+
+        <div class="example-block">
+          <div class="example-block-header">
+            <strong>Apparel</strong> · Knitwear · Style ID: STYLE-4421
+          </div>
+          <div class="example-tree">
+            <div class="example-family-node">
+              <span class="ef-icon">👔</span>
+              <div class="ef-body">
+                <div class="ef-name">Product family: Men’s Knitted Cardigan</div>
+                <div class="ef-meta">Apparel · Knitwear · HTS 6110.20 · Origin: Bangladesh</div>
+                <div class="ef-fields">
+                  <span class="example-field-tag">Name</span>
+                  <span class="example-field-tag">Category &amp; type</span>
+                  <span class="example-field-tag">Default HTS</span>
+                  <span class="example-field-tag">Origin</span>
+                  <span class="example-field-tag">Style ID</span>
+                  <span class="example-field-tag">Image</span>
+                </div>
+              </div>
+            </div>
+            <div class="example-variations">
+              <div class="example-variation-node">
+                <span class="ev-dot"></span>
+                <div>
+                  <div class="ev-name">Navy · Size M</div>
+                  <div class="ev-detail">SKU VOL2838 · 0.42 kg · $8.75 FOB</div>
+                  <div class="ev-tags">
+                    <span class="example-field-tag v">Color</span>
+                    <span class="example-field-tag v">Size</span>
+                    <span class="example-field-tag v">SKU</span>
+                    <span class="example-field-tag v">Weight</span>
+                    <span class="example-field-tag v">Price</span>
+                  </div>
+                </div>
+              </div>
+              <div class="example-variation-node">
+                <span class="ev-dot"></span>
+                <div>
+                  <div class="ev-name">Navy · Size L</div>
+                  <div class="ev-detail">SKU VOL2839 · 0.44 kg · $8.75 FOB</div>
+                  <div class="ev-tags">
+                    <span class="example-field-tag v">Color</span>
+                    <span class="example-field-tag v">Size</span>
+                    <span class="example-field-tag v">SKU</span>
+                  </div>
+                </div>
+              </div>
+              <div class="example-variation-node">
+                <span class="ev-dot"></span>
+                <div>
+                  <div class="ev-name">Charcoal · Size M</div>
+                  <div class="ev-detail">SKU VOL2840 · 0.42 kg · $9.00 FOB</div>
+                  <div class="ev-tags">
+                    <span class="example-field-tag v">Color</span>
+                    <span class="example-field-tag v">Size</span>
+                    <span class="example-field-tag v">SKU</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="example-block">
+          <div class="example-block-header">
+            <strong>Apparel</strong> · T-shirts · Style ID: STYLE-1102
+          </div>
+          <div class="example-tree">
+            <div class="example-family-node">
+              <span class="ef-icon">👕</span>
+              <div class="ef-body">
+                <div class="ef-name">Product family: Classic Cotton T-Shirt</div>
+                <div class="ef-meta">Apparel · T-shirts · HTS 6109.10 · Origin: Vietnam</div>
+                <div class="ef-fields">
+                  <span class="example-field-tag">Name</span>
+                  <span class="example-field-tag">HTS</span>
+                  <span class="example-field-tag">Description</span>
+                </div>
+              </div>
+            </div>
+            <div class="example-variations">
+              <div class="example-variation-node">
+                <span class="ev-dot"></span>
+                <div>
+                  <div class="ev-name">White · Size S</div>
+                  <div class="ev-detail">SKU TS-100-S · 100% cotton · $4.20 FOB</div>
+                </div>
+              </div>
+              <div class="example-variation-node">
+                <span class="ev-dot"></span>
+                <div>
+                  <div class="ev-name">White · Size M</div>
+                  <div class="ev-detail">SKU TS-100-M · 100% cotton · $4.20 FOB</div>
+                </div>
+              </div>
+              <div class="example-variation-node">
+                <span class="ev-dot"></span>
+                <div>
+                  <div class="ev-name">Black · Size M</div>
+                  <div class="ev-detail">SKU TS-101-M · 100% cotton · $4.35 FOB</div>
+                </div>
+              </div>
+              <div class="example-variation-node">
+                <span class="ev-dot"></span>
+                <div>
+                  <div class="ev-name">Black · Size XL</div>
+                  <div class="ev-detail">SKU TS-101-XL · 100% cotton · $4.50 FOB</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="example-block">
+          <div class="example-block-header">
+            <strong>Accessories</strong> · Belts · Style ID: BELT-009
+          </div>
+          <div class="example-tree">
+            <div class="example-family-node">
+              <span class="ef-icon">👜</span>
+              <div class="ef-body">
+                <div class="ef-name">Product family: Full-Grain Leather Belt</div>
+                <div class="ef-meta">Accessories · Belts · HTS 4203.30 · Origin: Italy</div>
+                <div class="ef-fields">
+                  <span class="example-field-tag">Name</span>
+                  <span class="example-field-tag">Category</span>
+                  <span class="example-field-tag">HTS</span>
+                </div>
+              </div>
+            </div>
+            <div class="example-variations">
+              <div class="example-variation-node">
+                <span class="ev-dot"></span>
+                <div>
+                  <div class="ev-name">Brown · 32&quot; waist</div>
+                  <div class="ev-detail">SKU LB-32-BRN · 0.18 kg · $12.00 FOB</div>
+                </div>
+              </div>
+              <div class="example-variation-node">
+                <span class="ev-dot"></span>
+                <div>
+                  <div class="ev-name">Brown · 34&quot; waist</div>
+                  <div class="ev-detail">SKU LB-34-BRN · 0.19 kg · $12.00 FOB</div>
+                </div>
+              </div>
+              <div class="example-variation-node">
+                <span class="ev-dot"></span>
+                <div>
+                  <div class="ev-name">Black · 34&quot; waist</div>
+                  <div class="ev-detail">SKU LB-34-BLK · 0.19 kg · $12.50 FOB</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="example-block">
+          <div class="example-block-header">
+            <strong>Non-apparel analogy</strong> · Easy mental model
+          </div>
+          <div class="example-tree">
+            <div class="example-family-node">
+              <span class="ef-icon">📱</span>
+              <div class="ef-body">
+                <div class="ef-name">Product family: iPhone 15</div>
+                <div class="ef-meta">The product line — same model name for everyone</div>
+              </div>
+            </div>
+            <div class="example-variations">
+              <div class="example-variation-node">
+                <span class="ev-dot"></span>
+                <div>
+                  <div class="ev-name">128 GB · Blue</div>
+                  <div class="ev-detail">One specific SKU you can buy and ship</div>
+                </div>
+              </div>
+              <div class="example-variation-node">
+                <span class="ev-dot"></span>
+                <div>
+                  <div class="ev-name">256 GB · Blue</div>
+                  <div class="ev-detail">Different storage = different variation</div>
+                </div>
+              </div>
+              <div class="example-variation-node">
+                <span class="ev-dot"></span>
+                <div>
+                  <div class="ev-name">256 GB · Black</div>
+                  <div class="ev-detail">Different color = different variation</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="analogy-box">
+        <span class="ab-icon">💡</span>
+        <div>
+          <strong>Simple rule:</strong>
+          If two items share the same product name and HTS but differ by color, size, fabric, weight, or price —
+          they are <strong>variations</strong> of the same <strong>product family</strong>.
+          In the catalog spreadsheet, the product row is the family; each color/size line is a variation.
+        </div>
+      </div>
+
+      <div class="fv-decision">
+        <strong>When entering data — ask yourself:</strong>
+        “Would this change if we switched from Navy to Charcoal, or from M to L?”
+        If <strong>yes</strong> → put it on the <strong>variation</strong>.
+        If <strong>no</strong> → put it on the <strong>product family</strong>.
+      </div>
+    </section>
+
+    <section id="layers">
+      <h2>The four layers of product information</h2>
+      <p class="lead">
+        Silq stores product details in four levels — from the broadest (the whole style)
+        down to the most specific (what ships on one shipment). Layers 1 &amp; 2 live in the
+        <a href="#product-library">Product Library</a>; layers 3 &amp; 4 are created when
+        products are added to projects and shipments.
+      </p>
+
+      <div class="layers-visual">
+        <div class="layers-analogy">
+          <div class="layers-analogy-icon">🎯</div>
+          <div>
+            <strong>Think of it like zooming in on a map.</strong>
+            Layer 1 is the whole product line. Layer 2 is one SKU. Layer 3 is what was ordered on a project.
+            Layer 4 is what actually leaves on a specific shipment. Details get more specific as you go down.
+          </div>
+        </div>
+
+        <div class="nest-diagram" aria-label="Nested diagram showing four layers of product information">
+          <div class="nest-box n1">
+            <div class="nest-label"><span class="nest-icon">👔</span> Layer 1 · Product family</div>
+            <div class="nest-title">The style everyone shares</div>
+            <p class="nest-example">Example: <em>Men’s Knitted Cardigan</em> for Acme Apparel</p>
+            <div class="nest-chips">
+              <span class="nest-chip">Category &amp; type</span>
+              <span class="nest-chip">Default HTS</span>
+              <span class="nest-chip">Country of origin</span>
+              <span class="nest-chip">Description</span>
+            </div>
+
+            <div class="nest-box n2">
+              <div class="nest-label"><span class="nest-icon">🏷️</span> Layer 2 · SKU / variation</div>
+              <div class="nest-title">One sellable version</div>
+              <p class="nest-example">Example: <em>Navy · Size M · SKU VOL2838</em></p>
+              <div class="nest-chips">
+                <span class="nest-chip">Color &amp; size</span>
+                <span class="nest-chip">Fabric &amp; fit</span>
+                <span class="nest-chip">Weight &amp; volume</span>
+                <span class="nest-chip">Unit price</span>
+              </div>
+
+              <div class="nest-box n3">
+                <div class="nest-label"><span class="nest-icon">📋</span> Layer 3 · Order on project</div>
+                <div class="nest-title">What the client ordered</div>
+                <p class="nest-example">Example: <em>500 units @ $8.75</em> on project SILQ-1234567</p>
+                <div class="nest-chips">
+                  <span class="nest-chip">PO quantity</span>
+                  <span class="nest-chip">Order FOB</span>
+                  <span class="nest-chip">PO number</span>
+                  <span class="nest-chip">HTS override</span>
+                </div>
+
+                <div class="nest-box n4">
+                  <div class="nest-label"><span class="nest-icon">📦</span> Layer 4 · Shipment</div>
+                  <div class="nest-title">What ships this time</div>
+                  <p class="nest-example">Example: <em>120 units</em> on shipment SILQ-1234567S1</p>
+                  <div class="nest-chips">
+                    <span class="nest-chip">Shipped qty</span>
+                    <span class="nest-chip">Shipping weights</span>
+                    <span class="nest-chip">Shipment products tab</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="nest-arrow">↓ Same product, four levels of detail ↓</div>
+
+        <div class="example-walkthrough">
+          <div class="example-walkthrough-header">
+            One product, end to end <span>— cardigan example</span>
+          </div>
+          <div class="example-steps">
+            <div class="example-step n1">
+              <div class="example-step-num">Layer 1</div>
+              <div class="example-step-label">Product family</div>
+              <div class="example-kv">
+                <div class="example-kv-row"><div class="k">Name</div><div class="v">Men’s Knitted Cardigan</div></div>
+                <div class="example-kv-row"><div class="k">Category</div><div class="v">Apparel · Knitwear</div></div>
+                <div class="example-kv-row"><div class="k">Default HTS</div><div class="v">6110.20</div></div>
+                <div class="example-kv-row"><div class="k">Origin</div><div class="v">Bangladesh</div></div>
+              </div>
+            </div>
+            <div class="example-step n2">
+              <div class="example-step-num">Layer 2</div>
+              <div class="example-step-label">SKU</div>
+              <div class="example-kv">
+                <div class="example-kv-row"><div class="k">SKU</div><div class="v">VOL2838</div></div>
+                <div class="example-kv-row"><div class="k">Color / size</div><div class="v">Navy · M</div></div>
+                <div class="example-kv-row"><div class="k">Fabric</div><div class="v">60% cotton, 40% poly</div></div>
+                <div class="example-kv-row"><div class="k">Weight</div><div class="v">0.42 kg net / unit</div></div>
+              </div>
+            </div>
+            <div class="example-step n3">
+              <div class="example-step-num">Layer 3</div>
+              <div class="example-step-label">Order</div>
+              <div class="example-kv">
+                <div class="example-kv-row"><div class="k">Project</div><div class="v">SILQ-1234567</div></div>
+                <div class="example-kv-row"><div class="k">PO qty</div><div class="v">500 units</div></div>
+                <div class="example-kv-row"><div class="k">FOB</div><div class="v">$8.75 / unit</div></div>
+                <div class="example-kv-row"><div class="k">PO #</div><div class="v">PO-2026-0142</div></div>
+              </div>
+            </div>
+            <div class="example-step n4">
+              <div class="example-step-num">Layer 4</div>
+              <div class="example-step-label">Shipment</div>
+              <div class="example-kv">
+                <div class="example-kv-row"><div class="k">Shipment</div><div class="v">SILQ-1234567S1</div></div>
+                <div class="example-kv-row"><div class="k">Shipped</div><div class="v">120 units</div></div>
+                <div class="example-kv-row"><div class="k">Value</div><div class="v">$8.75 / unit</div></div>
+                <div class="example-kv-row"><div class="k">Shows on</div><div class="v">Products tab</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="layers-rules">
+          <div class="layer-rule">
+            <div class="layer-rule-icon" style="background:#ccfbf1;">1→2</div>
+            <div>
+              <strong>One family, many SKUs</strong>
+              <p>Layer 1 is shared. Each color/size combo is its own Layer 2 variation.</p>
+            </div>
+          </div>
+          <div class="layer-rule">
+            <div class="layer-rule-icon" style="background:#dbeafe;">2→3</div>
+            <div>
+              <strong>Same SKU, different orders</strong>
+              <p>Layer 3 adds project-specific qty and price — the same SKU can appear on multiple projects.</p>
+            </div>
+          </div>
+          <div class="layer-rule">
+            <div class="layer-rule-icon" style="background:#ffedd5;">3→4</div>
+            <div>
+              <strong>Order ≠ shipment</strong>
+              <p>You might order 500 units but ship 120 now and 380 later — each shipment is Layer 4.</p>
+            </div>
+          </div>
+          <div class="layer-rule">
+            <div class="layer-rule-icon" style="background:#ede9fe;">✓</div>
+            <div>
+              <strong>When in doubt, go more specific</strong>
+              <p>If something can differ by color, PO, or shipment, it belongs on Layer 2, 3, or 4 — not Layer 1.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="views">
+      <h2>Summary view vs detail view</h2>
+      <p class="lead">
+        On a project, Silq sometimes shows products as <strong>one grouped line</strong> and sometimes
+        as <strong>separate lines per color/size</strong>. It is the same order — just a different level of detail.
+      </p>
+
+      <div class="views-intro">
+        <strong>Scenario:</strong> Project SILQ-1234567 has one product family on it —
+        <em>Men’s Knitted Cardigan</em> — with 3 variations (Navy M, Navy L, Charcoal M).
+        Total PO quantity: 500 units. Below is how that same order looks in each view.
+      </div>
+
+      <div class="views-steps">
+        <div class="views-step">
+          <div class="step-num">1</div>
+          <strong>Summary view</strong>
+          <p>One line for the whole style. Good for overview — inspections, tasks, total qty.</p>
+        </div>
+        <div class="views-step">
+          <div class="step-num">2</div>
+          <strong>Detail view</strong>
+          <p>One line per SKU. Good when you need exact color, size, price, and qty per variation.</p>
+        </div>
+        <div class="views-step">
+          <div class="step-num">3</div>
+          <strong>Same data</strong>
+          <p>Nothing is lost — detail view adds rows; summary view adds up the numbers.</p>
+        </div>
+      </div>
+
+      <div class="views-compare-wrap">
+        <div class="views-compare">
+          <div class="views-panel summary">
+            <div class="views-panel-head">Summary view · by product family</div>
+            <div class="views-panel-sub">1 row on the project</div>
+            <table class="mock-spreadsheet">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Variations</th>
+                  <th>Total qty</th>
+                  <th>Avg FOB</th>
+                  <th>Inspection</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="row-highlight">
+                  <td>
+                    <strong>Men’s Knitted Cardigan</strong>
+                    <div class="muted">HTS 6110.20 · Knitwear</div>
+                  </td>
+                  <td>3</td>
+                  <td><strong>500</strong></td>
+                  <td>$8.83</td>
+                  <td>Pass</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="views-panel-foot">
+              <strong>You see:</strong> product name, HTS, inspection, totals.<br>
+              <strong>Hidden:</strong> which colors/sizes make up the 500 units.
+            </div>
+          </div>
+
+          <div class="views-vs-arrow" aria-hidden="true">⇄</div>
+
+          <div class="views-panel detail">
+            <div class="views-panel-head">Detail view · by variation</div>
+            <div class="views-panel-sub">3 rows — one per SKU</div>
+            <table class="mock-spreadsheet">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Color</th>
+                  <th>Size</th>
+                  <th>SKU</th>
+                  <th>Qty</th>
+                  <th>FOB</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="row-detail">
+                  <td>Men’s Knitted Cardigan</td>
+                  <td>Navy</td>
+                  <td>M</td>
+                  <td>VOL2838</td>
+                  <td>200</td>
+                  <td>$8.75</td>
+                </tr>
+                <tr class="row-detail">
+                  <td>Men’s Knitted Cardigan</td>
+                  <td>Navy</td>
+                  <td>L</td>
+                  <td>VOL2839</td>
+                  <td>150</td>
+                  <td>$8.75</td>
+                </tr>
+                <tr class="row-detail">
+                  <td>Men’s Knitted Cardigan</td>
+                  <td>Charcoal</td>
+                  <td>M</td>
+                  <td>VOL2840</td>
+                  <td>150</td>
+                  <td>$9.00</td>
+                </tr>
+                <tr class="total-row">
+                  <td colspan="4">Total</td>
+                  <td>500</td>
+                  <td>—</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="views-panel-foot">
+              <strong>You see:</strong> every color, size, SKU, and exact qty.<br>
+              <strong>Shared info</strong> (HTS, inspection) repeats or stays on the product level.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h3 style="margin-top: 28px;">At a glance — what changes?</h3>
+
+      <div class="views-glance">
+        <div class="views-glance-item">
+          <div class="glance-q">How many rows?</div>
+          <div class="glance-a">
+            <div class="glance-row">
+              <span class="glance-label sum">Summary</span>
+              <span>1 row per product family on the project</span>
+            </div>
+            <div class="glance-row">
+              <span class="glance-label det">Detail</span>
+              <span>1 row per color/size SKU</span>
+            </div>
+          </div>
+        </div>
+        <div class="views-glance-item">
+          <div class="glance-q">Quantity &amp; price</div>
+          <div class="glance-a">
+            <div class="glance-row">
+              <span class="glance-label sum">Summary</span>
+              <span>Added up — “500 units total”, “$8.83 average”</span>
+            </div>
+            <div class="glance-row">
+              <span class="glance-label det">Detail</span>
+              <span>Exact per SKU — “200 Navy M @ $8.75”</span>
+            </div>
+          </div>
+        </div>
+        <div class="views-glance-item">
+          <div class="glance-q">Color &amp; size</div>
+          <div class="glance-a">
+            <div class="glance-row">
+              <span class="glance-label sum">Summary</span>
+              <span>Not shown — only “3 variations”</span>
+            </div>
+            <div class="glance-row">
+              <span class="glance-label det">Detail</span>
+              <span>Shown on every row</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h3 style="margin-top: 24px;">Where you see each view in Silq</h3>
+
+      <div class="views-screens">
+        <div class="views-screen-card summary-card">
+          <strong>Summary view — by product family</strong>
+          <ul>
+            <li>Project product list (one card per style)</li>
+            <li>Product detail page — tasks, inspections, documents</li>
+            <li>Product catalog when browsing the library</li>
+            <li>Cost &amp; analytics reports (rolled-up totals)</li>
+          </ul>
+        </div>
+        <div class="views-screen-card detail-card">
+          <strong>Detail view — by variation</strong>
+          <ul>
+            <li>Adding or editing products on a project</li>
+            <li>Shipment products tab (each SKU + shipped qty)</li>
+            <li>Catalog spreadsheet upload (one row per variation)</li>
+            <li>Checking a specific color/size qty or price</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="callout" style="margin-top: 20px;">
+        <strong>Quick tip:</strong>
+        If you only see a total quantity and no breakdown by color or size, you are in the
+        <strong>summary view</strong>. Open the product on the project or check the shipment products tab
+        to see the <strong>detail view</strong> with each SKU listed separately.
+      </div>
+    </section>
+
+    <section id="fields">
+      <h2>What information we store at each layer</h2>
+      <p class="lead">Grouped by business topic — not every product has every field filled in. See <a href="#views">Summary view vs detail view</a> for how fields appear on screen.</p>
+
+      <div class="field-grid">
+        <div class="field-card">
+          <h4>Identity & naming</h4>
+          <ul>
+            <li>Product name and description</li>
+            <li>Client style / external ID</li>
+            <li>SKU or variation ID</li>
+            <li>Variation display name</li>
+            <li>Product image</li>
+            <li>Brand (via legacy product groups)</li>
+          </ul>
+        </div>
+        <div class="field-card">
+          <h4>Classification</h4>
+          <ul>
+            <li>Product category (e.g. Apparel)</li>
+            <li>Product type (e.g. Knitwear)</li>
+            <li>HTS / tariff code</li>
+            <li>Country of origin</li>
+          </ul>
+        </div>
+        <div class="field-card">
+          <h4>Variation attributes (apparel-focused)</h4>
+          <ul>
+            <li>Color</li>
+            <li>Size</li>
+            <li>Fit type</li>
+            <li>Pattern type</li>
+            <li>Fabric / material (free text)</li>
+            <li>Construction details</li>
+            <li>Artwork reference</li>
+          </ul>
+        </div>
+        <div class="field-card">
+          <h4>Commercial & physical</h4>
+          <ul>
+            <li>Unit price (FOB in USD)</li>
+            <li>Net weight per unit</li>
+            <li>Gross weight per unit</li>
+            <li>Volume per unit (CBM)</li>
+            <li>PO quantity</li>
+            <li>Shipped quantity</li>
+          </ul>
+        </div>
+        <div class="field-card">
+          <h4>Order & shipment context</h4>
+          <ul>
+            <li>Which SILQ project</li>
+            <li>Which shipment</li>
+            <li>PO number (when linked)</li>
+            <li>Order-specific HTS override</li>
+            <li>Source of the data (manual, upload, etc.)</li>
+          </ul>
+        </div>
+        <div class="field-card">
+          <h4>Inspection results (on project)</h4>
+          <ul>
+            <li>Inspection type and date</li>
+            <li>Pass / Fail / Hold result</li>
+            <li>Order quantity from report</li>
+            <li>Ex-factory date</li>
+            <li>Summary for client-facing updates</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="sources">
+      <h2>Where product information comes from</h2>
+      <p class="lead">
+        Not everything is typed in by hand. Here is how data typically enters Silq today.
+      </p>
+
+      <table class="simple">
+        <thead>
+          <tr>
+            <th>Source</th>
+            <th>What it populates</th>
+            <th>How it works</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Product catalog spreadsheet</strong><br><span class="tag upload">Bulk upload</span></td>
+            <td>Product family, SKU details, and optionally PO qty &amp; shipped qty when a SILQ project or shipment ID is included</td>
+            <td>Ops or client uploads a TSV file. Silq validates HTS codes, colors, and sizes, then creates or updates products.</td>
+          </tr>
+          <tr>
+            <td><strong>Manual entry in Silq</strong><br><span class="tag manual">Manual</span></td>
+            <td>Any product, order, or shipment field</td>
+            <td>Team members add or edit products directly on projects and shipments.</td>
+          </tr>
+          <tr>
+            <td><strong>Inspection reports</strong><br><span class="tag auto">Auto-read</span></td>
+            <td>Inspection result summary on the project (pass/fail, dates, quantities)</td>
+            <td>When an inspection report is uploaded, Silq reads the document and stores key results — it does <em>not</em> change the core product catalog (name, HTS, weights, etc.).</td>
+          </tr>
+          <tr>
+            <td><strong>Accepted quote / demo project copy</strong><br><span class="tag manual">Manual trigger</span></td>
+            <td>Products and order details copied from a template or previous project</td>
+            <td>Used when setting up demo or cloned projects from an accepted quote.</td>
+          </tr>
+          <tr>
+            <td><strong>Legacy purchase orders</strong><br><span class="tag partial">Being phased out</span></td>
+            <td>PO numbers linked to products (historical data)</td>
+            <td>Older PO system was migrated into the current model. New PO numbers are added manually or via spreadsheet — there is no PO PDF parser today.</td>
+          </tr>
+          <tr>
+            <td><strong>Tech packs</strong><br><span class="tag none">Not parsed</span></td>
+            <td>Stored as documents only</td>
+            <td>Tech packs attach to workflow milestones but their contents are <em>not</em> automatically pulled into product fields.</td>
+          </tr>
+          <tr>
+            <td><strong>Customs entry (7501), commercial invoice, bills of lading</strong><br><span class="tag partial">Shipment-level</span></td>
+            <td>Used for customs validation and shipment totals — not for building the product catalog</td>
+            <td>These documents support clearance and shipment records. HTS on a 7501 can be checked against what is on the shipment, but the catalog is not updated from them.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout warn">
+        <strong>Important for Ops:</strong> The catalog spreadsheet is today’s main bulk-ingest path.
+        If a field is not in that template and not entered manually, Silq probably does not have it.
+      </div>
+    </section>
+
+    <section id="uses">
+      <h2>Where we use this information</h2>
+      <p class="lead">Product data is not just stored — it powers multiple workflows across Silq.</p>
+
+      <div class="use-grid">
+        <div class="use-item">
+          <div class="icon">📦</div>
+          <strong>Shipment products tab</strong><br>
+          Shows what is on each shipment — quantities, prices, weights — for ops and client visibility.
+        </div>
+        <div class="use-item">
+          <div class="icon">📋</div>
+          <strong>Project product lists</strong><br>
+          All products on a project with PO quantities, milestones, and inspection links.
+        </div>
+        <div class="use-item">
+          <div class="icon">🔍</div>
+          <strong>Inspections</strong><br>
+          Links inspection reports to specific products; stores parsed pass/fail and summary on the project.
+        </div>
+        <div class="use-item">
+          <div class="icon">🛃</div>
+          <strong>Customs clearance</strong><br>
+          HTS codes and product descriptions on shipments are checked against customs entry documents.
+        </div>
+        <div class="use-item">
+          <div class="icon">💰</div>
+          <strong>Cost &amp; analytics reports</strong><br>
+          Per-unit FOB, shipping, customs, and inspection costs rolled up for insights and client reporting.
+        </div>
+        <div class="use-item">
+          <div class="icon">🔎</div>
+          <strong>Product search</strong><br>
+          Find products across the org by name, SKU, category, color, size, HTS, and origin.
+        </div>
+        <div class="use-item">
+          <div class="icon">✅</div>
+          <strong>Milestones &amp; tasks</strong><br>
+          Adding a product to a project can automatically create the right workflow tasks.
+        </div>
+        <div class="use-item">
+          <div class="icon">📊</div>
+          <strong>Project overview</strong><br>
+          High-level view of product progress, quantities, and status across the project lifecycle.
+        </div>
+      </div>
+    </section>
+
+    <p class="footer">
+      Silq · Product Information Operations Review · August 2026
+    </p>
+  </div>
+</body>
+</html>

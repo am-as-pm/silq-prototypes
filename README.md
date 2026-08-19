@@ -2,14 +2,15 @@
 
 Interactive HTML prototypes for Silq product features. Hosted via GitHub Pages.
 
-**Live site:** *(replace with your URL after enabling Pages)*
-`https://YOUR_USERNAME.github.io/silq-prototypes/`
+**Live site:**
+`https://am-as-pm.github.io/silq-prototypes/`
 
 ---
 
 ## How it works
 
-- Each prototype is a **self-contained HTML file** — no build step, no dependencies
+- Most prototypes are **self-contained HTML files** — no build step, no dependencies
+- Some (e.g. React builds) live in a folder with a built `index.html` + assets
 - `index.html` is the landing page that links to all prototypes
 - Pushing to `main` auto-deploys to GitHub Pages within ~60 seconds
 
@@ -19,6 +20,9 @@ Interactive HTML prototypes for Silq product features. Hosted via GitHub Pages.
 |---|---|---|
 | `pod-priority-board.html` | Pod Priority Board (Kanban + Pod Health) | — |
 | `credit-limit-table.html` | Client Credit Limit Table (QuickBooks integration) | — |
+| `tag-management-system/` | Tag Management System (typed tags + settings) | AM |
+| `comments-audit-log/` | Comment Versioning & Audit Trail (roles + tracked changes) | AM |
+| `product-metadata-ops-review.html` | Product Information — Ops Review (catalog layers, sources, gaps, feedback) | AM |
 
 ## Adding a new prototype
 
@@ -82,6 +86,8 @@ silq-prototypes/
 ├── index.html                   Landing page (links to all prototypes)
 ├── pod-priority-board.html      Pod Priority Board prototype
 ├── credit-limit-table.html      Credit Limit Table prototype
+├── comments-audit-log/          Comment Versioning & Audit Trail (built Next.js app)
+├── tag-management-system/       Tag Management System (built React app)
 ├── your-new-prototype.html      (add new prototypes here)
 └── README.md                    This file
 ```

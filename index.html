@@ -28,6 +28,8 @@
       --coral-bg: #fdf0eb;
       --orange: #c2620a;
       --orange-bg: #fff4e6;
+      --indigo: #4f46e5;
+      --indigo-bg: #eef2ff;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -124,6 +126,18 @@
 
     .card-consolidation .card-icon { background: var(--orange-bg); color: var(--orange); }
     .card-consolidation::before { background: var(--orange); }
+
+    .card-inspection .card-icon { background: var(--indigo-bg); color: var(--indigo); }
+    .card-inspection::before { background: var(--indigo); }
+
+    .card-tags-mgmt .card-icon { background: #eff6ff; color: #2563eb; }
+    .card-tags-mgmt::before { background: #2563eb; }
+
+    .card-comments .card-icon { background: #ecfdf5; color: #047857; }
+    .card-comments::before { background: #047857; }
+
+    .card-product-metadata .card-icon { background: #f0fdfa; color: #0f766e; }
+    .card-product-metadata::before { background: #0f766e; }
 
     .proto-card h2 {
       font-size: 17px;
@@ -299,6 +313,71 @@
         <span class="tag">Public Link</span>
         <span class="tag">Tracking</span>
         <span class="tag">Permissions</span>
+      </div>
+    </a>
+
+    <a class="proto-card card-inspection" href="inspections-booking-form/index.html">
+      <span class="owner-tag owner-am">AM</span>
+      <span class="card-arrow"><svg viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M1 8a.5.5 0 01.5-.5h11.793l-3.147-3.146a.5.5 0 01.708-.708l4 4a.5.5 0 010 .708l-4 4a.5.5 0 01-.708-.708L13.293 8.5H1.5A.5.5 0 011 8z"/></svg></span>
+      <div class="card-icon">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 2a1 1 0 00-.894.553L7.382 4H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-3.382l-.724-1.447A1 1 0 0011 2H9zm-.382 2h2.764l.724 1.447A1 1 0 0013 6h3v10H4V6h3a1 1 0 00.894-.553L8.618 4zm5.089 5.707a1 1 0 00-1.414-1.414l-3.043 3.043-1.011-1.011a1 1 0 10-1.414 1.414l1.718 1.718a1 1 0 001.414 0l3.75-3.75z"/></svg>
+      </div>
+      <h2>Inspections Booking Form</h2>
+      <p>Factory-led inspection booking flow on a secure public link. Capture factory &amp; buyer details, inspection services, order stage, and booking specifics that auto-generate an RFQ.</p>
+      <div class="card-tags">
+        <span class="tag">Inspections</span>
+        <span class="tag">Booking Form</span>
+        <span class="tag">Factory</span>
+        <span class="tag">RFQ</span>
+      </div>
+    </a>
+
+
+    <a class="proto-card card-comments" href="comments-audit-log/index.html">
+      <span class="owner-tag owner-am">AM</span>
+      <span class="card-arrow"><svg viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M1 8a.5.5 0 01.5-.5h11.793l-3.147-3.146a.5.5 0 01.708-.708l4 4a.5.5 0 010 .708l-4 4a.5.5 0 01-.708-.708L13.293 8.5H1.5A.5.5 0 011 8z"/></svg></span>
+      <div class="card-icon">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 5.25a2.25 2.25 0 00-2.012-2.238A2.25 2.25 0 0013.75 1h-7.5a2.25 2.25 0 00-2.238 2.012A2.25 2.25 0 002 5.25v6.5A2.25 2.25 0 004.25 14H5v1.528c0 .795.87 1.275 1.54.854l2.71-1.707h4.25A2.25 2.25 0 0016 12.425V14h.75A2.25 2.25 0 0019 11.75v-6.5zM4.25 3.5a.75.75 0 00-.75.75v6.5c0 .414.336.75.75.75H5.5a.75.75 0 01.75.75v.69l1.72-1.083a.75.75 0 01.404-.117h4.376a.75.75 0 00.75-.75v-6.5a.75.75 0 00-.75-.75h-8.5z" clip-rule="evenodd"/><path d="M7 7.25a.75.75 0 01.75-.75h4.5a.75.75 0 010 1.5h-4.5A.75.75 0 017 7.25zm0 2.5a.75.75 0 01.75-.75h2.5a.75.75 0 010 1.5h-2.5A.75.75 0 017 9.75z"/></svg>
+      </div>
+      <h2>Comment Versioning &amp; Audit Trail</h2>
+      <p>Role-based comment feed with edit permissions, Google Docs-style tracked changes, and an admin-only version history side panel.</p>
+      <div class="card-tags">
+        <span class="tag">Comments</span>
+        <span class="tag">Audit Trail</span>
+        <span class="tag">Track Changes</span>
+        <span class="tag">Roles</span>
+      </div>
+    </a>
+
+    <a class="proto-card card-tags-mgmt" href="tag-management-system/index.html">
+      <span class="owner-tag owner-am">AM</span>
+      <span class="card-arrow"><svg viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M1 8a.5.5 0 01.5-.5h11.793l-3.147-3.146a.5.5 0 01.708-.708l4 4a.5.5 0 010 .708l-4 4a.5.5 0 01-.708-.708L13.293 8.5H1.5A.5.5 0 011 8z"/></svg></span>
+      <div class="card-icon">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.5 3A2.5 2.5 0 003 5.5v9A2.5 2.5 0 005.5 17H9v-1H5.5A1.5 1.5 0 014 14.5v-9A1.5 1.5 0 015.5 4H9V3H5.5zm9 0A2.5 2.5 0 0117 5.5v9a2.5 2.5 0 01-2.5 2.5H11v-1h2.5a1.5 1.5 0 001.5-1.5v-9A1.5 1.5 0 0013.5 4H11V3h3.5zM8 7.75a.75.75 0 01.75-.75h2.5a.75.75 0 010 1.5h-2.5A.75.75 0 018 7.75zm0 3a.75.75 0 01.75-.75h2.5a.75.75 0 010 1.5h-2.5a.75.75 0 01-.75-.75z" clip-rule="evenodd"/></svg>
+      </div>
+      <h2>Tag Management System</h2>
+      <p>Clickable prototype for typed tags (type + value). Configure system and custom types, tag shipments and artifacts, and click any tag to filter every record that carries it.</p>
+      <div class="card-tags">
+        <span class="tag">Tags</span>
+        <span class="tag">Settings</span>
+        <span class="tag">Filtering</span>
+        <span class="tag">Shipments</span>
+      </div>
+    </a>
+
+    <a class="proto-card card-product-metadata" href="product-metadata-ops-review.html">
+      <span class="owner-tag owner-am">AM</span>
+      <span class="card-arrow"><svg viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M1 8a.5.5 0 01.5-.5h11.793l-3.147-3.146a.5.5 0 01.708-.708l4 4a.5.5 0 010 .708l-4 4a.5.5 0 01-.708-.708L13.293 8.5H1.5A.5.5 0 011 8z"/></svg></span>
+      <div class="card-icon">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/></svg>
+      </div>
+      <h2>Product Information — Ops Review</h2>
+      <p>Plain-language guide for Operations: what product details Silq stores today, where they come from, and how they are used.</p>
+      <div class="card-tags">
+        <span class="tag">Operations</span>
+        <span class="tag">Product Data</span>
+        <span class="tag">Catalog</span>
+        <span class="tag">Layers</span>
       </div>
     </a>
   </div>
