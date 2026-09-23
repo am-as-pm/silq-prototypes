@@ -4177,43 +4177,55 @@ function getAstraNextActions(limit) {
 }
 
 function getAstraPipelinePulse() {
-  let newSinceYesterday = 0;
+  let newRfqsSinceYesterday = 0;
+  let newBookingsSinceYesterday = 0;
   let pendingToQuote = 0;
-  let pendingBeyond2d = 0;
+  let pendingBeyond1d = 0;
   let newRejections = 0;
-  let crdStaleCleanup = 0; // CRD ≥2d past on open lanes (excl. Draft, Accepted)
-  const asOfUtc = getBoardAsOfUtcYmd();
+  let crdStaleCleanup = 0; // CRD ≥2d past: Submitted / Awaiting / Expired / Rejected only
+  const asOfYmd = getBoardAsOfUtcYmd();
 
   RFQS.forEach(rfq => {
     if (rfq.stage === "draft") return;
     if (rfq.demo && !includeDemoRfqs) return;
 
-    // "New since yesterday" uses UTC calendar days (as-of = board clock, treated as UTC YMD)
-    if (rfq.rfqDate && isNewSinceYesterdayUtc(rfq.rfqDate, asOfUtc)) newSinceYesterday++;
+    if (rfq.stage === "shipperBookings") {
+      const received = rfq.stageDate || rfq.rfqDate;
+      if (received && isNewSinceYesterdayUtc(received, asOfYmd)) newBookingsSinceYesterday++;
+      return;
+    }
+
+    // RFQ "since yesterday": last 1 calendar day, not quoted yet (Submitted only)
+    if (rfq.stage === "submitted" && rfq.rfqDate && isNewSinceYesterdayUtc(rfq.rfqDate, asOfYmd)) {
+      newRfqsSinceYesterday++;
+    }
 
     if (rfq.stage === "submitted") {
       pendingToQuote++;
       const submittedAge = rfq.rfqDate ? diffDays(rfq.rfqDate) : diffDays(rfq.stageDate);
-      if (submittedAge >= 2) pendingBeyond2d++;
+      if (submittedAge >= 1) pendingBeyond1d++;
     }
 
     if (rfq.stage === "rejected" && diffDays(rfq.stageDate) <= 2) newRejections++;
 
-    // P6 cleanup count: CRD ≥2d across Submitted / Awaiting / Expired / Rejected
-    if (rfq.stage !== "accepted" && crdHasPassed(rfq)) crdStaleCleanup++;
+    if (["submitted", "awaiting", "expired", "rejected"].includes(rfq.stage) && crdHasPassed(rfq)) {
+      crdStaleCleanup++;
+    }
   });
 
-  return { newSinceYesterday, pendingToQuote, pendingBeyond2d, newRejections, crdStaleCleanup };
+  return { newRfqsSinceYesterday, newBookingsSinceYesterday, pendingToQuote, pendingBeyond1d, newRejections, crdStaleCleanup };
 }
 
 function buildAstraNarrativeHtml() {
   const p = getAstraPipelinePulse();
   const parts = [];
-  parts.push(`<b>${p.newSinceYesterday}</b> new since yesterday`);
+  const rfqWord = p.newRfqsSinceYesterday === 1 ? "rfq" : "rfqs";
+  const bkWord = p.newBookingsSinceYesterday === 1 ? "booking" : "bookings";
+  parts.push(`<b>${p.newRfqsSinceYesterday}</b> ${rfqWord} and <b>${p.newBookingsSinceYesterday}</b> ${bkWord} since yesterday`);
 
   let pendingClause = `<b>${p.pendingToQuote}</b> pending to quote`;
-  if (p.pendingToQuote > 0 && p.pendingBeyond2d > 0) {
-    pendingClause += `, of which <span class="hot">${p.pendingBeyond2d} already &gt;2d</span>`;
+  if (p.pendingToQuote > 0 && p.pendingBeyond1d > 0) {
+    pendingClause += `, of which <span class="hot">${p.pendingBeyond1d} already &gt;=1d</span>`;
   }
   parts.push(pendingClause);
 
@@ -4223,9 +4235,8 @@ function buildAstraNarrativeHtml() {
     parts.push(`no new rejections`);
   }
 
-  // P6 — always append when threshold exceeded (independent of other pulse content)
   if (p.crdStaleCleanup > 6) {
-    parts.push(`<span class="hot">clean up board — <b>${p.crdStaleCleanup}</b> with CRD &gt;2d past</span>`);
+    parts.push(`<span class="hot">clean up board - <b>${p.crdStaleCleanup}</b> with CRD &gt;=2d past</span>`);
   }
 
   return parts.join(`<span class="sep">·</span>`);
@@ -4262,13 +4273,13 @@ function utcCalendarDaysBetween(earlierYmd, laterYmd) {
   return Math.round((parseYmdToUtcMs(laterYmd) - parseYmdToUtcMs(earlierYmd)) / 86400000);
 }
 
-/** RFQ is "new since yesterday" when its rfq_date is today or yesterday in UTC calendar days. */
+/** "Since yesterday" = today or yesterday on the board calendar (Story 5: PT day boundary). Dummy dates are YMD so this matches PT. */
 function isNewSinceYesterdayUtc(rfqDateYmd, asOfUtcYmd) {
   const age = utcCalendarDaysBetween(rfqDateYmd, asOfUtcYmd);
   return age >= 0 && age <= 1;
 }
 
-function formatLastRefreshedUtc(date) {
+function formatLastRefreshedPt(date) {
   const d = date || new Date();
   const formatted = d.toLocaleString("en-GB", {
     day: "numeric",
@@ -4277,9 +4288,9 @@ function formatLastRefreshedUtc(date) {
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
-    timeZone: "UTC"
+    timeZone: "America/Los_Angeles"
   });
-  return `${formatted} UTC`;
+  return `${formatted} PT`;
 }
 
 const ASTRA_BRIEF_COLLAPSE_KEY = "silq_pod_astra_brief_collapsed";
@@ -4320,7 +4331,7 @@ function renderAstraBrief() {
   document.getElementById("astraNarrative").innerHTML = buildAstraNarrativeHtml();
   const refreshedEl = document.getElementById("astraRefreshed");
   if (refreshedEl) {
-    refreshedEl.innerHTML = `Last refreshed at <b>${formatLastRefreshedUtc(astraSummaryRefreshedAt)}</b> · new since yesterday = UTC`;
+    refreshedEl.innerHTML = `Last refreshed at <b>${formatLastRefreshedPt(astraSummaryRefreshedAt)}</b> · since yesterday = PT`;
   }
 
   const allActions = getAstraNextActions(0);
@@ -4345,7 +4356,7 @@ function openAstraSeeAll() {
   const body = document.getElementById("astraDrawerBody");
   const narrative = buildAstraNarrativeHtml();
   const refreshed = astraSummaryRefreshedAt
-    ? `Last refreshed at ${formatLastRefreshedUtc(astraSummaryRefreshedAt)}`
+    ? `Last refreshed at ${formatLastRefreshedPt(astraSummaryRefreshedAt)}`
     : "";
 
   // Group by verb for scanability
@@ -4389,7 +4400,6 @@ function openAstraChat() {
   const launch = document.getElementById("astraChatLaunch");
   if (launch) launch.classList.add("active");
 
-  const p = getAstraPipelinePulse();
   const top = getAstraNextActions(3);
   const msgs = document.getElementById("astraChatMessages");
   const suggestions = document.getElementById("astraChatSuggestions");
@@ -4401,12 +4411,11 @@ function openAstraChat() {
   msgs.innerHTML = `
     <div class="astra-chat-bubble bot">
       <div class="chat-meta">✦ Astra</div>
-      I can help you interpret the board summary. Ranking stays rule-based — I won’t reorder Do next.<br><br>
-      <b>Pulse</b> (UTC “new since yesterday”)<br>
-      ${p.newSinceYesterday} new · ${p.pendingToQuote} pending to quote (${p.pendingBeyond2d} &gt;2d) · ${p.newRejections ? p.newRejections + " new rejection(s)" : "no new rejections"}
-      ${p.crdStaleCleanup > 6 ? `<br>Cleanup cue: ${p.crdStaleCleanup} with CRD &gt;2d past` : ""}
+      I can help you interpret the board summary. Ranking stays rule-based. I will not reorder Do next.<br><br>
+      <b>Pulse</b> (PT since yesterday)<br>
+      ${buildAstraNarrativeHtml()}
       <br><br><b>Top Do next</b><br>${topLine}
-      ${astraSummaryRefreshedAt ? `<br><br><span style="font-size:10px;color:var(--text-secondary)">Summary last refreshed ${formatLastRefreshedUtc(astraSummaryRefreshedAt)}</span>` : ""}
+      ${astraSummaryRefreshedAt ? `<br><br><span style="font-size:10px;color:var(--text-secondary)">Summary last refreshed ${formatLastRefreshedPt(astraSummaryRefreshedAt)}</span>` : ""}
     </div>`;
 
   const chips = [
