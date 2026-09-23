@@ -433,6 +433,48 @@
     flex-direction: column;
     gap: 3px;
   }
+  .astra-brief-details {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .astra-brief.is-collapsed .astra-brief-details { display: none; }
+  .astra-brief-details-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .astra-brief-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-height: 24px;
+  }
+  .astra-brief-toggle {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    border-radius: 5px;
+    background: transparent;
+    color: var(--silq-grey-600);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .astra-brief-toggle:hover { color: var(--silq-navy); background: var(--silq-grey-100); }
+  .astra-brief-toggle-icon {
+    width: 12px;
+    height: 12px;
+    display: block;
+    transition: transform 120ms ease;
+  }
+  .astra-brief.is-collapsed .astra-brief-toggle-icon { transform: rotate(-90deg); }
+  .astra-brief.is-collapsed .astra-see-all { display: none !important; }
   .astra-brand-mark {
     width: 18px; height: 18px;
     border-radius: 5px;
@@ -607,8 +649,8 @@
     padding: 8px 0;
   }
   .astra-see-all {
-    align-self: flex-end;
-    margin-top: 2px;
+    margin-left: auto;
+    margin-top: 0;
     padding: 8px 12px;
     height: 32px;
     border: none;
@@ -3505,22 +3547,33 @@
       </div>
     </div>
 
-    <!-- Daily action summary — deterministic pulse + Do next (Astra chat is a separate panel) -->
+    <!-- Daily action summary: pulse + last refreshed always visible; Do next + Astra chat collapsible -->
     <div class="astra-brief" id="astraBrief">
       <div class="astra-brief-top">
         <div class="astra-brief-top-left">
           <div class="astra-narrative" id="astraNarrative"></div>
           <div class="astra-refreshed" id="astraRefreshed"></div>
         </div>
-        <button type="button" class="astra-chat-launch" id="astraChatLaunch" onclick="openAstraChat()" title="Open Astra chat about this board">
-          <span class="astra-brand-mark">✦</span>
-          Astra
-          <span class="launch-hint">Chat</span>
-        </button>
       </div>
-      <div class="astra-actions-label">Do next <span class="rules-chip">Board rules</span></div>
-      <div id="astraActionList"></div>
-      <button type="button" class="astra-see-all" id="astraSeeAll" onclick="openAstraSeeAll()">See all</button>
+      <div class="astra-brief-details" id="astraBriefDetails">
+        <div class="astra-brief-details-bar">
+          <div class="astra-actions-label">Do next <span class="rules-chip">Board rules</span></div>
+          <button type="button" class="astra-chat-launch" id="astraChatLaunch" onclick="openAstraChat()" title="Open Astra chat about this board">
+            <span class="astra-brand-mark">✦</span>
+            Astra
+            <span class="launch-hint">Chat</span>
+          </button>
+        </div>
+        <div id="astraActionList"></div>
+      </div>
+      <div class="astra-brief-footer">
+        <button type="button" class="astra-brief-toggle" id="astraBriefToggle" onclick="toggleAstraBrief()" aria-expanded="true" aria-controls="astraBriefDetails" title="Hide Do next and Astra chat">
+          <svg class="astra-brief-toggle-icon" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+            <path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <button type="button" class="astra-see-all" id="astraSeeAll" onclick="openAstraSeeAll()">See all</button>
+      </div>
     </div>
 
     <!-- Do next — full ranked list (deterministic; not Astra chat) -->
@@ -4229,6 +4282,27 @@ function formatLastRefreshedUtc(date) {
   return `${formatted} UTC`;
 }
 
+const ASTRA_BRIEF_COLLAPSE_KEY = "silq_pod_astra_brief_collapsed";
+let astraBriefCollapsed = false;
+try { astraBriefCollapsed = localStorage.getItem(ASTRA_BRIEF_COLLAPSE_KEY) === "1"; } catch (e) {}
+
+function applyAstraBriefCollapsed() {
+  const brief = document.getElementById("astraBrief");
+  const btn = document.getElementById("astraBriefToggle");
+  if (!brief) return;
+  brief.classList.toggle("is-collapsed", astraBriefCollapsed);
+  if (btn) {
+    btn.setAttribute("aria-expanded", astraBriefCollapsed ? "false" : "true");
+    btn.title = astraBriefCollapsed ? "Show Do next and Astra chat" : "Hide Do next and Astra chat";
+  }
+}
+
+function toggleAstraBrief() {
+  astraBriefCollapsed = !astraBriefCollapsed;
+  try { localStorage.setItem(ASTRA_BRIEF_COLLAPSE_KEY, astraBriefCollapsed ? "1" : "0"); } catch (e) {}
+  applyAstraBriefCollapsed();
+}
+
 function renderAstraBrief() {
   const el = document.getElementById("astraBrief");
   if (!el) return;
@@ -4239,6 +4313,7 @@ function renderAstraBrief() {
     closeAstraChat();
     return;
   }
+  applyAstraBriefCollapsed();
 
   // Deterministic summary regenerates on every render / page open
   astraSummaryRefreshedAt = new Date();
