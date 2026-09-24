@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SILQ-4228268Q1 — Quote PDF</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #d0d0d0;
+    color: #1a1a1a;
+    line-height: 1.5;
+    padding: 40px 0;
+  }
+
+  .page {
+    width: 794px;
+    min-height: 1123px;
+    margin: 0 auto 40px;
+    background: #ffffff;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.12);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .page-body {
+    flex: 1;
+    padding: 36px 48px 24px;
+  }
+
+  /* ===== HEADER ===== */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 4px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .logo-swoosh {
+    width: 28px;
+    height: 28px;
+  }
+
+  .logo-text {
+    font-size: 24px;
+    font-weight: 700;
+    color: #2d2d2d;
+    letter-spacing: -0.5px;
+  }
+
+  .quote-id {
+    font-size: 22px;
+    font-weight: 700;
+    color: #2d2d2d;
+    text-align: right;
+  }
+
+  .route-bar {
+    text-align: center;
+    font-size: 11.5px;
+    color: #777;
+    padding: 6px 0 16px;
+    border-bottom: 1px solid #e5e5e5;
+  }
+
+  /* ===== META ROW ===== */
+  .meta-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #e5e5e5;
+    font-size: 13px;
+  }
+
+  .meta-row .label { color: #888; margin-right: 4px; }
+  .meta-row .value { color: #1a1a1a; font-weight: 500; }
+
+  /* ===== PAGE 1 MAIN CONTENT ===== */
+  .p1-main {
+    display: flex;
+    gap: 0;
+    margin-top: 20px;
+    flex: 1;
+  }
+
+  .p1-left {
+    width: 48%;
+    position: relative;
+    padding-left: 4px;
+  }
+
+  .p1-right {
+    width: 52%;
+    padding-left: 32px;
+  }
+
+  /* Transit header */
+  .transit-header {
+    margin-bottom: 4px;
+  }
+
+  .transit-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a1a1a;
+    letter-spacing: 0.3px;
+  }
+
+  .transit-subtitle {
+    font-size: 11px;
+    color: #999;
+    margin-bottom: 2px;
+  }
+
+  .transit-days {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 16px;
+  }
+
+  /* Vertical timeline */
+  .timeline {
+    position: relative;
+    padding-left: 28px;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 10px;
+    bottom: 10px;
+    width: 2px;
+    background: #e0e0e0;
+  }
+
+  .tl-node {
+    position: relative;
+    margin-bottom: 0;
+    min-height: 80px;
+  }
+
+  .tl-node.origin { min-height: 100px; }
+  .tl-node.ocean { min-height: 180px; }
+  .tl-node.dest-port { min-height: 160px; }
+  .tl-node.dwell { min-height: 100px; }
+  .tl-node.delivery { min-height: 80px; }
+
+  .tl-icon {
+    position: absolute;
+    left: -24px;
+    top: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    z-index: 2;
+    background: #fff;
+    padding: 2px 0;
+  }
+
+  .tl-port {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a1a1a;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .tl-port .flag {
+    font-size: 14px;
+  }
+
+  .tl-port-label {
+    font-size: 12px;
+    color: #888;
+    font-weight: 400;
+  }
+
+  .tl-duration {
+    margin-top: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #888;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .tl-duration .dur-icon {
+    font-size: 12px;
+    color: #e74c3c;
+  }
+
+  .tl-dwell-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: #888;
+    margin-top: 4px;
+  }
+
+  .tl-dwell-badge .dwell-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ccc;
+  }
+
+  /* Coverage info */
+  .info-table {
+    width: 100%;
+    margin-top: 0;
+  }
+
+  .info-table tr td {
+    padding: 14px 0;
+    font-size: 13px;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+  }
+
+  .info-table tr:last-child td { border-bottom: none; }
+  .info-table .il { color: #888; width: 140px; }
+  .info-table .iv { color: #1a1a1a; font-weight: 600; }
+
+  /* Quote summary */
+  .summary-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1a1a1a;
+    letter-spacing: 0.5px;
+    margin-top: 24px;
+    margin-bottom: 12px;
+  }
+
+  .summary-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .summary-table tr td {
+    padding: 10px 0;
+    font-size: 13.5px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .summary-table tr td:last-child {
+    text-align: right;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .summary-table tr.total-row td {
+    border-top: 1.5px solid #ddd;
+    border-bottom: none;
+    padding-top: 14px;
+    font-size: 14px;
+  }
+
+  .summary-table tr.total-row td:first-child {
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+
+  .summary-table tr.total-row td:last-child {
+    font-weight: 700;
+    font-size: 22px;
+    color: #e74c3c;
+  }
+
+  /* Destination address */
+  .dest-block {
+    margin-top: 20px;
+  }
+
+  .dest-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: #bbb;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .dest-icon-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .dest-icon-row .dest-icon { font-size: 14px; color: #bbb; margin-top: 1px; }
+  .dest-name { font-size: 13px; color: #1a1a1a; font-weight: 500; }
+  .dest-country { font-size: 13px; color: #1a1a1a; font-weight: 700; }
+
+  /* ===== FOOTER ===== */
+  .page-footer {
+    background: #3a3a3a;
+    color: #ccc;
+    padding: 14px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11.5px;
+  }
+
+  .footer-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .footer-left .fl-label { color: #999; }
+  .footer-left .fl-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #555;
+  }
+  .footer-left .fl-name { color: #fff; font-weight: 600; }
+  .footer-left .fl-detail { color: #aaa; display: flex; align-items: center; gap: 4px; }
+
+  .footer-right {
+    font-size: 12px;
+    color: #aaa;
+  }
+
+  .footer-right strong { color: #fff; }
+
+  /* ===== PAGE 2 - CHARGES ===== */
+  .charges-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 16px;
+    margin-top: 8px;
+  }
+
+  .charge-group { margin-bottom: 4px; }
+
+  .charge-group-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a1a1a;
+    border-bottom: 1px solid #e5e5e5;
+  }
+
+  .charge-line-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 0 8px 0;
+    font-size: 12.5px;
+    color: #555;
+    border-bottom: 1px solid #f5f5f5;
+  }
+
+  .cl-name { flex: 2; }
+  .cl-calc { flex: 2; text-align: center; color: #999; font-size: 11.5px; }
+  .cl-amount { flex: 1; text-align: right; font-weight: 500; color: #333; font-variant-numeric: tabular-nums; }
+
+  .charges-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0 8px;
+    border-top: 1.5px solid #ddd;
+    margin-top: 8px;
+  }
+
+  .charges-total .ct-label { font-size: 14px; font-weight: 600; }
+  .charges-total .ct-amount { font-size: 22px; font-weight: 700; color: #e74c3c; }
+
+  /* ===== PAGE 3 - IF APPLICABLE ===== */
+  .applicable-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 16px;
+    margin-top: 8px;
+  }
+
+  .app-item {
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .app-item:last-child { border-bottom: none; }
+
+  .app-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .app-name {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+
+  .app-rate {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #555;
+    white-space: nowrap;
+  }
+
+  .app-desc {
+    font-size: 12px;
+    color: #999;
+    margin-top: 3px;
+    line-height: 1.5;
+  }
+
+  /* ===== PAGE 4 - T&C ===== */
+  .index-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 6px;
+    margin-top: 8px;
+  }
+
+  .index-text {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 24px;
+    line-height: 1.6;
+  }
+
+  .tc-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 16px;
+  }
+
+  .tc-body {
+    font-size: 12px;
+    color: #555;
+    line-height: 1.75;
+    text-align: left;
+  }
+
+  .tc-body a { color: #555; }
+
+  /* ===== HIGHLIGHT FOR CHANGES ===== */
+  .highlight {
+    background: #fff8dc;
+    border: 1.5px dashed #e6a817;
+    border-radius: 3px;
+    padding: 1px 5px;
+  }
+
+  .highlight-block {
+    background: #fff8dc;
+    border: 1.5px dashed #e6a817;
+    border-radius: 4px;
+    padding: 6px 10px;
+    margin-top: 16px;
+    display: inline-block;
+  }
+
+  .change-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: #2d2d2d;
+    color: #fff;
+    text-align: center;
+    padding: 10px 24px;
+    font-size: 13px;
+    font-weight: 500;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .change-banner .cb-dot {
+    width: 8px;
+    height: 8px;
+    background: #e6a817;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .footnote-text {
+    font-size: 12px;
+    color: #555;
+    line-height: 1.75;
+  }
+</style>
+</head>
+<body>
+
+<div class="change-banner">
+  <span class="cb-dot"></span>
+  2 changes highlighted — &nbsp;<span style="font-weight:400;color:#ccc;">* added to EST. TOTAL TRANSIT TIME (Page 1) &amp; footnote added after T&amp;C (Page 4)</span>
+</div>
+
+<!-- ==================== PAGE 1 ==================== -->
+<div class="page" style="margin-top:60px;">
+  <div class="page-body">
+
+    <div class="header">
+      <div class="logo">
+        <svg class="logo-swoosh" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M8 28C8 28 14 10 28 8C28 8 18 14 16 24C14 34 8 28 8 28Z" fill="#E85D3A"/>
+          <path d="M4 30C4 30 12 18 24 12C24 12 14 18 12 26C10 34 4 30 4 30Z" fill="#E85D3A" opacity="0.6"/>
+        </svg>
+        <span class="logo-text">silq</span>
+      </div>
+      <div class="quote-id">SILQ-4228268Q1</div>
+    </div>
+
+    <div class="route-bar">
+      CNYTN &gt; Fajardo WH &nbsp;|&nbsp; ONEY China Pacific Service 4 &nbsp;|&nbsp; Dray to warehouse 40 FT HC x 1
+    </div>
+
+    <div class="meta-row">
+      <div><span class="label">Date of issue: </span><span class="value">05-12-2026</span></div>
+      <div><span class="label">Quote validity: </span><span class="value">05-14-2026</span></div>
+    </div>
+    <div class="meta-row">
+      <div><span class="label">Consignee: </span><span class="value">Vandelay Industries</span></div>
+      <div><span class="label">Destination: </span><span class="value">Fajardo WH - Compton</span></div>
+    </div>
+
+    <div class="p1-main">
+      <div class="p1-left">
+        <div class="transit-header">
+          <div class="transit-title"><span class="highlight">EST. TOTAL TRANSIT TIME<span style="color:#e74c3c;font-weight:700;">*</span></span></div>
+          <div class="transit-subtitle">Including Dwell time</div>
+          <div class="transit-days">19 Days</div>
+        </div>
+
+        <div class="timeline">
+          <div class="tl-node origin">
+            <div class="tl-icon">🔗</div>
+            <div class="tl-port"><span class="flag">🇨🇳</span> CNYTN <span class="tl-port-label">Origin Port</span></div>
+          </div>
+
+          <div class="tl-node ocean">
+            <div class="tl-icon" style="color:#e74c3c;">🚢</div>
+            <div class="tl-duration"><span class="dur-icon">🚢</span> 14 DAYS</div>
+          </div>
+
+          <div class="tl-node dest-port">
+            <div class="tl-icon">🔗</div>
+            <div class="tl-port"><span class="flag">🇺🇸</span> USLAX <span class="tl-port-label">Destination Port</span></div>
+            <div class="tl-dwell-badge"><span class="dwell-dot"></span> 2 DAYS(DWELL)</div>
+          </div>
+
+          <div class="tl-node delivery">
+            <div class="tl-icon">🚛</div>
+            <div class="tl-duration">3 DAYS</div>
+          </div>
+
+          <div class="dest-block">
+            <div class="dest-label">DESTINATION ADDRESS</div>
+            <div class="dest-icon-row">
+              <span class="dest-icon">📋</span>
+              <div>
+                <div class="dest-name">Fajardo WH - Compton</div>
+                <div class="dest-country">United States</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="p1-right">
+        <table class="info-table">
+          <tr><td class="il">Coverage:</td><td class="iv">PORT TO DOOR</td></tr>
+          <tr><td class="il">Incoterms:</td><td class="iv">FOB</td></tr>
+          <tr><td class="il">Container:</td><td class="iv">1 × 40 FT HC</td></tr>
+          <tr><td class="il">Carbon Emissions:</td><td class="iv">1846.47 KGCo2</td></tr>
+        </table>
+
+        <div class="summary-title">QUOTE SUMMARY</div>
+        <table class="summary-table">
+          <tr><td>Freight</td><td>$ 2915.85</td></tr>
+          <tr><td>Destination</td><td>$ 140.00</td></tr>
+          <tr><td>Destination Delivery</td><td>$ 705.90</td></tr>
+          <tr><td>Customs</td><td>$ 160.00</td></tr>
+          <tr><td>Cargo Protection</td><td>$ 25.00</td></tr>
+          <tr class="total-row"><td>Total</td><td>USD 3,946.75</td></tr>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="page-footer">
+    <div class="footer-left">
+      <span class="fl-label">Account manager</span>
+      <div class="fl-avatar"></div>
+      <span class="fl-name">Anurag Mishra</span>
+      <span class="fl-detail">✉ anurag@onesilq.com</span>
+      <span class="fl-detail">📞 + 91 8004907030</span>
+    </div>
+    <div class="footer-right"><strong>PAGE 1</strong> of 4</div>
+  </div>
+</div>
+
+<!-- ==================== PAGE 2 ==================== -->
+<div class="page">
+  <div class="page-body">
+
+    <div class="header">
+      <div class="logo">
+        <svg class="logo-swoosh" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M8 28C8 28 14 10 28 8C28 8 18 14 16 24C14 34 8 28 8 28Z" fill="#E85D3A"/>
+          <path d="M4 30C4 30 12 18 24 12C24 12 14 18 12 26C10 34 4 30 4 30Z" fill="#E85D3A" opacity="0.6"/>
+        </svg>
+        <span class="logo-text">silq</span>
+      </div>
+      <div class="quote-id">SILQ-4228268Q1</div>
+    </div>
+
+    <div class="route-bar">
+      CNYTN &gt; Fajardo WH &nbsp;|&nbsp; ONEY China Pacific Service 4 &nbsp;|&nbsp; Dray to warehouse 40 FT HC x 1
+    </div>
+
+    <div class="charges-title">Charges</div>
+
+    <div class="charge-group">
+      <div class="charge-group-header"><span>Freight</span><span>$ 2,915.85</span></div>
+      <div class="charge-line-item">
+        <span class="cl-name">Ocean Freight - 40ft HC</span>
+        <span class="cl-calc">$ 2,915.85 x 1.00 Container</span>
+        <span class="cl-amount">$ 2,915.85</span>
+      </div>
+    </div>
+
+    <div class="charge-group">
+      <div class="charge-group-header"><span>Destination</span><span>$ 140.00</span></div>
+      <div class="charge-line-item">
+        <span class="cl-name">Silq Handling</span>
+        <span class="cl-calc">$ 75.00 x 1.00 HBL</span>
+        <span class="cl-amount">$ 75.00</span>
+      </div>
+      <div class="charge-line-item">
+        <span class="cl-name">Documentation</span>
+        <span class="cl-calc">$ 65.00 x 1.00 HBL</span>
+        <span class="cl-amount">$ 65.00</span>
+      </div>
+    </div>
+
+    <div class="charge-group">
+      <div class="charge-group-header"><span>Destination Delivery</span><span>$ 705.90</span></div>
+      <div class="charge-line-item">
+        <span class="cl-name">Chassis Rental Fee</span>
+        <span class="cl-calc">$ 90.00 x 1.00 Day</span>
+        <span class="cl-amount">$ 90.00</span>
+      </div>
+      <div class="charge-line-item">
+        <span class="cl-name">Pierpass</span>
+        <span class="cl-calc">$ 80.00 x 1.00 Container</span>
+        <span class="cl-amount">$ 80.00</span>
+      </div>
+      <div class="charge-line-item">
+        <span class="cl-name">Clean Truck Fee</span>
+        <span class="cl-calc">$ 20.00 x 1.00 Container</span>
+        <span class="cl-amount">$ 20.00</span>
+      </div>
+      <div class="charge-line-item">
+        <span class="cl-name">Drayage</span>
+        <span class="cl-calc">$ 443.30 x 1.00 Container</span>
+        <span class="cl-amount">$ 443.30</span>
+      </div>
+      <div class="charge-line-item">
+        <span class="cl-name">Fuel Surcharge</span>
+        <span class="cl-calc">$ 72.60 x 1.00 Container</span>
+        <span class="cl-amount">$ 72.60</span>
+      </div>
+    </div>
+
+    <div class="charge-group">
+      <div class="charge-group-header"><span>Customs</span><span>$ 160.00</span></div>
+      <div class="charge-line-item">
+        <span class="cl-name">Import Security Filing (ISF)</span>
+        <span class="cl-calc">$ 35.00 x 1.00 HBL</span>
+        <span class="cl-amount">$ 35.00</span>
+      </div>
+      <div class="charge-line-item">
+        <span class="cl-name">Customs Clearance Fee</span>
+        <span class="cl-calc">$ 125.00 x 1.00 Shipment</span>
+        <span class="cl-amount">$ 125.00</span>
+      </div>
+    </div>
+
+    <div class="charge-group">
+      <div class="charge-group-header"><span>Cargo Protection</span><span>$ 25.00</span></div>
+      <div class="charge-line-item">
+        <span class="cl-name">Cargo Protection (minimum)*</span>
+        <span class="cl-calc">$ 25.00 x 1.00 Other</span>
+        <span class="cl-amount">$ 25.00</span>
+      </div>
+    </div>
+
+    <div class="charges-total">
+      <span class="ct-label">Total</span>
+      <span class="ct-amount">USD 3,946.75</span>
+    </div>
+
+  </div>
+
+  <div class="page-footer">
+    <div class="footer-left">
+      <span class="fl-label">Account manager</span>
+      <div class="fl-avatar"></div>
+      <span class="fl-name">Anurag Mishra</span>
+      <span class="fl-detail">✉ anurag@onesilq.com</span>
+      <span class="fl-detail">📞 + 91 8004907030</span>
+    </div>
+    <div class="footer-right"><strong>PAGE 2</strong> of 4</div>
+  </div>
+</div>
+
+<!-- ==================== PAGE 3 ==================== -->
+<div class="page">
+  <div class="page-body">
+
+    <div class="header">
+      <div class="logo">
+        <svg class="logo-swoosh" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M8 28C8 28 14 10 28 8C28 8 18 14 16 24C14 34 8 28 8 28Z" fill="#E85D3A"/>
+          <path d="M4 30C4 30 12 18 24 12C24 12 14 18 12 26C10 34 4 30 4 30Z" fill="#E85D3A" opacity="0.6"/>
+        </svg>
+        <span class="logo-text">silq</span>
+      </div>
+      <div class="quote-id">SILQ-4228268Q1</div>
+    </div>
+
+    <div class="route-bar">
+      CNYTN &gt; Fajardo WH &nbsp;|&nbsp; ONEY China Pacific Service 4 &nbsp;|&nbsp; Dray to warehouse 40 FT HC x 1
+    </div>
+
+    <div class="applicable-title">If applicable</div>
+
+    <div class="app-item">
+      <div class="app-row"><span class="app-name">Detention</span><span class="app-rate">$220.00 per Day</span></div>
+      <div class="app-desc">Charge for containers spend outside the port - freedays as defined by the carrier. Chargeable days 1-3 $220/day. Chargeable Days 4 and onwards $250/day</div>
+    </div>
+
+    <div class="app-item">
+      <div class="app-row"><span class="app-name">Demurrage</span><span class="app-rate">$245.00 per Day</span></div>
+      <div class="app-desc">Charge for containers spend on port grounds- freedays as defined by the carrier. Chargeable days 1-5 charged $245/day. Chargeable days 6 and onwards $340</div>
+    </div>
+
+    <div class="app-item">
+      <div class="app-row"><span class="app-name">Waiting Time (Terminal)</span><span class="app-rate">$100.00 per Hour</span></div>
+      <div class="app-desc">Waiting Time at Terminal(First two hours free). (Per hour/Per container)</div>
+    </div>
+
+    <div class="app-item">
+      <div class="app-row"><span class="app-name">Waiting Time (Consignee)</span><span class="app-rate">$100.00 per Hour</span></div>
+      <div class="app-desc">Waiting Time at Consignee(First two hours free). (Per hour/Per Container)</div>
+    </div>
+
+    <div class="app-item">
+      <div class="app-row"><span class="app-name">Yard storage</span><span class="app-rate">$50.00 per Day</span></div>
+      <div class="app-desc">Charge for storing the container in the truckers yard after pre pull</div>
+    </div>
+
+    <div class="app-item">
+      <div class="app-row"><span class="app-name">Delivery Appointment</span><span class="app-rate">$50.00 per Shipment</span></div>
+      <div class="app-desc">Delivery based on a Fixed Time Window</div>
+    </div>
+
+    <div class="app-item">
+      <div class="app-row"><span class="app-name">Custom Clearance Fee for Additional Invoice</span><span class="app-rate">$30.00 per Other</span></div>
+      <div class="app-desc">Fee for customs clearance for Additional Invoice</div>
+    </div>
+
+    <div class="app-item">
+      <div class="app-row"><span class="app-name">Custom Clearance Fee for Additional Line items</span><span class="app-rate">$2.00 per Other</span></div>
+      <div class="app-desc">Fee for customs clearance for Additional Line Item(more than 3 line items)</div>
+    </div>
+
+    <div class="app-item">
+      <div class="app-row"><span class="app-name">Chassis Split Fee</span><span class="app-rate">$125.00 per Container</span></div>
+      <div class="app-desc">Cost of bringing the chassis to the container location</div>
+    </div>
+
+    <div class="app-item">
+      <div class="app-row"><span class="app-name">Pre-Pull</span><span class="app-rate">$165.00 per Container</span></div>
+      <div class="app-desc">Pull container and deliver different day</div>
+    </div>
+
+  </div>
+
+  <div class="page-footer">
+    <div class="footer-left">
+      <span class="fl-label">Account manager</span>
+      <div class="fl-avatar"></div>
+      <span class="fl-name">Anurag Mishra</span>
+      <span class="fl-detail">✉ anurag@onesilq.com</span>
+      <span class="fl-detail">📞 + 91 8004907030</span>
+    </div>
+    <div class="footer-right"><strong>PAGE 3</strong> of 4</div>
+  </div>
+</div>
+
+<!-- ==================== PAGE 4 ==================== -->
+<div class="page">
+  <div class="page-body">
+
+    <div class="header">
+      <div class="logo">
+        <svg class="logo-swoosh" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M8 28C8 28 14 10 28 8C28 8 18 14 16 24C14 34 8 28 8 28Z" fill="#E85D3A"/>
+          <path d="M4 30C4 30 12 18 24 12C24 12 14 18 12 26C10 34 4 30 4 30Z" fill="#E85D3A" opacity="0.6"/>
+        </svg>
+        <span class="logo-text">silq</span>
+      </div>
+      <div class="quote-id">SILQ-4228268Q1</div>
+    </div>
+
+    <div class="route-bar">
+      CNYTN &gt; Fajardo WH &nbsp;|&nbsp; ONEY China Pacific Service 4 &nbsp;|&nbsp; Dray to warehouse 40 FT HC x 1
+    </div>
+
+    <div class="index-label">Index</div>
+    <div class="index-text">Freight - Cost of Ocean Freight from CY to CY Verified Gross Mass Compliance US Customs</div>
+
+    <div class="tc-title">Terms &amp; Conditions</div>
+    <div class="tc-body">
+      Silq LLC (hereafter referred to as the &ldquo;Company&rdquo; or the &ldquo;Carrier&rdquo;) is a non-vessel-operating common carrier under
+      FMC license number 033395. Services that the Company provides under a Negotiated Rate Agreement (&ldquo;NRA&rdquo;) are
+      subject to the Company&rsquo;s governing rules tariff, which is accessible at DPI Member &amp; Web User Login via
+      http://www.dpiusa.com, in compliance with FMC regulations.This quote is assigned a unique NRA number which is
+      shown above. Except as the NRA otherwise states, all NRA rates are subject to the surcharges and accessorials in
+      the Carrier&rsquo;s governing tariff rules. The surcharges and accessorials that will apply to each NRA are those that are in
+      effect as of the date the Carrier receives the first shipment under each NRA, and such surcharges and accessorials
+      shall remain fixed at that level for the NRA&rsquo;s term, except when an NRA states that third-party surcharges will apply
+      on a pass-through basis. Customer and Carrier agree to keep confidential Customer&rsquo;s identity and the rates, charges,
+      and terms and conditions of each NRA. The parties understand and agree that any breach of that confidentiality
+      agreement could expose the breaching party to liability for the other party&rsquo;s damages.CUSTOMER&rsquo;S BOOKING OF
+      CARGO AFTER RECEIVING THE TERMS OF AN NRA/QUOTE OR NRA/QUOTE AMENDMENT CONSTITUTES
+      ACCEPTANCE OF THE RATES AND TERMS OF SUCH NRA/QUOTE OR NRA/QUOTE AMENDMENT.Customer
+      understands and agrees that Company performs all other services under its then in-effect Terms and Conditions of
+      Service, which contain a contractual limitation of Company&rsquo;s liability of $50 per shipment, unless Customer declares
+      a greater value in writing and Company accepts such declaration in writing. Company&rsquo;s landed cost calculations,
+      including duty estimates, are value-added supply chain management services, not customs business and are not to
+      be interpreted as customs or duties advice which the company does not provide. Customs duties paid on behalf of
+      the Customer by the Company are subject to a disbursement fee. Quotes provided are based on cargo information
+      and quantities specified at the time of request by the client. Should the nature of the cargo information or quantity
+      change upon receipt, the Company reserves the right to reprice accordingly. Carrier shall base target delivery dates
+      on then-current and projected market conditions. Customer understands and agrees that such target delivery dates
+      are not binding and are subject to change.Company&rsquo;s Terms and Conditions of Service are incorporated into this
+      spot quote and are available online at https://www.onesilq.com/legal/terms
+    </div>
+
+    <div class="highlight-block">
+      <span class="footnote-text"><span style="color:#e74c3c;font-weight:700;">*</span> Final routing subject to space availability/Carrier approval.</span>
+    </div>
+
+  </div>
+
+  <div class="page-footer">
+    <div class="footer-left">
+      <span class="fl-label">Account manager</span>
+      <div class="fl-avatar"></div>
+      <span class="fl-name">Anurag Mishra</span>
+      <span class="fl-detail">✉ anurag@onesilq.com</span>
+      <span class="fl-detail">📞 + 91 8004907030</span>
+    </div>
+    <div class="footer-right"><strong>PAGE 4</strong> of 4</div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -18,6 +18,7 @@ Interactive HTML prototypes for Silq product features. Hosted via GitHub Pages.
 
 | File | Feature | Owner |
 |---|---|---|
+| `vendor-billed-costs.html` | Vendor Billed Costs (query / dispute, gated in, expected vs billed) | VP |
 | `pod-priority-board.html` | Pod Priority Board (Kanban + Pod Health) | — |
 | `credit-limit-table.html` | Client Credit Limit Table (QuickBooks integration) | — |
 | `tag-management-system/` | Tag Management System (typed tags + settings) | AM |

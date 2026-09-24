@@ -1,0 +1,1429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Silq - Vendor billed costs</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf9f7;
+    --card: #ffffff;
+    --primary: #c8842e;
+    --primary-dark: #a86b1d;
+    --primary-light: #fdf4e8;
+    --primary-lighter: #fef9f1;
+    --text: #2d2a26;
+    --text-secondary: #8a8580;
+    --border: #e8e4df;
+    --border-light: #f0ece7;
+    --green: #3d9a5f;
+    --green-bg: #edf7f0;
+    --red: #c44b3f;
+    --red-bg: #fdf0ee;
+    --gray-bg: #f5f3f0;
+    --orange: #d4722a;
+    --orange-bg: #fdf2e9;
+    --sidebar-bg: #fefcfa;
+    --sidebar-active: #fdf4e8;
+    --blue: #3b6ea8;
+    --blue-bg: #eef4fb;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    min-height: 100vh;
+    line-height: 1.45;
+  }
+
+  .sidebar {
+    width: 220px;
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--border);
+    position: fixed; inset: 0 auto 0 0;
+    display: flex; flex-direction: column;
+  }
+  .sidebar-logo { padding: 20px; }
+  .silq-logo-text { font-size: 22px; font-weight: 700; color: #1e2a4a; letter-spacing: -0.5px; }
+  .sidebar-nav { padding: 0 10px; display: flex; flex-direction: column; gap: 2px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px; border-radius: 8px;
+    font-size: 13px; font-weight: 500; color: var(--text-secondary);
+    text-decoration: none;
+  }
+  .nav-item.active { background: var(--sidebar-active); color: var(--primary); font-weight: 600; }
+  .nav-item svg { width: 18px; height: 18px; opacity: 0.65; }
+  .nav-item.active svg { opacity: 1; }
+
+  .main { margin-left: 220px; flex: 1; max-width: 1100px; }
+
+  .proto-banner { background: #1e2a4a; color: #fff; font-size: 12px; padding: 8px 28px; }
+  .page { padding: 20px 28px 48px; }
+  .crumb { font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; }
+  h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; }
+  .lede { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+
+  .who { font-size: 12px; color: var(--text-secondary); margin-top: 10px; }
+  .who select, select.input, input.input {
+    font: inherit; font-size: 13px; border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 10px; background: #fff; color: var(--text); width: 100%;
+  }
+  .who select { width: auto; font-size: 12px; padding: 4px 8px; border-radius: 6px; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-top: 14px;
+  }
+  .card-hd {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-light);
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  }
+  .card-hd h2 { font-size: 13px; font-weight: 700; }
+  .card-hd p { font-size: 12px; color: var(--text-secondary); }
+  .card-bd { padding: 14px 16px; }
+
+  .pick-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .field label {
+    display: block; font-size: 11px; font-weight: 600;
+    color: var(--text-secondary); margin-bottom: 4px;
+  }
+
+  .facts {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin-bottom: 12px;
+  }
+  .chip {
+    font-size: 12px; font-weight: 600;
+    background: var(--gray-bg); border: 1px solid var(--border);
+    border-radius: 999px; padding: 4px 10px;
+  }
+  .chip b { font-weight: 500; color: var(--text-secondary); margin-right: 4px; }
+  .facts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px 16px;
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
+  .facts-grid span { color: var(--text-secondary); font-size: 11px; font-weight: 600; display: block; }
+  .facts-grid strong { font-weight: 600; }
+  .gated-box {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 12px;
+    align-items: start;
+    background: var(--blue-bg);
+    border: 1px solid #d5e4f4;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+  }
+  .gated-hint { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+  .chip-gated { background: var(--blue-bg); border-color: #d5e4f4; }
+  .flag-banner {
+    margin: 0 16px 12px;
+    background: var(--orange-bg);
+    border: 1px solid #f0d9b5;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+  .flag-banner.dispute {
+    background: var(--red-bg);
+    border-color: #f0c8c2;
+  }
+  .btn-tiny { font-size: 11px; padding: 4px 8px; }
+  .flag-actions { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
+  tr.row-query { background: var(--orange-bg); }
+  tr.row-dispute { background: var(--red-bg); }
+  td.flag { font-size: 12px; min-width: 168px; vertical-align: top; }
+
+  .pdf-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    align-items: end;
+  }
+
+  .inbox-item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+    padding: 10px 0;
+    border-top: 1px solid var(--border-light);
+    font-size: 13px;
+    align-items: center;
+  }
+  .inbox-item:first-child { border-top: 0; padding-top: 0; }
+  .inbox-item .from { font-weight: 600; }
+  .inbox-item .sub { color: var(--text-secondary); font-size: 12px; }
+  .empty-note { font-size: 13px; color: var(--text-secondary); padding: 8px 0; }
+  .bucket { margin-top: 16px; }
+  .bucket:first-child { margin-top: 0; }
+  .bucket h3 {
+    font-size: 12px; font-weight: 700; margin-bottom: 4px;
+  }
+  .bucket .hint { font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; }
+  .count-row { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+  .tag {
+    font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 999px;
+    margin-left: 6px; white-space: nowrap;
+  }
+  .tag-review { background: var(--orange-bg); color: var(--orange); }
+  .tag-ok { background: var(--green-bg); color: var(--green); }
+  .tag-low { background: var(--red-bg); color: var(--red); }
+  .tag-draft { background: var(--primary-light); color: var(--primary-dark); }
+  .tag-gray { background: var(--gray-bg); color: var(--text-secondary); }
+
+  .tabs { display: flex; border-bottom: 1px solid var(--border); padding: 0 8px; flex-wrap: wrap; }
+  .tab {
+    border: 0; background: none; font: inherit;
+    font-size: 13px; font-weight: 600; color: var(--text-secondary);
+    padding: 14px 14px 12px; cursor: pointer;
+    border-bottom: 2px solid transparent; margin-bottom: -1px;
+  }
+  .tab.active { color: var(--text); border-bottom-color: var(--primary); }
+  .tab .n { font-weight: 500; color: var(--text-secondary); margin-left: 6px; }
+
+  .toolbar {
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    padding: 12px 16px; border-bottom: 1px solid var(--border-light); font-size: 13px;
+  }
+  .totals span { margin-right: 14px; color: var(--text-secondary); }
+  .totals b { color: var(--text); font-weight: 700; }
+  .totals .over b { color: var(--red); }
+  .totals .ok b { color: var(--green); }
+
+  .invoice-row {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 0.9fr auto;
+    gap: 10px;
+    padding: 12px 16px;
+    align-items: end;
+    background: var(--primary-lighter);
+    border-bottom: 1px solid var(--border-light);
+  }
+
+  .btn {
+    border-radius: 8px; font: inherit; font-size: 13px; font-weight: 500;
+    padding: 8px 12px; cursor: pointer;
+    border: 1px solid var(--border); background: #fff; color: var(--text);
+    white-space: nowrap;
+  }
+  .btn:hover { background: var(--gray-bg); }
+  .btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .btn-primary:hover { background: var(--primary-dark); }
+  .btn-danger { color: var(--red); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    text-align: left; font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.3px; color: var(--text-secondary); font-weight: 600;
+    padding: 10px 12px; border-bottom: 1px solid var(--border);
+  }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--border-light); vertical-align: middle; }
+  tr:last-child td { border-bottom: 0; }
+  th.num, td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .charge { font-weight: 600; }
+  .sub { font-size: 12px; color: var(--text-secondary); font-weight: 400; }
+  .quoted { color: var(--text-secondary); }
+  input.actual {
+    width: 110px; text-align: right; font: inherit; font-size: 13px;
+    border: 1px solid var(--border); border-radius: 8px; padding: 6px 8px;
+  }
+  .over { color: var(--red); font-weight: 600; }
+  .under { color: var(--green); font-weight: 600; }
+  .empty { color: var(--text-secondary); }
+
+  .foot {
+    display: flex; gap: 12px; align-items: end;
+    padding: 12px 16px; border-top: 1px solid var(--border);
+  }
+  .foot .field { flex: 1; }
+  .foot textarea, .modal textarea {
+    width: 100%; min-height: 44px; resize: vertical;
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 10px; font: inherit; font-size: 13px;
+  }
+  .modal textarea { min-height: 72px; }
+  .foot-note { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+
+  .activity { margin-top: 18px; }
+  .activity h2 { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+  .act { font-size: 13px; padding: 8px 0; border-top: 1px solid var(--border-light); }
+  .act:first-of-type { border-top: 0; }
+  .act time { color: var(--text-secondary); font-size: 12px; float: right; }
+  .act em { color: var(--text-secondary); font-style: normal; }
+
+  .hidden { display: none !important; }
+
+  .modal-back {
+    display: none; position: fixed; inset: 0; z-index: 80;
+    background: rgba(45,42,38,0.35); align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .modal-back.open { display: flex; }
+  .modal {
+    background: #fff; border-radius: 12px; width: min(720px, 100%);
+    max-height: 90vh; overflow: auto;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.14);
+  }
+  .modal-hd {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 16px; border-bottom: 1px solid var(--border);
+    font-weight: 700; position: sticky; top: 0; background: #fff;
+  }
+  .modal-bd { padding: 16px; font-size: 13px; }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+  .warn {
+    background: var(--primary-light); border: 1px solid #f0d9b5;
+    border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; font-size: 12px;
+  }
+  .kv { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .pdf-preview {
+    background: var(--gray-bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 16px; font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;
+    min-height: 120px;
+  }
+
+  .toast {
+    position: fixed; bottom: 20px; right: 20px; display: none;
+    background: #1e2a4a; color: #fff; padding: 10px 14px;
+    border-radius: 8px; font-size: 13px; z-index: 90;
+  }
+  .toast.show { display: block; }
+
+  .lock-bar {
+    background: #1e2a4a;
+    color: #fff;
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-top: 14px;
+  }
+  .lock-bar .kicker {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.4px;
+    text-transform: uppercase; opacity: 0.7;
+  }
+  .lock-bar h2 { font-size: 16px; margin: 4px 0 6px; font-weight: 700; }
+  .lock-bar p { font-size: 13px; opacity: 0.92; }
+  .siblings { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .sib {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.25);
+    color: #fff; border-radius: 8px;
+    padding: 6px 10px; font-size: 12px; cursor: pointer; font-family: inherit;
+  }
+  .sib.active { background: var(--primary); border-color: var(--primary); }
+
+  @media (max-width: 900px) {
+    .pick-grid, .facts-grid, .kv, .pdf-row, .invoice-row { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<nav class="sidebar">
+  <div class="sidebar-logo"><div class="silq-logo-text">silq</div></div>
+  <div class="sidebar-nav">
+    <a class="nav-item" href="#"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>Projects</a>
+    <a class="nav-item active" href="#"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/><path d="M3 4h1l1.68 8.39A2 2 0 007.65 14h4.7a2 2 0 001.97-1.61L16 6H5"/></svg>Shipments</a>
+    <a class="nav-item" href="#"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/></svg>Invoices</a>
+    <a class="nav-item" href="#"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/><path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"/></svg>Rates</a>
+  </div>
+</nav>
+
+<div class="main">
+  <div class="proto-banner">Prototype · billed actuals live on the shipment · quote only supplies expected buy (read-only)</div>
+  <div class="page">
+    <div class="crumb">Shipments / Vendor billed costs</div>
+    <h1>Vendor billed costs</h1>
+    <p class="lede">Use the quote to find the job. Line-item costs you type are stored on the shipment, not on the quote. Switching shipments keeps each set of actuals separate.</p>
+    <p class="who">
+      Entering as
+      <select id="who">
+        <option value="finops">FinOps · Priya Shah</option>
+        <option value="origin">Origin Ops · Wei Chen</option>
+        <option value="dest">Dest Ops · Marcus Cole</option>
+      </select>
+    </p>
+
+    <div class="card">
+      <div class="card-hd">
+        <div>
+          <h2>1. Find the shipment</h2>
+          <p>Quote is a search key only. You cannot save billed costs until a shipment is selected.</p>
+        </div>
+      </div>
+      <div class="card-bd">
+        <div class="pick-grid">
+          <div class="field">
+            <label>Quote (finds shipments, does not store costs)</label>
+            <select class="input" id="quoteSel"></select>
+          </div>
+          <div class="field">
+            <label>Shipment (where billed actuals are saved)</label>
+            <select class="input" id="shipSel"></select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="afterShip" class="hidden">
+      <div class="lock-bar" id="lockBar"></div>
+      <div class="card">
+        <div class="card-hd">
+          <div>
+            <h2>2. This shipment</h2>
+            <p>Facts for the file you are costing. Gated in is the CY / terminal in date used to validate contract rates. Parse is only for vendor bill PDFs.</p>
+          </div>
+        </div>
+        <div class="card-bd">
+          <div class="facts" id="chips"></div>
+          <div class="facts-grid" id="facts"></div>
+          <div class="gated-box">
+            <div class="field">
+              <label>Gated in</label>
+              <input class="input" id="gatedIn" type="date">
+            </div>
+            <p class="gated-hint">Container gated into the CY or terminal. Use this date to pick the valid contract rate, not the invoice date or quote date.</p>
+          </div>
+          <div class="pdf-row">
+            <div class="field">
+              <label>Quote in app</label>
+              <select class="input" id="pdfSel"></select>
+            </div>
+            <button class="btn" id="viewPdfBtn" type="button">View quote</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd">
+          <div>
+            <h2>3. Inbox for this shipment</h2>
+            <p>Matched mail is for this shipment only. Unmatched sits on the quote until you attach it to a shipment.</p>
+          </div>
+          <div class="count-row" id="inboxCounts"></div>
+        </div>
+        <div class="card-bd" id="inboxList"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd">
+          <div>
+            <h2>4. Line items billed on this shipment</h2>
+            <p>Expected is this file's share of the quote. Query asks Origin Ops to confirm a billed value. Dispute flags it to challenge the vendor.</p>
+          </div>
+        </div>
+        <div class="tabs" id="tabs"></div>
+        <div class="toolbar">
+          <div class="totals" id="totals"></div>
+          <div class="count-row" id="flagCounts"></div>
+          <button class="btn" id="addLine">+ Line</button>
+        </div>
+        <div class="invoice-row">
+          <div class="field"><label>Vendor</label><input class="input" id="vendor"></div>
+          <div class="field"><label>Invoice #</label><input class="input" id="invoiceNo" placeholder="INV-…"></div>
+          <div class="field"><label>Date</label><input class="input" id="invoiceDate" type="date"></div>
+          <button class="btn" id="parseBtn" type="button">Parse PDF document</button>
+        </div>
+        <div id="flagBanner"></div>
+        <table>
+          <thead>
+            <tr>
+              <th>Charge</th>
+              <th class="num">Expected<br><span style="text-transform:none;letter-spacing:0;font-weight:500;">this shipment</span></th>
+              <th class="num">Billed<br><span style="text-transform:none;letter-spacing:0;font-weight:500;">this shipment</span></th>
+              <th class="num">Rate variance<br><span style="text-transform:none;letter-spacing:0;font-weight:500;">this file only</span></th>
+              <th>Flag</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+        <div class="foot">
+          <div class="field">
+            <label>Comment</label>
+            <textarea id="comment" placeholder="Optional note on this shipment bill. Not written to the quote."></textarea>
+            <div class="foot-note" id="stamp"></div>
+          </div>
+          <button class="btn btn-primary" id="saveBtn">Save on this shipment</button>
+        </div>
+      </div>
+
+      <div class="activity">
+        <h2>Recent saves</h2>
+        <div id="activity"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="file" accept=".pdf,image/*" hidden>
+
+<div class="modal-back" id="validateModal">
+  <div class="modal">
+    <div class="modal-hd"><span id="validateTitle">Validate parsed document</span><button class="btn" id="closeValidate">Close</button></div>
+    <div class="modal-bd">
+      <div class="warn" id="validateWarn"></div>
+      <div class="kv" id="validateMeta"></div>
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th>Charge</th>
+            <th class="num">Expected this file</th>
+            <th class="num">Parsed billed</th>
+          </tr>
+        </thead>
+        <tbody id="validateBody"></tbody>
+      </table>
+      <div class="modal-actions">
+        <button class="btn btn-danger" id="rejectParse">Reject</button>
+        <button class="btn" id="notThisShip">Not this shipment</button>
+        <button class="btn btn-primary" id="confirmParse">Confirm and apply as draft</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-back" id="flagModal">
+  <div class="modal">
+    <div class="modal-hd"><span id="flagTitle">Mark query</span><button class="btn" id="closeFlag">Close</button></div>
+    <div class="modal-bd">
+      <div class="warn" id="flagWarn"></div>
+      <div class="kv" id="flagMeta"></div>
+      <div class="field" style="margin-bottom:12px;">
+        <label>Route query to</label>
+        <select class="input" id="flagTo">
+          <option value="Origin Ops">Origin Ops</option>
+          <option value="Dest Ops">Dest Ops</option>
+        </select>
+        <p class="gated-hint" id="flagToHint">Query is an internal confirm. Dispute is sent to the vendor, not to Ops.</p>
+      </div>
+      <div class="field">
+        <label>Note</label>
+        <textarea id="flagNote" placeholder="What needs confirming, or why this billed value is disputed."></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn" id="cancelFlag">Cancel</button>
+        <button class="btn btn-primary" id="confirmFlag">Mark</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-back" id="pdfModal">
+  <div class="modal">
+    <div class="modal-hd"><span id="pdfTitle">Quote PDF</span><button class="btn" id="closePdf">Close</button></div>
+    <div class="modal-bd">
+      <div class="pdf-preview" id="pdfPreview"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const TABS = [
+  { id: 'freight', label: 'Ocean freight' },
+  { id: 'origin', label: 'Origin' },
+  { id: 'destination', label: 'Destination' }
+];
+const PEOPLE = {
+  finops: { name: 'Priya Shah', team: 'FinOps', tab: 'freight' },
+  origin: { name: 'Wei Chen', team: 'Origin Ops', tab: 'origin' },
+  dest: { name: 'Marcus Cole', team: 'Dest Ops', tab: 'destination' }
+};
+
+function L(id, group, charge, uom, unitRate, grain) {
+  return { id, group, charge, uom, unitRate, grain, extra: false, actual: null, draft: false, flag: null };
+}
+
+const APEX_LINES = [
+  L('pick', 'origin', 'Origin cartage / factory pickup', 'container', 185, 'per_unit'),
+  L('othc', 'origin', 'Origin THC', 'container', 155, 'per_unit'),
+  L('odoc', 'origin', 'Origin documentation', 'shipment', 35, 'per_shipment'),
+  L('of40', 'freight', 'Ocean freight - 40HC', 'container', 2180, 'per_unit'),
+  L('cprot', 'freight', 'Cargo Protection (minimum)*', 'job', 20, 'per_quote'),
+  L('isf', 'destination', 'Import Security Filing (ISF)', 'HBL', 28, 'per_shipment'),
+  L('cclear', 'destination', 'Customs clearance fee', 'shipment', 95, 'per_shipment'),
+  L('shand', 'destination', 'Silq handling', 'HBL', 55, 'per_shipment'),
+  L('ddoc', 'destination', 'Destination documentation', 'HBL', 48, 'per_shipment'),
+  L('chas', 'destination', 'Chassis rental fee', 'day', 75, 'per_unit'),
+  L('pier', 'destination', 'PierPASS', 'container', 68, 'per_unit'),
+  L('dray', 'destination', 'Drayage', 'container', 380, 'per_unit')
+];
+
+const VANDELAY_LINES = [
+  L('of40', 'freight', 'Ocean Freight - 40ft HC', 'container', 2450, 'per_unit'),
+  L('shand', 'destination', 'Silq Handling', 'HBL', 55, 'per_shipment'),
+  L('ddoc', 'destination', 'Documentation', 'HBL', 48, 'per_shipment'),
+  L('chas', 'destination', 'Chassis Rental Fee', 'day', 75, 'per_unit'),
+  L('pier', 'destination', 'Pierpass', 'container', 68, 'per_unit'),
+  L('ctf', 'destination', 'Clean Truck Fee', 'container', 18, 'per_unit'),
+  L('dray', 'destination', 'Drayage', 'container', 380, 'per_unit'),
+  L('dfuel', 'destination', 'Fuel Surcharge', 'container', 62, 'per_unit'),
+  L('isf', 'destination', 'Import Security Filing (ISF)', 'HBL', 28, 'per_shipment'),
+  L('cclear', 'destination', 'Customs Clearance Fee', 'shipment', 95, 'per_shipment'),
+  L('cprot', 'freight', 'Cargo Protection (minimum)*', 'job', 20, 'per_quote')
+];
+
+function cloneLines(src) {
+  return src.map(l => ({ ...l }));
+}
+
+function expectedOn(l, s, q) {
+  if (l.extra) return 0;
+  if (l.grain === 'per_quote') return q.shipments[0].id === s.id ? l.unitRate : 0;
+  if (l.grain === 'per_shipment') return l.unitRate;
+  return l.unitRate * (s.shipQty || 1);
+}
+
+function quoteTotalOf(l, q) {
+  const files = q.shipments.length;
+  const units = q.shipments.reduce((n, x) => n + (x.shipQty || 1), 0);
+  if (l.grain === 'per_quote') return l.unitRate;
+  if (l.grain === 'per_shipment') return l.unitRate * files;
+  return l.unitRate * units;
+}
+
+const QUOTES = [
+  {
+    id: 'apex',
+    quoteId: 'SILQ-482910Q1',
+    client: 'Apex Outdoor',
+    pdfs: [
+      { id: 'accepted', name: 'SILQ-482910Q1 accepted.pdf', kind: 'apex' },
+      { id: 'draft', name: 'SILQ-482910Q0 superseded.pdf', kind: 'apex' }
+    ],
+    shipments: [
+      {
+        id: 'shp-01',
+        shipId: 'SHP-482910-01',
+        mode: 'FCL',
+        incoterm: 'EXW',
+        coverage: 'D2D',
+        container: '40HC',
+        origin: 'CNYTN',
+        dest: 'USLAX',
+        mbl: 'MEDU1234567',
+        vendorHint: 'Shipco / SMM',
+        shipQty: 1,
+        gatedIn: '2026-08-12',
+        lines: cloneLines(APEX_LINES),
+        originEntered: true
+      },
+      {
+        id: 'shp-02',
+        shipId: 'SHP-482910-02',
+        mode: 'FCL',
+        incoterm: 'EXW',
+        coverage: 'D2D',
+        container: '40HC',
+        origin: 'CNYTN',
+        dest: 'USLAX',
+        mbl: 'MEDU1234599',
+        vendorHint: 'Shipco / SMM',
+        shipQty: 1,
+        gatedIn: '2026-08-18',
+        lines: cloneLines(APEX_LINES)
+      }
+    ]
+  },
+  {
+    id: 'vandelay',
+    quoteId: 'SILQ-4228268Q1',
+    client: 'Vandelay Industries',
+    pdfs: [
+      { id: 'accepted', name: 'SILQ-4228268Q1 quote.pdf', kind: 'vandelay' }
+    ],
+    shipments: [
+      {
+        id: 'shp-v1',
+        shipId: 'SHP-4228268-01',
+        mode: 'FCL',
+        incoterm: 'FOB',
+        coverage: 'Port to door',
+        container: '40HC',
+        origin: 'CNYTN',
+        dest: 'USLAX',
+        mbl: 'ONEYSH6ABC123',
+        vendorHint: 'ONEY / China Pacific Service 4',
+        shipQty: 1,
+        gatedIn: '2026-05-08',
+        lines: cloneLines(VANDELAY_LINES),
+        note: 'FOB quote. Origin tab is empty unless a vendor bills extras.'
+      }
+    ]
+  }
+];
+
+QUOTES.forEach(q => {
+  q.shipments.forEach(s => {
+    s.shipQty = s.shipQty || 1;
+    s.lines = s.lines.map(l => ({
+      ...l,
+      qty: l.grain === 'per_unit' ? s.shipQty : 1,
+      quoted: expectedOn(l, s, q),
+      quoteTotal: quoteTotalOf(l, q)
+    }));
+  });
+});
+
+const INBOX = [
+  {
+    id: 'em1', quoteId: 'apex', shipmentId: 'shp-01', status: 'needs_validation',
+    from: 'billing@shipco.com', subject: 'Invoice INV-88421 · MBL MEDU1234567',
+    when: 'Today 09:12', conf: 0.94, group: 'freight',
+    vendor: 'Shipco America', invoiceNo: 'INV-88421', invoiceDate: '2026-09-02',
+    lines: [
+      { id: 'of40', charge: 'Ocean freight - 40HC', actual: 2240, extra: false },
+      { id: 'pss', charge: 'Peak season surcharge', actual: 150, extra: true }
+    ]
+  },
+  {
+    id: 'em2', quoteId: 'apex', shipmentId: 'shp-01', status: 'needs_validation',
+    from: 'accounts@yantian-agent.cn', subject: 'Origin charges YT-1933 / SILQ-482910',
+    when: 'Yesterday', conf: 0.81, group: 'origin',
+    vendor: 'Yantian origin agent', invoiceNo: 'YT-1933', invoiceDate: '2026-08-28',
+    lines: [
+      { id: 'pick', charge: 'Origin cartage / factory pickup', actual: 185, extra: false },
+      { id: 'othc', charge: 'Origin THC', actual: 170, extra: false },
+      { id: 'odoc', charge: 'Origin documentation', actual: 35, extra: false }
+    ]
+  },
+  {
+    id: 'em3', quoteId: 'apex', shipmentId: null, status: 'unmatched',
+    from: 'ap@la-dray.com', subject: 'Drayage invoice · container TEMU7788123',
+    when: 'Today 11:40', conf: 0.41, group: 'destination',
+    vendor: 'LA dest trucker', invoiceNo: 'DR-44012', invoiceDate: '2026-09-08',
+    lines: [
+      { id: 'dray', charge: 'Drayage', actual: 410, extra: false },
+      { id: 'chas', charge: 'Chassis rental fee', actual: 120, extra: false }
+    ]
+  },
+  {
+    id: 'em5', quoteId: 'apex', shipmentId: null, status: 'unmatched',
+    from: 'finance@unknown-nvo.com', subject: 'Statement attached · ref missing',
+    when: 'Today 08:02', conf: 0.22, group: 'freight',
+    vendor: 'Unknown NVO', invoiceNo: 'ST-0091', invoiceDate: '2026-09-01',
+    lines: [
+      { id: 'of40', charge: 'Ocean freight - 40HC', actual: 1990, extra: false }
+    ]
+  },
+  {
+    id: 'em4', quoteId: 'vandelay', shipmentId: 'shp-v1', status: 'needs_validation',
+    from: 'ebilling@one-line.com', subject: 'Ocean freight bill ONEYSH6ABC123',
+    when: '2 days ago', conf: 0.91, group: 'freight',
+    vendor: 'Ocean Network Express', invoiceNo: 'ONE-55201', invoiceDate: '2026-05-18',
+    lines: [
+      { id: 'of40', charge: 'Ocean Freight - 40ft HC', actual: 2488, extra: false }
+    ]
+  }
+];
+
+let quoteId = '';
+let shipId = '';
+let tab = 'freight';
+let who = 'finops';
+let pending = null;
+let pendingFlag = null;
+let pdfKind = 'preview';
+
+function quote() { return QUOTES.find(q => q.id === quoteId); }
+function ship() {
+  const q = quote();
+  return q ? q.shipments.find(s => s.id === shipId) : null;
+}
+function money(n) {
+  if (n === null || n === undefined || n === '') return '-';
+  const v = Number(n);
+  return (v < 0 ? '-' : '') + '$' + Math.abs(v).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+}
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2400);
+}
+function groupLines() {
+  const s = ship();
+  return s ? s.lines.filter(l => l.group === tab) : [];
+}
+function billedCount(s) {
+  return s.lines.filter(l => l.actual !== null && l.actual !== '').length;
+}
+function filled(list) { return list.filter(l => l.actual !== null && l.actual !== '').length; }
+
+function renderLockBar() {
+  const q = quote();
+  const s = ship();
+  const others = q.shipments.filter(x => x.id !== s.id);
+  const sibs = q.shipments.map(x => {
+    ensureBills(x);
+    const n = billedCount(x);
+    return `<button type="button" class="sib ${x.id === s.id ? 'active' : ''}" data-goto="${x.id}">${x.shipId} · ${n}/${x.lines.length} billed${x.id === s.id ? ' · this file' : ''}</button>`;
+  }).join('');
+  const qBuy = q.shipments[0].lines.reduce((n, l) => n + Number(l.quoteTotal || 0), 0);
+  const billedAll = q.shipments.reduce((n, x) => {
+    ensureBills(x);
+    return n + x.lines.reduce((m, l) => m + (l.actual ? Number(l.actual) : 0), 0);
+  }, 0);
+  const thisExp = s.lines.reduce((n, l) => n + Number(l.quoted || 0), 0);
+  const extra = others.length
+    ? `${q.quoteId} is ${q.shipments.length} shipments (${q.shipments.reduce((n, x) => n + (x.shipQty || 1), 0)} units). Quote buy ${money(qBuy)} is the job total. Do not compare one bill to that total.`
+    : `${q.quoteId} has one shipment, so expected this file equals quote buy.`;
+  document.getElementById('lockBar').innerHTML = `
+    <div class="kicker">Costing this shipment, not the quote</div>
+    <h2>${s.shipId}</h2>
+    <p>Expected on this file ${money(thisExp)}. Quote buy (all files) ${money(qBuy)}. Billed across files ${money(billedAll)}. ${extra}</p>
+    <div class="siblings">${sibs}</div>`;
+}
+
+function ensureBills(s) {
+  if (!s.bills) {
+    s.bills = {
+      freight: { vendor: s.vendorHint, invoiceNo: '', invoiceDate: '' },
+      origin: { vendor: '', invoiceNo: '', invoiceDate: '' },
+      destination: { vendor: '', invoiceNo: '', invoiceDate: '' }
+    };
+  }
+  if (!s.activity) {
+    s.activity = [];
+    if (s.originEntered) {
+      const othc = s.lines.find(l => l.id === 'othc');
+      const pick = s.lines.find(l => l.id === 'pick');
+      if (othc) {
+        othc.actual = 170;
+        othc.flag = {
+          type: 'query',
+          note: 'Billed $170 vs expected $155. Confirm if this is the current Yantian THC.',
+          by: 'Priya Shah',
+          team: 'FinOps',
+          when: 'Today 08:40',
+          to: 'Origin Ops',
+          resolved: false
+        };
+      }
+      if (pick) { pick.actual = 185; }
+      const odoc = s.lines.find(l => l.id === 'odoc');
+      if (odoc) odoc.actual = odoc.quoted;
+      s.bills.origin = { vendor: 'Yantian origin agent', invoiceNo: 'YT-1901', invoiceDate: '2026-08-20' };
+      s.activity.push({ who: 'Wei Chen', team: 'Origin Ops', when: 'Last week', text: 'Saved Origin bill YT-1901.', comment: 'Entered from agent PDF before inbox parse existed.' });
+      s.activity.push({ who: 'Priya Shah', team: 'FinOps', when: 'Today 08:40', text: 'Marked Query on Origin THC. Routed to Origin Ops.', comment: 'Billed $170 vs expected $155. Confirm if this is the current Yantian THC.' });
+    }
+  }
+}
+
+function matchedInbox() {
+  return INBOX.filter(e => e.quoteId === quoteId && e.shipmentId === shipId && e.status === 'needs_validation');
+}
+function unmatchedInbox() {
+  return INBOX.filter(e => e.quoteId === quoteId && !e.shipmentId && e.status === 'unmatched');
+}
+
+function inboxRow(e, unmatched) {
+  const tag = unmatched ? 'tag-low' : 'tag-review';
+  const label = unmatched ? 'Could not match' : Math.round(e.conf * 100) + '% match';
+  return `<div class="inbox-item">
+      <div>
+        <div class="from">${e.from} <span class="tag ${tag}">${label}</span></div>
+        <div class="sub">${e.subject} · ${e.when} · ${e.lines.length} lines</div>
+      </div>
+      <button class="btn" data-review="${e.id}">${unmatched ? 'Open (stays unmatched)' : 'Review and validate'}</button>
+    </div>`;
+}
+
+function renderPickers() {
+  const qs = document.getElementById('quoteSel');
+  qs.innerHTML = `<option value="">Select a quote…</option>` + QUOTES.map(q =>
+    `<option value="${q.id}" ${q.id === quoteId ? 'selected' : ''}>${q.quoteId} · ${q.client}</option>`
+  ).join('');
+  const ss = document.getElementById('shipSel');
+  const q = quote();
+  if (!q) {
+    ss.innerHTML = `<option value="">Select a quote first</option>`;
+    ss.disabled = true;
+    return;
+  }
+  ss.disabled = false;
+  ss.innerHTML = `<option value="">Select a shipment…</option>` + q.shipments.map(s =>
+    `<option value="${s.id}" ${s.id === shipId ? 'selected' : ''}>${s.shipId} · ${s.mbl}</option>`
+  ).join('');
+}
+
+function fmtDate(iso) {
+  if (!iso) return 'Not set';
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function renderFacts() {
+  const q = quote();
+  const s = ship();
+  if (!s) return;
+  document.getElementById('chips').innerHTML = [
+    ['Mode', s.mode], ['Incoterm', s.incoterm], ['Coverage', s.coverage], ['Container', s.container],
+    ['Gated in', fmtDate(s.gatedIn)]
+  ].map(([k, v], i) => `<span class="chip${i === 4 ? ' chip-gated' : ''}"><b>${k}</b>${v}</span>`).join('');
+  document.getElementById('facts').innerHTML = `
+    <div><span>Shipment (stores billed)</span><strong>${s.shipId}</strong></div>
+    <div><span>Expected buy from quote</span><strong>${q.quoteId}</strong></div>
+    <div><span>MBL</span><strong>${s.mbl}</strong></div>
+    <div><span>Origin port</span><strong>${s.origin}</strong></div>
+    <div><span>Dest. port</span><strong>${s.dest}</strong></div>
+    <div><span>Client</span><strong>${q.client}</strong></div>
+    <div><span>Gated in</span><strong>${fmtDate(s.gatedIn)}</strong></div>
+    <div><span>Contract rate check</span><strong>${s.gatedIn ? 'Use gated-in date' : 'Set gated in first'}</strong></div>`;
+  document.getElementById('gatedIn').value = s.gatedIn || '';
+  document.getElementById('pdfSel').innerHTML = q.pdfs.map(p =>
+    `<option value="${p.id}">${p.name}</option>`
+  ).join('');
+}
+
+function renderInbox() {
+  const matched = matchedInbox();
+  const unmatched = unmatchedInbox();
+  document.getElementById('inboxCounts').innerHTML =
+    `<span class="tag tag-review">${matched.length} matched</span>` +
+    `<span class="tag tag-low">${unmatched.length} unmatched</span>`;
+  document.getElementById('inboxList').innerHTML = `<div class="bucket">
+    <h3>Matched to this shipment</h3>
+    <p class="hint">Parsed against MBL or Silq IDs. Validate, then confirm to draft actuals.</p>
+    ${matched.length ? matched.map(e => inboxRow(e, false)).join('') : '<p class="empty-note">Nothing matched to this shipment.</p>'}
+  </div>
+  <div class="bucket">
+    <h3>Could not match</h3>
+    <p class="hint">No MBL, booking, or shipment ID we could trust. Opening this does not mark it reviewed. It stays here until you match it to a shipment or leave it.</p>
+    ${unmatched.length ? unmatched.map(e => inboxRow(e, true)).join('') : '<p class="empty-note">No unmatched mail on this quote.</p>'}
+  </div>`;
+}
+
+function renderTabs() {
+  const s = ship();
+  document.getElementById('tabs').innerHTML = TABS.map(t => {
+    const g = s.lines.filter(l => l.group === t.id);
+    const emptyHint = g.length === 0 ? ' · none' : '';
+    return `<button class="tab ${t.id === tab ? 'active' : ''}" data-tab="${t.id}">${t.label}<span class="n">${filled(g)}/${g.length}${emptyHint}</span></button>`;
+  }).join('');
+}
+
+function renderBill() {
+  const s = ship();
+  ensureBills(s);
+  const b = s.bills[tab];
+  document.getElementById('vendor').value = b.vendor;
+  document.getElementById('invoiceNo').value = b.invoiceNo;
+  document.getElementById('invoiceDate').value = b.invoiceDate;
+}
+
+function renderTotals() {
+  const g = groupLines();
+  const quoted = g.reduce((s, l) => s + Number(l.quoted || 0), 0);
+  const withA = g.filter(l => l.actual !== null && l.actual !== '');
+  const actual = withA.reduce((s, l) => s + Number(l.actual || 0), 0);
+  const qv = withA.reduce((s, l) => s + Number(l.quoted || 0), 0);
+  const v = withA.length ? actual - qv : null;
+  const vCls = v === null ? '' : v > 0 ? 'over' : 'ok';
+  document.getElementById('totals').innerHTML = `
+    <span>Expected this file <b>${money(quoted)}</b></span>
+    <span>Billed this file <b>${withA.length ? money(actual) : '-'}</b></span>
+    <span class="${vCls}">Rate variance <b>${v === null ? '-' : (v > 0 ? '+' : '') + money(v)}</b></span>`;
+}
+
+function varCell(line) {
+  if (line.grain === 'per_quote' && !line.quoted) {
+    if (line.actual === null || line.actual === '') return '<span class="empty">n/a</span>';
+    return '<span class="over">Not allocated here</span>';
+  }
+  if (line.actual === null || line.actual === '') return '<span class="empty">-</span>';
+  const v = Number(line.actual) - Number(line.quoted || 0);
+  if (Math.abs(v) < 0.005) return money(0);
+  const cls = v > 0 ? 'over' : 'under';
+  return `<span class="${cls}">${v > 0 ? '+' : ''}${money(v)}</span>`;
+}
+
+function lineSub(l) {
+  const q = quote();
+  const files = q.shipments.length;
+  const units = q.shipments.reduce((n, x) => n + (x.shipQty || 1), 0);
+  if (l.extra) return 'this shipment only, not on quote';
+  if (l.grain === 'per_quote') {
+    return l.quoted
+      ? `quoted once on the job ${money(l.quoteTotal)} · assigned to this file`
+      : `quoted once on the job ${money(l.quoteTotal)} · expected sits on another shipment`;
+  }
+  if (l.grain === 'per_shipment') return `per shipment · quote has ${files} files · this file ${money(l.unitRate)}`;
+  return `${money(l.unitRate)} / ${l.uom} · quote ${units} ${l.uom} · this file ${l.qty}`;
+}
+
+function expectedCell(l) {
+  if (l.grain === 'per_quote' && !l.quoted) return '<span class="empty">On other file</span>';
+  return money(l.quoted);
+}
+
+function openFlags(list) {
+  return (list || []).filter(l => l.flag && !l.flag.resolved);
+}
+
+function flagCell(l) {
+  if (!l.flag) {
+    return `<div class="flag-actions">
+      <button type="button" class="btn btn-tiny" data-flag="query" data-id="${l.id}">Query</button>
+      <button type="button" class="btn btn-tiny" data-flag="dispute" data-id="${l.id}">Dispute</button>
+    </div>`;
+  }
+  const kind = l.flag.type === 'dispute' ? 'Dispute' : 'Query';
+  const tag = l.flag.type === 'dispute' ? 'tag-low' : 'tag-review';
+  const resolved = l.flag.resolved ? '<span class="tag tag-ok">Resolved</span>' : '';
+  const resolveBtn = l.flag.resolved ? '' : `<button type="button" class="btn btn-tiny" data-resolve="${l.id}">Resolve</button>`;
+  return `<div>
+    <span class="tag ${tag}">${kind}</span>${resolved}
+    <div class="sub">${l.flag.to && l.flag.type === 'query' ? 'To ' + l.flag.to + '. ' : ''}${l.flag.note || ''}</div>
+    <div class="flag-actions">${resolveBtn}<button type="button" class="btn btn-tiny" data-clear-flag="${l.id}">Clear</button></div>
+  </div>`;
+}
+
+function renderFlagBanner() {
+  const s = ship();
+  const open = openFlags(s.lines);
+  const queries = open.filter(l => l.flag.type === 'query');
+  const disputes = open.filter(l => l.flag.type === 'dispute');
+  document.getElementById('flagCounts').innerHTML =
+    `<span class="tag tag-review">${queries.length} query</span>` +
+    `<span class="tag tag-low">${disputes.length} dispute</span>`;
+  if (!open.length) {
+    document.getElementById('flagBanner').innerHTML = '';
+    return;
+  }
+  const names = open.map(l => {
+    const g = TABS.find(t => t.id === l.group);
+    return l.charge + (g ? ' (' + g.label + ')' : '');
+  }).join(', ');
+  const forOrigin = open.some(l => l.flag.type === 'query' && l.flag.to === 'Origin Ops');
+  const msg = who === 'origin' && forOrigin
+    ? `FinOps needs Origin Ops to confirm: ${names}. Open the matching tab, then Resolve after you check the billed value.`
+    : `Open flags on this shipment: ${names}. Query is an internal confirm with Ops. Dispute is a vendor challenge.`;
+  const cls = disputes.length && !queries.length ? 'flag-banner dispute' : 'flag-banner';
+  document.getElementById('flagBanner').innerHTML = `<div class="${cls}">${msg}</div>`;
+}
+
+function renderTable() {
+  const g = groupLines();
+  const s = ship();
+  if (!g.length) {
+    document.getElementById('tbody').innerHTML = `<tr><td colspan="5" class="empty">${s.note || 'No quoted lines in this group. Use + Line for unquoted extras.'}</td></tr>`;
+    return;
+  }
+  document.getElementById('tbody').innerHTML = g.map(l => {
+    const rowCls = l.flag && !l.flag.resolved ? (l.flag.type === 'dispute' ? 'row-dispute' : 'row-query') : '';
+    return `<tr class="${rowCls}">
+      <td>
+        <div class="charge">${l.charge}${l.extra ? '<span class="tag tag-review">Unquoted</span>' : ''}${l.draft ? '<span class="tag tag-draft">Draft</span>' : ''}</div>
+        <div class="sub">${lineSub(l)}</div>
+      </td>
+      <td class="num quoted">${expectedCell(l)}</td>
+      <td class="num"><input class="actual" data-id="${l.id}" value="${l.actual === null ? '' : l.actual}" placeholder="-"></td>
+      <td class="num var-cell">${varCell(l)}</td>
+      <td class="flag">${flagCell(l)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderActivity() {
+  const s = ship();
+  ensureBills(s);
+  document.getElementById('activity').innerHTML = (s.activity.length ? s.activity : [{ who: '-', team: '', when: '', text: 'No saves yet.', comment: null }]).map(a => `
+    <div class="act">
+      <time>${a.when || ''}</time>
+      <strong>${a.who}</strong>${a.team ? ' · ' + a.team + ': ' : ' '}${a.text}
+      ${a.comment ? `<div><em>“${a.comment}”</em></div>` : ''}
+    </div>`).join('');
+}
+
+function persistBill() {
+  const s = ship();
+  if (!s) return;
+  ensureBills(s);
+  s.bills[tab] = {
+    vendor: document.getElementById('vendor').value,
+    invoiceNo: document.getElementById('invoiceNo').value,
+    invoiceDate: document.getElementById('invoiceDate').value
+  };
+}
+
+function render() {
+  renderPickers();
+  const s = ship();
+  document.getElementById('afterShip').classList.toggle('hidden', !s);
+  if (!s) return;
+  ensureBills(s);
+  const q = quote();
+  const p = PEOPLE[who];
+  document.getElementById('stamp').textContent = `Saving billed actuals on ${s.shipId} as ${p.name} (${p.team}). Does not change ${q.quoteId}.`;
+  document.getElementById('saveBtn').textContent = 'Save on ' + s.shipId;
+  renderLockBar();
+  renderFacts();
+  renderInbox();
+  renderTabs();
+  renderBill();
+  renderTotals();
+  renderTable();
+  renderFlagBanner();
+  renderActivity();
+}
+
+function openValidate(item, sourceLabel) {
+  pending = item;
+  const s = ship();
+  const unmatched = item.status === 'unmatched';
+  document.getElementById('validateTitle').textContent = unmatched ? 'Unmatched document' : 'Validate parsed document';
+  document.getElementById('validateWarn').textContent = unmatched
+    ? 'Could not match this email to a shipment. Closing leaves it in Could not match. It is not marked reviewed.'
+    : 'Parsed vendor bill. Confirm writes draft actuals on this shipment only. Save still required. Expected comes from the quote already in the app.';
+  document.getElementById('validateMeta').innerHTML = `
+    <div class="field"><label>Source</label><div>${sourceLabel}</div></div>
+    <div class="field"><label>Vendor</label><input class="input" id="pvVendor" value="${item.vendor || ''}"></div>
+    <div class="field"><label>Invoice #</label><input class="input" id="pvInv" value="${item.invoiceNo || ''}"></div>
+    <div class="field"><label>Date</label><input class="input" id="pvDate" type="date" value="${item.invoiceDate || ''}"></div>
+    <div class="field"><label>Suggested shipment</label><div>${unmatched ? 'None. You can match to ' + s.shipId : s.shipId + ' · ' + s.mbl}</div></div>
+    <div class="field"><label>Bill group</label><div>${TABS.find(t => t.id === item.group).label}</div></div>`;
+  document.getElementById('validateBody').innerHTML = item.lines.map((pl, i) => {
+    const qLine = s.lines.find(l => l.id === pl.id);
+    const quoted = qLine ? qLine.quoted : 0;
+    return `<tr>
+      <td><input type="checkbox" data-i="${i}" checked></td>
+      <td>${pl.charge}${pl.extra ? ' <span class="tag tag-review">Unquoted</span>' : ''}</td>
+      <td class="num quoted">${money(quoted)}</td>
+      <td class="num"><input class="actual" data-pi="${i}" value="${pl.actual}"></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('rejectParse').style.display = unmatched ? 'none' : '';
+  document.getElementById('notThisShip').style.display = '';
+  document.getElementById('notThisShip').textContent = unmatched ? 'Keep unmatched' : 'Not this shipment';
+  document.getElementById('confirmParse').textContent = unmatched ? 'Match to this shipment' : 'Confirm and apply as draft';
+  document.getElementById('validateModal').classList.add('open');
+}
+
+document.getElementById('lockBar').addEventListener('click', e => {
+  const b = e.target.closest('[data-goto]');
+  if (!b || !ship()) return;
+  persistBill();
+  shipId = b.dataset.goto;
+  document.getElementById('comment').value = '';
+  toast('Switched shipment. Billed amounts on the previous file were not copied.');
+  render();
+});
+
+document.getElementById('quoteSel').addEventListener('change', e => {
+  quoteId = e.target.value;
+  shipId = '';
+  tab = PEOPLE[who].tab;
+  render();
+});
+document.getElementById('shipSel').addEventListener('change', e => {
+  shipId = e.target.value;
+  tab = PEOPLE[who].tab;
+  render();
+});
+document.getElementById('who').addEventListener('change', e => {
+  who = e.target.value;
+  if (ship()) { persistBill(); tab = PEOPLE[who].tab; }
+  render();
+});
+document.getElementById('tabs').addEventListener('click', e => {
+  const t = e.target.closest('[data-tab]');
+  if (!t) return;
+  persistBill();
+  tab = t.dataset.tab;
+  document.getElementById('comment').value = '';
+  render();
+});
+document.getElementById('tbody').addEventListener('input', e => {
+  const inp = e.target.closest('input.actual');
+  if (!inp) return;
+  const line = ship().lines.find(l => l.id === inp.dataset.id);
+  line.actual = inp.value === '' ? null : Number(inp.value);
+  line.draft = false;
+  renderTotals();
+  const varTd = inp.closest('tr').querySelector('.var-cell');
+  if (varTd) varTd.innerHTML = varCell(line);
+});
+document.getElementById('tbody').addEventListener('click', e => {
+  const flagBtn = e.target.closest('[data-flag]');
+  if (flagBtn) {
+    openFlagModal(flagBtn.dataset.id, flagBtn.dataset.flag);
+    return;
+  }
+  const resolveBtn = e.target.closest('[data-resolve]');
+  if (resolveBtn) {
+    resolveFlag(resolveBtn.dataset.resolve);
+    return;
+  }
+  const clearBtn = e.target.closest('[data-clear-flag]');
+  if (clearBtn) {
+    clearFlag(clearBtn.dataset.clearFlag);
+  }
+});
+document.getElementById('gatedIn').addEventListener('change', e => {
+  const s = ship();
+  if (!s) return;
+  s.gatedIn = e.target.value;
+  toast(s.gatedIn ? 'Gated in set to ' + fmtDate(s.gatedIn) + '. Use this to validate contract rates.' : 'Gated in cleared.');
+  render();
+});
+['vendor', 'invoiceNo', 'invoiceDate'].forEach(id => {
+  document.getElementById(id).addEventListener('change', persistBill);
+});
+document.getElementById('addLine').addEventListener('click', () => {
+  const name = prompt('Charge name', 'Chassis extra day');
+  if (!name) return;
+  ship().lines.push({
+    id: 'x' + Date.now(), group: tab, charge: name, uom: 'shipment', unitRate: 0,
+    grain: 'per_shipment', extra: true, actual: null, draft: false, flag: null, qty: 1, quoted: 0, quoteTotal: 0
+  });
+  render();
+});
+document.getElementById('saveBtn').addEventListener('click', () => {
+  persistBill();
+  const p = PEOPLE[who];
+  const s = ship();
+  const g = TABS.find(t => t.id === tab);
+  const b = s.bills[tab];
+  const comment = document.getElementById('comment').value.trim();
+  groupLines().forEach(l => { l.draft = false; });
+  s.activity.unshift({
+    who: p.name, team: p.team, when: 'Just now',
+    text: `Saved ${g.label}${b.invoiceNo ? ' · ' + b.invoiceNo : ''} (${filled(groupLines())} lines) on ${s.shipId}.`,
+    comment: comment || null
+  });
+  document.getElementById('comment').value = '';
+  toast('Saved on ' + s.shipId);
+  render();
+});
+
+document.getElementById('inboxList').addEventListener('click', e => {
+  const btn = e.target.closest('[data-review]');
+  if (!btn) return;
+  const item = INBOX.find(x => x.id === btn.dataset.review);
+  openValidate({ ...item, kind: 'bill' }, item.from + ' · ' + item.subject);
+});
+
+document.getElementById('parseBtn').addEventListener('click', () => {
+  document.getElementById('file').click();
+});
+document.getElementById('file').addEventListener('change', e => {
+  const f = e.target.files[0];
+  e.target.value = '';
+  if (!f || !ship()) return;
+  const s = ship();
+  openValidate({
+    kind: 'bill', group: tab, vendor: s.bills[tab].vendor, invoiceNo: '', invoiceDate: '',
+    shipmentId: s.id,
+    lines: tab === 'freight'
+      ? [{ id: 'of40', charge: groupLines()[0] ? groupLines()[0].charge : 'Ocean freight', actual: 2240, extra: false }, { id: 'pss', charge: 'Peak season surcharge', actual: 150, extra: true }]
+      : groupLines().slice(0, 3).map(l => ({ id: l.id, charge: l.charge, actual: l.quoted, extra: false }))
+  }, f.name + ' (uploaded)');
+});
+
+document.getElementById('viewPdfBtn').addEventListener('click', () => {
+  const q = quote();
+  const pdf = q.pdfs.find(p => p.id === document.getElementById('pdfSel').value) || q.pdfs[0];
+  if (pdf.kind === 'vandelay') {
+    window.open('quote-pdf-mock.html', '_blank');
+    return;
+  }
+  document.getElementById('pdfTitle').textContent = pdf.name;
+  document.getElementById('pdfPreview').innerHTML =
+    `<strong>${q.quoteId}</strong> · ${q.client}<br>EXW · D2D · FCL 40HC · CNYTN → USLAX<br><br>` +
+    ship().lines.map(l => `${l.charge} - quoted buy ${money(l.quoted)}`).join('<br>') +
+    `<br><br><em>Prototype preview. Live app would render the stored quote PDF.</em>`;
+  document.getElementById('pdfModal').classList.add('open');
+});
+document.getElementById('closePdf').onclick = () => document.getElementById('pdfModal').classList.remove('open');
+document.getElementById('closeValidate').onclick = () => {
+  document.getElementById('validateModal').classList.remove('open');
+  if (pending && pending.status === 'unmatched') toast('Still unmatched. Not marked reviewed.');
+};
+
+function defaultFlagTo(group) {
+  return group === 'destination' ? 'Dest Ops' : 'Origin Ops';
+}
+
+function openFlagModal(lineId, type) {
+  const line = ship().lines.find(l => l.id === lineId);
+  if (!line) return;
+  pendingFlag = { lineId, type };
+  const isQuery = type === 'query';
+  document.getElementById('flagTitle').textContent = isQuery ? 'Mark query' : 'Mark dispute';
+  document.getElementById('flagWarn').textContent = isQuery
+    ? 'Query is for FinOps to confirm a billed value with Ops before treating it as the payable. It stays on this shipment line.'
+    : 'Dispute is a vendor challenge. Use it when the billed value is wrong and you will push back on the invoice, not when you only need an internal confirm.';
+  document.getElementById('flagMeta').innerHTML = `
+    <div class="field"><label>Charge</label><div>${line.charge}</div></div>
+    <div class="field"><label>Expected this file</label><div>${money(line.quoted)}</div></div>
+    <div class="field"><label>Billed this file</label><div>${money(line.actual)}</div></div>`;
+  document.getElementById('flagTo').value = defaultFlagTo(line.group);
+  document.getElementById('flagTo').disabled = !isQuery;
+  document.getElementById('flagToHint').textContent = isQuery
+    ? 'Query is an internal confirm. Default is Origin Ops for origin and ocean bills.'
+    : 'Dispute is sent to the vendor. Routing to Ops is hidden because this is not an internal confirm.';
+  document.getElementById('flagNote').value = line.flag && line.flag.note ? line.flag.note : '';
+  document.getElementById('confirmFlag').textContent = isQuery ? 'Mark query' : 'Mark dispute';
+  document.getElementById('flagModal').classList.add('open');
+}
+
+function closeFlagModal() {
+  pendingFlag = null;
+  document.getElementById('flagModal').classList.remove('open');
+}
+
+function resolveFlag(lineId) {
+  const line = ship().lines.find(l => l.id === lineId);
+  if (!line || !line.flag) return;
+  const note = prompt('Resolution note', line.flag.type === 'query' ? 'Confirmed with Origin Ops. Billed value is correct.' : 'Vendor credited the difference.');
+  if (note === null) return;
+  line.flag.resolved = true;
+  line.flag.resolveNote = note.trim();
+  const p = PEOPLE[who];
+  ship().activity.unshift({
+    who: p.name, team: p.team, when: 'Just now',
+    text: `Resolved ${line.flag.type === 'dispute' ? 'Dispute' : 'Query'} on ${line.charge}.`,
+    comment: note.trim() || null
+  });
+  toast('Flag resolved on ' + line.charge);
+  render();
+}
+
+function clearFlag(lineId) {
+  const line = ship().lines.find(l => l.id === lineId);
+  if (!line || !line.flag) return;
+  const kind = line.flag.type === 'dispute' ? 'Dispute' : 'Query';
+  line.flag = null;
+  const p = PEOPLE[who];
+  ship().activity.unshift({
+    who: p.name, team: p.team, when: 'Just now',
+    text: `Cleared ${kind} on ${line.charge}.`,
+    comment: null
+  });
+  toast('Cleared flag on ' + line.charge);
+  render();
+}
+
+document.getElementById('closeFlag').onclick = closeFlagModal;
+document.getElementById('cancelFlag').onclick = closeFlagModal;
+document.getElementById('confirmFlag').addEventListener('click', () => {
+  if (!pendingFlag || !ship()) return;
+  const line = ship().lines.find(l => l.id === pendingFlag.lineId);
+  if (!line) return;
+  const note = document.getElementById('flagNote').value.trim();
+  if (!note) {
+    toast('Add a note before marking the flag.');
+    return;
+  }
+  const isQuery = pendingFlag.type === 'query';
+  const p = PEOPLE[who];
+  line.flag = {
+    type: pendingFlag.type,
+    note,
+    by: p.name,
+    team: p.team,
+    when: 'Just now',
+    to: isQuery ? document.getElementById('flagTo').value : null,
+    resolved: false
+  };
+  ship().activity.unshift({
+    who: p.name, team: p.team, when: 'Just now',
+    text: isQuery
+      ? `Marked Query on ${line.charge}. Routed to ${line.flag.to}.`
+      : `Marked Dispute on ${line.charge} (vendor challenge).`,
+    comment: note
+  });
+  closeFlagModal();
+  toast(isQuery ? 'Query marked. Origin Ops can confirm the billed value.' : 'Dispute marked on this line.');
+  render();
+});
+
+document.getElementById('rejectParse').addEventListener('click', () => {
+  if (pending && pending.id) {
+    const em = INBOX.find(x => x.id === pending.id);
+    if (em && em.status === 'unmatched') {
+      document.getElementById('validateModal').classList.remove('open');
+      toast('Unmatched stays in Could not match.');
+      render();
+      return;
+    }
+    if (em) em.status = 'rejected';
+  }
+  document.getElementById('validateModal').classList.remove('open');
+  toast('Removed from matched queue. Not written to the shipment.');
+  render();
+});
+document.getElementById('notThisShip').addEventListener('click', () => {
+  if (pending && pending.id) {
+    const em = INBOX.find(x => x.id === pending.id);
+    if (em) {
+      em.shipmentId = null;
+      em.status = 'unmatched';
+    }
+  }
+  document.getElementById('validateModal').classList.remove('open');
+  toast('Moved to Could not match. Still not reviewed.');
+  render();
+});
+document.getElementById('confirmParse').addEventListener('click', () => {
+  const s = ship();
+  const group = pending.group || tab;
+  tab = group;
+  persistBill();
+  s.bills[group].vendor = document.getElementById('pvVendor').value;
+  s.bills[group].invoiceNo = document.getElementById('pvInv').value;
+  s.bills[group].invoiceDate = document.getElementById('pvDate').value;
+  pending.lines.forEach((pl, i) => {
+    const on = document.querySelector(`input[data-i="${i}"]`);
+    if (on && !on.checked) return;
+    const inp = document.querySelector(`input[data-pi="${i}"]`);
+    const actual = inp ? Number(inp.value) : pl.actual;
+    let line = s.lines.find(l => l.id === pl.id);
+    if (!line) {
+      line = {
+        id: pl.id || ('p' + i), group, charge: pl.charge, uom: 'container', unitRate: 0,
+        grain: 'per_shipment', extra: true, actual: 0, draft: true, flag: null, qty: 1, quoted: 0, quoteTotal: 0
+      };
+      s.lines.push(line);
+    }
+    line.actual = actual;
+    line.draft = true;
+    if (pl.extra) line.extra = true;
+  });
+  if (pending.id) {
+    const em = INBOX.find(x => x.id === pending.id);
+    if (em) { em.status = 'applied'; em.shipmentId = s.id; }
+  }
+  s.activity.unshift({
+    who: PEOPLE[who].name, team: PEOPLE[who].team, when: 'Just now',
+    text: `Validated parse onto ${TABS.find(t => t.id === group).label} as draft.`,
+    comment: 'Not saved yet.'
+  });
+  document.getElementById('validateModal').classList.remove('open');
+  toast('Draft actuals applied. Review the table, then Save.');
+  render();
+});
+
+render();
+</script>
+</body>
+</html>

@@ -139,6 +139,9 @@
     .card-product-metadata .card-icon { background: #f0fdfa; color: #0f766e; }
     .card-product-metadata::before { background: #0f766e; }
 
+    .card-billed .card-icon { background: #fdf4e8; color: #a86b1d; }
+    .card-billed::before { background: #c8842e; }
+
     .proto-card h2 {
       font-size: 17px;
       font-weight: 700;
@@ -222,6 +225,22 @@
   <div class="subtitle">Interactive Prototypes</div>
 
   <div class="cards">
+    <a class="proto-card card-billed" href="vendor-billed-costs.html">
+      <span class="owner-tag owner-vp">VP</span>
+      <span class="card-arrow"><svg viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M1 8a.5.5 0 01.5-.5h11.793l-3.147-3.146a.5.5 0 01.708-.708l4 4a.5.5 0 010 .708l-4 4a.5.5 0 01-.708-.708L13.293 8.5H1.5A.5.5 0 011 8z"/></svg></span>
+      <div class="card-icon">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm0 2h12v2H4V6zm0 4h5v6H4v-6zm7 0h5v6h-5v-6z" clip-rule="evenodd"/></svg>
+      </div>
+      <h2>Vendor Billed Costs</h2>
+      <p>Shipment-level billed actuals for FinOps, Origin Ops, and Dest Ops. Compare billed vs expected buy, mark a Query for Origin Ops or a Dispute to the vendor, and use gated-in date to validate contract rates.</p>
+      <div class="card-tags">
+        <span class="tag">FinOps</span>
+        <span class="tag">Query</span>
+        <span class="tag">Dispute</span>
+        <span class="tag">Gated in</span>
+      </div>
+    </a>
+
     <a class="proto-card card-pod" href="pod-priority-board.html">
       <span class="owner-tag owner-vp">VP</span>
       <span class="card-arrow"><svg viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M1 8a.5.5 0 01.5-.5h11.793l-3.147-3.146a.5.5 0 01.708-.708l4 4a.5.5 0 010 .708l-4 4a.5.5 0 01-.708-.708L13.293 8.5H1.5A.5.5 0 011 8z"/></svg></span>
