@@ -4314,27 +4314,6 @@ function toggleAstraBrief() {
   applyAstraBriefCollapsed();
 }
 
-const ASTRA_BRIEF_COLLAPSE_KEY = "silq_pod_astra_brief_collapsed";
-let astraBriefCollapsed = false;
-try { astraBriefCollapsed = localStorage.getItem(ASTRA_BRIEF_COLLAPSE_KEY) === "1"; } catch (e) {}
-
-function applyAstraBriefCollapsed() {
-  const brief = document.getElementById("astraBrief");
-  const btn = document.getElementById("astraBriefToggle");
-  if (!brief) return;
-  brief.classList.toggle("is-collapsed", astraBriefCollapsed);
-  if (btn) {
-    btn.setAttribute("aria-expanded", astraBriefCollapsed ? "false" : "true");
-    btn.title = astraBriefCollapsed ? "Show Do next and Astra chat" : "Hide Do next and Astra chat";
-  }
-}
-
-function toggleAstraBrief() {
-  astraBriefCollapsed = !astraBriefCollapsed;
-  try { localStorage.setItem(ASTRA_BRIEF_COLLAPSE_KEY, astraBriefCollapsed ? "1" : "0"); } catch (e) {}
-  applyAstraBriefCollapsed();
-}
-
 function renderAstraBrief() {
   const el = document.getElementById("astraBrief");
   if (!el) return;
