@@ -438,6 +438,31 @@
       background: var(--gray-300);
     }
     .rail-status { display: flex; justify-content: space-between; align-items: center; }
+    .variant-switch {
+      display: inline-flex;
+      gap: 2px;
+      width: max-content;
+      margin-top: 10px;
+      padding: 2px;
+      border-radius: 6px;
+      background: var(--gray-100);
+    }
+    .variant-switch button {
+      border: 0;
+      background: transparent;
+      height: 28px;
+      padding: 0 10px;
+      border-radius: 5px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gray-600);
+    }
+    .variant-switch button.is-selected {
+      background: white;
+      color: var(--gray-800);
+      box-shadow: var(--shadow-ui);
+    }
+    .overview-card .callout { margin-top: 2px; }
 
     .kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
     .kpi { background: var(--gray-100); border-radius: 8px; padding: 16px; }
@@ -612,7 +637,7 @@
     }
 
     const DATA = SHIPMENTS.map(derive);
-    const state = { page: "list", id: "SHP-001", sort: "desc", filter: "all", origin: "list" };
+    const state = { page: "list", id: "SHP-001", sort: "desc", filter: "all", origin: "list", detailVariant: "page" };
 
     function esc(value) {
       return String(value).replace(/[&<>"']/g, (char) => ({
@@ -710,38 +735,61 @@
       );
     }
 
-    function renderDetail() {
-      const shipment = selected();
-      const tight = shipment.overallPct >= 91;
+    function utilizationBars(shipment) {
       const weight = weightColor(shipment.weightPct);
       const volume = bandColor(shipment.volumePct);
+      return (
+        '<div class="metric-block">' +
+          '<div class="split-head"><span class="metric-label">Weight utilization</span><span class="metric-value">' + formatKg(shipment.actualWeight).replace(" kg", "") + " / " + formatKg(shipment.maxWeight) + "</span></div>" +
+          bar(shipment.weightPct, weight, "lg") +
+          '<div class="bar-meta"><span class="pct" style="color:' + weight + '">' + formatPct(shipment.weightPct) + '</span><span class="metric-value">' + formatKg(shipment.remainingWeight) + " remaining</span></div>" +
+        "</div>" +
+        '<div class="metric-block">' +
+          '<div class="split-head"><span class="metric-label">Volume utilization</span><span class="metric-value">' + formatM3(shipment.actualVolume).replace(" m³", "") + " / " + formatM3(shipment.maxVolume) + "</span></div>" +
+          bar(shipment.volumePct, volume, "lg") +
+          '<div class="bar-meta"><span class="pct" style="color:' + volume + '">' + formatPct(shipment.volumePct) + '</span><span class="metric-value">' + formatM3(shipment.remainingVolume) + " remaining</span></div>" +
+        "</div>"
+      );
+    }
+
+    function constraintCallout(shipment) {
+      const tight = shipment.overallPct >= 91;
+      return (
+        '<div class="callout ' + (tight ? "" : "info") + '">' +
+          '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="' + (tight ? "#C37E15" : "#0D47A4") + '" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.5"/></svg>' +
+          "<div><h3>" + (tight ? constraintLabel(shipment.constraint) : "Consolidation opportunity") + "</h3><p>" + esc(recommendation(shipment)) + "</p></div>" +
+        "</div>"
+      );
+    }
+
+    function renderDetail() {
+      const shipment = selected();
+      const inOverview = state.detailVariant === "overview";
       const rows = shipment.lines.map((line) =>
         "<tr><td>" + esc(line.item) + '</td><td class="num">' + formatKg(line.weightKg) + '</td><td class="num">' + formatM3(line.volumeM3) + "</td></tr>"
       ).join("");
+      const overviewFacts = inOverview
+        ? utilizationBars(shipment) + constraintCallout(shipment)
+        : (
+          '<div class="overview-grid">' +
+            '<div><div class="k">Weight</div><div class="v">' + formatKg(shipment.actualWeight) + "</div></div>" +
+            '<div><div class="k">Volume</div><div class="v">' + formatM3(shipment.actualVolume) + "</div></div>" +
+          "</div>"
+        );
       return (
         '<div class="detail">' +
           '<div class="detail-main">' +
             '<div class="ship-head">' +
               '<div class="ship-id">' + esc(shipment.silqId) + "</div>" +
               '<div class="ship-sub">Meridian Home · ' + esc(shipment.origin) + " to " + esc(shipment.destination) + " · " + esc(shipment.cargo) + "</div>" +
+              '<div class="variant-switch">' +
+                '<button type="button" data-go="variant" data-variant="page"' + (inOverview ? "" : ' class="is-selected"') + ">Details section</button>" +
+                '<button type="button" data-go="variant" data-variant="overview"' + (inOverview ? ' class="is-selected"' : "") + ">Overview card</button>" +
+              "</div>" +
             "</div>" +
             '<div class="tabs"><span class="tab is-selected">Details</span><span class="tab">Milestones</span><span class="tab">Documents</span><span class="tab">Products</span></div>' +
             '<div class="section">' +
-              "<h2>Container utilization</h2>" +
-              '<div class="metric-block">' +
-                '<div class="split-head"><span class="metric-label">Weight utilization</span><span class="metric-value">' + formatKg(shipment.actualWeight).replace(" kg", "") + " / " + formatKg(shipment.maxWeight) + "</span></div>" +
-                bar(shipment.weightPct, weight, "lg") +
-                '<div class="bar-meta"><span class="pct" style="color:' + weight + '">' + formatPct(shipment.weightPct) + '</span><span class="metric-value">' + formatKg(shipment.remainingWeight) + " remaining</span></div>" +
-              "</div>" +
-              '<div class="metric-block">' +
-                '<div class="split-head"><span class="metric-label">Volume utilization</span><span class="metric-value">' + formatM3(shipment.actualVolume).replace(" m³", "") + " / " + formatM3(shipment.maxVolume) + "</span></div>" +
-                bar(shipment.volumePct, volume, "lg") +
-                '<div class="bar-meta"><span class="pct" style="color:' + volume + '">' + formatPct(shipment.volumePct) + '</span><span class="metric-value">' + formatM3(shipment.remainingVolume) + " remaining</span></div>" +
-              "</div>" +
-              '<div class="callout ' + (tight ? "" : "info") + '">' +
-                '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="' + (tight ? "#C37E15" : "#0D47A4") + '" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.5"/></svg>' +
-                "<div><h3>" + (tight ? constraintLabel(shipment.constraint) : "Consolidation opportunity") + "</h3><p>" + esc(recommendation(shipment)) + "</p></div>" +
-              "</div>" +
+              (inOverview ? "" : "<h2>Container utilization</h2>" + utilizationBars(shipment) + constraintCallout(shipment)) +
               "<h2>Cargo breakdown</h2>" +
               '<div class="table-wrap"><table><thead><tr><th>Item</th><th class="num">Weight</th><th class="num">Volume</th></tr></thead><tbody>' +
                 rows +
@@ -754,9 +802,8 @@
             '<div class="overview">' +
               '<div class="overview-head"><strong>Overview</strong><span>' + esc(modeLabel(shipment.container)) + " · 1×" + esc(shipment.container) + "</span></div>" +
               '<div class="overview-card">' +
+                overviewFacts +
                 '<div class="overview-grid">' +
-                  '<div><div class="k">Weight</div><div class="v">' + formatKg(shipment.actualWeight) + "</div></div>" +
-                  '<div><div class="k">Volume</div><div class="v">' + formatM3(shipment.actualVolume) + "</div></div>" +
                   '<div><div class="k">Cargo ready</div><div class="v">' + esc(shipment.crd) + "</div></div>" +
                   '<div><div class="k">Constraint</div><div class="v">' + (shipment.constraint === "volume" ? "Volume" : "Weight") + "</div></div>" +
                 "</div>" +
@@ -851,6 +898,8 @@
       const go = target.dataset.go;
       if (go === "sort") {
         state.sort = state.sort === "desc" ? "asc" : "desc";
+      } else if (go === "variant") {
+        state.detailVariant = target.dataset.variant === "overview" ? "overview" : "page";
       } else if (go === "detail") {
         state.origin = state.page === "analytics" ? "analytics" : "list";
         state.id = target.dataset.id || state.id;
