@@ -24,6 +24,7 @@ Interactive HTML prototypes for Silq product features. Hosted via GitHub Pages.
 | `tag-management-system/` | Tag Management System (typed tags + settings) | AM |
 | `comments-audit-log/` | Comment Versioning & Audit Trail (roles + tracked changes) | AM |
 | `product-metadata-ops-review.html` | Product Information — Ops Review (catalog layers, sources, gaps, feedback) | AM |
+| `container-utilization.html` | Container Utilization (weight, volume, and overall constraint) | AM |
 
 ## Adding a new prototype
 

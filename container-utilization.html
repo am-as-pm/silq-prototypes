@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Container utilization · Silq</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gray-0: #ffffff;
+      --gray-100: #f8f8f8;
+      --gray-150: #f2f2f2;
+      --gray-200: #ebebeb;
+      --gray-300: #d5d5d5;
+      --gray-400: #b1b1b1;
+      --gray-500: #909090;
+      --gray-600: #6c6c6c;
+      --gray-700: #464646;
+      --gray-800: #202020;
+      --gray-900: #111111;
+      --brand-500: #308268;
+      --brand-300: #458f77;
+      --accent-100: #ebedff;
+      --info-100: #e7f5ff;
+      --info-900: #0d47a4;
+      --success-100: #eaf6ed;
+      --success-500: #299446;
+      --success-900: #1e7339;
+      --warning-100: #fef5e8;
+      --warning-300: #f5a731;
+      --warning-900: #c37e15;
+      --app-bg: #f5f6f7;
+      --band-low: #b3d9e8;
+      --band-mid: #5ba3c4;
+      --band-high: #0b5394;
+      --band-full: #d97634;
+      --shadow-ui: 0 1px 2px 0 #00000014;
+      --shadow-panel: 0 2px 1px 0 rgba(0, 0, 0, 0.13), -2px 0 12px 0 rgba(0, 0, 0, 0.08);
+      --shadow-nav: 0 1px 1px 0 rgba(0, 0, 0, 0.15), 1px 1px 2px 0 rgba(0, 0, 0, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      font-family: Inter, system-ui, sans-serif;
+      background: var(--app-bg);
+      color: var(--gray-800);
+      font-size: 14px;
+      letter-spacing: -0.002em;
+    }
+    button, select { font-family: inherit; }
+    button { cursor: pointer; }
+
+    .app {
+      display: grid;
+      grid-template-columns: 208px minmax(0, 1fr);
+      height: 100%;
+      min-height: 0;
+    }
+
+    .sidebar {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      min-height: 0;
+      padding: 24px 0 20px;
+    }
+    .org {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 20px 24px;
+      min-width: 0;
+    }
+    .org-mark {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: var(--brand-500);
+      color: white;
+      display: grid;
+      place-items: center;
+      font-size: 13px;
+      font-weight: 600;
+      flex: none;
+    }
+    .org-name {
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.003em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .nav-scroll {
+      overflow: auto;
+      padding: 0 20px;
+      display: grid;
+      align-content: start;
+      gap: 24px;
+    }
+    .nav-group { display: grid; gap: 4px; align-content: start; }
+    .nav-link, .nav-label {
+      display: grid;
+      grid-template-columns: 18px 1fr;
+      align-items: center;
+      gap: 0;
+      height: 30px;
+      padding: 0;
+      border: 0;
+      border-radius: 5px;
+      background: transparent;
+      color: var(--gray-700);
+      font-size: 14px;
+      letter-spacing: -0.003em;
+      text-align: left;
+    }
+    .nav-link svg { color: var(--gray-600); }
+    .nav-link.is-selected {
+      background: white;
+      color: var(--gray-900);
+      box-shadow: var(--shadow-nav);
+    }
+    .nav-link.is-selected svg { color: var(--gray-900); }
+    .nav-link:hover:not(.is-selected) { background: rgba(0, 0, 0, 0.05); }
+    .nav-ico { display: grid; place-items: center; width: 30px; height: 30px; }
+    .group-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      height: 30px;
+      padding: 0 6px;
+      color: var(--gray-700);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .nav-child { padding-left: 8px; }
+    .powered {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 20px;
+      color: var(--gray-500);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+
+    .canvas-wrap { padding: 12px 12px 0 0; min-width: 0; min-height: 0; }
+    .canvas {
+      height: 100%;
+      background: white;
+      border-radius: 12px 12px 0 0;
+      box-shadow: var(--shadow-panel);
+      display: grid;
+      grid-template-rows: 56px minmax(0, 1fr);
+      overflow: hidden;
+    }
+    .topnav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      height: 56px;
+      padding: 0 20px;
+      border-bottom: 1px solid var(--gray-200);
+    }
+    .page-title {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+      color: var(--gray-800);
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: -0.003em;
+    }
+    .crumb {
+      border: 0;
+      background: none;
+      padding: 0;
+      color: var(--gray-800);
+      font-size: 13px;
+      font-weight: 400;
+      letter-spacing: -0.003em;
+    }
+    .crumb:hover { text-decoration: underline; }
+    .page-title .current { font-size: 13px; font-weight: 400; }
+    .top-actions { display: flex; align-items: center; gap: 8px; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      height: 32px;
+      padding: 0 12px;
+      border-radius: 5px;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.003em;
+      box-shadow: var(--shadow-ui);
+    }
+    .btn-primary { border: 0; background: var(--brand-500); color: white; }
+    .btn-primary:hover { background: var(--brand-300); }
+    .btn-secondary { border: 1px solid var(--gray-400); background: white; color: var(--gray-800); }
+    .btn-secondary:hover { background: var(--gray-100); }
+    .icon-btn {
+      width: 32px;
+      height: 32px;
+      border: 0;
+      border-radius: 5px;
+      background: var(--gray-100);
+      color: var(--gray-800);
+      display: grid;
+      place-items: center;
+    }
+    .icon-btn:hover { background: var(--gray-150); }
+
+    #view { overflow: auto; min-height: 0; }
+    .page { padding: 24px 32px 40px; display: grid; gap: 16px; align-content: start; }
+    .lede {
+      margin: 0;
+      color: var(--gray-600);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .stack { display: grid; gap: 10px; }
+
+    .card {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 16px;
+      border: 1px solid var(--gray-300);
+      border-radius: 8px;
+      background: white;
+      color: inherit;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+    .card:hover { border-color: var(--gray-400); box-shadow: 1px 1px 18px 0 #0000001a; }
+    .card-top { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; }
+    .silq-id { font-size: 12px; font-weight: 600; line-height: 16px; }
+    .card-title { margin-top: 4px; font-size: 14px; font-weight: 500; line-height: 21px; color: var(--gray-700); }
+    .card-meta { margin-top: 4px; font-size: 12px; line-height: 16px; color: var(--gray-700); }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .k { font-size: 12px; line-height: 16px; color: var(--gray-500); }
+    .v { margin-top: 2px; font-size: 14px; font-weight: 600; line-height: 20px; }
+    .util { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--gray-200); display: grid; gap: 6px; }
+    .util-row, .bar-meta, .toolbar, .split-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .util-label { font-size: 13px; color: var(--gray-600); }
+    .util-pct { font-size: 14px; font-weight: 700; letter-spacing: -0.003em; }
+    .util-note { font-size: 12px; line-height: 16px; color: var(--gray-500); }
+    .bar {
+      height: 6px;
+      width: 100%;
+      background: var(--gray-200);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .bar > span { display: block; height: 100%; border-radius: 99px; }
+    .bar.lg { height: 8px; }
+    .bar.mini { width: 40px; height: 4px; flex: none; }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      height: 22px;
+      padding: 0 8px;
+      border-radius: 5px;
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 16px;
+      white-space: nowrap;
+    }
+    .pill-progress { background: var(--success-100); color: var(--success-900); }
+    .pill-new { background: var(--info-100); color: var(--info-900); }
+    .pill-done { background: var(--gray-150); color: var(--gray-700); }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      height: 20px;
+      padding: 0 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      line-height: 16px;
+    }
+    .badge-weight { background: var(--info-100); color: var(--info-900); }
+    .badge-volume { background: var(--warning-100); color: var(--warning-900); }
+
+    .legend { display: flex; flex-wrap: wrap; gap: 16px; }
+    .legend-item { display: flex; align-items: center; gap: 6px; color: var(--gray-600); font-size: 12px; }
+    .swatch { width: 28px; height: 6px; border-radius: 99px; }
+
+    .detail {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 420px;
+      min-height: 100%;
+    }
+    .detail-main { padding: 8px 16px 40px 32px; display: grid; align-content: start; gap: 8px; min-width: 0; }
+    .detail-rail { padding: 24px 32px 40px 16px; display: grid; align-content: start; gap: 20px; }
+    .ship-head { display: grid; gap: 4px; padding: 16px 0 8px; }
+    .ship-id {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 20px;
+      font-weight: 600;
+      line-height: 28px;
+      letter-spacing: -0.005em;
+    }
+    .ship-id button {
+      border: 0;
+      background: none;
+      padding: 0;
+      font: inherit;
+      color: inherit;
+    }
+    .ship-id button:hover { text-decoration: underline; }
+    .ship-sub { color: var(--gray-600); font-size: 13px; line-height: 16px; }
+    .tabs { display: flex; gap: 16px; padding-bottom: 8px; }
+    .tab {
+      border: 0;
+      background: none;
+      padding: 0;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: -0.003em;
+      color: var(--gray-500);
+    }
+    .tab.is-selected { color: var(--gray-800); cursor: default; }
+    .section { display: grid; gap: 20px; padding-top: 8px; }
+    .section h2 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: -0.002em;
+    }
+    .metric-block { display: grid; gap: 6px; }
+    .metric-label { font-size: 14px; font-weight: 500; }
+    .metric-value { font-size: 12px; color: var(--gray-600); }
+    .pct { font-size: 14px; font-weight: 600; }
+    .callout {
+      display: grid;
+      grid-template-columns: 20px 1fr;
+      gap: 10px;
+      padding: 16px;
+      border-radius: 8px;
+      border: 1px solid var(--warning-300);
+      background: var(--warning-100);
+    }
+    .callout.info { border-color: #9ccffd; background: var(--info-100); }
+    .callout h3 { margin: 0 0 4px; font-size: 14px; font-weight: 500; color: var(--warning-900); }
+    .callout.info h3 { color: var(--info-900); }
+    .callout p { margin: 0; font-size: 13px; line-height: 1.5; color: #854f0b; }
+    .callout.info p { color: #1565c3; }
+    .table-wrap { border: 1px solid var(--gray-200); border-radius: 8px; overflow: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      background: var(--gray-100);
+      color: var(--gray-600);
+      font-size: 12px;
+      font-weight: 500;
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--gray-200);
+      white-space: nowrap;
+    }
+    td {
+      padding: 12px;
+      font-size: 13px;
+      border-bottom: 1px solid var(--gray-200);
+      vertical-align: middle;
+    }
+    tr:last-child td { border-bottom: 0; }
+    td.num, th.num { text-align: right; }
+    .total td { font-weight: 600; }
+    .caption { margin: 0; color: var(--gray-500); font-size: 12px; line-height: 1.5; }
+    .id-cell { display: grid; gap: 2px; }
+    .id-cell strong { font-size: 13px; white-space: nowrap; }
+    .id-cell span, .status-text { color: var(--gray-600); font-size: 12px; }
+    .bar-cell { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+    .click-row { cursor: pointer; }
+    .click-row:hover td { background: var(--gray-100); }
+    .overall { font-size: 14px; font-weight: 700; }
+
+    .overview {
+      display: grid;
+      gap: 8px;
+      padding: 8px;
+      border-radius: 12px;
+      background: var(--accent-100);
+    }
+    .overview-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 4px 12px;
+    }
+    .overview-head strong { font-size: 16px; font-weight: 600; }
+    .overview-head span { font-size: 13px; font-weight: 600; color: var(--gray-700); }
+    .overview-card {
+      display: grid;
+      gap: 14px;
+      padding: 16px;
+      border-radius: 12px;
+      background: white;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+    .overview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; }
+    .route { display: grid; gap: 0; }
+    .route-node { display: grid; grid-template-columns: 16px 1fr; gap: 10px; align-items: start; }
+    .route-node .dot {
+      width: 8px;
+      height: 8px;
+      margin: 4px auto 0;
+      border-radius: 99px;
+      background: var(--brand-500);
+    }
+    .route-line {
+      width: 1px;
+      height: 16px;
+      margin-left: 7px;
+      background: var(--gray-300);
+    }
+    .rail-status { display: flex; justify-content: space-between; align-items: center; }
+
+    .kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+    .kpi { background: var(--gray-100); border-radius: 8px; padding: 16px; }
+    .kpi .k { font-size: 12px; }
+    .kpi .n { margin-top: 6px; font-size: 18px; font-weight: 700; letter-spacing: -0.005em; }
+    .analytics-tabs {
+      display: flex;
+      height: 40px;
+      border-bottom: 1px solid var(--gray-200);
+      margin: -8px 0 4px;
+      overflow-x: auto;
+    }
+    .analytics-tab {
+      display: flex;
+      align-items: center;
+      flex: none;
+      height: 40px;
+      padding: 0 16px;
+      color: var(--gray-600);
+      font-size: 14px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .analytics-tab.is-selected {
+      color: var(--gray-800);
+      box-shadow: inset 0 -2px #202020;
+    }
+    .toolbar { flex-wrap: wrap; }
+    .toolbar-actions { display: flex; align-items: center; gap: 8px; }
+    select.filter {
+      height: 32px;
+      padding: 0 8px;
+      border: 1px solid var(--gray-300);
+      border-radius: 5px;
+      background: white;
+      color: var(--gray-800);
+      font-size: 13px;
+    }
+
+    @media (max-width: 1100px) {
+      .detail { grid-template-columns: 1fr; }
+      .kpis { grid-template-columns: 1fr 1fr; }
+      .metrics { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="org">
+        <div class="org-mark">M</div>
+        <div class="org-name">Meridian Home</div>
+      </div>
+      <div class="nav-scroll">
+        <div class="nav-group">
+          <button class="nav-link" data-go="list" data-navkey="projects" type="button">
+            <span class="nav-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7.5h7l2 2H21v9.5a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 19V7.5z"/><path d="M3 7.5V5.8A1.8 1.8 0 0 1 4.8 4H10l2 2"/></svg></span>
+            Projects
+          </button>
+          <button class="nav-link is-selected" data-go="list" data-navkey="shipments" type="button">
+            <span class="nav-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 16.5 12 20l9-3.5"/><path d="M3 12.5 12 16l9-3.5L12 5 3 8.5v8z"/><path d="M12 16V9"/></svg></span>
+            Shipments
+          </button>
+          <button class="nav-link" type="button" disabled style="opacity:.55;cursor:default">
+            <span class="nav-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2"/></svg></span>
+            Inspections
+          </button>
+        </div>
+        <div class="nav-group">
+          <div class="group-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V5M4 19h16"/><path d="M8 16v-5M12 16V8M16 16v-3"/></svg>
+            Insights
+          </div>
+          <button class="nav-link nav-child" data-go="analytics" data-navkey="analytics" type="button">
+            <span class="nav-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19h16"/><path d="M7 16V9M12 16V5M17 16v-6"/></svg></span>
+            Analytics
+          </button>
+        </div>
+      </div>
+      <div class="powered">
+        <span>POWERED BY</span>
+        <svg width="55" height="22" viewBox="0 0 80 32" fill="none" aria-label="Silq">
+          <path fill-rule="evenodd" d="M63.9041 4.79999L59.0019 6.29337V25.145H63.9041V4.79999ZM56.9494 11.7106H52.0129V25.145H56.9494V11.7106ZM44.3636 25.2516C43.3279 25.2427 42.2958 25.1304 41.2833 24.9164C40.3848 24.7796 39.5206 24.4787 38.7357 24.0295V20.7624C39.5276 21.2398 40.3856 21.6031 41.2833 21.8413C42.1789 22.1049 43.1077 22.2455 44.0428 22.2588C44.5818 22.2834 45.1212 22.2174 45.6374 22.0637C45.7921 22.0145 45.9255 21.916 46.0163 21.784C46.1072 21.652 46.1503 21.4941 46.1389 21.3353C46.1436 21.2105 46.1201 21.0863 46.07 20.9714C46.02 20.8566 45.9446 20.7539 45.8492 20.6709C45.5872 20.4512 45.2788 20.2909 44.946 20.2016C44.5567 20.0522 43.9027 19.842 42.9839 19.5646C42.1045 19.3103 41.2515 18.9756 40.4362 18.565C39.8723 18.2509 39.398 17.8034 39.0565 17.2636C38.7314 16.6478 38.5758 15.9598 38.6049 15.2673C38.6049 13.8837 39.1239 12.8495 40.1621 12.1648C41.2003 11.48 42.634 11.1285 44.4633 11.1102C45.3823 11.1151 46.2981 11.2173 47.1947 11.415C47.968 11.5364 48.7134 11.7902 49.3967 12.1648V15.3588C48.7811 14.9599 48.0992 14.6691 47.3816 14.4993C46.6045 14.2824 45.8008 14.1706 44.9927 14.1671C44.4183 14.1459 43.8444 14.2201 43.2953 14.3865C43.1174 14.4423 42.9634 14.5542 42.8574 14.7047C42.7514 14.8553 42.6995 15.036 42.7098 15.2186C42.711 15.3916 42.7646 15.5604 42.8638 15.7036C42.963 15.8469 43.1035 15.9581 43.2673 16.0232C43.9641 16.3084 44.6826 16.5397 45.4163 16.715L45.9489 16.8552C46.8615 17.0857 47.7368 17.4396 48.5495 17.9067C49.115 18.2183 49.5685 18.6929 49.8483 19.2659C50.1352 19.8821 50.2717 20.5551 50.2469 21.2317C50.2604 21.8054 50.1294 22.3735 49.8654 22.8859C49.6015 23.3983 49.2126 23.8392 48.7333 24.1697C47.7325 24.889 46.2759 25.2496 44.3636 25.2516ZM54.3612 5.51542C53.7492 5.51259 53.161 5.74781 52.7261 6.16934C52.2913 6.59086 52.0454 7.16416 52.0425 7.76311C52.0396 8.36207 52.28 8.93761 52.7107 9.36314C53.1415 9.78866 53.7274 10.0293 54.3394 10.0321H54.5793C54.8896 10.0446 55.1992 9.9958 55.4898 9.88855C55.7804 9.7813 56.0459 9.61784 56.2705 9.40793C56.4951 9.19802 56.6741 8.94597 56.7969 8.66684C56.9197 8.38771 56.9838 8.08722 56.9852 7.78332C56.9867 7.47942 56.9255 7.17835 56.8054 6.89809C56.6853 6.61784 56.5087 6.36415 56.2862 6.15217C56.0637 5.9402 55.7997 5.77429 55.5102 5.66437C55.2207 5.55444 54.9115 5.50275 54.6011 5.51237L54.3612 5.51542ZM75.294 24.3008C74.3232 24.947 73.1728 25.2854 71.9988 25.2699C68.6445 25.2699 65.5766 23.0634 65.5766 18.1931C65.5766 13.7252 68.6694 11.3053 71.9645 11.3053C73.2904 11.2887 74.5836 11.7084 75.6366 12.497L75.7269 11.5461H80V30H75.3282L75.294 24.3008ZM73.0764 14.7005C73.8955 14.654 74.7002 14.9256 75.3158 15.4563L75.294 21.1555C74.8392 21.5639 74.179 21.8809 73.0764 21.8809C71.351 21.8809 70.1893 20.357 70.1893 18.2785C70.1893 16.2761 71.3728 14.7005 73.0764 14.7005Z" fill="#052868"/>
+          <path fill-rule="evenodd" d="M38.0324 2.88643L32.9301 2.03122C31.1156 1.19502 6.59601 17.4345 6.59601 17.4345L6.19739 18.5937L34.7988 4.86291C25.9177 10.3489 0.996261 25.6603 0.996261 25.6603C0.776469 25.8058 0.587879 25.9931 0.441388 26.2114C0.24797 26.5744 0.103238 26.9609 0.0108843 27.3612C-0.00272716 27.4116 -0.00358552 27.4646 0.00838441 27.5154C0.0203543 27.5662 0.0447812 27.6133 0.0794948 27.6525C0.114208 27.6917 0.158132 27.7217 0.20736 27.74C0.256588 27.7582 0.309594 27.7641 0.361665 27.7571C2.60985 27.3802 11.8609 25.8155 15.2316 24.8241C23.5483 22.3788 26.8074 19.1702 28.7494 16.2023C30.9976 12.7625 37.1299 3.70362 37.9973 2.94344L38.042 2.89593L38.0324 2.88643ZM26.5778 13.3928C25.94 14.7231 24.91 16.82 22.4322 18.5209C19.8141 20.32 12.403 22.591 8.71983 23.3164L26.6703 13.1806C26.6354 13.2495 26.6045 13.3204 26.5778 13.3928Z" fill="#EF6445"/>
+        </svg>
+      </div>
+    </aside>
+    <div class="canvas-wrap">
+      <div class="canvas">
+        <header class="topnav">
+          <div class="page-title" id="page-title">Shipments</div>
+          <div class="top-actions">
+            <button class="btn btn-primary" type="button">New RFQ</button>
+            <button class="icon-btn" type="button" aria-label="Notifications">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9a6 6 0 1 1 12 0c0 7 3 7 3 9H3c0-2 3-2 3-9z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>
+            </button>
+          </div>
+        </header>
+        <main id="view"></main>
+      </div>
+    </div>
+  </div>
+  <script>
+    const CAPACITY = {
+      "20 GP": { weightKg: 25000, volumeM3: 33.2 },
+      "40 GP": { weightKg: 30480, volumeM3: 67.7 },
+      "40 HC": { weightKg: 28850, volumeM3: 76.3 },
+      FTL: { weightKg: 20000, volumeM3: 25 },
+    };
+
+    const SHIPMENTS = [
+      { id: "SHP-001", silqId: "SILQ-2026-001847", origin: "Shanghai", destination: "Cleveland", container: "20 GP", cargo: "Electronics", crd: "15 October", status: "In transit", lines: [
+        { item: "Electronics", weightKg: 8500, volumeM3: 16 },
+        { item: "Accessories", weightKg: 5200, volumeM3: 10 },
+        { item: "Packing material", weightKg: 4300, volumeM3: 6 },
+      ]},
+      { id: "SHP-002", silqId: "SILQ-5741689S1", origin: "Yantian", destination: "New York", container: "40 GP", cargo: "Textiles", crd: "18 October", status: "In transit", lines: [
+        { item: "Garments", weightKg: 14000, volumeM3: 30 },
+        { item: "Home textiles", weightKg: 6000, volumeM3: 12 },
+        { item: "Packing material", weightKg: 2000, volumeM3: 3 },
+      ]},
+      { id: "SHP-003", silqId: "SILQ-2026-001903", origin: "Ningbo", destination: "Rotterdam", container: "20 GP", cargo: "Furniture", crd: "22 October", status: "Pending", lines: [
+        { item: "Sofas", weightKg: 5000, volumeM3: 14 },
+        { item: "Tables", weightKg: 4000, volumeM3: 9 },
+        { item: "Chairs", weightKg: 3000, volumeM3: 5 },
+      ]},
+      { id: "SHP-004", silqId: "SILQ-2026-001910", origin: "Bangkok", destination: "Hamburg", container: "FTL", cargo: "Machinery parts", crd: "12 October", status: "In transit", lines: [
+        { item: "Machine housings", weightKg: 12000, volumeM3: 8 },
+        { item: "Spare parts", weightKg: 5500, volumeM3: 6 },
+        { item: "Crating", weightKg: 2000, volumeM3: 4 },
+      ]},
+      { id: "SHP-005", silqId: "SILQ-2026-001922", origin: "Ho Chi Minh", destination: "Los Angeles", container: "40 HC", cargo: "Footwear", crd: "28 October", status: "Pending", lines: [
+        { item: "Footwear", weightKg: 9000, volumeM3: 26 },
+        { item: "Cartons", weightKg: 4000, volumeM3: 12 },
+        { item: "Packing material", weightKg: 1000, volumeM3: 2 },
+      ]},
+      { id: "SHP-006", silqId: "SILQ-2026-001934", origin: "Busan", destination: "Savannah", container: "20 GP", cargo: "Auto parts", crd: "9 October", status: "In transit", lines: [
+        { item: "Engines", weightKg: 15000, volumeM3: 8 },
+        { item: "Transmissions", weightKg: 6000, volumeM3: 7 },
+        { item: "Packing material", weightKg: 2000, volumeM3: 5 },
+      ]},
+      { id: "SHP-007", silqId: "SILQ-2026-001941", origin: "Shenzhen", destination: "Chicago", container: "40 GP", cargo: "Toys", crd: "20 October", status: "In transit", lines: [
+        { item: "Toys", weightKg: 12000, volumeM3: 32 },
+        { item: "Games", weightKg: 5000, volumeM3: 12 },
+        { item: "Packing material", weightKg: 3000, volumeM3: 6 },
+      ]},
+      { id: "SHP-008", silqId: "SILQ-2026-001955", origin: "Ningbo", destination: "Felixstowe", container: "FTL", cargo: "Ceramics", crd: "2 October", status: "Delivered", lines: [
+        { item: "Tiles", weightKg: 6000, volumeM3: 7 },
+        { item: "Sanitaryware", weightKg: 2000, volumeM3: 3 },
+      ]},
+    ];
+
+    function derive(input) {
+      const cap = CAPACITY[input.container];
+      const actualWeight = input.lines.reduce((sum, line) => sum + line.weightKg, 0);
+      const actualVolume = input.lines.reduce((sum, line) => sum + line.volumeM3, 0);
+      const weightPct = (actualWeight / cap.weightKg) * 100;
+      const volumePct = (actualVolume / cap.volumeM3) * 100;
+      return {
+        ...input,
+        actualWeight,
+        actualVolume,
+        maxWeight: cap.weightKg,
+        maxVolume: cap.volumeM3,
+        weightPct,
+        volumePct,
+        overallPct: Math.max(weightPct, volumePct),
+        constraint: weightPct > volumePct ? "weight" : "volume",
+        remainingWeight: cap.weightKg - actualWeight,
+        remainingVolume: cap.volumeM3 - actualVolume,
+      };
+    }
+
+    const DATA = SHIPMENTS.map(derive);
+    const state = { page: "list", id: "SHP-001", sort: "desc", filter: "all", origin: "list" };
+
+    function esc(value) {
+      return String(value).replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+      })[char]);
+    }
+    function formatKg(value) {
+      return Math.round(value).toLocaleString("en-US") + " kg";
+    }
+    function formatM3(value) {
+      const rounded = Math.round(value * 10) / 10;
+      return (Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1)) + " m³";
+    }
+    function formatPct(value) {
+      const rounded = Math.round(value * 10) / 10;
+      return (Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1)) + "%";
+    }
+    function bandColor(pct) {
+      if (pct >= 91) return "var(--band-full)";
+      if (pct >= 76) return "var(--band-high)";
+      if (pct >= 51) return "var(--band-mid)";
+      return "var(--band-low)";
+    }
+    function weightColor(pct) {
+      return pct >= 91 ? "var(--band-full)" : "var(--success-500)";
+    }
+    function modeLabel(container) {
+      return container === "FTL" ? "FTL" : "FCL " + container;
+    }
+    function constraintLabel(constraint) {
+      return constraint === "volume" ? "Volume constrained" : "Weight constrained";
+    }
+    function pillClass(status) {
+      if (status === "Pending") return "pill-new";
+      if (status === "Delivered") return "pill-done";
+      return "pill-progress";
+    }
+    function recommendation(shipment) {
+      if (shipment.constraint === "volume") {
+        return "This shipment is limited by volume. You have " + formatKg(shipment.remainingWeight) + " of weight capacity available but only " + formatM3(shipment.remainingVolume) + " of space. Consider repackaging or deferring heavier items.";
+      }
+      return "This shipment is limited by weight. You have " + formatM3(shipment.remainingVolume) + " of space available but only " + formatKg(shipment.remainingWeight) + " of weight capacity. Consider splitting dense cargo onto another shipment.";
+    }
+    function bar(pct, color, size) {
+      const width = Math.max(0, Math.min(100, pct));
+      return '<div class="bar ' + (size || "") + '"><span style="width:' + width + "%;background:" + color + '"></span></div>';
+    }
+    function legend() {
+      const bands = [
+        ["0–50%", "Underutilized", "var(--band-low)"],
+        ["51–75%", "Good", "var(--band-mid)"],
+        ["76–90%", "Very good", "var(--band-high)"],
+        ["91–100%", "At capacity", "var(--band-full)"],
+      ];
+      return '<div class="legend">' + bands.map((band) =>
+        '<div class="legend-item"><span class="swatch" style="background:' + band[2] + '"></span>' + band[0] + " " + band[1] + "</div>"
+      ).join("") + "</div>";
+    }
+    function selected() {
+      return DATA.find((shipment) => shipment.id === state.id) || DATA[0];
+    }
+
+    function renderList() {
+      const cards = DATA.map((shipment) => {
+        const color = bandColor(shipment.overallPct);
+        const remaining = shipment.constraint === "volume"
+          ? formatM3(shipment.remainingVolume) + " remaining"
+          : formatKg(shipment.remainingWeight) + " remaining";
+        return (
+          '<button class="card" type="button" data-go="detail" data-id="' + shipment.id + '">' +
+            '<div class="card-top"><div>' +
+              '<div class="silq-id">' + esc(shipment.silqId) + "</div>" +
+              '<div class="card-title">' + esc(shipment.origin) + " &gt; " + esc(shipment.destination) + " · " + esc(shipment.cargo) + "</div>" +
+              '<div class="card-meta">1×' + esc(shipment.container) + " · CRD " + esc(shipment.crd) + " · " + esc(modeLabel(shipment.container)) + "</div>" +
+            "</div><span class=\"pill " + pillClass(shipment.status) + "\">" + esc(shipment.status) + "</span></div>" +
+            '<div class="metrics">' +
+              '<div><div class="k">Container type</div><div class="v">' + esc(modeLabel(shipment.container)) + "</div></div>" +
+              '<div><div class="k">Weight</div><div class="v">' + formatKg(shipment.actualWeight).replace(" kg", "") + " / " + formatKg(shipment.maxWeight) + "</div></div>" +
+              '<div><div class="k">Volume</div><div class="v">' + formatM3(shipment.actualVolume).replace(" m³", "") + " / " + formatM3(shipment.maxVolume) + "</div></div>" +
+            "</div>" +
+            '<div class="util">' +
+              '<div class="util-row"><span class="util-label">Overall utilization</span><span class="util-pct" style="color:' + color + '">' + formatPct(shipment.overallPct) + "</span></div>" +
+              bar(shipment.overallPct, color) +
+              '<div class="util-note">' + constraintLabel(shipment.constraint) + " · " + remaining + "</div>" +
+            "</div>" +
+          "</button>"
+        );
+      }).join("");
+      return (
+        '<div class="page">' +
+          '<p class="lede">Overall utilization is the higher of weight and volume, so the constraint is visible on the shipment card.</p>' +
+          '<div class="stack">' + cards + "</div>" +
+          legend() +
+        "</div>"
+      );
+    }
+
+    function renderDetail() {
+      const shipment = selected();
+      const tight = shipment.overallPct >= 91;
+      const weight = weightColor(shipment.weightPct);
+      const volume = bandColor(shipment.volumePct);
+      const rows = shipment.lines.map((line) =>
+        "<tr><td>" + esc(line.item) + '</td><td class="num">' + formatKg(line.weightKg) + '</td><td class="num">' + formatM3(line.volumeM3) + "</td></tr>"
+      ).join("");
+      return (
+        '<div class="detail">' +
+          '<div class="detail-main">' +
+            '<div class="ship-head">' +
+              '<div class="ship-id">' + esc(shipment.silqId) + "</div>" +
+              '<div class="ship-sub">Meridian Home · ' + esc(shipment.origin) + " to " + esc(shipment.destination) + " · " + esc(shipment.cargo) + "</div>" +
+            "</div>" +
+            '<div class="tabs"><span class="tab is-selected">Details</span><span class="tab">Milestones</span><span class="tab">Documents</span><span class="tab">Products</span></div>' +
+            '<div class="section">' +
+              "<h2>Container utilization</h2>" +
+              '<div class="metric-block">' +
+                '<div class="split-head"><span class="metric-label">Weight utilization</span><span class="metric-value">' + formatKg(shipment.actualWeight).replace(" kg", "") + " / " + formatKg(shipment.maxWeight) + "</span></div>" +
+                bar(shipment.weightPct, weight, "lg") +
+                '<div class="bar-meta"><span class="pct" style="color:' + weight + '">' + formatPct(shipment.weightPct) + '</span><span class="metric-value">' + formatKg(shipment.remainingWeight) + " remaining</span></div>" +
+              "</div>" +
+              '<div class="metric-block">' +
+                '<div class="split-head"><span class="metric-label">Volume utilization</span><span class="metric-value">' + formatM3(shipment.actualVolume).replace(" m³", "") + " / " + formatM3(shipment.maxVolume) + "</span></div>" +
+                bar(shipment.volumePct, volume, "lg") +
+                '<div class="bar-meta"><span class="pct" style="color:' + volume + '">' + formatPct(shipment.volumePct) + '</span><span class="metric-value">' + formatM3(shipment.remainingVolume) + " remaining</span></div>" +
+              "</div>" +
+              '<div class="callout ' + (tight ? "" : "info") + '">' +
+                '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="' + (tight ? "#C37E15" : "#0D47A4") + '" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.5"/></svg>' +
+                "<div><h3>" + (tight ? constraintLabel(shipment.constraint) : "Consolidation opportunity") + "</h3><p>" + esc(recommendation(shipment)) + "</p></div>" +
+              "</div>" +
+              "<h2>Cargo breakdown</h2>" +
+              '<div class="table-wrap"><table><thead><tr><th>Item</th><th class="num">Weight</th><th class="num">Volume</th></tr></thead><tbody>' +
+                rows +
+                '<tr class="total"><td>Total</td><td class="num">' + formatKg(shipment.actualWeight) + '</td><td class="num">' + formatM3(shipment.actualVolume) + "</td></tr>" +
+              "</tbody></table></div>" +
+              '<p class="caption">' + esc(shipment.id) + " · overall " + formatPct(shipment.overallPct) + " = max(weight, volume) · " + esc(modeLabel(shipment.container)) + " capacity " + formatKg(shipment.maxWeight) + " / " + formatM3(shipment.maxVolume) + "</p>" +
+            "</div>" +
+          "</div>" +
+          '<aside class="detail-rail">' +
+            '<div class="overview">' +
+              '<div class="overview-head"><strong>Overview</strong><span>' + esc(modeLabel(shipment.container)) + " · 1×" + esc(shipment.container) + "</span></div>" +
+              '<div class="overview-card">' +
+                '<div class="overview-grid">' +
+                  '<div><div class="k">Weight</div><div class="v">' + formatKg(shipment.actualWeight) + "</div></div>" +
+                  '<div><div class="k">Volume</div><div class="v">' + formatM3(shipment.actualVolume) + "</div></div>" +
+                  '<div><div class="k">Cargo ready</div><div class="v">' + esc(shipment.crd) + "</div></div>" +
+                  '<div><div class="k">Constraint</div><div class="v">' + (shipment.constraint === "volume" ? "Volume" : "Weight") + "</div></div>" +
+                "</div>" +
+                '<div class="route">' +
+                  '<div class="route-node"><span class="dot"></span><div><div class="k">Origin</div><div class="v">' + esc(shipment.origin) + "</div></div></div>" +
+                  '<div class="route-line"></div>' +
+                  '<div class="route-node"><span class="dot"></span><div><div class="k">Destination</div><div class="v">' + esc(shipment.destination) + "</div></div></div>" +
+                "</div>" +
+              "</div>" +
+            "</div>" +
+            '<div class="rail-status"><span class="k">Execution</span><span class="pill ' + pillClass(shipment.status) + '">' + esc(shipment.status) + "</span></div>" +
+          "</aside>" +
+        "</div>"
+      );
+    }
+
+    function renderAnalytics() {
+      const filtered = DATA.filter((shipment) => state.filter === "all" || shipment.constraint === state.filter);
+      const rows = filtered.slice().sort((a, b) => state.sort === "desc" ? b.overallPct - a.overallPct : a.overallPct - b.overallPct);
+      const avg = (key) => DATA.reduce((sum, shipment) => sum + shipment[key], 0) / DATA.length;
+      const body = rows.map((shipment) => {
+        const overall = bandColor(shipment.overallPct);
+        return (
+          '<tr class="click-row" data-go="detail" data-id="' + shipment.id + '">' +
+            '<td><div class="id-cell"><strong>' + esc(shipment.id) + "</strong><span>" + esc(shipment.origin) + "</span></div></td>" +
+            '<td><div class="bar-cell">' + bar(shipment.weightPct, weightColor(shipment.weightPct), "mini") + "<span>" + formatPct(shipment.weightPct) + "</span></div></td>" +
+            '<td><div class="bar-cell">' + bar(shipment.volumePct, bandColor(shipment.volumePct), "mini") + "<span>" + formatPct(shipment.volumePct) + "</span></div></td>" +
+            '<td class="num"><span class="overall" style="color:' + overall + '">' + formatPct(shipment.overallPct) + "</span></td>" +
+            '<td><span class="badge badge-' + shipment.constraint + '">' + (shipment.constraint === "weight" ? "Weight" : "Volume") + "</span></td>" +
+            '<td><span class="status-text">' + esc(shipment.status) + "</span></td>" +
+          "</tr>"
+        );
+      }).join("");
+      const tabs = ["CRD", "Milestone", "Shipments", "Transit time", "Inspections", "Carbon emissions"].map((label) =>
+        '<span class="analytics-tab' + (label === "Shipments" ? " is-selected" : "") + '">' + label + "</span>"
+      ).join("");
+      return (
+        '<div class="page">' +
+          '<div class="analytics-tabs">' + tabs + "</div>" +
+          '<p class="lede">Portfolio util is the average of each shipment’s overall utilization. Overall is the maximum of that shipment’s weight and volume.</p>' +
+          '<div class="kpis">' +
+            '<div class="kpi"><div class="k">Avg weight util</div><div class="n">' + formatPct(avg("weightPct")) + "</div></div>" +
+            '<div class="kpi"><div class="k">Avg volume util</div><div class="n">' + formatPct(avg("volumePct")) + "</div></div>" +
+            '<div class="kpi"><div class="k">Portfolio util</div><div class="n">' + formatPct(avg("overallPct")) + "</div></div>" +
+            '<div class="kpi"><div class="k">Total shipments</div><div class="n">' + DATA.length + "</div></div>" +
+          "</div>" +
+          '<div class="toolbar">' +
+            '<span class="caption">Showing ' + rows.length + " of " + DATA.length + " shipments</span>" +
+            '<div class="toolbar-actions">' +
+              '<button class="btn btn-secondary" type="button" data-go="sort">' + (state.sort === "desc" ? "Sort by utilization ↓" : "Sort by utilization ↑") + "</button>" +
+              '<select class="filter" id="constraint-filter" aria-label="Filter by constraint">' +
+                '<option value="all"' + (state.filter === "all" ? " selected" : "") + ">All constraints</option>" +
+                '<option value="weight"' + (state.filter === "weight" ? " selected" : "") + ">Weight</option>" +
+                '<option value="volume"' + (state.filter === "volume" ? " selected" : "") + ">Volume</option>" +
+              "</select>" +
+            "</div>" +
+          "</div>" +
+          '<div class="table-wrap"><table><thead><tr><th>Shipment</th><th>Weight %</th><th>Volume %</th><th class="num">Overall %</th><th>Constraint</th><th>Status</th></tr></thead><tbody>' +
+            body +
+          "</tbody></table></div>" +
+          legend() +
+          '<p class="caption">20 GP 25,000 kg / 33.2 m³ · 40 GP 30,480 kg / 67.7 m³ · 40 HC 28,850 kg / 76.3 m³ · FTL 20,000 kg / 25 m³.</p>' +
+        "</div>"
+      );
+    }
+
+    function render() {
+      const view = document.getElementById("view");
+      const title = document.getElementById("page-title");
+      const shipment = selected();
+      if (state.page === "detail") {
+        title.innerHTML = '<button class="crumb" type="button" data-go="' + state.origin + '">' + (state.origin === "analytics" ? "Analytics" : "Shipments") + '</button><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#909090" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg><span class="current">' + esc(shipment.silqId) + "</span>";
+        view.innerHTML = renderDetail();
+      } else if (state.page === "analytics") {
+        title.textContent = "Analytics";
+        view.innerHTML = renderAnalytics();
+      } else {
+        title.textContent = "Shipments";
+        view.innerHTML = renderList();
+      }
+      document.querySelectorAll("[data-navkey]").forEach((el) => {
+        const key = el.dataset.navkey;
+        const active = (key === "shipments" && state.page !== "analytics") || (key === "analytics" && state.page === "analytics");
+        el.classList.toggle("is-selected", active);
+      });
+      view.scrollTop = 0;
+    }
+
+    document.addEventListener("click", (event) => {
+      const target = event.target.closest("[data-go]");
+      if (!target) return;
+      const go = target.dataset.go;
+      if (go === "sort") {
+        state.sort = state.sort === "desc" ? "asc" : "desc";
+      } else if (go === "detail") {
+        state.origin = state.page === "analytics" ? "analytics" : "list";
+        state.id = target.dataset.id || state.id;
+        state.page = "detail";
+      } else {
+        state.page = go;
+      }
+      render();
+    });
+    document.addEventListener("change", (event) => {
+      if (event.target.id === "constraint-filter") {
+        state.filter = event.target.value;
+        render();
+      }
+    });
+
+    render();
+  </script>
+</body>
+</html>
