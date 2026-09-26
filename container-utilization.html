@@ -103,7 +103,7 @@
     .nav-group { display: grid; gap: 4px; align-content: start; }
     .nav-link, .nav-label {
       display: grid;
-      grid-template-columns: 18px 1fr;
+      grid-template-columns: 30px minmax(0, 1fr);
       align-items: center;
       gap: 0;
       height: 30px;
@@ -113,10 +113,11 @@
       background: transparent;
       color: var(--gray-700);
       font-size: 14px;
+      line-height: 16px;
       letter-spacing: -0.003em;
       text-align: left;
     }
-    .nav-link svg { color: var(--gray-600); }
+    .nav-link svg { display: block; color: var(--gray-600); }
     .nav-link.is-selected {
       background: white;
       color: var(--gray-900);
@@ -126,18 +127,18 @@
     .nav-link:hover:not(.is-selected) { background: rgba(0, 0, 0, 0.05); }
     .nav-ico { display: grid; place-items: center; width: 30px; height: 30px; }
     .group-label {
-      display: flex;
+      display: grid;
+      grid-template-columns: 30px minmax(0, 1fr);
       align-items: center;
-      gap: 6px;
       height: 30px;
-      padding: 0 6px;
+      padding: 0;
       color: var(--gray-700);
       font-size: 12px;
       font-weight: 700;
       letter-spacing: 0.04em;
       text-transform: uppercase;
     }
-    .nav-child { padding-left: 8px; }
+    .group-label svg { justify-self: center; }
     .powered {
       display: flex;
       align-items: center;
@@ -463,6 +464,12 @@
       box-shadow: var(--shadow-ui);
     }
     .overview-card .callout { margin-top: 2px; }
+    .overview-util {
+      display: grid;
+      gap: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--gray-200);
+    }
 
     .kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
     .kpi { background: var(--gray-100); border-radius: 8px; padding: 16px; }
@@ -536,7 +543,7 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V5M4 19h16"/><path d="M8 16v-5M12 16V8M16 16v-3"/></svg>
             Insights
           </div>
-          <button class="nav-link nav-child" data-go="analytics" data-navkey="analytics" type="button">
+          <button class="nav-link" data-go="analytics" data-navkey="analytics" type="button">
             <span class="nav-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19h16"/><path d="M7 16V9M12 16V5M17 16v-6"/></svg></span>
             Analytics
           </button>
@@ -768,14 +775,13 @@
       const rows = shipment.lines.map((line) =>
         "<tr><td>" + esc(line.item) + '</td><td class="num">' + formatKg(line.weightKg) + '</td><td class="num">' + formatM3(line.volumeM3) + "</td></tr>"
       ).join("");
-      const overviewFacts = inOverview
-        ? utilizationBars(shipment) + constraintCallout(shipment)
-        : (
-          '<div class="overview-grid">' +
-            '<div><div class="k">Weight</div><div class="v">' + formatKg(shipment.actualWeight) + "</div></div>" +
-            '<div><div class="k">Volume</div><div class="v">' + formatM3(shipment.actualVolume) + "</div></div>" +
-          "</div>"
-        );
+      const overviewFacts =
+        '<div class="overview-grid">' +
+          '<div><div class="k">Weight</div><div class="v">' + formatKg(shipment.actualWeight) + "</div></div>" +
+          '<div><div class="k">Volume</div><div class="v">' + formatM3(shipment.actualVolume) + "</div></div>" +
+          '<div><div class="k">Cargo ready</div><div class="v">' + esc(shipment.crd) + "</div></div>" +
+          '<div><div class="k">Constraint</div><div class="v">' + (shipment.constraint === "volume" ? "Volume" : "Weight") + "</div></div>" +
+        "</div>";
       return (
         '<div class="detail">' +
           '<div class="detail-main">' +
@@ -803,15 +809,12 @@
               '<div class="overview-head"><strong>Overview</strong><span>' + esc(modeLabel(shipment.container)) + " · 1×" + esc(shipment.container) + "</span></div>" +
               '<div class="overview-card">' +
                 overviewFacts +
-                '<div class="overview-grid">' +
-                  '<div><div class="k">Cargo ready</div><div class="v">' + esc(shipment.crd) + "</div></div>" +
-                  '<div><div class="k">Constraint</div><div class="v">' + (shipment.constraint === "volume" ? "Volume" : "Weight") + "</div></div>" +
-                "</div>" +
                 '<div class="route">' +
                   '<div class="route-node"><span class="dot"></span><div><div class="k">Origin</div><div class="v">' + esc(shipment.origin) + "</div></div></div>" +
                   '<div class="route-line"></div>' +
                   '<div class="route-node"><span class="dot"></span><div><div class="k">Destination</div><div class="v">' + esc(shipment.destination) + "</div></div></div>" +
                 "</div>" +
+                (inOverview ? '<div class="overview-util">' + utilizationBars(shipment) + constraintCallout(shipment) + "</div>" : "") +
               "</div>" +
             "</div>" +
             '<div class="rail-status"><span class="k">Execution</span><span class="pill ' + pillClass(shipment.status) + '">' + esc(shipment.status) + "</span></div>" +
