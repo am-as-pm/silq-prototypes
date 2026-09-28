@@ -3,118 +3,254 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Silq - Vendor billed costs</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>Silq: Vendor billed costs</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #faf9f7; --card: #ffffff; --primary: #c8842e; --primary-dark: #a86b1d;
-    --primary-light: #fdf4e8; --text: #2d2a26; --text-secondary: #8a8580;
-    --border: #e8e4df; --border-light: #f0ece7; --green: #3d9a5f; --green-bg: #edf7f0;
-    --red: #c44b3f; --red-bg: #fdf0ee; --gray-bg: #f5f3f0; --orange: #d4722a;
-    --orange-bg: #fdf2e9; --sidebar-bg: #fefcfa; --sidebar-active: #fdf4e8;
-    --blue: #3b6ea8; --blue-bg: #eef4fb;
+    --silq-white: #FFFFFF;
+    --silq-navy: #12343B;
+    --silq-sky-blue: #B0D2F5;
+    --bg-brand: #FCE0DA;
+    --brand-cta: #EF6445;
+    --brand-hover: #F17458;
+    --brand-focus: #D75A3E;
+    --brand-text: #481E15;
+    --bg-accent: #EBEDFF;
+    --accent-cta: #334BFA;
+    --accent-hover: #475DFB;
+    --accent-focus: #2E44E1;
+    --bg-error: #FAE9EA;
+    --error: #CF222E;
+    --error-text: #A61B25;
+    --bg-warning: #FEF5E8;
+    --warning: #F49D1A;
+    --warning-text: #996C00;
+    --bg-success: #EAF6ED;
+    --success: #299446;
+    --success-text: #1E7339;
+    --bg-info: #E7F5FF;
+    --info: #1976D3;
+    --silq-grey-50: #FBFBFB;
+    --silq-grey-100: #F8F8F8;
+    --silq-grey-150: #F2F2F2;
+    --silq-grey-200: #EBEBEB;
+    --silq-grey-250: #E0E0E0;
+    --silq-grey-300: #D5D5D5;
+    --silq-grey-400: #B1B1B1;
+    --silq-grey-500: #909090;
+    --silq-grey-600: #6C6C6C;
+    --silq-grey-700: #464646;
+    --silq-grey-800: #202020;
+    --space-4: 4px;
+    --space-6: 6px;
+    --space-8: 8px;
+    --space-12: 12px;
+    --space-16: 16px;
+    --space-20: 20px;
+    --space-24: 24px;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --radius-pill: 999px;
+    --elevation-small: 0 1px 25px rgba(10, 10, 10, 0.10);
+    --elevation-ui: 0 1px 2px rgba(12, 12, 12, 0.08);
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --type-h5: 600 20px/28px var(--font-body);
+    --type-ui-normal: 400 14px/16px var(--font-body);
+    --type-ui-normal-semi-bold: 600 14px/16px var(--font-body);
+    --type-ui-small: 400 12px/16px var(--font-body);
+    --type-content-small: 400 12px/1.3 var(--font-body);
+    --type-content-small-semi-bold: 600 12px/1.3 var(--font-body);
+    --type-content-normal: 400 14px/1.5 var(--font-body);
+    --type-micro-semi-bold: 600 10px/16px var(--font-body);
+    --tracking-heading: -0.005em;
+    --tracking-wide: 0.04em;
+    --bg: var(--silq-white);
+    --card: var(--silq-white);
+    --primary: var(--brand-cta);
+    --primary-dark: var(--brand-focus);
+    --primary-light: var(--bg-brand);
+    --text: var(--silq-navy);
+    --text-secondary: var(--silq-grey-600);
+    --border: var(--silq-grey-250);
+    --border-light: var(--silq-grey-150);
+    --green: var(--success);
+    --green-bg: var(--bg-success);
+    --red: var(--error);
+    --red-bg: var(--bg-error);
+    --gray-bg: var(--silq-grey-100);
+    --orange: var(--brand-cta);
+    --orange-bg: var(--bg-brand);
+    --sidebar-bg: var(--silq-navy);
+    --sidebar-active: rgba(239, 100, 69, 0.18);
+    --blue: var(--info);
+    --blue-bg: var(--bg-info);
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
-    font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
-    background: var(--bg); color: var(--text); display: flex; min-height: 100vh; line-height: 1.45;
+    font-family: var(--font-body);
+    background: var(--silq-grey-50);
+    color: var(--text);
+    display: flex;
+    min-height: 100vh;
+    letter-spacing: -0.003em;
+    -webkit-font-smoothing: antialiased;
   }
   .sidebar {
-    width: 220px; background: var(--sidebar-bg); border-right: 1px solid var(--border);
-    position: fixed; inset: 0 auto 0 0;
+    width: 220px;
+    background: var(--sidebar-bg);
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 50;
+    box-shadow: var(--elevation-column-right, 4px 20px 25px rgba(0, 0, 0, 0.08));
   }
-  .sidebar-logo { padding: 20px; }
-  .silq-logo-text { font-size: 22px; font-weight: 700; color: #1e2a4a; letter-spacing: -0.5px; }
-  .sidebar-nav { padding: 0 10px; display: flex; flex-direction: column; gap: 2px; }
+  .sidebar-logo { padding: 16px 12px 20px; display: flex; align-items: flex-end; min-height: 56px; }
+  .silq-logo { display: flex; align-items: center; color: var(--silq-white); }
+  .silq-wordmark { width: 80px; height: 32px; display: block; }
+  .sidebar-nav { padding: 0 12px; display: flex; flex-direction: column; gap: 2px; }
   .nav-item {
-    display: block; padding: 9px 12px; border-radius: 8px; font-size: 13px; font-weight: 500;
-    color: var(--text-secondary); text-decoration: none;
+    display: flex; align-items: center; padding: 8px 12px; border-radius: 5px;
+    font: 500 12px/16px var(--font-body); color: rgba(255,255,255,0.72); text-decoration: none;
   }
-  .nav-item.active { background: var(--sidebar-active); color: var(--primary); font-weight: 600; }
+  .nav-item:hover { background: rgba(255,255,255,0.08); color: var(--silq-white); }
+  .nav-item.active { background: var(--sidebar-active); color: var(--silq-white); font-weight: 600; }
   .main { margin-left: 220px; flex: 1; min-width: 0; }
-  .proto-banner { background: #1e2a4a; color: #fff; font-size: 12px; padding: 8px 28px; }
+  .proto-banner {
+    background: var(--silq-navy); color: var(--silq-white);
+    font: var(--type-ui-small); padding: 8px 28px;
+    border-bottom: 2px solid var(--brand-cta);
+  }
   .page { padding: 20px 28px 56px; max-width: 1280px; }
-  .crumb { font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; }
-  h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; }
-  .lede { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
-  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; margin-top: 14px; }
-  .card-hd { padding: 12px 16px; border-bottom: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-  .card-hd h2 { font-size: 13px; font-weight: 700; }
-  .card-bd { padding: 14px 16px; }
-  .pick { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
-  .fld label { display: block; font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; }
+  .crumb {
+    font: var(--type-content-small); color: var(--text-secondary);
+    letter-spacing: var(--tracking-wide); text-transform: uppercase; margin-bottom: 8px;
+  }
+  h1 { font: var(--type-h5); letter-spacing: var(--tracking-heading); color: var(--silq-navy); }
+  .lede { font: var(--type-content-normal); color: var(--text-secondary); margin-top: 4px; }
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius-md); margin-top: 16px; box-shadow: var(--elevation-small);
+  }
+  .card-hd {
+    padding: 12px 16px; border-bottom: 1px solid var(--border-light);
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  }
+  .card-hd h2 { font: var(--type-content-small-semi-bold); text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--silq-navy); }
+  .card-bd { padding: 16px; }
+  .pick { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .fld label {
+    display: block; font: var(--type-micro-semi-bold); color: var(--text-secondary);
+    letter-spacing: var(--tracking-wide); text-transform: uppercase; margin-bottom: 6px;
+  }
   .fld .v, select.input, input.input {
-    font-size: 13px; border: 1px solid var(--border); border-radius: 8px; padding: 7px 8px;
-    background: #fff; min-height: 34px; width: 100%; font: inherit; color: var(--text);
+    font: var(--type-ui-sizefix-normal, 400 13px/16px var(--font-body));
+    border: 1px solid var(--border); border-radius: 5px; padding: 8px 12px;
+    background: var(--silq-white); min-height: 32px; width: 100%; color: var(--text);
+    box-shadow: var(--elevation-ui);
   }
-  .fld .v.ro { background: var(--gray-bg); }
-  .facts { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px 16px; }
-  .kpi { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
-  .kpi div { background: var(--gray-bg); border-radius: 8px; padding: 10px 12px; }
-  .kpi span { display: block; font-size: 11px; color: var(--text-secondary); }
-  .kpi b { font-size: 16px; font-variant-numeric: tabular-nums; }
-  .kpi .over b { color: var(--red); }
-  .kpi .ok b { color: var(--green); }
+  .fld .v.ro { background: var(--silq-grey-100); box-shadow: none; }
+  select.input:focus, input.input:focus, input.money:focus {
+    outline: none; border-color: var(--silq-navy); box-shadow: 0 0 0 2px rgba(18, 52, 59, 0.60);
+  }
+  .facts { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px 16px; }
+  .kpi { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+  .kpi div { background: var(--silq-grey-50); border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 12px; }
+  .kpi span { display: block; font: var(--type-micro-semi-bold); color: var(--text-secondary); text-transform: uppercase; letter-spacing: var(--tracking-wide); }
+  .kpi b { display: block; margin-top: 6px; font: 600 16px/24px var(--font-body); font-variant-numeric: tabular-nums; color: var(--silq-navy); }
+  .kpi .over b { color: var(--error); }
+  .kpi .ok b { color: var(--success); }
   .btn {
-    border-radius: 8px; font: inherit; font-size: 13px; font-weight: 500; padding: 8px 12px; cursor: pointer;
-    border: 1px solid var(--border); background: #fff; color: var(--text);
+    border-radius: 5px; font: var(--type-ui-normal-semi-bold); height: 32px; padding: 0 12px;
+    cursor: pointer; border: 1px solid var(--border); background: var(--silq-white);
+    color: var(--silq-navy); box-shadow: var(--elevation-ui); display: inline-flex; align-items: center;
   }
-  .btn:hover { background: var(--gray-bg); }
-  .btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
-  .btn-primary:hover { background: var(--primary-dark); }
-  .btn-tiny { font-size: 11px; padding: 4px 8px; }
-  .tag { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 999px; margin-left: 6px; }
-  .tag-ok { background: var(--green-bg); color: var(--green); }
-  .tag-review { background: var(--orange-bg); color: var(--orange); }
-  .tag-low { background: var(--red-bg); color: var(--red); }
-  .tag-blue { background: var(--blue-bg); color: var(--blue); }
-  .tag-gray { background: var(--gray-bg); color: var(--text-secondary); }
-  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .btn:hover { background: var(--silq-grey-100); }
+  .btn:focus-visible { outline: none; box-shadow: 0 0 0 2px rgba(18, 52, 59, 0.60); }
+  .btn-primary { background: var(--brand-cta); color: var(--silq-white); border-color: var(--brand-cta); }
+  .btn-primary:hover { background: var(--brand-hover); }
+  .btn-tiny { height: 28px; font: var(--type-ui-small); padding: 0 8px; }
+  .tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    font: 400 12px/16px var(--font-body); padding: 2px 6px; border-radius: var(--radius-pill);
+    margin-left: 6px; background: var(--silq-grey-100); border: 1px solid var(--silq-grey-400); color: var(--silq-grey-800);
+  }
+  .tag-ok { background: var(--bg-success); border-color: transparent; color: var(--success-text); }
+  .tag-review { background: var(--bg-warning); border-color: transparent; color: var(--warning-text); }
+  .tag-low { background: var(--bg-error); border-color: transparent; color: var(--error-text); }
+  .tag-blue { background: var(--bg-info); border-color: transparent; color: var(--info); }
+  .tag-gray { background: var(--silq-grey-100); color: var(--silq-grey-600); }
+  table { width: 100%; border-collapse: collapse; font: var(--type-content-normal); }
   th {
-    text-align: left; font-size: 11px; color: var(--text-secondary); font-weight: 600;
-    padding: 8px; border-bottom: 1px solid var(--border); background: #faf9f7;
+    text-align: left; font: 600 12px/16px var(--font-body); color: var(--silq-grey-800);
+    padding: 12px; border-bottom: 1px solid var(--silq-grey-200); background: var(--silq-white);
   }
-  td { padding: 8px; border-bottom: 1px solid var(--border-light); vertical-align: top; }
+  td { padding: 12px; border-bottom: 1px solid var(--silq-grey-200); vertical-align: top; }
   th.num, td.num { text-align: right; font-variant-numeric: tabular-nums; }
-  .group-row td { background: var(--gray-bg); font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); }
-  .charge { font-weight: 600; }
-  .sub { font-size: 11px; color: var(--text-secondary); font-weight: 400; }
-  .quoted { color: var(--text-secondary); }
-  .over { color: var(--red); font-weight: 600; }
-  .under { color: var(--green); font-weight: 600; }
-  .empty { color: var(--text-secondary); }
-  .qty-stack { font-size: 11px; line-height: 1.35; }
-  .qty-stack .diff { color: var(--orange); font-weight: 600; }
-  input.money {
-    width: 88px; text-align: right; font: inherit; font-size: 13px;
-    border: 1px solid var(--border); border-radius: 8px; padding: 6px 8px;
+  .group-row td {
+    background: var(--silq-grey-50); font: var(--type-micro-semi-bold);
+    text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--text-secondary);
   }
-  tr.row-query { background: var(--orange-bg); }
-  tr.row-dispute { background: var(--red-bg); }
-  .foot { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; align-items: end; padding: 12px 16px; border-top: 1px solid var(--border); }
+  .charge { font: var(--type-ui-normal-semi-bold); color: var(--silq-navy); }
+  .sub { font: var(--type-content-small); color: var(--text-secondary); font-weight: 400; }
+  .quoted { color: var(--text-secondary); }
+  .over { color: var(--error); font-weight: 600; }
+  .under { color: var(--success); font-weight: 600; }
+  .empty { color: var(--text-secondary); }
+  .qty-stack { font: var(--type-content-small); line-height: 1.35; }
+  .qty-stack .diff { color: var(--warning-text); font-weight: 600; }
+  input.money {
+    width: 88px; text-align: right; font: var(--type-ui-sizefix-normal, 400 13px/16px var(--font-body));
+    border: 1px solid var(--border); border-radius: 5px; padding: 6px 8px; box-shadow: var(--elevation-ui);
+  }
+  tr.row-query { background: var(--bg-warning); }
+  tr.row-dispute { background: var(--bg-error); }
+  .foot {
+    display: grid; grid-template-columns: 1fr 1fr 1fr auto auto; gap: 12px; align-items: end;
+    padding: 16px; border-top: 1px solid var(--border);
+  }
+  .doc-row {
+    display: grid; grid-template-columns: 36px 1fr auto auto; gap: 12px; align-items: center;
+    padding: 10px 12px; border: 1px solid var(--border); border-radius: 5px;
+    margin-top: 8px; background: var(--silq-white); box-shadow: var(--elevation-ui);
+  }
+  .doc-row:first-child { margin-top: 0; }
+  .doc-ico {
+    width: 36px; height: 36px; border-radius: 5px; background: var(--bg-error); color: var(--error);
+    display: flex; align-items: center; justify-content: center;
+    font: var(--type-micro-semi-bold); letter-spacing: var(--tracking-wide);
+  }
   .toolbar { display: flex; justify-content: flex-end; padding: 10px 16px 0; }
   .toast {
     position: fixed; bottom: 20px; right: 20px; display: none;
-    background: #1e2a4a; color: #fff; padding: 10px 14px; border-radius: 8px; font-size: 13px; z-index: 90; max-width: 360px;
+    background: var(--silq-navy); color: var(--silq-white); padding: 12px 16px;
+    border-radius: var(--radius-sm); font: var(--type-content-normal); z-index: 90; max-width: 360px;
+    box-shadow: var(--elevation-small);
   }
   .toast.show { display: block; }
   .modal-back {
-    display: none; position: fixed; inset: 0; z-index: 80; background: rgba(45,42,38,0.35);
+    display: none; position: fixed; inset: 0; z-index: 80; background: rgba(18, 52, 59, 0.45);
     align-items: center; justify-content: center; padding: 24px;
   }
   .modal-back.open { display: flex; }
-  .modal { background: #fff; border-radius: 12px; width: min(520px, 100%); padding: 16px; max-height: 90vh; overflow: auto; }
-  .modal h2 { font-size: 16px; margin-bottom: 8px; }
-  .hint { font-size: 12px; color: var(--text-secondary); margin-bottom: 12px; }
-  .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
-  .cat-list, .chg-list { display: flex; flex-direction: column; gap: 6px; }
-  .cat-list button, .chg-list button {
-    text-align: left; border: 1px solid var(--border); background: #fff; border-radius: 8px;
-    padding: 10px 12px; font: inherit; font-size: 13px; cursor: pointer;
+  .modal {
+    background: var(--silq-white); border-radius: var(--radius-lg); width: min(520px, 100%);
+    padding: 24px; max-height: 90vh; overflow: auto; box-shadow: var(--elevation-small);
   }
-  .cat-list button:hover, .chg-list button:hover { background: var(--primary-light); }
+  .modal h2 { font: var(--type-h5); margin-bottom: 8px; }
+  .hint { font: var(--type-content-small); color: var(--text-secondary); margin-bottom: 12px; }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+  .cat-list, .chg-list { display: flex; flex-direction: column; gap: 8px; }
+  .cat-list button, .chg-list button {
+    text-align: left; border: 1px solid var(--border); background: var(--silq-white);
+    border-radius: 5px; padding: 12px; font: var(--type-ui-normal-semi-bold);
+    color: var(--silq-navy); cursor: pointer; box-shadow: var(--elevation-ui);
+  }
+  .cat-list button:hover, .chg-list button:hover { background: var(--bg-brand); }
   .chg-list button[disabled] { opacity: 0.5; cursor: default; }
-  .warn { background: var(--primary-light); border: 1px solid #f0d9b5; border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; font-size: 12px; }
+  .warn {
+    background: var(--bg-warning); border: 1px solid #FCD1A7; border-radius: var(--radius-sm);
+    padding: 12px; margin-bottom: 12px; font: var(--type-content-small); color: var(--brand-text);
+  }
   .hidden { display: none !important; }
   @media (max-width: 1100px) {
     .pick, .facts, .kpi, .foot { grid-template-columns: 1fr 1fr; }
@@ -125,7 +261,15 @@
 </head>
 <body>
 <nav class="sidebar">
-  <div class="sidebar-logo"><div class="silq-logo-text">silq</div></div>
+  <div class="sidebar-logo">
+    <div class="silq-logo" aria-label="Silq">
+      <svg class="silq-wordmark" width="80" height="32" viewBox="0 0 80 32" fill="none" xmlns="http://www.w3.org/2000/svg" role="img">
+        <title>Silq</title>
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M63.9041 4.79999L59.0019 6.29337V25.145H63.9041V4.79999ZM56.9494 11.7106H52.0129V25.145H56.9494V11.7106ZM44.3636 25.2516C43.3279 25.2427 42.2958 25.1304 41.2833 24.9164C40.3848 24.7796 39.5206 24.4787 38.7357 24.0295V20.7624C39.5276 21.2398 40.3856 21.6031 41.2833 21.8413C42.1789 22.1049 43.1077 22.2455 44.0428 22.2588C44.5818 22.2834 45.1212 22.2174 45.6374 22.0637C45.7921 22.0145 45.9255 21.916 46.0163 21.784C46.1072 21.652 46.1503 21.4941 46.1389 21.3353C46.1436 21.2105 46.1201 21.0863 46.07 20.9714C46.02 20.8566 45.9446 20.7539 45.8492 20.6709C45.5872 20.4512 45.2788 20.2909 44.946 20.2016C44.5567 20.0522 43.9027 19.842 42.9839 19.5646C42.1045 19.3103 41.2515 18.9756 40.4362 18.565C39.8723 18.2509 39.398 17.8034 39.0565 17.2636C38.7314 16.6478 38.5758 15.9598 38.6049 15.2673C38.6049 13.8837 39.1239 12.8495 40.1621 12.1648C41.2003 11.48 42.634 11.1285 44.4633 11.1102C45.3823 11.1151 46.2981 11.2173 47.1947 11.415C47.968 11.5364 48.7134 11.7902 49.3967 12.1648V15.3588C48.7811 14.9599 48.0992 14.6691 47.3816 14.4993C46.6045 14.2824 45.8008 14.1706 44.9927 14.1671C44.4183 14.1459 43.8444 14.2201 43.2953 14.3865C43.1174 14.4423 42.9634 14.5542 42.8574 14.7047C42.7514 14.8553 42.6995 15.036 42.7098 15.2186C42.711 15.3916 42.7646 15.5604 42.8638 15.7036C42.963 15.8469 43.1035 15.9581 43.2673 16.0232C43.9641 16.3084 44.6826 16.5397 45.4163 16.715L45.9489 16.8552C46.8615 17.0857 47.7368 17.4396 48.5495 17.9067C49.115 18.2183 49.5685 18.6929 49.8483 19.2659C50.1352 19.8821 50.2717 20.5551 50.2469 21.2317C50.2604 21.8054 50.1294 22.3735 49.8654 22.8859C49.6015 23.3983 49.2126 23.8392 48.7333 24.1697C47.7325 24.889 46.2759 25.2496 44.3636 25.2516ZM54.3612 5.51542C53.7492 5.51259 53.161 5.74781 52.7261 6.16934C52.2913 6.59086 52.0454 7.16416 52.0425 7.76311C52.0396 8.36207 52.28 8.93761 52.7107 9.36314C53.1415 9.78866 53.7274 10.0293 54.3394 10.0321H54.5793C54.8896 10.0446 55.1992 9.9958 55.4898 9.88855C55.7804 9.7813 56.0459 9.61784 56.2705 9.40793C56.4951 9.19802 56.6741 8.94597 56.7969 8.66684C56.9197 8.38771 56.9838 8.08722 56.9852 7.78332C56.9867 7.47942 56.9255 7.17835 56.8054 6.89809C56.6853 6.61784 56.5087 6.36415 56.2862 6.15217C56.0637 5.9402 55.7997 5.77429 55.5102 5.66437C55.2207 5.55444 54.9115 5.50275 54.6011 5.51237L54.3612 5.51542ZM75.294 24.3008C74.3232 24.947 73.1728 25.2854 71.9988 25.2699C68.6445 25.2699 65.5766 23.0634 65.5766 18.1931C65.5766 13.7252 68.6694 11.3053 71.9645 11.3053C73.2904 11.2887 74.5836 11.7084 75.6366 12.497L75.7269 11.5461H80V30H75.3282L75.294 24.3008ZM73.0764 14.7005C73.8955 14.654 74.7002 14.9256 75.3158 15.4563L75.294 21.1555C74.8392 21.5639 74.179 21.8809 73.0764 21.8809C71.351 21.8809 70.1893 20.357 70.1893 18.2785C70.1893 16.2761 71.3728 14.7005 73.0764 14.7005Z" fill="#FFFFFF"/>
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M38.0324 2.88643L32.9301 2.03122C31.1156 1.19502 6.59601 17.4345 6.59601 17.4345L6.19739 18.5937L34.7988 4.86291C25.9177 10.3489 0.996261 25.6603 0.996261 25.6603C0.776469 25.8058 0.587879 25.9931 0.441388 26.2114C0.24797 26.5744 0.103238 26.9609 0.0108843 27.3612C-0.00272716 27.4116 -0.00358552 27.4646 0.00838441 27.5154C0.0203543 27.5662 0.0447812 27.6133 0.0794948 27.6525C0.114208 27.6917 0.158132 27.7217 0.20736 27.74C0.256588 27.7582 0.309594 27.7641 0.361665 27.7571C2.60985 27.3802 11.8609 25.8155 15.2316 24.8241C23.5483 22.3788 26.8074 19.1702 28.7494 16.2023C30.9976 12.7625 37.1299 3.70362 37.9973 2.94344L38.042 2.89593L38.0324 2.88643ZM26.5778 13.3928C25.94 14.7231 24.91 16.82 22.4322 18.5209C19.8141 20.32 12.403 22.591 8.71983 23.3164L26.6703 13.1806C26.6354 13.2495 26.6045 13.3204 26.5778 13.3928Z" fill="#EF6445"/>
+      </svg>
+    </div>
+  </div>
   <div class="sidebar-nav">
     <a class="nav-item" href="#">Projects</a>
     <a class="nav-item active" href="#">Shipments</a>
@@ -182,13 +326,13 @@
           <thead>
             <tr>
               <th>Charge</th>
-              <th class="num">Quoted (all files)</th>
-              <th class="num">Qty (quote / file)</th>
-              <th class="num">Expected sell</th>
-              <th class="num">Expected buy</th>
+              <th class="num">Quoted (all shipments)</th>
+              <th class="num">Qty (quote / HBL)</th>
+              <th class="num">Actual sell</th>
+              <th class="num">Buy rate<div class="sub">Quoted sell - markup</div></th>
               <th class="num">Billed</th>
-              <th class="num">Cost var</th>
-              <th class="num">GP (quote sell)</th>
+              <th class="num">Variance</th>
+              <th class="num">Gross profit</th>
             </tr>
           </thead>
           <tbody id="tbody"></tbody>
@@ -197,8 +341,14 @@
           <div class="fld"><label>Vendor</label><input class="input" id="vendor"></div>
           <div class="fld"><label>Invoice #</label><input class="input" id="invoiceNo"></div>
           <div class="fld"><label>Date</label><input class="input" id="invoiceDate" type="date"></div>
+          <button class="btn" type="button" id="uploadBtn">Upload vendor bill</button>
           <button class="btn btn-primary" type="button" id="saveBtn">Save on this shipment</button>
         </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd"><h2>Documents</h2></div>
+        <div class="card-bd" id="docs"></div>
       </div>
     </div>
   </div>
@@ -217,27 +367,21 @@
 </div>
 <div class="modal-back" id="flagModal">
   <div class="modal">
-    <h2 id="flagTitle">Mark query</h2>
-    <p class="warn" id="flagWarn"></p>
+    <h2>Query</h2>
+    <p class="warn">Internal. Raise a query on this charge with Ops. Same action whether you need a confirm or you are challenging the billed amount.</p>
     <div class="facts" id="flagMeta" style="grid-template-columns:1fr 1fr 1fr;margin-bottom:12px;"></div>
-    <div class="fld" style="margin-bottom:12px;">
-      <label>Route query to</label>
-      <select class="input" id="flagTo">
-        <option value="Origin Ops">Origin Ops</option>
-        <option value="Dest Ops">Dest Ops</option>
-      </select>
-    </div>
     <div class="fld">
       <label>Note</label>
-      <input class="input" id="flagNote" placeholder="What needs confirming, or why this billed value is disputed.">
+      <input class="input" id="flagNote" placeholder="What needs confirming, or why this billed value is wrong.">
     </div>
     <div class="modal-actions">
-      <button class="btn" type="button" id="cancelFlag">Cancel</button>
-      <button class="btn btn-primary" type="button" id="confirmFlag">Mark</button>
+          <button class="btn" type="button" id="cancelFlag">Cancel</button>
+          <button class="btn btn-primary" type="button" id="confirmFlag">Mark query</button>
     </div>
   </div>
 </div>
 <div class="toast" id="toast"></div>
+<input type="file" id="billFile" accept=".pdf,image/*,.png,.jpg,.jpeg" multiple hidden>
 
 <script>
 const PEOPLE = {
@@ -246,7 +390,7 @@ const PEOPLE = {
   dest: { name: 'Marcus Cole', team: 'Dest Ops' }
 };
 const GROUPS = [
-  { id: 'freight', label: 'Ocean freight' },
+  { id: 'freight', label: 'Freight' },
   { id: 'origin', label: 'Origin' },
   { id: 'destination', label: 'Destination' },
   { id: 'customs', label: 'Customs' }
@@ -261,38 +405,54 @@ const SOURCE = {
 function L(id, group, charge, uom, buyUnit, sellUnit, grain, extra) {
   return Object.assign({
     id, group, charge, uom, buyUnit, sellUnit, grain,
-    extra: false, actual: null, flag: null, proof: null,
-    source: 'quote', qtyField: null, catalogOnly: false, proofRequired: false
+    extra: false, added: false, actual: null, flag: null, proof: null,
+    source: 'quote', qtyField: null, catalogOnly: false, proofRequired: false,
+    modes: ['FCL', 'LCL', 'Air']
   }, extra || {});
 }
 
 const CATALOG = [
-  L('of20', 'freight', 'Ocean freight - 20GP', 'container', 1680, 2200, 'per_unit'),
-  L('of40', 'freight', 'Ocean freight - 40HC', 'container', 2180, 2850, 'per_unit', { source: 'contract' }),
+  L('of20', 'freight', 'Ocean Freight - 20ft', 'container', 1680, 2200, 'per_unit', { modes: ['FCL'] }),
+  L('of40', 'freight', 'Ocean Freight - 40ft HC', 'container', 2180, 2850, 'per_unit', { source: 'contract', modes: ['FCL'] }),
+  L('oflcl', 'freight', 'Ocean Freight', 'CBM', 140, 150, 'per_unit', { qtyField: 'cbm', modes: ['LCL'] }),
+  L('airfr', 'freight', 'Freight', 'kg', 4.2, 5.8, 'per_unit', { qtyField: 'kg', modes: ['Air'] }),
   L('cprot', 'freight', 'Cargo Protection (minimum)*', 'job', 20, 35, 'per_quote'),
-  L('pss', 'freight', 'Peak season surcharge', 'container', 0, 0, 'per_unit', { extra: true }),
-  L('baf', 'freight', 'Bunker / BAF', 'container', 0, 0, 'per_unit', { extra: true }),
-  L('pick', 'origin', 'Origin cartage / factory pickup', 'container', 185, 240, 'per_unit'),
-  L('othc', 'origin', 'Origin THC', 'container', 155, 210, 'per_unit'),
-  L('odoc', 'origin', 'Origin documentation', 'shipment', 35, 50, 'per_shipment'),
-  L('ocfs', 'origin', 'Origin CFS', 'CBM', 18, 24, 'per_unit', { qtyField: 'cbm' }),
-  L('otruck', 'origin', 'Origin trucking', '1000kg', 45, 60, 'per_unit', { qtyField: 'kg' }),
-  L('ovgm', 'origin', 'VGM', 'container', 25, 40, 'per_unit'),
-  L('shand', 'destination', 'Silq handling', 'HBL', 55, 95, 'per_shipment'),
-  L('ddoc', 'destination', 'Destination documentation', 'HBL', 48, 75, 'per_shipment'),
-  L('chas', 'destination', 'Chassis rental', 'day', 75, 80, 'per_unit', { qtyField: 'days' }),
-  L('pier', 'destination', 'PierPASS', 'container', 68, 85, 'per_unit'),
-  L('dray', 'destination', 'Drayage / dest delivery', 'container', 380, 520, 'per_unit'),
-  L('dfuel', 'destination', 'Dest trucking fuel', 'container', 62, 85, 'per_unit'),
-  L('ctf', 'destination', 'Clean Truck Fee', 'container', 18, 25, 'per_unit'),
-  L('det', 'destination', 'Detention', 'day', 0, 0, 'per_unit', { extra: true, proofRequired: true, qtyField: 'detDays' }),
-  L('dem', 'destination', 'Demurrage', 'day', 0, 0, 'per_unit', { extra: true, proofRequired: true, qtyField: 'demDays' }),
-  L('isf', 'customs', 'Import Security Filing (ISF)', 'HBL', 28, 45, 'per_shipment'),
-  L('cclear', 'customs', 'Customs clearance fee', 'shipment', 95, 145, 'per_shipment')
+  L('pss', 'freight', 'Peak season surcharge', 'container', 0, 0, 'per_unit', { extra: true, modes: ['FCL'] }),
+  L('baf', 'freight', 'Bunker / BAF', 'container', 0, 0, 'per_unit', { extra: true, modes: ['FCL', 'LCL'] }),
+  L('aps', 'freight', 'Airport Pickup surcharge', 'shipment', 75, 110, 'per_shipment', { modes: ['Air'] }),
+  L('pick', 'origin', 'Origin cartage / factory pickup', 'container', 185, 240, 'per_unit', { modes: ['FCL'] }),
+  L('othc', 'origin', 'Origin Terminal Handling', 'container', 155, 210, 'per_unit', { modes: ['FCL'] }),
+  L('othclcl', 'origin', 'Origin Terminal Handling', 'CBM', 12, 18, 'per_unit', { qtyField: 'cbm', modes: ['LCL'] }),
+  L('othcair', 'origin', 'Origin Terminal Handling', 'kg', 0.35, 0.5, 'per_unit', { qtyField: 'kg', modes: ['Air'] }),
+  L('odoc', 'origin', 'Documentation', 'shipment', 35, 50, 'per_shipment'),
+  L('ocfs', 'origin', 'Container Freight Stations (CFS)', 'CBM', 18, 24, 'per_unit', { qtyField: 'cbm', modes: ['FCL', 'LCL'] }),
+  L('otruck', 'origin', 'Origin Trucking', '1000kg', 45, 60, 'per_unit', { qtyField: 'tonne', modes: ['FCL', 'LCL', 'Air'] }),
+  L('ovgm', 'origin', 'Verified Gross Mass (VGM)', 'container', 25, 40, 'per_unit', { modes: ['FCL'] }),
+  L('obl', 'origin', 'Bill of Lading Fee', 'shipment', 40, 55, 'per_shipment', { modes: ['FCL', 'LCL'] }),
+  L('awb', 'origin', 'Airway Bill (AWB)', 'shipment', 45, 65, 'per_shipment', { modes: ['Air'] }),
+  L('ohand', 'origin', 'Handling', 'shipment', 30, 45, 'per_shipment', { modes: ['LCL', 'Air'] }),
+  L('shand', 'destination', 'Silq Handling', 'HBL', 55, 95, 'per_unit', { qtyField: 'hbl' }),
+  L('ddoc', 'destination', 'Documentation', 'HBL', 48, 75, 'per_unit', { qtyField: 'hbl' }),
+  L('pier', 'destination', 'Pierpass', 'container', 68, 85, 'per_unit', { modes: ['FCL', 'LCL'] }),
+  L('dray', 'destination', 'Drayage', 'container', 380, 520, 'per_unit', { modes: ['FCL'] }),
+  L('dfuel', 'destination', 'Fuel Surcharge', 'container', 62, 85, 'per_unit', { modes: ['FCL'] }),
+  L('ctf', 'destination', 'Clean Truck Fee', 'container', 18, 25, 'per_unit', { modes: ['FCL', 'LCL'] }),
+  L('cfspick', 'destination', 'CFS Pickup', 'CBM', 22, 32, 'per_unit', { qtyField: 'cbm', modes: ['LCL'] }),
+  L('strip', 'destination', 'Stripping', 'CBM', 15, 22, 'per_unit', { qtyField: 'cbm', modes: ['LCL'] }),
+  L('oncar', 'destination', 'On Carriage', 'CBM', 28, 40, 'per_unit', { qtyField: 'cbm', modes: ['LCL'] }),
+  L('atrans', 'destination', 'Airport Transfer', 'kg', 0.55, 0.8, 'per_unit', { qtyField: 'kg', modes: ['Air'] }),
+  L('athc', 'destination', 'Airport Terminal Handling', 'kg', 0.4, 0.6, 'per_unit', { qtyField: 'kg', modes: ['Air'] }),
+  L('cartage', 'destination', 'Cartage', 'shipment', 185, 260, 'per_shipment', { modes: ['Air'] }),
+  L('det', 'destination', 'Detention', 'day', 0, 0, 'per_unit', { extra: true, proofRequired: true, qtyField: 'detDays', modes: ['FCL'] }),
+  L('dem', 'destination', 'Demurrage', 'day', 0, 0, 'per_unit', { extra: true, proofRequired: true, qtyField: 'demDays', modes: ['FCL'] }),
+  L('isf', 'customs', 'Import Security Filing (ISF)', 'HBL', 28, 45, 'per_unit', { qtyField: 'hbl', modes: ['FCL', 'LCL'] }),
+  L('cclear', 'customs', 'Customs Clearance Fee', 'shipment', 95, 145, 'per_shipment')
 ];
 
-const APEX_IDS = ['pick', 'othc', 'odoc', 'ocfs', 'otruck', 'of40', 'cprot', 'isf', 'cclear', 'shand', 'ddoc', 'chas', 'pier', 'dray', 'dfuel', 'det', 'dem'];
-const VANDELAY_IDS = ['of40', 'shand', 'ddoc', 'chas', 'pier', 'ctf', 'dray', 'dfuel', 'isf', 'cclear', 'cprot'];
+const APEX_IDS = ['pick', 'othc', 'odoc', 'ocfs', 'otruck', 'of40', 'cprot', 'isf', 'cclear', 'shand', 'ddoc', 'pier', 'dray', 'dfuel', 'det', 'dem'];
+const VANDELAY_IDS = ['of40', 'shand', 'ddoc', 'pier', 'ctf', 'dray', 'dfuel', 'isf', 'cclear', 'cprot'];
+const LCL_IDS = ['oflcl', 'othclcl', 'odoc', 'ocfs', 'otruck', 'obl', 'ohand', 'cprot', 'shand', 'ddoc', 'cfspick', 'strip', 'oncar', 'isf', 'cclear'];
+const AIR_IDS = ['airfr', 'aps', 'awb', 'othcair', 'odoc', 'otruck', 'ohand', 'cprot', 'shand', 'ddoc', 'atrans', 'athc', 'cartage', 'cclear'];
 
 function fromCatalog(id) {
   const c = CATALOG.find(x => x.id === id);
@@ -301,8 +461,9 @@ function fromCatalog(id) {
 
 function qtyFrom(l, s, quoted) {
   if (l.qtyField === 'cbm') return (quoted ? s.quoteCbm : s.cbm) || 0;
-  if (l.qtyField === 'kg') return Math.round(((quoted ? s.quoteKg : s.kg) || 0) / 100) / 10;
-  if (l.qtyField === 'days') return (quoted ? s.quoteChassisDays : s.chassisDays) || 0;
+  if (l.qtyField === 'kg') return (quoted ? s.quoteKg : s.kg) || 0;
+  if (l.qtyField === 'tonne') return Math.round(((quoted ? s.quoteKg : s.kg) || 0) / 100) / 10;
+  if (l.qtyField === 'hbl') return (quoted ? s.quoteHbl : s.hblQty) || 0;
   if (l.qtyField === 'detDays') return (quoted ? s.quoteDetDays : s.detDays) || 0;
   if (l.qtyField === 'demDays') return (quoted ? s.quoteDemDays : s.demDays) || 0;
   if (l.grain === 'per_unit') return (quoted ? s.quoteShipQty : s.shipQty) || 1;
@@ -328,42 +489,67 @@ function enrich(l, s, q) {
 
 const QUOTES = [
   {
-    id: 'apex', quoteId: 'SILQ-482910Q1', client: 'Apex Outdoor',
+    id: 'apex', quoteId: 'SILQ-482910Q1', client: 'Apex Outdoor', mode: 'FCL',
     shipments: [
       {
         id: 'shp-01', shipId: 'SHP-482910-01', mode: 'FCL', incoterm: 'EXW', coverage: 'D2D',
-        container: '40HC', origin: 'CNYTN', dest: 'USLAX', mbl: 'MEDU1234567',
-        vendorHint: 'Shipco America', shipQty: 1, quoteShipQty: 1,
-        cbm: 62, quoteCbm: 58, kg: 8450, quoteKg: 8200, chassisDays: 4, quoteChassisDays: 4,
+        container: '40HC', origin: 'CNYTN', dest: 'USLAX', mbl: 'MEDU1234567', blLabel: 'MBL',
+        vendorHint: 'Shipco America', shipQty: 1, quoteShipQty: 1, hblQty: 1, quoteHbl: 1,
+        cbm: 62, quoteCbm: 58, kg: 8450, quoteKg: 8200,
         detDays: 0, quoteDetDays: 0, demDays: 0, quoteDemDays: 0,
-        gatedIn: '2026-08-12', gatedTask: 'TASK-1842', etd: '2026-08-20', eta: '2026-09-12',
-        lines: APEX_IDS.map(fromCatalog), originEntered: true
+        gatedIn: '2026-08-12', etd: '2026-08-20', eta: '2026-09-12',
+        lines: APEX_IDS.map(fromCatalog), originEntered: true,
+        docs: [{ id: 'd-apex-1', name: 'Yantian-origin-invoice.pdf', size: 184320, when: '2026-08-13', kind: 'Vendor bill' }]
       },
       {
         id: 'shp-02', shipId: 'SHP-482910-02', mode: 'FCL', incoterm: 'EXW', coverage: 'D2D',
-        container: '40HC', origin: 'CNYTN', dest: 'USLAX', mbl: 'MEDU1234599',
-        vendorHint: 'Shipco America', shipQty: 1, quoteShipQty: 1,
-        cbm: 61, quoteCbm: 61, kg: 7900, quoteKg: 7900, chassisDays: 0, quoteChassisDays: 0,
+        container: '40HC', origin: 'CNYTN', dest: 'USLAX', mbl: 'MEDU1234599', blLabel: 'MBL',
+        vendorHint: 'Shipco America', shipQty: 1, quoteShipQty: 1, hblQty: 1, quoteHbl: 1,
+        cbm: 61, quoteCbm: 61, kg: 7900, quoteKg: 7900,
         detDays: 0, quoteDetDays: 0, demDays: 0, quoteDemDays: 0,
-        gatedIn: '2026-08-18', gatedTask: 'TASK-1849', etd: '2026-08-27', eta: '2026-09-18',
+        gatedIn: '2026-08-18', etd: '2026-08-27', eta: '2026-09-18',
         lines: APEX_IDS.map(fromCatalog)
       }
     ]
   },
   {
-    id: 'vandelay', quoteId: 'SILQ-4228268Q1', client: 'Vandelay Industries',
+    id: 'vandelay', quoteId: 'SILQ-4228268Q1', client: 'Vandelay Industries', mode: 'FCL',
     shipments: [{
       id: 'shp-v1', shipId: 'SHP-4228268-01', mode: 'FCL', incoterm: 'FOB', coverage: 'Port to door',
-      container: '40HC', origin: 'CNYTN', dest: 'USLAX', mbl: 'ONEYSH6ABC123',
-      vendorHint: 'Ocean Network Express', shipQty: 1, quoteShipQty: 1,
-      cbm: 54, quoteCbm: 54, kg: 7600, quoteKg: 7600, chassisDays: 3, quoteChassisDays: 3,
+      container: '40HC', origin: 'CNYTN', dest: 'USLAX', mbl: 'ONEYSH6ABC123', blLabel: 'MBL',
+      vendorHint: 'Ocean Network Express', shipQty: 1, quoteShipQty: 1, hblQty: 1, quoteHbl: 1,
+      cbm: 54, quoteCbm: 54, kg: 7600, quoteKg: 7600,
       detDays: 0, quoteDetDays: 0, demDays: 0, quoteDemDays: 0,
-      gatedIn: '2026-05-08', gatedTask: 'TASK-1104', etd: '2026-05-14', eta: '2026-06-04',
+      gatedIn: '2026-05-08', etd: '2026-05-14', eta: '2026-06-04',
       lines: VANDELAY_IDS.map(id => {
         const l = fromCatalog(id);
         if (id === 'of40') { l.buyUnit = 2450; l.sellUnit = 3180; }
         return l;
       })
+    }]
+  },
+  {
+    id: 'northwind', quoteId: 'SILQ-3910044Q1', client: 'Northwind Traders', mode: 'LCL',
+    shipments: [{
+      id: 'shp-lcl', shipId: 'SHP-3910044-01', mode: 'LCL', incoterm: 'EXW', coverage: 'D2D',
+      container: '', origin: 'CNSHA', dest: 'USLAX', mbl: 'EGLV142600123456', blLabel: 'MBL',
+      vendorHint: 'Ecu Worldwide', shipQty: 1, quoteShipQty: 1, hblQty: 1, quoteHbl: 1,
+      cbm: 12.4, quoteCbm: 12, kg: 3180, quoteKg: 2900,
+      detDays: 0, quoteDetDays: 0, demDays: 0, quoteDemDays: 0,
+      gatedIn: '2026-07-22', etd: '2026-07-28', eta: '2026-08-18',
+      lines: LCL_IDS.map(fromCatalog), originEntered: true
+    }]
+  },
+  {
+    id: 'initech', quoteId: 'SILQ-5102201Q1', client: 'Initech', mode: 'Air',
+    shipments: [{
+      id: 'shp-air', shipId: 'SHP-5102201-01', mode: 'Air', incoterm: 'EXW', coverage: 'Airport to door',
+      container: '', origin: 'CNPVG', dest: 'USLAX', mbl: '180-12345678', blLabel: 'MAWB',
+      vendorHint: 'DHL Global Forwarding', shipQty: 1, quoteShipQty: 1, hblQty: 1, quoteHbl: 1,
+      cbm: 2.1, quoteCbm: 1.9, kg: 448, quoteKg: 420,
+      detDays: 0, quoteDetDays: 0, demDays: 0, quoteDemDays: 0,
+      gatedIn: '2026-09-04', etd: '2026-09-05', eta: '2026-09-06',
+      lines: AIR_IDS.map(fromCatalog), originEntered: true
     }]
   }
 ];
@@ -399,24 +585,38 @@ function toast(msg) {
   setTimeout(() => el.classList.remove('show'), 2600);
 }
 function billable(s) { return s.lines.filter(l => !l.catalogOnly); }
-function runBuy(l) { return l.actual == null || l.actual === '' ? Number(l.quoted || 0) : Number(l.actual); }
-function lineGp(l) { return Number(l.expSell || 0) - runBuy(l); }
+function onQuote(l) { return !l.added; }
+function runBuy(l) {
+  if (!onQuote(l)) return l.actual == null || l.actual === '' ? 0 : Number(l.actual);
+  return l.actual == null || l.actual === '' ? Number(l.quoted || 0) : Number(l.actual);
+}
+function lineGp(l) {
+  if (!onQuote(l)) return null;
+  return Number(l.expSell || 0) - runBuy(l);
+}
+function buyRate(l) {
+  if (!onQuote(l)) return null;
+  return Number(l.quoted || 0);
+}
+function markupOf(l) {
+  if (!onQuote(l)) return null;
+  return Number(l.expSell || 0) - Number(l.quoted || 0);
+}
 
-function quoteAll(l, q) {
-  return q.shipments.reduce((acc, s) => {
-    const x = s.lines.find(y => y.id === l.id);
-    if (!x) return acc;
-    acc.buy += Number(x.quoted || 0);
-    acc.sell += Number(x.expSell || 0);
-    return acc;
-  }, { buy: 0, sell: 0 });
+function quoteAllSell(l, q) {
+  if (!onQuote(l)) return null;
+  return q.shipments.reduce((n, s) => {
+    const x = s.lines.find(y => y.id === l.id && onQuote(y));
+    return n + (x ? Number(x.expSell || 0) : 0);
+  }, 0);
 }
 
 function ensure(s) {
   if (!s.invoice) s.invoice = { vendor: s.vendorHint || '', invoiceNo: '', invoiceDate: '', saved: false };
+  if (!s.docs) s.docs = [];
   if (s.seeded) return;
   s.seeded = true;
-  if (s.originEntered) {
+  if (s.originEntered && s.mode === 'FCL') {
     const othc = s.lines.find(l => l.id === 'othc');
     const pick = s.lines.find(l => l.id === 'pick');
     const odoc = s.lines.find(l => l.id === 'odoc');
@@ -424,36 +624,64 @@ function ensure(s) {
     if (odoc) { odoc.actual = odoc.quoted; odoc.source = 'sheet'; }
     if (othc) {
       othc.actual = 170; othc.source = 'sheet';
-      othc.flag = { type: 'query', note: 'Billed $170 vs expected buy $155.', by: 'Priya Shah', team: 'FinOps', to: 'Origin Ops', resolved: false };
+      othc.flag = { type: 'query', note: 'Billed $170 vs buy rate $155.', by: 'Priya Shah', team: 'FinOps', resolved: false };
     }
     s.invoice.vendor = 'Yantian origin agent';
+  }
+  if (s.id === 'shp-lcl') {
+    const of = s.lines.find(l => l.id === 'oflcl');
+    const ocfs = s.lines.find(l => l.id === 'ocfs');
+    const othc = s.lines.find(l => l.id === 'othclcl');
+    if (of) { of.actual = Math.round(of.buyUnit * s.cbm); of.source = 'sheet'; }
+    if (ocfs) { ocfs.actual = Math.round(ocfs.buyUnit * s.cbm); ocfs.source = 'sheet'; }
+    if (othc) {
+      othc.actual = 240; othc.source = 'sheet';
+      othc.flag = { type: 'query', note: 'Billed $240 vs buy rate on quote CBM.', by: 'Priya Shah', team: 'FinOps', resolved: false };
+    }
+    s.invoice.vendor = 'Shanghai CFS agent';
+    s.invoice.invoiceNo = 'SHA-LCL-8841';
+    s.invoice.invoiceDate = '2026-07-23';
+  }
+  if (s.id === 'shp-air') {
+    const air = s.lines.find(l => l.id === 'airfr');
+    const aps = s.lines.find(l => l.id === 'aps');
+    const awb = s.lines.find(l => l.id === 'awb');
+    if (air) { air.actual = Math.round(air.buyUnit * s.kg); air.source = 'sheet'; }
+    if (aps) { aps.actual = aps.quoted; aps.source = 'sheet'; }
+    if (awb) {
+      awb.actual = 80; awb.source = 'sheet';
+      awb.flag = { type: 'query', note: 'AWB billed $80 vs buy rate $45.', by: 'Priya Shah', team: 'FinOps', resolved: false };
+    }
+    s.invoice.vendor = 'PVG GHA';
+    s.invoice.invoiceNo = 'PVG-AWB-2201';
+    s.invoice.invoiceDate = '2026-09-05';
   }
 }
 
 function totals(s, q) {
+  const quoted = billable(s).filter(onQuote);
   const lines = billable(s);
-  const expSell = lines.reduce((n, l) => n + Number(l.expSell || 0), 0);
-  const expBuy = lines.reduce((n, l) => n + Number(l.quoted || 0), 0);
+  const actualSell = quoted.reduce((n, l) => n + Number(l.expSell || 0), 0);
+  const buy = quoted.reduce((n, l) => n + Number(l.quoted || 0), 0);
   const withA = lines.filter(l => l.actual !== null && l.actual !== '');
   const billed = withA.reduce((n, l) => n + Number(l.actual || 0), 0);
-  const billedExp = withA.reduce((n, l) => n + Number(l.quoted || 0), 0);
-  const run = lines.reduce((n, l) => n + runBuy(l), 0);
-  const qBuy = lines.reduce((n, l) => n + quoteAll(l, q).buy, 0);
-  const qSell = lines.reduce((n, l) => n + quoteAll(l, q).sell, 0);
-  const expGp = expSell - expBuy;
-  const runGp = expSell - run;
+  const billedBuy = withA.filter(onQuote).reduce((n, l) => n + Number(l.quoted || 0), 0);
+  const billedOnQuote = withA.filter(onQuote);
+  const run = quoted.reduce((n, l) => n + runBuy(l), 0);
+  const qSell = quoted.reduce((n, l) => n + (quoteAllSell(l, q) || 0), 0);
   return {
-    expSell, expBuy, expGp, runGp,
+    actualSell, buy,
     billed, billedN: withA.length, n: lines.length,
-    costVar: withA.length ? billed - billedExp : null,
-    qBuy, qSell, files: q.shipments.length
+    variance: billedOnQuote.length ? billedOnQuote.reduce((n, l) => n + Number(l.actual || 0), 0) - billedBuy : null,
+    gp: actualSell - run,
+    qSell, shipments: q.shipments.length
   };
 }
 
 function renderPickers() {
   document.getElementById('quoteSel').innerHTML =
     `<option value="">Select a quote</option>` +
-    QUOTES.map(q => `<option value="${q.id}" ${q.id === quoteId ? 'selected' : ''}>${q.quoteId} · ${q.client}</option>`).join('');
+    QUOTES.map(q => `<option value="${q.id}" ${q.id === quoteId ? 'selected' : ''}>${q.quoteId} · ${q.client} · ${q.mode}</option>`).join('');
   const q = quote();
   const ss = document.getElementById('shipSel');
   if (!q) {
@@ -462,7 +690,7 @@ function renderPickers() {
   } else {
     ss.disabled = false;
     ss.innerHTML = `<option value="">Select a shipment</option>` +
-      q.shipments.map(s => `<option value="${s.id}" ${s.id === shipId ? 'selected' : ''}>${s.shipId} · ${s.mbl}</option>`).join('');
+      q.shipments.map(s => `<option value="${s.id}" ${s.id === shipId ? 'selected' : ''}>${s.shipId} · ${s.mode} · ${s.mbl}</option>`).join('');
   }
   document.getElementById('whoSel').innerHTML = Object.keys(PEOPLE).map(k => {
     const p = PEOPLE[k];
@@ -470,18 +698,32 @@ function renderPickers() {
   }).join('');
 }
 
+function modeLabel(s) {
+  return s.mode === 'FCL' && s.container ? s.mode + ' · ' + s.container : s.mode;
+}
+function qtyFacts(s, quoted) {
+  const cbm = quoted ? s.quoteCbm : s.cbm;
+  const kg = quoted ? s.quoteKg : s.kg;
+  const hbl = quoted ? s.quoteHbl : s.hblQty;
+  if (s.mode === 'Air') return kg + ' kg · ' + hbl + ' HBL';
+  return cbm + ' CBM · ' + kg + ' kg · ' + hbl + ' HBL';
+}
+function inMode(c, s) {
+  return !c.modes || c.modes.indexOf(s.mode) !== -1;
+}
+
 function renderFacts() {
   const q = quote();
   const s = ship();
   document.getElementById('facts').innerHTML = [
     ['Client', q.client],
-    ['MBL', s.mbl],
+    [s.blLabel || 'MBL', s.mbl],
     ['Route', s.origin + ' → ' + s.dest],
     ['Incoterm', s.incoterm + ' · ' + s.coverage],
-    ['Load', s.mode + ' ' + s.container],
-    ['Gated in (from task)', fmtDate(s.gatedIn) + ' · ' + s.gatedTask],
-    ['Quote qty', s.quoteCbm + ' CBM · ' + s.quoteKg + ' kg · ' + s.quoteChassisDays + ' chassis days'],
-    ['File qty', s.cbm + ' CBM · ' + s.kg + ' kg · ' + s.chassisDays + ' chassis days']
+    ['Mode', modeLabel(s)],
+    ['Gated in', fmtDate(s.gatedIn)],
+    ['Quote qty', qtyFacts(s, true)],
+    ['HBL quantity', qtyFacts(s, false)]
   ].map(([k, v]) => `<div class="fld"><label>${k}</label><div class="v ro">${v}</div></div>`).join('');
 }
 
@@ -490,12 +732,12 @@ function renderKpis() {
   const s = ship();
   const t = totals(s, q);
   document.getElementById('kpis').innerHTML = `<div class="kpi">
-    <div><span>Quoted sell (all files)</span><b>${money(t.qSell)}</b><span>${t.files} shipments</span></div>
-    <div><span>Quoted buy (all files)</span><b>${money(t.qBuy)}</b></div>
-    <div><span>Expected sell (this file)</span><b>${money(t.expSell)}</b></div>
-    <div><span>Expected buy (this file)</span><b>${money(t.expBuy)}</b></div>
+    <div><span>Quoted (all shipments)</span><b>${money(t.qSell)}</b><span>${t.shipments} shipments · sell</span></div>
+    <div><span>Actual sell (this shipment)</span><b>${money(t.actualSell)}</b></div>
+    <div><span>Buy rate</span><b>${money(t.buy)}</b><span>Quoted sell - markup</span></div>
     <div><span>Billed</span><b>${t.billedN ? money(t.billed) : '-'}</b><span>${t.billedN}/${t.n} lines</span></div>
-    <div class="${t.costVar > 0 ? 'over' : 'ok'}"><span>Cost var / GP</span><b>${t.costVar == null ? '-' : (t.costVar > 0 ? '+' : '') + money(t.costVar)}</b><span>GP ${money(t.runGp)}</span></div>
+    <div class="${t.variance > 0 ? 'over' : 'ok'}"><span>Variance</span><b>${t.variance == null ? '-' : (t.variance > 0 ? '+' : '') + money(t.variance)}</b></div>
+    <div class="${t.gp < t.actualSell - t.buy - 0.5 ? 'over' : 'ok'}"><span>Gross profit</span><b>${money(t.gp)}</b></div>
   </div>`;
 }
 
@@ -510,12 +752,9 @@ function varHtml(n) {
 }
 function flagCell(l) {
   if (!l.flag) {
-    return `<button type="button" class="btn btn-tiny" data-flag="query" data-id="${l.id}">Query</button>
-      <button type="button" class="btn btn-tiny" data-flag="dispute" data-id="${l.id}">Dispute</button>`;
+    return `<button type="button" class="btn btn-tiny" data-flag="query" data-id="${l.id}">Query</button>`;
   }
-  const kind = l.flag.type === 'dispute' ? 'Dispute' : 'Query';
-  const tag = l.flag.type === 'dispute' ? 'tag-low' : 'tag-review';
-  return `<span class="tag ${tag}">${kind}</span>${l.flag.resolved ? '<span class="tag tag-ok">Resolved</span>' : ''}
+  return `<span class="tag tag-review">Query</span>${l.flag.resolved ? '<span class="tag tag-ok">Resolved</span>' : ''}
     <div class="sub">${l.flag.note}</div>
     ${l.flag.resolved ? '' : `<button type="button" class="btn btn-tiny" data-resolve="${l.id}">Resolve</button>`}`;
 }
@@ -527,34 +766,68 @@ function renderTable() {
     const rows = billable(s).filter(l => l.group === g.id);
     if (!rows.length) return '';
     return `<tr class="group-row"><td colspan="8">${g.label}</td></tr>` + rows.map(l => {
-      const all = quoteAll(l, q);
-      const costVar = l.actual == null || l.actual === '' ? null : Number(l.actual) - Number(l.quoted || 0);
+      const quotedLine = onQuote(l);
+      const allSell = quotedLine ? quoteAllSell(l, q) : null;
+      const buy = buyRate(l);
+      const costVar = !quotedLine || l.actual == null || l.actual === '' ? null : Number(l.actual) - Number(l.quoted || 0);
+      const gp = lineGp(l);
       const qQty = quoteQtyOf(l, s);
       const fQty = fileQtyOf(l, s);
-      const diff = Math.abs(Number(qQty) - Number(fQty)) > 0.0005;
+      const diff = quotedLine && Math.abs(Number(qQty) - Number(fQty)) > 0.0005;
       const rowCls = [
         costVar > 0.5 ? 'over' : '',
-        l.flag && !l.flag.resolved ? (l.flag.type === 'dispute' ? 'row-dispute' : 'row-query') : ''
+        l.flag && !l.flag.resolved ? 'row-query' : ''
       ].join(' ');
+      const qtyCell = quotedLine
+        ? `<div class="qty-stack">
+            <div class="quoted">Quote ${qQty} ${l.uom}</div>
+            <div class="${diff ? 'diff' : ''}">HBL ${fQty} ${l.uom}</div>
+          </div>`
+        : `<span class="empty">-</span><div class="sub">Not on quote</div>`;
+      const sellCell = !quotedLine
+        ? '<span class="empty">-</span>'
+        : (l.grain === 'per_quote' && !l.expSell ? '<span class="empty">Other shipment</span>' : money(l.expSell));
+      const buyCell = !quotedLine
+        ? '<span class="empty">-</span>'
+        : `${money(buy)}<div class="sub">markup ${money(markupOf(l))}</div>`;
       return `<tr class="${rowCls}">
         <td>
-          <div class="charge">${l.charge}${srcTag(l)}${l.extra ? '<span class="tag tag-review">Unquoted</span>' : ''}</div>
-          <div class="sub">${money(l.buyUnit)} buy / ${money(l.sellUnit)} sell per ${l.uom}</div>
+          <div class="charge">${l.charge}${quotedLine ? srcTag(l) : '<span class="tag tag-review">Not on quote</span>'}</div>
+          <div class="sub">${quotedLine ? money(l.sellUnit) + ' sell / ' + l.uom : 'Added from catalog'}</div>
           <div style="margin-top:4px;">${flagCell(l)}</div>
         </td>
-        <td class="num quoted">${money(all.sell)}<div class="sub">buy ${money(all.buy)} · ${q.shipments.length} files</div></td>
-        <td class="num"><div class="qty-stack">
-          <div class="quoted">Quote ${qQty} ${l.uom}</div>
-          <div class="${diff ? 'diff' : ''}">File ${fQty} ${l.uom}</div>
-        </div></td>
-        <td class="num quoted">${l.grain === 'per_quote' && !l.expSell ? '<span class="empty">Other file</span>' : money(l.expSell)}</td>
-        <td class="num quoted">${money(l.quoted)}</td>
+        <td class="num quoted">${quotedLine ? money(allSell) : '<span class="empty">-</span>'}${quotedLine ? '<div class="sub">' + q.shipments.length + ' shipments</div>' : ''}</td>
+        <td class="num">${qtyCell}</td>
+        <td class="num quoted">${sellCell}</td>
+        <td class="num quoted">${buyCell}</td>
         <td class="num"><input class="money" data-id="${l.id}" value="${l.actual == null ? '' : l.actual}" placeholder="-"></td>
-        <td class="num">${varHtml(costVar)}</td>
-        <td class="num">${money(lineGp(l))}</td>
+        <td class="num">${quotedLine ? varHtml(costVar) : '<span class="empty">-</span>'}</td>
+        <td class="num">${quotedLine && gp != null ? money(gp) : '<span class="empty">-</span>'}</td>
       </tr>`;
     }).join('');
   }).join('');
+}
+
+function fmtSize(n) {
+  if (n < 1024) return n + ' B';
+  if (n < 1024 * 1024) return (n / 1024).toFixed(1) + ' KB';
+  return (n / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+function renderDocs() {
+  const s = ship();
+  if (!s.docs.length) {
+    document.getElementById('docs').innerHTML = '<p class="hint">No vendor bills on this shipment yet. Upload from the vendor row above.</p>';
+    return;
+  }
+  document.getElementById('docs').innerHTML = s.docs.map(d =>
+    `<div class="doc-row">
+      <div class="doc-ico">PDF</div>
+      <div><div class="charge">${d.name}</div><div class="sub">${d.kind} · ${fmtSize(d.size)} · ${fmtDate(d.when)}</div></div>
+      <span class="tag tag-ok">On shipment</span>
+      <button type="button" class="btn btn-tiny" data-doc-rm="${d.id}">Remove</button>
+    </div>`
+  ).join('');
 }
 
 function persistInvoice() {
@@ -574,6 +847,7 @@ function render() {
   renderFacts();
   renderKpis();
   renderTable();
+  renderDocs();
   document.getElementById('vendor').value = s.invoice.vendor || '';
   document.getElementById('invoiceNo').value = s.invoice.invoiceNo || '';
   document.getElementById('invoiceDate').value = s.invoice.invoiceDate || '';
@@ -585,7 +859,7 @@ function openLineModal() {
   document.getElementById('lineTitle').textContent = 'Add line';
   document.getElementById('lineHint').textContent = 'Pick a category from the system catalog.';
   document.getElementById('lineBack').classList.add('hidden');
-  document.getElementById('lineBody').innerHTML = `<div class="cat-list">${GROUPS.map(g =>
+  document.getElementById('lineBody').innerHTML = `<div class="cat-list">${GROUPS.filter(g => CATALOG.some(c => c.group === g.id && inMode(c, ship()))).map(g =>
     `<button type="button" data-cat="${g.id}">${g.label}</button>`).join('')}</div>`;
   document.getElementById('lineModal').classList.add('open');
 }
@@ -599,9 +873,9 @@ function showCatalogCharges(groupId) {
   document.getElementById('lineTitle').textContent = g.label;
   document.getElementById('lineHint').textContent = 'Select a charge. Already on this shipment stay listed but cannot be added twice.';
   document.getElementById('lineBack').classList.remove('hidden');
-  document.getElementById('lineBody').innerHTML = `<div class="chg-list">${CATALOG.filter(c => c.group === groupId).map(c => {
+  document.getElementById('lineBody').innerHTML = `<div class="chg-list">${CATALOG.filter(c => c.group === groupId && inMode(c, s)).map(c => {
     const on = have.has(c.id);
-    return `<button type="button" data-add="${c.id}" ${on ? 'disabled' : ''}>${c.charge}${on ? ' · already on this shipment' : ''}<div class="sub">${c.uom}${c.extra ? ' · unquoted extra' : ''}</div></button>`;
+    return `<button type="button" data-add="${c.id}" ${on ? 'disabled' : ''}>${c.charge}${on ? ' · already on this shipment' : ''}<div class="sub">${c.uom} · not on the quote</div></button>`;
   }).join('')}</div>`;
 }
 
@@ -622,14 +896,19 @@ document.getElementById('lineBody').addEventListener('click', e => {
   if (cat) { showCatalogCharges(cat.dataset.cat); return; }
   const add = e.target.closest('[data-add]');
   if (!add || add.disabled) return;
-  const q = quote();
   const s = ship();
-  const line = enrich(fromCatalog(add.dataset.add), s, q);
-  if (!q.shipments[0].lines.some(l => l.id === line.id)) line.extra = true;
-  if (line.extra) { line.quoted = 0; line.expSell = 0; }
-  s.lines.push(line);
+  const line = fromCatalog(add.dataset.add);
+  line.added = true;
+  line.extra = true;
+  line.quoted = 0;
+  line.expSell = 0;
+  line.buyUnit = 0;
+  line.sellUnit = 0;
+  line.actual = null;
+  line.flag = null;
+  s.lines.push(enrich(line, s, quote()));
   document.getElementById('lineModal').classList.remove('open');
-  toast('Added ' + line.charge + ' from the catalog.');
+  toast('Added ' + line.charge + '. Not on the quote, so quoted / sell / buy stay empty.');
   render();
 });
 document.getElementById('tbody').addEventListener('change', e => {
@@ -642,7 +921,7 @@ document.getElementById('tbody').addEventListener('change', e => {
 });
 document.getElementById('tbody').addEventListener('click', e => {
   const flagBtn = e.target.closest('[data-flag]');
-  if (flagBtn) { openFlag(flagBtn.dataset.id, flagBtn.dataset.flag); return; }
+  if (flagBtn) { openFlag(flagBtn.dataset.id); return; }
   const res = e.target.closest('[data-resolve]');
   if (res) {
     const line = ship().lines.find(l => l.id === res.dataset.resolve);
@@ -653,6 +932,34 @@ document.getElementById('tbody').addEventListener('click', e => {
 ['vendor', 'invoiceNo', 'invoiceDate'].forEach(id => {
   document.getElementById(id).addEventListener('change', persistInvoice);
 });
+document.getElementById('uploadBtn').addEventListener('click', () => {
+  if (!ship()) { toast('Select a shipment first.'); return; }
+  document.getElementById('billFile').click();
+});
+document.getElementById('billFile').addEventListener('change', e => {
+  const s = ship();
+  if (!s) return;
+  const files = Array.from(e.target.files || []);
+  files.forEach(f => {
+    s.docs.push({
+      id: 'doc-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7),
+      name: f.name,
+      size: f.size,
+      when: new Date().toISOString().slice(0, 10),
+      kind: 'Vendor bill'
+    });
+  });
+  e.target.value = '';
+  if (files.length) toast(files.length + ' vendor bill' + (files.length === 1 ? '' : 's') + ' added to Documents.');
+  render();
+});
+document.getElementById('docs').addEventListener('click', e => {
+  const rm = e.target.closest('[data-doc-rm]');
+  if (!rm) return;
+  const s = ship();
+  s.docs = s.docs.filter(d => d.id !== rm.dataset.docRm);
+  render();
+});
 document.getElementById('saveBtn').addEventListener('click', () => {
   persistInvoice();
   const s = ship();
@@ -662,20 +969,13 @@ document.getElementById('saveBtn').addEventListener('click', () => {
   render();
 });
 
-function openFlag(lineId, type) {
+function openFlag(lineId) {
   const line = ship().lines.find(l => l.id === lineId);
-  pendingFlag = { lineId, type };
-  const isQuery = type === 'query';
-  document.getElementById('flagTitle').textContent = isQuery ? 'Mark query' : 'Mark dispute';
-  document.getElementById('flagWarn').textContent = isQuery
-    ? 'Query is internal. Confirm a billed value with Ops.'
-    : 'Dispute is a vendor challenge. Expected buy on the quote does not change.';
+  pendingFlag = { lineId };
   document.getElementById('flagMeta').innerHTML = `
     <div class="fld"><label>Charge</label><div class="v ro">${line.charge}</div></div>
-    <div class="fld"><label>Expected buy</label><div class="v ro">${money(line.quoted)}</div></div>
+    <div class="fld"><label>Buy rate</label><div class="v ro">${onQuote(line) ? money(line.quoted) : '-'}</div></div>
     <div class="fld"><label>Billed</label><div class="v ro">${money(line.actual)}</div></div>`;
-  document.getElementById('flagTo').value = line.group === 'destination' ? 'Dest Ops' : 'Origin Ops';
-  document.getElementById('flagTo').disabled = !isQuery;
   document.getElementById('flagNote').value = line.flag && line.flag.note ? line.flag.note : '';
   document.getElementById('flagModal').classList.add('open');
 }
@@ -684,10 +984,8 @@ document.getElementById('confirmFlag').addEventListener('click', () => {
   const note = document.getElementById('flagNote').value.trim();
   if (!note) { toast('Add a note.'); return; }
   const line = ship().lines.find(l => l.id === pendingFlag.lineId);
-  const isQuery = pendingFlag.type === 'query';
   line.flag = {
-    type: pendingFlag.type, note, by: PEOPLE[who].name, team: PEOPLE[who].team,
-    to: isQuery ? document.getElementById('flagTo').value : null, resolved: false
+    type: 'query', note, by: PEOPLE[who].name, team: PEOPLE[who].team, resolved: false
   };
   document.getElementById('flagModal').classList.remove('open');
   render();
