@@ -169,6 +169,11 @@
   .btn-primary { background: var(--brand-cta); color: var(--silq-white); border-color: var(--brand-cta); }
   .btn-primary:hover { background: var(--brand-hover); }
   .btn-tiny { height: 28px; font: var(--type-ui-small); padding: 0 8px; }
+  .btn-danger {
+    color: var(--error); border-color: var(--error); background: var(--silq-white);
+  }
+  .btn-danger:hover { background: var(--bg-error); }
+  .row-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
   .tag {
     display: inline-flex; align-items: center; gap: 4px;
     font: 400 12px/16px var(--font-body); padding: 2px 6px; border-radius: var(--radius-pill);
@@ -819,12 +824,15 @@ function varHtml(n) {
   return `<span class="${n > 0 ? 'over' : 'under'}">${n > 0 ? '+' : ''}${money(n)}</span>`;
 }
 function flagCell(l) {
-  if (!l.flag) {
-    return `<button type="button" class="btn btn-tiny" data-flag="query" data-id="${l.id}">Query</button>`;
-  }
-  return `<span class="tag tag-review">Query</span>${l.flag.resolved ? '<span class="tag tag-ok">Resolved</span>' : ''}
+  const query = !l.flag
+    ? `<button type="button" class="btn btn-tiny" data-flag="query" data-id="${l.id}">Query</button>`
+    : `<span class="tag tag-review">Query</span>${l.flag.resolved ? '<span class="tag tag-ok">Resolved</span>' : ''}
     <div class="sub">${l.flag.note}</div>
     ${l.flag.resolved ? '' : `<button type="button" class="btn btn-tiny" data-resolve="${l.id}">Resolve</button>`}`;
+  const remove = onQuote(l)
+    ? ''
+    : `<button type="button" class="btn btn-tiny btn-danger" data-rm-line="${l.id}">Remove</button>`;
+  return `<div class="row-actions">${query}${remove}</div>`;
 }
 
 function renderTable() {
@@ -868,7 +876,7 @@ function renderTable() {
         <td>
           <div class="charge">${l.charge}${quotedLine ? srcTag(l) : '<span class="tag tag-review">Not on quote</span>'}</div>
           <div class="sub">${quotedLine ? money(l.sellUnit) + ' sell / ' + l.uom : 'Added from catalog'}</div>
-          <div style="margin-top:4px;">${flagCell(l)}</div>
+          ${flagCell(l)}
         </td>
         <td class="num quoted">${quotedLine ? money(allSell) : '<span class="empty">-</span>'}${quotedLine ? '<div class="sub">' + q.shipments.length + ' shipments</div>' : ''}</td>
         <td class="num">${qtyCell}</td>
@@ -1028,7 +1036,17 @@ document.getElementById('tbody').addEventListener('click', e => {
     line.flag.resolved = true;
     pushHistory(ship(), 'Resolved query on ' + line.charge);
     render();
+    return;
   }
+  const rm = e.target.closest('[data-rm-line]');
+  if (!rm) return;
+  const s = ship();
+  const line = s.lines.find(l => l.id === rm.dataset.rmLine);
+  if (!line || onQuote(line)) return;
+  s.lines = s.lines.filter(l => l !== line);
+  pushHistory(s, 'Removed ' + line.charge + '. Was not on the quote.');
+  toast('Removed ' + line.charge + '. You can add it again from + Line if needed.');
+  render();
 });
 ['vendor', 'invoiceNo', 'invoiceDate'].forEach(id => {
   document.getElementById(id).addEventListener('change', persistInvoice);
