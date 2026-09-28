@@ -206,8 +206,14 @@
   tr.row-dispute { background: var(--bg-error); }
   .foot {
     display: grid; grid-template-columns: 1fr 1fr 1fr auto auto; gap: 12px; align-items: end;
-    padding: 16px; border-top: 1px solid var(--border);
   }
+  .hist-row {
+    display: grid; grid-template-columns: 168px 1fr; gap: 12px;
+    padding: 10px 0; border-top: 1px solid var(--border-light);
+  }
+  .hist-row:first-child { border-top: 0; padding-top: 0; }
+  .hist-when { font: var(--type-content-small); color: var(--text-secondary); }
+  .hist-text { font: var(--type-content-normal); color: var(--silq-navy); }
   .doc-row {
     display: grid; grid-template-columns: 36px 1fr auto auto; gap: 12px; align-items: center;
     padding: 10px 12px; border: 1px solid var(--border); border-radius: 5px;
@@ -286,6 +292,7 @@
     <p class="lede">Select a quote, then a shipment, then who is working the file.</p>
 
     <div class="card">
+      <div class="card-hd"><h2>Quote & Shipment</h2></div>
       <div class="card-bd">
         <div class="pick">
           <div class="fld">
@@ -306,13 +313,14 @@
 
     <div id="after" class="hidden">
       <div class="card">
-        <div class="card-hd"><h2>This shipment</h2></div>
+        <div class="card-hd"><h2>Shipment details</h2></div>
         <div class="card-bd">
           <div class="facts" id="facts"></div>
         </div>
       </div>
 
       <div class="card">
+        <div class="card-hd"><h2>Charge summaries</h2></div>
         <div class="card-bd" id="kpis"></div>
       </div>
 
@@ -337,18 +345,29 @@
           </thead>
           <tbody id="tbody"></tbody>
         </table>
-        <div class="foot">
-          <div class="fld"><label>Vendor</label><input class="input" id="vendor"></div>
-          <div class="fld"><label>Invoice #</label><input class="input" id="invoiceNo"></div>
-          <div class="fld"><label>Date</label><input class="input" id="invoiceDate" type="date"></div>
-          <button class="btn" type="button" id="uploadBtn">Upload vendor bill</button>
-          <button class="btn btn-primary" type="button" id="saveBtn">Save on this shipment</button>
+      </div>
+
+      <div class="card">
+        <div class="card-hd"><h2>Vendor details</h2></div>
+        <div class="card-bd">
+          <div class="foot">
+            <div class="fld"><label>Vendor</label><input class="input" id="vendor"></div>
+            <div class="fld"><label>Invoice #</label><input class="input" id="invoiceNo"></div>
+            <div class="fld"><label>Date</label><input class="input" id="invoiceDate" type="date"></div>
+            <button class="btn" type="button" id="uploadBtn">Upload vendor bill</button>
+            <button class="btn btn-primary" type="button" id="saveBtn">Save on this shipment</button>
+          </div>
         </div>
       </div>
 
       <div class="card">
         <div class="card-hd"><h2>Documents</h2></div>
         <div class="card-bd" id="docs"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd"><h2>Edit history</h2></div>
+        <div class="card-bd" id="history"></div>
       </div>
     </div>
   </div>
@@ -499,7 +518,15 @@ const QUOTES = [
         detDays: 0, quoteDetDays: 0, demDays: 0, quoteDemDays: 0,
         gatedIn: '2026-08-12', etd: '2026-08-20', eta: '2026-09-12',
         lines: APEX_IDS.map(fromCatalog), originEntered: true,
-        docs: [{ id: 'd-apex-1', name: 'Yantian-origin-invoice.pdf', size: 184320, when: '2026-08-13', kind: 'Vendor bill' }]
+        docs: [{ id: 'd-apex-1', name: 'Yantian-origin-invoice.pdf', size: 184320, when: '2026-08-13', kind: 'Vendor bill' }],
+        history: [
+          { at: '2026-08-13T11:30:00', by: 'Priya Shah', team: 'FinOps', text: 'Uploaded vendor bill Yantian-origin-invoice.pdf' },
+          { at: '2026-08-13T11:24:00', by: 'Priya Shah', team: 'FinOps', text: 'Peak season surcharge billed $150. Not on the quote, so this is all extra cost.' },
+          { at: '2026-08-13T11:22:00', by: 'Priya Shah', team: 'FinOps', text: 'Query on Origin Terminal Handling: billed $170 vs buy $155' },
+          { at: '2026-08-13T11:20:00', by: 'Priya Shah', team: 'FinOps', text: 'Origin Terminal Handling billed set to $170' },
+          { at: '2026-08-13T11:18:00', by: 'Priya Shah', team: 'FinOps', text: 'Origin cartage and Documentation billed from sheet' },
+          { at: '2026-08-12T09:10:00', by: 'System', team: 'Tasks', text: 'Gated in recorded' }
+        ]
       },
       {
         id: 'shp-02', shipId: 'SHP-482910-02', mode: 'FCL', incoterm: 'EXW', coverage: 'D2D',
@@ -508,7 +535,10 @@ const QUOTES = [
         cbm: 61, quoteCbm: 61, kg: 7900, quoteKg: 7900,
         detDays: 0, quoteDetDays: 0, demDays: 0, quoteDemDays: 0,
         gatedIn: '2026-08-18', etd: '2026-08-27', eta: '2026-09-18',
-        lines: APEX_IDS.map(fromCatalog)
+        lines: APEX_IDS.map(fromCatalog),
+        history: [
+          { at: '2026-08-18T08:40:00', by: 'System', team: 'Tasks', text: 'Gated in recorded' }
+        ]
       }
     ]
   },
@@ -520,7 +550,10 @@ const QUOTES = [
       vendorHint: 'Ocean Network Express', shipQty: 1, quoteShipQty: 1, hblQty: 1, quoteHbl: 1,
       cbm: 54, quoteCbm: 54, kg: 7600, quoteKg: 7600,
       detDays: 0, quoteDetDays: 0, demDays: 0, quoteDemDays: 0,
-      gatedIn: '2026-05-08', etd: '2026-05-14', eta: '2026-06-04',
+        gatedIn: '2026-05-08', etd: '2026-05-14', eta: '2026-06-04',
+        history: [
+          { at: '2026-05-08T10:00:00', by: 'System', team: 'Tasks', text: 'Gated in recorded' }
+        ],
       lines: VANDELAY_IDS.map(id => {
         const l = fromCatalog(id);
         if (id === 'of40') { l.buyUnit = 2450; l.sellUnit = 3180; }
@@ -537,6 +570,11 @@ const QUOTES = [
       cbm: 12.4, quoteCbm: 12, kg: 3180, quoteKg: 2900,
       detDays: 0, quoteDetDays: 0, demDays: 0, quoteDemDays: 0,
       gatedIn: '2026-07-22', etd: '2026-07-28', eta: '2026-08-18',
+      history: [
+        { at: '2026-07-23T14:10:00', by: 'Priya Shah', team: 'FinOps', text: 'Query on Origin Terminal Handling: billed $240 vs buy on quote CBM' },
+        { at: '2026-07-23T14:05:00', by: 'Priya Shah', team: 'FinOps', text: 'Ocean Freight and Origin CFS billed on HBL CBM' },
+        { at: '2026-07-22T09:00:00', by: 'System', team: 'Tasks', text: 'Gated in recorded' }
+      ],
       lines: LCL_IDS.map(fromCatalog), originEntered: true
     }]
   },
@@ -549,6 +587,11 @@ const QUOTES = [
       cbm: 2.1, quoteCbm: 1.9, kg: 448, quoteKg: 420,
       detDays: 0, quoteDetDays: 0, demDays: 0, quoteDemDays: 0,
       gatedIn: '2026-09-04', etd: '2026-09-05', eta: '2026-09-06',
+      history: [
+        { at: '2026-09-05T16:40:00', by: 'Priya Shah', team: 'FinOps', text: 'Query on Airway Bill (AWB): billed $80 vs buy $45' },
+        { at: '2026-09-05T16:35:00', by: 'Priya Shah', team: 'FinOps', text: 'Air Freight billed on HBL kg' },
+        { at: '2026-09-04T07:15:00', by: 'System', team: 'Tasks', text: 'Gated in recorded' }
+      ],
       lines: AIR_IDS.map(fromCatalog), originEntered: true
     }]
   }
@@ -563,7 +606,13 @@ function money(n) {
 }
 function fmtDate(iso) {
   if (!iso) return 'Not set';
-  return new Date(iso + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  const d = iso.length <= 10 ? new Date(iso + 'T00:00:00') : new Date(iso);
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+function fmtWhen(iso) {
+  if (!iso) return '';
+  const d = iso.length <= 10 ? new Date(iso + 'T00:00:00') : new Date(iso);
+  return d.toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
 let quoteId = '';
@@ -590,8 +639,16 @@ function runBuy(l) {
   if (!onQuote(l)) return l.actual == null || l.actual === '' ? 0 : Number(l.actual);
   return l.actual == null || l.actual === '' ? Number(l.quoted || 0) : Number(l.actual);
 }
+function lineVar(l) {
+  if (l.actual == null || l.actual === '') return null;
+  if (!onQuote(l)) return Number(l.actual);
+  return Number(l.actual) - Number(l.quoted || 0);
+}
 function lineGp(l) {
-  if (!onQuote(l)) return null;
+  if (!onQuote(l)) {
+    if (l.actual == null || l.actual === '') return null;
+    return -Number(l.actual);
+  }
   return Number(l.expSell || 0) - runBuy(l);
 }
 function buyRate(l) {
@@ -614,6 +671,7 @@ function quoteAllSell(l, q) {
 function ensure(s) {
   if (!s.invoice) s.invoice = { vendor: s.vendorHint || '', invoiceNo: '', invoiceDate: '', saved: false };
   if (!s.docs) s.docs = [];
+  if (!s.history) s.history = [];
   if (s.seeded) return;
   s.seeded = true;
   if (s.originEntered && s.mode === 'FCL') {
@@ -627,6 +685,17 @@ function ensure(s) {
       othc.flag = { type: 'query', note: 'Billed $170 vs buy rate $155.', by: 'Priya Shah', team: 'FinOps', resolved: false };
     }
     s.invoice.vendor = 'Yantian origin agent';
+    if (s.id === 'shp-01' && !s.lines.some(l => l.id === 'pss' && l.added)) {
+      const extra = fromCatalog('pss');
+      extra.added = true;
+      extra.extra = true;
+      extra.quoted = 0;
+      extra.expSell = 0;
+      extra.buyUnit = 0;
+      extra.sellUnit = 0;
+      extra.actual = 150;
+      s.lines.push(enrich(extra, s, quote()));
+    }
   }
   if (s.id === 'shp-lcl') {
     const of = s.lines.find(l => l.id === 'oflcl');
@@ -665,14 +734,13 @@ function totals(s, q) {
   const buy = quoted.reduce((n, l) => n + Number(l.quoted || 0), 0);
   const withA = lines.filter(l => l.actual !== null && l.actual !== '');
   const billed = withA.reduce((n, l) => n + Number(l.actual || 0), 0);
-  const billedBuy = withA.filter(onQuote).reduce((n, l) => n + Number(l.quoted || 0), 0);
-  const billedOnQuote = withA.filter(onQuote);
-  const run = quoted.reduce((n, l) => n + runBuy(l), 0);
+  const run = lines.reduce((n, l) => n + runBuy(l), 0);
   const qSell = quoted.reduce((n, l) => n + (quoteAllSell(l, q) || 0), 0);
+  const vars = withA.map(lineVar).filter(v => v != null);
   return {
     actualSell, buy,
     billed, billedN: withA.length, n: lines.length,
-    variance: billedOnQuote.length ? billedOnQuote.reduce((n, l) => n + Number(l.actual || 0), 0) - billedBuy : null,
+    variance: vars.length ? vars.reduce((n, v) => n + v, 0) : null,
     gp: actualSell - run,
     qSell, shipments: q.shipments.length
   };
@@ -769,7 +837,7 @@ function renderTable() {
       const quotedLine = onQuote(l);
       const allSell = quotedLine ? quoteAllSell(l, q) : null;
       const buy = buyRate(l);
-      const costVar = !quotedLine || l.actual == null || l.actual === '' ? null : Number(l.actual) - Number(l.quoted || 0);
+      const costVar = lineVar(l);
       const gp = lineGp(l);
       const qQty = quoteQtyOf(l, s);
       const fQty = fileQtyOf(l, s);
@@ -788,8 +856,14 @@ function renderTable() {
         ? '<span class="empty">-</span>'
         : (l.grain === 'per_quote' && !l.expSell ? '<span class="empty">Other shipment</span>' : money(l.expSell));
       const buyCell = !quotedLine
-        ? '<span class="empty">-</span>'
+        ? '<span class="empty">-</span><div class="sub">No buy on quote</div>'
         : `${money(buy)}<div class="sub">markup ${money(markupOf(l))}</div>`;
+      const varCell = costVar == null
+        ? '<span class="empty">-</span>'
+        : varHtml(costVar) + (!quotedLine ? '<div class="sub">Off quote, all extra</div>' : '');
+      const gpCell = gp == null
+        ? '<span class="empty">-</span>'
+        : (gp < -0.5 ? `<span class="over">${money(gp)}</span>` : money(gp)) + (!quotedLine ? '<div class="sub">No sell to offset</div>' : '');
       return `<tr class="${rowCls}">
         <td>
           <div class="charge">${l.charge}${quotedLine ? srcTag(l) : '<span class="tag tag-review">Not on quote</span>'}</div>
@@ -801,8 +875,8 @@ function renderTable() {
         <td class="num quoted">${sellCell}</td>
         <td class="num quoted">${buyCell}</td>
         <td class="num"><input class="money" data-id="${l.id}" value="${l.actual == null ? '' : l.actual}" placeholder="-"></td>
-        <td class="num">${quotedLine ? varHtml(costVar) : '<span class="empty">-</span>'}</td>
-        <td class="num">${quotedLine && gp != null ? money(gp) : '<span class="empty">-</span>'}</td>
+        <td class="num">${varCell}</td>
+        <td class="num">${gpCell}</td>
       </tr>`;
     }).join('');
   }).join('');
@@ -830,6 +904,26 @@ function renderDocs() {
   ).join('');
 }
 
+function pushHistory(s, text) {
+  if (!s.history) s.history = [];
+  const p = PEOPLE[who] || { name: 'System', team: '' };
+  s.history.unshift({ at: new Date().toISOString(), by: p.name, team: p.team, text });
+}
+
+function renderHistory() {
+  const s = ship();
+  if (!s.history || !s.history.length) {
+    document.getElementById('history').innerHTML = '<p class="hint">No edits on this shipment yet. Billed changes, queries, uploads, and saves land here.</p>';
+    return;
+  }
+  document.getElementById('history').innerHTML = s.history.map(h =>
+    `<div class="hist-row">
+      <div class="hist-when">${fmtWhen(h.at)}<div class="sub">${h.by}${h.team ? ' · ' + h.team : ''}</div></div>
+      <div class="hist-text">${h.text}</div>
+    </div>`
+  ).join('');
+}
+
 function persistInvoice() {
   const s = ship();
   if (!s || !s.invoice) return;
@@ -848,6 +942,7 @@ function render() {
   renderKpis();
   renderTable();
   renderDocs();
+  renderHistory();
   document.getElementById('vendor').value = s.invoice.vendor || '';
   document.getElementById('invoiceNo').value = s.invoice.invoiceNo || '';
   document.getElementById('invoiceDate').value = s.invoice.invoiceDate || '';
@@ -907,16 +1002,21 @@ document.getElementById('lineBody').addEventListener('click', e => {
   line.actual = null;
   line.flag = null;
   s.lines.push(enrich(line, s, quote()));
+  pushHistory(s, 'Added ' + line.charge + ' from catalog. Not on the quote.');
   document.getElementById('lineModal').classList.remove('open');
-  toast('Added ' + line.charge + '. Not on the quote, so quoted / sell / buy stay empty.');
+  toast('Added ' + line.charge + '. Billed on this line is all extra cost.');
   render();
 });
 document.getElementById('tbody').addEventListener('change', e => {
   const inp = e.target.closest('[data-id]');
   if (!inp) return;
   const line = ship().lines.find(l => l.id === inp.dataset.id);
+  const prev = line.actual;
   line.actual = inp.value === '' ? null : Number(inp.value);
   persistInvoice();
+  const after = line.actual == null ? 'cleared' : money(line.actual);
+  const before = prev == null || prev === '' ? 'empty' : money(prev);
+  pushHistory(ship(), line.charge + ' billed ' + before + ' to ' + after + (onQuote(line) ? '' : '. Not on quote, extra cost.'));
   render();
 });
 document.getElementById('tbody').addEventListener('click', e => {
@@ -926,6 +1026,7 @@ document.getElementById('tbody').addEventListener('click', e => {
   if (res) {
     const line = ship().lines.find(l => l.id === res.dataset.resolve);
     line.flag.resolved = true;
+    pushHistory(ship(), 'Resolved query on ' + line.charge);
     render();
   }
 });
@@ -948,6 +1049,7 @@ document.getElementById('billFile').addEventListener('change', e => {
       when: new Date().toISOString().slice(0, 10),
       kind: 'Vendor bill'
     });
+    pushHistory(s, 'Uploaded vendor bill ' + f.name);
   });
   e.target.value = '';
   if (files.length) toast(files.length + ' vendor bill' + (files.length === 1 ? '' : 's') + ' added to Documents.');
@@ -957,7 +1059,9 @@ document.getElementById('docs').addEventListener('click', e => {
   const rm = e.target.closest('[data-doc-rm]');
   if (!rm) return;
   const s = ship();
+  const doc = s.docs.find(d => d.id === rm.dataset.docRm);
   s.docs = s.docs.filter(d => d.id !== rm.dataset.docRm);
+  if (doc) pushHistory(s, 'Removed vendor bill ' + doc.name);
   render();
 });
 document.getElementById('saveBtn').addEventListener('click', () => {
@@ -965,6 +1069,7 @@ document.getElementById('saveBtn').addEventListener('click', () => {
   const s = ship();
   s.invoice.saved = true;
   if (!s.invoice.invoiceNo) s.invoice.invoiceNo = 'VB-' + s.shipId.slice(-2);
+  pushHistory(s, 'Saved billed on this shipment. Vendor ' + (s.invoice.vendor || '-') + ', invoice ' + (s.invoice.invoiceNo || '-') + '.');
   toast('Saved billed on ' + s.shipId + '. ' + quote().quoteId + ' unchanged.');
   render();
 });
@@ -987,6 +1092,7 @@ document.getElementById('confirmFlag').addEventListener('click', () => {
   line.flag = {
     type: 'query', note, by: PEOPLE[who].name, team: PEOPLE[who].team, resolved: false
   };
+  pushHistory(ship(), 'Query on ' + line.charge + ': ' + note);
   document.getElementById('flagModal').classList.remove('open');
   render();
 });
