@@ -439,6 +439,8 @@
       background: var(--gray-300);
     }
     .rail-status { display: flex; justify-content: space-between; align-items: center; }
+    .head-actions { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+    .head-actions .variant-switch { margin-top: 0; }
     .variant-switch {
       display: inline-flex;
       gap: 2px;
@@ -470,6 +472,52 @@
       padding-top: 14px;
       border-top: 1px solid var(--gray-200);
     }
+    .scope {
+      display: inline-flex;
+      align-items: center;
+      height: 22px;
+      padding: 0 8px;
+      border-radius: 5px;
+      margin-right: 8px;
+      background: var(--gray-150);
+      color: var(--gray-700);
+      font-size: 12px;
+      font-weight: 600;
+      vertical-align: middle;
+    }
+    .na-note {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid var(--gray-200);
+      font-size: 12px;
+      line-height: 16px;
+      color: var(--gray-600);
+    }
+    .quote-wrap { padding: 24px 32px 40px; }
+    .quote-sheet {
+      max-width: 720px;
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      padding: 28px 32px 32px;
+      background: white;
+    }
+    .quote-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+    .quote-brand { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; color: #1e2a4a; }
+    .quote-id { font-size: 18px; font-weight: 700; }
+    .quote-route {
+      margin-top: 8px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--gray-200);
+      color: var(--gray-600);
+      font-size: 13px;
+    }
+    .quote-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px 24px;
+      padding: 16px 0;
+    }
+    .quote-total { font-size: 20px; font-weight: 700; }
 
     .kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
     .kpi { background: var(--gray-100); border-radius: 8px; padding: 16px; }
@@ -574,10 +622,10 @@
   </div>
   <script>
     const CAPACITY = {
-      "20 GP": { weightKg: 25000, volumeM3: 33.2 },
-      "40 GP": { weightKg: 30480, volumeM3: 67.7 },
-      "40 HC": { weightKg: 28850, volumeM3: 76.3 },
-      FTL: { weightKg: 20000, volumeM3: 25 },
+      "20 GP": { weightKg: 25000, volumeM3: 33.2, rate: 3500 },
+      "40 GP": { weightKg: 30480, volumeM3: 67.7, rate: 5200 },
+      "40 HC": { weightKg: 28850, volumeM3: 76.3, rate: 5600 },
+      FTL: { weightKg: 20000, volumeM3: 25, rate: 2800 },
     };
 
     const SHIPMENTS = [
@@ -620,26 +668,34 @@
         { item: "Tiles", weightKg: 6000, volumeM3: 7 },
         { item: "Sanitaryware", weightKg: 2000, volumeM3: 3 },
       ]},
+      { id: "SHP-009", silqId: "SILQ-2026-001968", origin: "Shanghai", destination: "Los Angeles", container: "LCL", cargo: "Samples", crd: "19 October", status: "Pending", lines: [] },
     ];
 
     function derive(input) {
+      if (input.container === "LCL" || input.container === "AIR") {
+        return { ...input, applicable: false };
+      }
       const cap = CAPACITY[input.container];
       const actualWeight = input.lines.reduce((sum, line) => sum + line.weightKg, 0);
       const actualVolume = input.lines.reduce((sum, line) => sum + line.volumeM3, 0);
       const weightPct = (actualWeight / cap.weightKg) * 100;
       const volumePct = (actualVolume / cap.volumeM3) * 100;
+      const overallPct = Math.max(weightPct, volumePct);
       return {
         ...input,
+        applicable: true,
         actualWeight,
         actualVolume,
         maxWeight: cap.weightKg,
         maxVolume: cap.volumeM3,
+        rate: cap.rate,
         weightPct,
         volumePct,
-        overallPct: Math.max(weightPct, volumePct),
+        overallPct,
         constraint: weightPct > volumePct ? "weight" : "volume",
         remainingWeight: cap.weightKg - actualWeight,
         remainingVolume: cap.volumeM3 - actualVolume,
+        unusedCost: cap.rate * (1 - overallPct / 100),
       };
     }
 
@@ -662,6 +718,10 @@
       const rounded = Math.round(value * 10) / 10;
       return (Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1)) + "%";
     }
+    function formatMoney(value) {
+      return "$" + Math.round(value).toLocaleString("en-US");
+    }
+    const APPLICABLE = () => DATA.filter((shipment) => shipment.applicable);
     function bandColor(pct) {
       if (pct >= 91) return "var(--band-full)";
       if (pct >= 76) return "var(--band-high)";
@@ -672,7 +732,11 @@
       return pct >= 91 ? "var(--band-full)" : "var(--success-500)";
     }
     function modeLabel(container) {
-      return container === "FTL" ? "FTL" : "FCL " + container;
+      if (container === "FTL" || container === "LCL" || container === "AIR") return container;
+      return "FCL " + container;
+    }
+    function unusedLine(shipment) {
+      return constraintLabel(shipment.constraint) + " · " + formatMoney(shipment.unusedCost) + " unused of " + formatMoney(shipment.rate);
     }
     function constraintLabel(constraint) {
       return constraint === "volume" ? "Volume constrained" : "Weight constrained";
@@ -684,9 +748,9 @@
     }
     function recommendation(shipment) {
       if (shipment.constraint === "volume") {
-        return "This shipment is limited by volume. You have " + formatKg(shipment.remainingWeight) + " of weight capacity available but only " + formatM3(shipment.remainingVolume) + " of space. Consider repackaging or deferring heavier items.";
+        return "This shipment is limited by volume. You have " + formatKg(shipment.remainingWeight) + " of weight capacity available but only " + formatM3(shipment.remainingVolume) + " of space. Consider repackaging or deferring heavier items. Unused capacity on this quote is " + formatMoney(shipment.unusedCost) + " of " + formatMoney(shipment.rate) + ".";
       }
-      return "This shipment is limited by weight. You have " + formatM3(shipment.remainingVolume) + " of space available but only " + formatKg(shipment.remainingWeight) + " of weight capacity. Consider splitting dense cargo onto another shipment.";
+      return "This shipment is limited by weight. You have " + formatM3(shipment.remainingVolume) + " of space available but only " + formatKg(shipment.remainingWeight) + " of weight capacity. Consider splitting dense cargo onto another shipment. Unused capacity on this quote is " + formatMoney(shipment.unusedCost) + " of " + formatMoney(shipment.rate) + ".";
     }
     function bar(pct, color, size) {
       const width = Math.max(0, Math.min(100, pct));
@@ -707,37 +771,52 @@
       return DATA.find((shipment) => shipment.id === state.id) || DATA[0];
     }
 
+    function cardHead(shipment) {
+      return (
+        '<div class="card-top"><div>' +
+          '<div class="silq-id">' + esc(shipment.silqId) + "</div>" +
+          '<div class="card-title">' + esc(shipment.origin) + " &gt; " + esc(shipment.destination) + " · " + esc(shipment.cargo) + "</div>" +
+          '<div class="card-meta">1×' + esc(shipment.container) + " · CRD " + esc(shipment.crd) + " · " + esc(modeLabel(shipment.container)) + "</div>" +
+        "</div><span class=\"pill " + pillClass(shipment.status) + "\">" + esc(shipment.status) + "</span></div>"
+      );
+    }
     function renderList() {
       const cards = DATA.map((shipment) => {
+        if (!shipment.applicable) {
+          return (
+            '<button class="card" type="button" data-go="detail" data-id="' + shipment.id + '">' +
+              cardHead(shipment) +
+              '<div class="na-note">Utilization is calculated for FCL and FTL only.</div>' +
+            "</button>"
+          );
+        }
         const color = bandColor(shipment.overallPct);
-        const remaining = shipment.constraint === "volume"
-          ? formatM3(shipment.remainingVolume) + " remaining"
-          : formatKg(shipment.remainingWeight) + " remaining";
         return (
           '<button class="card" type="button" data-go="detail" data-id="' + shipment.id + '">' +
-            '<div class="card-top"><div>' +
-              '<div class="silq-id">' + esc(shipment.silqId) + "</div>" +
-              '<div class="card-title">' + esc(shipment.origin) + " &gt; " + esc(shipment.destination) + " · " + esc(shipment.cargo) + "</div>" +
-              '<div class="card-meta">1×' + esc(shipment.container) + " · CRD " + esc(shipment.crd) + " · " + esc(modeLabel(shipment.container)) + "</div>" +
-            "</div><span class=\"pill " + pillClass(shipment.status) + "\">" + esc(shipment.status) + "</span></div>" +
-            '<div class="metrics">' +
-              '<div><div class="k">Container type</div><div class="v">' + esc(modeLabel(shipment.container)) + "</div></div>" +
-              '<div><div class="k">Weight</div><div class="v">' + formatKg(shipment.actualWeight).replace(" kg", "") + " / " + formatKg(shipment.maxWeight) + "</div></div>" +
-              '<div><div class="k">Volume</div><div class="v">' + formatM3(shipment.actualVolume).replace(" m³", "") + " / " + formatM3(shipment.maxVolume) + "</div></div>" +
-            "</div>" +
+            cardHead(shipment) +
             '<div class="util">' +
               '<div class="util-row"><span class="util-label">Overall utilization</span><span class="util-pct" style="color:' + color + '">' + formatPct(shipment.overallPct) + "</span></div>" +
               bar(shipment.overallPct, color) +
-              '<div class="util-note">' + constraintLabel(shipment.constraint) + " · " + remaining + "</div>" +
+              '<div class="util-note">' + unusedLine(shipment) + "</div>" +
             "</div>" +
           "</button>"
         );
       }).join("");
       return (
         '<div class="page">' +
-          '<p class="lede">Overall utilization is the higher of weight and volume, so the constraint is visible on the shipment card.</p>' +
+          '<p class="lede"><span class="scope">FCL and FTL</span> Every card leads with overall utilization: the higher of the RFQ weight and volume, each divided by that container’s capacity. The line under the bar is unused quote cost, the same unit on every card.</p>' +
           '<div class="stack">' + cards + "</div>" +
           legend() +
+        "</div>"
+      );
+    }
+    function overallBlock(shipment) {
+      const color = bandColor(shipment.overallPct);
+      return (
+        '<div class="metric-block">' +
+          '<div class="split-head"><span class="metric-label">Overall utilization</span><span class="metric-value" style="color:' + color + '">' + formatPct(shipment.overallPct) + "</span></div>" +
+          bar(shipment.overallPct, color, "lg") +
+          '<div class="util-note">' + unusedLine(shipment) + "</div>" +
         "</div>"
       );
     }
@@ -771,6 +850,14 @@
 
     function renderDetail() {
       const shipment = selected();
+      if (!shipment.applicable) {
+        return (
+          '<div class="detail"><div class="detail-main"><div class="section">' +
+            "<h2>Container utilization</h2>" +
+            '<p class="lede">Utilization is calculated for FCL and FTL only. This shipment is ' + esc(shipment.container) + ".</p>" +
+          "</div></div></div>"
+        );
+      }
       const inOverview = state.detailVariant === "overview";
       const rows = shipment.lines.map((line) =>
         "<tr><td>" + esc(line.item) + '</td><td class="num">' + formatKg(line.weightKg) + '</td><td class="num">' + formatM3(line.volumeM3) + "</td></tr>"
@@ -788,20 +875,23 @@
             '<div class="ship-head">' +
               '<div class="ship-id">' + esc(shipment.silqId) + "</div>" +
               '<div class="ship-sub">Meridian Home · ' + esc(shipment.origin) + " to " + esc(shipment.destination) + " · " + esc(shipment.cargo) + "</div>" +
-              '<div class="variant-switch">' +
-                '<button type="button" data-go="variant" data-variant="page"' + (inOverview ? "" : ' class="is-selected"') + ">Details section</button>" +
-                '<button type="button" data-go="variant" data-variant="overview"' + (inOverview ? ' class="is-selected"' : "") + ">Overview card</button>" +
+              '<div class="head-actions">' +
+                '<div class="variant-switch">' +
+                  '<button type="button" data-go="variant" data-variant="page"' + (inOverview ? "" : ' class="is-selected"') + ">Details section</button>" +
+                  '<button type="button" data-go="variant" data-variant="overview"' + (inOverview ? ' class="is-selected"' : "") + ">Overview card</button>" +
+                "</div>" +
+                '<button class="btn btn-secondary" type="button" data-go="quote">Quote PDF</button>' +
               "</div>" +
             "</div>" +
             '<div class="tabs"><span class="tab is-selected">Details</span><span class="tab">Milestones</span><span class="tab">Documents</span><span class="tab">Products</span></div>' +
             '<div class="section">' +
-              (inOverview ? "" : "<h2>Container utilization</h2>" + utilizationBars(shipment) + constraintCallout(shipment)) +
+              (inOverview ? "" : "<h2>Container utilization</h2>" + overallBlock(shipment) + utilizationBars(shipment) + constraintCallout(shipment)) +
               "<h2>Cargo breakdown</h2>" +
               '<div class="table-wrap"><table><thead><tr><th>Item</th><th class="num">Weight</th><th class="num">Volume</th></tr></thead><tbody>' +
                 rows +
                 '<tr class="total"><td>Total</td><td class="num">' + formatKg(shipment.actualWeight) + '</td><td class="num">' + formatM3(shipment.actualVolume) + "</td></tr>" +
               "</tbody></table></div>" +
-              '<p class="caption">' + esc(shipment.id) + " · overall " + formatPct(shipment.overallPct) + " = max(weight, volume) · " + esc(modeLabel(shipment.container)) + " capacity " + formatKg(shipment.maxWeight) + " / " + formatM3(shipment.maxVolume) + "</p>" +
+              '<p class="caption">' + esc(shipment.id) + " · overall " + formatPct(shipment.overallPct) + " = max(RFQ weight ÷ " + formatKg(shipment.maxWeight) + ", RFQ volume ÷ " + formatM3(shipment.maxVolume) + ") · quoted " + formatMoney(shipment.rate) + "</p>" +
             "</div>" +
           "</div>" +
           '<aside class="detail-rail">' +
@@ -814,7 +904,7 @@
                   '<div class="route-line"></div>' +
                   '<div class="route-node"><span class="dot"></span><div><div class="k">Destination</div><div class="v">' + esc(shipment.destination) + "</div></div></div>" +
                 "</div>" +
-                (inOverview ? '<div class="overview-util">' + utilizationBars(shipment) + "</div>" : "") +
+                (inOverview ? '<div class="overview-util">' + overallBlock(shipment) + utilizationBars(shipment) + "</div>" : "") +
               "</div>" +
             "</div>" +
             '<div class="rail-status"><span class="k">Execution</span><span class="pill ' + pillClass(shipment.status) + '">' + esc(shipment.status) + "</span></div>" +
@@ -824,17 +914,23 @@
     }
 
     function renderAnalytics() {
-      const filtered = DATA.filter((shipment) => state.filter === "all" || shipment.constraint === state.filter);
+      const applicable = APPLICABLE();
+      const filtered = applicable.filter((shipment) => state.filter === "all" || shipment.constraint === state.filter);
       const rows = filtered.slice().sort((a, b) => state.sort === "desc" ? b.overallPct - a.overallPct : a.overallPct - b.overallPct);
-      const avg = (key) => DATA.reduce((sum, shipment) => sum + shipment[key], 0) / DATA.length;
+      const avg = (key) => applicable.reduce((sum, shipment) => sum + shipment[key], 0) / applicable.length;
+      const spend = applicable.reduce((sum, shipment) => sum + shipment.rate, 0);
+      const unused = applicable.reduce((sum, shipment) => sum + shipment.unusedCost, 0);
+      const savings = applicable.filter((shipment) => shipment.overallPct < 76).reduce((sum, shipment) => sum + shipment.unusedCost, 0);
       const body = rows.map((shipment) => {
         const overall = bandColor(shipment.overallPct);
         return (
           '<tr class="click-row" data-go="detail" data-id="' + shipment.id + '">' +
             '<td><div class="id-cell"><strong>' + esc(shipment.id) + "</strong><span>" + esc(shipment.origin) + "</span></div></td>" +
+            '<td class="num"><span class="overall" style="color:' + overall + '">' + formatPct(shipment.overallPct) + "</span></td>" +
+            '<td class="num">' + formatMoney(shipment.rate) + "</td>" +
+            '<td class="num">' + formatMoney(shipment.unusedCost) + "</td>" +
             '<td><div class="bar-cell">' + bar(shipment.weightPct, weightColor(shipment.weightPct), "mini") + "<span>" + formatPct(shipment.weightPct) + "</span></div></td>" +
             '<td><div class="bar-cell">' + bar(shipment.volumePct, bandColor(shipment.volumePct), "mini") + "<span>" + formatPct(shipment.volumePct) + "</span></div></td>" +
-            '<td class="num"><span class="overall" style="color:' + overall + '">' + formatPct(shipment.overallPct) + "</span></td>" +
             '<td><span class="badge badge-' + shipment.constraint + '">' + (shipment.constraint === "weight" ? "Weight" : "Volume") + "</span></td>" +
             '<td><span class="status-text">' + esc(shipment.status) + "</span></td>" +
           "</tr>"
@@ -846,15 +942,15 @@
       return (
         '<div class="page">' +
           '<div class="analytics-tabs">' + tabs + "</div>" +
-          '<p class="lede">Portfolio util is the average of each shipment’s overall utilization. Overall is the maximum of that shipment’s weight and volume.</p>' +
+          '<p class="lede">FCL and FTL only. Portfolio util is the average overall utilization. Unused capacity is the quoted rate times the unused share. Potential savings is that unused cost on shipments under 76%.</p>' +
           '<div class="kpis">' +
-            '<div class="kpi"><div class="k">Avg weight util</div><div class="n">' + formatPct(avg("weightPct")) + "</div></div>" +
-            '<div class="kpi"><div class="k">Avg volume util</div><div class="n">' + formatPct(avg("volumePct")) + "</div></div>" +
             '<div class="kpi"><div class="k">Portfolio util</div><div class="n">' + formatPct(avg("overallPct")) + "</div></div>" +
-            '<div class="kpi"><div class="k">Total shipments</div><div class="n">' + DATA.length + "</div></div>" +
+            '<div class="kpi"><div class="k">Quoted spend</div><div class="n">' + formatMoney(spend) + "</div></div>" +
+            '<div class="kpi"><div class="k">Unused capacity</div><div class="n">' + formatMoney(unused) + "</div></div>" +
+            '<div class="kpi"><div class="k">Potential savings</div><div class="n">' + formatMoney(savings) + "</div></div>" +
           "</div>" +
           '<div class="toolbar">' +
-            '<span class="caption">Showing ' + rows.length + " of " + DATA.length + " shipments</span>" +
+            '<span class="caption">Showing ' + rows.length + " of " + applicable.length + " FCL and FTL shipments</span>" +
             '<div class="toolbar-actions">' +
               '<button class="btn btn-secondary" type="button" data-go="sort">' + (state.sort === "desc" ? "Sort by utilization ↓" : "Sort by utilization ↑") + "</button>" +
               '<select class="filter" id="constraint-filter" aria-label="Filter by constraint">' +
@@ -864,11 +960,40 @@
               "</select>" +
             "</div>" +
           "</div>" +
-          '<div class="table-wrap"><table><thead><tr><th>Shipment</th><th>Weight %</th><th>Volume %</th><th class="num">Overall %</th><th>Constraint</th><th>Status</th></tr></thead><tbody>' +
+          '<div class="table-wrap"><table><thead><tr><th>Shipment</th><th class="num">Overall</th><th class="num">Quoted</th><th class="num">Unused</th><th>Weight</th><th>Volume</th><th>Constraint</th><th>Status</th></tr></thead><tbody>' +
             body +
           "</tbody></table></div>" +
           legend() +
-          '<p class="caption">20 GP 25,000 kg / 33.2 m³ · 40 GP 30,480 kg / 67.7 m³ · 40 HC 28,850 kg / 76.3 m³ · FTL 20,000 kg / 25 m³.</p>' +
+          '<p class="caption">Quoted rates: 20 GP $3,500 · 40 GP $5,200 · 40 HC $5,600 · FTL $2,800. Weight and volume stay in the table as the breakdown behind overall utilization.</p>' +
+        "</div>"
+      );
+    }
+
+    function renderQuote() {
+      const shipment = selected();
+      if (!shipment.applicable) {
+        return '<div class="page"><p class="lede">Quote utilization is shown for FCL and FTL only.</p></div>';
+      }
+      const color = bandColor(shipment.overallPct);
+      const nudge = shipment.overallPct >= 91
+        ? "This container is near capacity. About " + formatMoney(shipment.unusedCost) + " of the " + formatMoney(shipment.rate) + " quote is unused capacity."
+        : "About " + formatMoney(shipment.unusedCost) + " of this " + formatMoney(shipment.rate) + " quote pays for unused capacity. Consolidating cargo onto a fuller container would avoid that cost.";
+      return (
+        '<div class="quote-wrap">' +
+          '<div class="quote-sheet">' +
+            '<div class="quote-top"><div class="quote-brand">silq</div><div class="quote-id">' + esc(shipment.silqId) + "</div></div>" +
+            '<div class="quote-route">' + esc(shipment.origin) + " &gt; " + esc(shipment.destination) + " · 1 × " + esc(shipment.container) + " · " + esc(shipment.cargo) + "</div>" +
+            '<div class="quote-grid">' +
+              '<div><div class="k">Quoted rate</div><div class="quote-total">' + formatMoney(shipment.rate) + "</div></div>" +
+              '<div><div class="k">Overall utilization</div><div class="quote-total" style="color:' + color + '">' + formatPct(shipment.overallPct) + "</div></div>" +
+            "</div>" +
+            bar(shipment.overallPct, color, "lg") +
+            '<div class="util-note" style="margin-top:8px">' + unusedLine(shipment) + "</div>" +
+            '<div class="callout ' + (shipment.overallPct >= 91 ? "info" : "") + '" style="margin-top:16px">' +
+              '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="' + (shipment.overallPct >= 91 ? "#0D47A4" : "#C37E15") + '" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.5"/></svg>' +
+              "<div><h3>Unused capacity</h3><p>" + esc(nudge) + "</p></div></div>" +
+            '<p class="caption">From the RFQ: ' + formatKg(shipment.actualWeight) + " and " + formatM3(shipment.actualVolume) + " against " + esc(shipment.container) + " capacity " + formatKg(shipment.maxWeight) + " / " + formatM3(shipment.maxVolume) + ". Overall is the higher of those two.</p>" +
+          "</div>" +
         "</div>"
       );
     }
@@ -877,8 +1002,12 @@
       const view = document.getElementById("view");
       const title = document.getElementById("page-title");
       const shipment = selected();
-      if (state.page === "detail") {
-        title.innerHTML = '<button class="crumb" type="button" data-go="' + state.origin + '">' + (state.origin === "analytics" ? "Analytics" : "Shipments") + '</button><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#909090" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg><span class="current">' + esc(shipment.silqId) + "</span>";
+      const crumb = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#909090" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>';
+      if (state.page === "quote") {
+        title.innerHTML = '<button class="crumb" type="button" data-go="detail" data-id="' + shipment.id + '">' + esc(shipment.silqId) + "</button>" + crumb + '<span class="current">Quote</span>';
+        view.innerHTML = renderQuote();
+      } else if (state.page === "detail") {
+        title.innerHTML = '<button class="crumb" type="button" data-go="' + state.origin + '">' + (state.origin === "analytics" ? "Analytics" : "Shipments") + "</button>" + crumb + '<span class="current">' + esc(shipment.silqId) + "</span>";
         view.innerHTML = renderDetail();
       } else if (state.page === "analytics") {
         title.textContent = "Analytics";
@@ -903,8 +1032,12 @@
         state.sort = state.sort === "desc" ? "asc" : "desc";
       } else if (go === "variant") {
         state.detailVariant = target.dataset.variant === "overview" ? "overview" : "page";
+      } else if (go === "quote") {
+        state.page = "quote";
       } else if (go === "detail") {
-        state.origin = state.page === "analytics" ? "analytics" : "list";
+        if (state.page !== "quote") {
+          state.origin = state.page === "analytics" ? "analytics" : "list";
+        }
         state.id = target.dataset.id || state.id;
         state.page = "detail";
       } else {
