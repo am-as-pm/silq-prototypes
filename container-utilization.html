@@ -790,21 +790,22 @@
             "</button>"
           );
         }
-        const color = bandColor(shipment.overallPct);
+        const color = bandColor(shipment.volumePct);
+        const volumeUnused = shipment.rate * (1 - shipment.volumePct / 100);
         return (
           '<button class="card" type="button" data-go="detail" data-id="' + shipment.id + '">' +
             cardHead(shipment) +
             '<div class="util">' +
-              '<div class="util-row"><span class="util-label">Overall utilization</span><span class="util-pct" style="color:' + color + '">' + formatPct(shipment.overallPct) + "</span></div>" +
-              bar(shipment.overallPct, color) +
-              '<div class="util-note">' + unusedLine(shipment) + "</div>" +
+              '<div class="util-row"><span class="util-label">Volume utilization</span><span class="util-pct" style="color:' + color + '">' + formatPct(shipment.volumePct) + "</span></div>" +
+              bar(shipment.volumePct, color) +
+              '<div class="util-note">' + formatM3(shipment.remainingVolume) + " remaining · " + formatMoney(volumeUnused) + " unused of " + formatMoney(shipment.rate) + "</div>" +
             "</div>" +
           "</button>"
         );
       }).join("");
       return (
         '<div class="page">' +
-          '<p class="lede"><span class="scope">FCL and FTL</span> Every card leads with overall utilization: the higher of the RFQ weight and volume, each divided by that container’s capacity. The line under the bar is unused quote cost, the same unit on every card.</p>' +
+          '<p class="lede"><span class="scope">FCL and FTL</span> Every card shows volume utilization, so shipments compare on the same measure: RFQ volume divided by that container’s capacity.</p>' +
           '<div class="stack">' + cards + "</div>" +
           legend() +
         "</div>"
