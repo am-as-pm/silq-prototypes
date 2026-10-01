@@ -596,6 +596,16 @@
             Analytics
           </button>
         </div>
+        <div class="nav-group">
+          <div class="group-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v6h6"/></svg>
+            Quotes
+          </div>
+          <button class="nav-link" data-go="quote" data-navkey="quote" type="button">
+            <span class="nav-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2h9l5 5v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg></span>
+            Quote PDF
+          </button>
+        </div>
       </div>
       <div class="powered">
         <span>POWERED BY</span>
@@ -810,17 +820,6 @@
         "</div>"
       );
     }
-    function overallBlock(shipment) {
-      const color = bandColor(shipment.overallPct);
-      return (
-        '<div class="metric-block">' +
-          '<div class="split-head"><span class="metric-label">Overall utilization</span><span class="metric-value" style="color:' + color + '">' + formatPct(shipment.overallPct) + "</span></div>" +
-          bar(shipment.overallPct, color, "lg") +
-          '<div class="util-note">' + constraintLabel(shipment.constraint) + "</div>" +
-        "</div>"
-      );
-    }
-
     function utilizationBars(shipment) {
       const weight = weightColor(shipment.weightPct);
       const volume = bandColor(shipment.volumePct);
@@ -880,18 +879,17 @@
                   '<button type="button" data-go="variant" data-variant="page"' + (inOverview ? "" : ' class="is-selected"') + ">Details section</button>" +
                   '<button type="button" data-go="variant" data-variant="overview"' + (inOverview ? ' class="is-selected"' : "") + ">Overview card</button>" +
                 "</div>" +
-                '<button class="btn btn-secondary" type="button" data-go="quote">Quote PDF</button>' +
               "</div>" +
             "</div>" +
             '<div class="tabs"><span class="tab is-selected">Details</span><span class="tab">Milestones</span><span class="tab">Documents</span><span class="tab">Products</span></div>' +
             '<div class="section">' +
-              (inOverview ? "" : "<h2>Container utilization</h2>" + overallBlock(shipment) + utilizationBars(shipment) + constraintCallout(shipment)) +
+              (inOverview ? "" : "<h2>Container utilization</h2>" + utilizationBars(shipment) + constraintCallout(shipment)) +
               "<h2>Cargo breakdown</h2>" +
               '<div class="table-wrap"><table><thead><tr><th>Item</th><th class="num">Weight</th><th class="num">Volume</th></tr></thead><tbody>' +
                 rows +
                 '<tr class="total"><td>Total</td><td class="num">' + formatKg(shipment.actualWeight) + '</td><td class="num">' + formatM3(shipment.actualVolume) + "</td></tr>" +
               "</tbody></table></div>" +
-              '<p class="caption">' + esc(shipment.id) + " · overall " + formatPct(shipment.overallPct) + " = max(RFQ weight ÷ " + formatKg(shipment.maxWeight) + ", RFQ volume ÷ " + formatM3(shipment.maxVolume) + ")</p>" +
+              '<p class="caption">' + esc(shipment.id) + " · weight " + formatPct(shipment.weightPct) + " of " + formatKg(shipment.maxWeight) + " · volume " + formatPct(shipment.volumePct) + " of " + formatM3(shipment.maxVolume) + "</p>" +
             "</div>" +
           "</div>" +
           '<aside class="detail-rail">' +
@@ -904,7 +902,7 @@
                   '<div class="route-line"></div>' +
                   '<div class="route-node"><span class="dot"></span><div><div class="k">Destination</div><div class="v">' + esc(shipment.destination) + "</div></div></div>" +
                 "</div>" +
-                (inOverview ? '<div class="overview-util">' + overallBlock(shipment) + utilizationBars(shipment) + "</div>" : "") +
+                (inOverview ? '<div class="overview-util">' + utilizationBars(shipment) + "</div>" : "") +
               "</div>" +
             "</div>" +
             '<div class="rail-status"><span class="k">Execution</span><span class="pill ' + pillClass(shipment.status) + '">' + esc(shipment.status) + "</span></div>" +
@@ -1004,7 +1002,7 @@
       const shipment = selected();
       const crumb = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#909090" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>';
       if (state.page === "quote") {
-        title.innerHTML = '<button class="crumb" type="button" data-go="detail" data-id="' + shipment.id + '">' + esc(shipment.silqId) + "</button>" + crumb + '<span class="current">Quote</span>';
+        title.textContent = "Quote PDF";
         view.innerHTML = renderQuote();
       } else if (state.page === "detail") {
         title.innerHTML = '<button class="crumb" type="button" data-go="' + state.origin + '">' + (state.origin === "analytics" ? "Analytics" : "Shipments") + "</button>" + crumb + '<span class="current">' + esc(shipment.silqId) + "</span>";
@@ -1018,7 +1016,7 @@
       }
       document.querySelectorAll("[data-navkey]").forEach((el) => {
         const key = el.dataset.navkey;
-        const active = (key === "shipments" && state.page !== "analytics") || (key === "analytics" && state.page === "analytics");
+        const active = (key === "shipments" && (state.page === "list" || state.page === "detail")) || (key === "analytics" && state.page === "analytics") || (key === "quote" && state.page === "quote");
         el.classList.toggle("is-selected", active);
       });
       view.scrollTop = 0;
