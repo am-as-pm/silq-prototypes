@@ -394,6 +394,11 @@
     .id-cell strong { font-size: 13px; white-space: nowrap; }
     .id-cell span, .status-text { color: var(--gray-600); font-size: 12px; }
     .bar-cell { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+    .fill-cell { display: grid; gap: 4px; min-width: 168px; }
+    .fill-top { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+    .fill-top span { color: var(--gray-700); font-size: 12px; white-space: nowrap; }
+    .fill-top strong { font-size: 13px; font-weight: 600; }
+    .fill-cell .bar.mini { width: 100%; height: 6px; }
     .click-row { cursor: pointer; }
     .click-row:hover td { background: var(--gray-100); }
     .overall { font-size: 14px; font-weight: 700; }
@@ -914,22 +919,21 @@
     function renderAnalytics() {
       const applicable = APPLICABLE();
       const filtered = applicable.filter((shipment) => state.filter === "all" || shipment.constraint === state.filter);
-      const rows = filtered.slice().sort((a, b) => state.sort === "desc" ? b.overallPct - a.overallPct : a.overallPct - b.overallPct);
+      const rows = filtered.slice().sort((a, b) => state.sort === "desc" ? b.volumePct - a.volumePct : a.volumePct - b.volumePct);
       const avg = (key) => applicable.reduce((sum, shipment) => sum + shipment[key], 0) / applicable.length;
       const spend = applicable.reduce((sum, shipment) => sum + shipment.rate, 0);
       const unused = applicable.reduce((sum, shipment) => sum + shipment.unusedCost, 0);
       const savings = applicable.filter((shipment) => shipment.overallPct < 76).reduce((sum, shipment) => sum + shipment.unusedCost, 0);
+      const fillCell = (actual, pct, color) =>
+        '<td><div class="fill-cell"><div class="fill-top"><span>' + actual + '</span><strong style="color:' + color + '">' + formatPct(pct) + "</strong></div>" + bar(pct, color, "mini") + "</div></td>";
       const body = rows.map((shipment) => {
-        const overall = bandColor(shipment.overallPct);
         return (
           '<tr class="click-row" data-go="detail" data-id="' + shipment.id + '">' +
             '<td><div class="id-cell"><strong>' + esc(shipment.id) + "</strong><span>" + esc(shipment.origin) + "</span></div></td>" +
-            '<td class="num"><span class="overall" style="color:' + overall + '">' + formatPct(shipment.overallPct) + "</span></td>" +
+            fillCell(formatKg(shipment.actualWeight) + " / " + formatKg(shipment.maxWeight), shipment.weightPct, weightColor(shipment.weightPct)) +
+            fillCell(formatM3(shipment.actualVolume) + " / " + formatM3(shipment.maxVolume), shipment.volumePct, bandColor(shipment.volumePct)) +
             '<td class="num">' + formatMoney(shipment.rate) + "</td>" +
             '<td class="num">' + formatMoney(shipment.unusedCost) + "</td>" +
-            '<td><div class="bar-cell">' + bar(shipment.weightPct, weightColor(shipment.weightPct), "mini") + "<span>" + formatPct(shipment.weightPct) + "</span></div></td>" +
-            '<td><div class="bar-cell">' + bar(shipment.volumePct, bandColor(shipment.volumePct), "mini") + "<span>" + formatPct(shipment.volumePct) + "</span></div></td>" +
-            '<td><span class="badge badge-' + shipment.constraint + '">' + (shipment.constraint === "weight" ? "Weight" : "Volume") + "</span></td>" +
             '<td><span class="status-text">' + esc(shipment.status) + "</span></td>" +
           "</tr>"
         );
@@ -950,19 +954,14 @@
           '<div class="toolbar">' +
             '<span class="caption">Showing ' + rows.length + " of " + applicable.length + " FCL and FTL shipments</span>" +
             '<div class="toolbar-actions">' +
-              '<button class="btn btn-secondary" type="button" data-go="sort">' + (state.sort === "desc" ? "Sort by utilization ↓" : "Sort by utilization ↑") + "</button>" +
-              '<select class="filter" id="constraint-filter" aria-label="Filter by constraint">' +
-                '<option value="all"' + (state.filter === "all" ? " selected" : "") + ">All constraints</option>" +
-                '<option value="weight"' + (state.filter === "weight" ? " selected" : "") + ">Weight</option>" +
-                '<option value="volume"' + (state.filter === "volume" ? " selected" : "") + ">Volume</option>" +
-              "</select>" +
+              '<button class="btn btn-secondary" type="button" data-go="sort">' + (state.sort === "desc" ? "Sort by volume ↓" : "Sort by volume ↑") + "</button>" +
             "</div>" +
           "</div>" +
-          '<div class="table-wrap"><table><thead><tr><th>Shipment</th><th class="num">Overall</th><th class="num">Quoted</th><th class="num">Unused</th><th>Weight</th><th>Volume</th><th>Constraint</th><th>Status</th></tr></thead><tbody>' +
+          '<div class="table-wrap"><table><thead><tr><th>Shipment</th><th>Weight</th><th>Volume</th><th class="num">Container Rate</th><th class="num">Unused</th><th>Status</th></tr></thead><tbody>' +
             body +
           "</tbody></table></div>" +
           legend() +
-          '<p class="caption">Quoted rates: 20 GP $3,500 · 40 GP $5,200 · 40 HC $5,600 · FTL $2,800. Weight and volume stay in the table as the breakdown behind overall utilization.</p>' +
+          '<p class="caption">Container rates: 20 GP $3,500 · 40 GP $5,200 · 40 HC $5,600 · FTL $2,800. Weight and volume show the RFQ actual against that container’s capacity.</p>' +
         "</div>"
       );
     }
