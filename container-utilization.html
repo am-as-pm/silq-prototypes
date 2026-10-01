@@ -748,9 +748,9 @@
     }
     function recommendation(shipment) {
       if (shipment.constraint === "volume") {
-        return "This shipment is limited by volume. You have " + formatKg(shipment.remainingWeight) + " of weight capacity available but only " + formatM3(shipment.remainingVolume) + " of space. Consider repackaging or deferring heavier items. Unused capacity on this quote is " + formatMoney(shipment.unusedCost) + " of " + formatMoney(shipment.rate) + ".";
+        return "This shipment is limited by volume. You have " + formatKg(shipment.remainingWeight) + " of weight capacity available but only " + formatM3(shipment.remainingVolume) + " of space. Consider repackaging or deferring heavier items.";
       }
-      return "This shipment is limited by weight. You have " + formatM3(shipment.remainingVolume) + " of space available but only " + formatKg(shipment.remainingWeight) + " of weight capacity. Consider splitting dense cargo onto another shipment. Unused capacity on this quote is " + formatMoney(shipment.unusedCost) + " of " + formatMoney(shipment.rate) + ".";
+      return "This shipment is limited by weight. You have " + formatM3(shipment.remainingVolume) + " of space available but only " + formatKg(shipment.remainingWeight) + " of weight capacity. Consider splitting dense cargo onto another shipment.";
     }
     function bar(pct, color, size) {
       const width = Math.max(0, Math.min(100, pct));
@@ -791,14 +791,13 @@
           );
         }
         const color = bandColor(shipment.volumePct);
-        const volumeUnused = shipment.rate * (1 - shipment.volumePct / 100);
         return (
           '<button class="card" type="button" data-go="detail" data-id="' + shipment.id + '">' +
             cardHead(shipment) +
             '<div class="util">' +
               '<div class="util-row"><span class="util-label">Volume utilization</span><span class="util-pct" style="color:' + color + '">' + formatPct(shipment.volumePct) + "</span></div>" +
               bar(shipment.volumePct, color) +
-              '<div class="util-note">' + formatM3(shipment.remainingVolume) + " remaining · " + formatMoney(volumeUnused) + " unused of " + formatMoney(shipment.rate) + "</div>" +
+              '<div class="util-note">' + formatM3(shipment.remainingVolume) + " remaining</div>" +
             "</div>" +
           "</button>"
         );
@@ -817,7 +816,7 @@
         '<div class="metric-block">' +
           '<div class="split-head"><span class="metric-label">Overall utilization</span><span class="metric-value" style="color:' + color + '">' + formatPct(shipment.overallPct) + "</span></div>" +
           bar(shipment.overallPct, color, "lg") +
-          '<div class="util-note">' + unusedLine(shipment) + "</div>" +
+          '<div class="util-note">' + constraintLabel(shipment.constraint) + "</div>" +
         "</div>"
       );
     }
@@ -892,7 +891,7 @@
                 rows +
                 '<tr class="total"><td>Total</td><td class="num">' + formatKg(shipment.actualWeight) + '</td><td class="num">' + formatM3(shipment.actualVolume) + "</td></tr>" +
               "</tbody></table></div>" +
-              '<p class="caption">' + esc(shipment.id) + " · overall " + formatPct(shipment.overallPct) + " = max(RFQ weight ÷ " + formatKg(shipment.maxWeight) + ", RFQ volume ÷ " + formatM3(shipment.maxVolume) + ") · quoted " + formatMoney(shipment.rate) + "</p>" +
+              '<p class="caption">' + esc(shipment.id) + " · overall " + formatPct(shipment.overallPct) + " = max(RFQ weight ÷ " + formatKg(shipment.maxWeight) + ", RFQ volume ÷ " + formatM3(shipment.maxVolume) + ")</p>" +
             "</div>" +
           "</div>" +
           '<aside class="detail-rail">' +
