@@ -6,7 +6,7 @@
   <title>Container utilization · Silq</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
       --gray-0: #ffffff;
@@ -59,6 +59,7 @@
       height: 100%;
       min-height: 0;
     }
+    .app.is-collapsed { grid-template-columns: 88px minmax(0, 1fr); }
 
     .sidebar {
       display: grid;
@@ -67,45 +68,50 @@
       padding: 24px 0 20px;
     }
     .org {
-      display: flex;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
       align-items: center;
       gap: 8px;
       margin: 0 20px 24px;
       min-width: 0;
     }
-    .org-mark {
-      width: 28px;
-      height: 28px;
-      border-radius: 8px;
-      background: var(--brand-500);
-      color: white;
-      display: grid;
-      place-items: center;
-      font-size: 13px;
-      font-weight: 600;
-      flex: none;
-    }
     .org-name {
-      font-size: 14px;
-      font-weight: 600;
-      letter-spacing: -0.003em;
+      font-family: "Bebas Neue", sans-serif;
+      font-size: 18px;
+      font-weight: 400;
+      line-height: 18px;
+      text-transform: uppercase;
+      color: #171717;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
+    .collapse-btn {
+      display: grid;
+      place-items: center;
+      width: 20px;
+      height: 20px;
+      padding: 0;
+      border: 0;
+      border-radius: 5px;
+      background: transparent;
+      color: var(--gray-500);
+    }
+    .collapse-btn:hover { background: white; color: var(--gray-800); }
     .nav-scroll {
       overflow: auto;
+      margin: 24px 0;
       padding: 0 20px;
       display: grid;
       align-content: start;
+      grid-template-rows: auto 1fr;
       gap: 24px;
     }
-    .nav-group { display: grid; gap: 4px; align-content: start; }
-    .nav-link, .nav-label {
+    .nav-group { display: grid; gap: 8px; align-content: start; min-width: 0; }
+    .nav-link {
       display: grid;
-      grid-template-columns: 30px minmax(0, 1fr);
+      grid-template-columns: auto minmax(0, 1fr);
       align-items: center;
-      gap: 0;
       height: 30px;
       padding: 0;
       border: 0;
@@ -117,28 +123,58 @@
       letter-spacing: -0.003em;
       text-align: left;
     }
-    .nav-link svg { display: block; color: var(--gray-600); }
+    .nav-link svg { display: block; }
     .nav-link.is-selected {
       background: white;
       color: var(--gray-900);
       box-shadow: var(--shadow-nav);
     }
-    .nav-link.is-selected svg { color: var(--gray-900); }
     .nav-link:hover:not(.is-selected) { background: rgba(0, 0, 0, 0.05); }
-    .nav-ico { display: grid; place-items: center; width: 30px; height: 30px; }
-    .group-label {
+    .nav-ico { display: grid; place-items: center; padding: 0 6px; color: var(--gray-600); }
+    .nav-link.is-selected .nav-ico { color: var(--gray-900); }
+    .nav-block { display: grid; border-radius: 5px; color: var(--gray-800); }
+    .nav-block.is-open,
+    .nav-block:hover { background: rgba(0, 0, 0, 0.05); }
+    .group-head {
       display: grid;
-      grid-template-columns: 30px minmax(0, 1fr);
+      grid-template-columns: 16px minmax(0, 1fr) auto;
+      gap: 4px;
       align-items: center;
-      height: 30px;
-      padding: 0;
-      color: var(--gray-700);
+      padding: 6px;
+      border: 0;
+      border-radius: 5px;
+      background: transparent;
+      color: inherit;
       font-size: 12px;
       font-weight: 700;
+      line-height: 16px;
       letter-spacing: 0.04em;
       text-transform: uppercase;
+      text-align: left;
     }
-    .group-label svg { justify-self: center; }
+    .group-head svg { display: block; }
+    .chevron { opacity: 0; transition: opacity 0.2s; }
+    .nav-block:hover .chevron,
+    .nav-block.is-open .chevron { opacity: 1; }
+    .nav-block.is-open .chevron { transform: rotate(180deg); }
+    .nav-sub { display: none; padding: 4px 8px; gap: 6px; }
+    .nav-block.is-open .nav-sub { display: grid; }
+    .app.is-collapsed .org-name,
+    .app.is-collapsed .nav-link span,
+    .app.is-collapsed .group-head span,
+    .app.is-collapsed .chevron,
+    .app.is-collapsed .nav-sub,
+    .app.is-collapsed .powered span,
+    .app.is-collapsed .powered .wordmark { display: none; }
+    .app.is-collapsed .org { grid-template-columns: 1fr; justify-items: center; }
+    .app.is-collapsed .collapse-btn { display: none; }
+    .app.is-collapsed .org-mark { display: grid; }
+    .org-mark { display: none; width: 40px; height: 40px; padding: 0; border: 0; border-radius: 8px; background: var(--gray-800); color: white; place-items: center; font-size: 14px; font-weight: 600; }
+    .app.is-collapsed .nav-link,
+    .app.is-collapsed .group-head { justify-content: center; grid-template-columns: auto; }
+    .app.is-collapsed .powered { justify-content: center; }
+    .app.is-collapsed .powered .bird { display: block; }
+    .powered .bird { display: none; }
     .powered {
       display: flex;
       align-items: center;
@@ -573,51 +609,90 @@
   <div class="app">
     <aside class="sidebar">
       <div class="org">
-        <div class="org-mark">M</div>
         <div class="org-name">Meridian Home</div>
+        <button class="org-mark" type="button" data-go="collapse" aria-label="Expand">M</button>
+        <button class="collapse-btn" type="button" data-go="collapse" aria-label="Collapse">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18 3C19.6569 3 21 4.34315 21 6V18C21 19.6569 19.6569 21 18 21H6C4.34315 21 3 19.6569 3 18V6C3 4.34315 4.34315 3 6 3H18ZM6 5C5.44772 5 5 5.44772 5 6V18C5 18.5523 5.44772 19 6 19H10V5H6ZM12 12L17 17V7L12 12Z"/></svg>
+        </button>
       </div>
       <div class="nav-scroll">
         <div class="nav-group">
           <button class="nav-link" data-go="list" data-navkey="projects" type="button">
-            <span class="nav-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7.5h7l2 2H21v9.5a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 19V7.5z"/><path d="M3 7.5V5.8A1.8 1.8 0 0 1 4.8 4H10l2 2"/></svg></span>
-            Projects
+            <span class="nav-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M9.875 15.8125C9.875 15.7959 9.86865 15.7798 9.85693 15.7681C9.84521 15.7563 9.82908 15.75 9.8125 15.75H6.5625C6.54592 15.75 6.52979 15.7563 6.51807 15.7681C6.50635 15.7798 6.5 15.7959 6.5 15.8125V17.9375C6.5 17.9541 6.50635 17.9702 6.51807 17.9819C6.52979 17.9937 6.54592 18 6.5625 18H9.8125C9.82908 18 9.84521 17.9937 9.85693 17.9819C9.86865 17.9702 9.875 17.9541 9.875 17.9375V15.8125ZM18 13.0625C18 13.0459 17.9937 13.0298 17.9819 13.0181C17.9702 13.0063 17.9541 13 17.9375 13H14.1875C14.1709 13 14.1548 13.0063 14.1431 13.0181C14.1313 13.0298 14.125 13.0459 14.125 13.0625V17.9375C14.125 17.9541 14.1313 17.9702 14.1431 17.9819C14.1548 17.9937 14.1709 18 14.1875 18H17.9375C17.9541 18 17.9702 17.9937 17.9819 17.9819C17.9937 17.9702 18 17.9541 18 17.9375V13.0625ZM9.875 6.5625C9.875 6.54592 9.86866 6.52979 9.85693 6.51807C9.84521 6.50634 9.82908 6.5 9.8125 6.5H6.5625C6.54592 6.5 6.52979 6.50635 6.51807 6.51807C6.50635 6.52979 6.5 6.54592 6.5 6.5625V11.4375C6.5 11.4541 6.50634 11.4702 6.51807 11.4819C6.52979 11.4937 6.54593 11.5 6.5625 11.5H9.8125C9.82907 11.5 9.84521 11.4937 9.85693 11.4819C9.86866 11.4702 9.875 11.4541 9.875 11.4375V6.5625ZM18 6.5625C18 6.54592 17.9937 6.52979 17.9819 6.51807C17.9702 6.50635 17.9541 6.5 17.9375 6.5H14.1875C14.1709 6.5 14.1548 6.50634 14.1431 6.51807C14.1313 6.52979 14.125 6.54592 14.125 6.5625V8.6875C14.125 8.70408 14.1313 8.72021 14.1431 8.73193C14.1548 8.74366 14.1709 8.75 14.1875 8.75H17.9375C17.9541 8.75 17.9702 8.74365 17.9819 8.73193C17.9937 8.72021 18 8.70408 18 8.6875V6.5625Z"/></svg></span>
+            <span>Projects</span>
           </button>
           <button class="nav-link is-selected" data-go="list" data-navkey="shipments" type="button">
-            <span class="nav-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 16.5 12 20l9-3.5"/><path d="M3 12.5 12 16l9-3.5L12 5 3 8.5v8z"/><path d="M12 16V9"/></svg></span>
-            Shipments
+            <span class="nav-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19.25 7C19.6642 7 20 7.33579 20 7.75C20 8.16421 19.6642 8.5 19.25 8.5H18.3813V16.5H19.25C19.6642 16.5 20 16.8358 20 17.25C20 17.6642 19.6642 18 19.25 18H5.75C5.33579 18 5 17.6642 5 17.25C5 16.8358 5.33579 16.5 5.75 16.5H6.61865V8.5H5.75C5.33579 8.5 5 8.16421 5 7.75C5 7.33579 5.33579 7 5.75 7H19.25ZM8.11865 16.5H16.8813V8.5H8.11865V16.5ZM9.25 14.5V10.5C9.25 10.0858 9.58579 9.75 10 9.75C10.4142 9.75 10.75 10.0858 10.75 10.5V14.5C10.75 14.9142 10.4142 15.25 10 15.25C9.58579 15.25 9.25 14.9142 9.25 14.5ZM11.75 14.5V10.5C11.75 10.0858 12.0858 9.75 12.5 9.75C12.9142 9.75 13.25 10.0858 13.25 10.5V14.5C13.25 14.9142 12.9142 15.25 12.5 15.25C12.0858 15.25 11.75 14.9142 11.75 14.5ZM14.25 14.5V10.5C14.25 10.0858 14.5858 9.75 15 9.75C15.4142 9.75 15.75 10.0858 15.75 10.5V14.5C15.75 14.9142 15.4142 15.25 15 15.25C14.5858 15.25 14.25 14.9142 14.25 14.5Z"/></svg></span>
+            <span>Shipments</span>
           </button>
-          <button class="nav-link" type="button" disabled style="opacity:.55;cursor:default">
-            <span class="nav-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2"/></svg></span>
-            Inspections
-          </button>
-        </div>
-        <div class="nav-group">
-          <div class="group-label">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V5M4 19h16"/><path d="M8 16v-5M12 16V8M16 16v-3"/></svg>
-            Insights
-          </div>
-          <button class="nav-link" data-go="analytics" data-navkey="analytics" type="button">
-            <span class="nav-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19h16"/><path d="M7 16V9M12 16V5M17 16v-6"/></svg></span>
-            Analytics
+          <button class="nav-link" type="button">
+            <span class="nav-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M5 17.125V15.3374C5.00005 14.9232 5.33582 14.5874 5.75 14.5874C6.16418 14.5874 6.49995 14.9232 6.5 15.3374V17.125C6.5 17.3571 6.59225 17.5796 6.75635 17.7437C6.92044 17.9077 7.14294 18 7.375 18H9.9751C10.3893 18.0001 10.7251 18.3358 10.7251 18.75C10.7251 19.1642 10.3893 19.4999 9.9751 19.5H7.375C6.74511 19.5 6.1412 19.2496 5.6958 18.8042C5.2504 18.3588 5 17.7549 5 17.125ZM14.1572 10.2573C14.4501 9.96443 14.9249 9.96443 15.2178 10.2573C15.5106 10.5502 15.5106 11.025 15.2178 11.3179L11.4805 15.0552C11.1876 15.3481 10.7123 15.3481 10.4194 15.0552L8.63232 13.2681C8.33943 12.9752 8.33943 12.4999 8.63232 12.207C8.92522 11.9143 9.40003 11.9142 9.69287 12.207L10.9497 13.4639L14.1572 10.2573Z"/></svg></span>
+            <span>Inspections</span>
           </button>
         </div>
         <div class="nav-group">
-          <div class="group-label">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v6h6"/></svg>
-            Quotes
+          <div class="nav-block is-open" data-group="quoting">
+            <button class="group-head" type="button" data-go="toggle">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.615 20H7C6.47 20 5.96 19.79 5.59 19.41C5.21 19.04 5 18.53 5 18V6C5 5.47 5.21 4.96 5.59 4.59C5.96 4.21 6.47 4 7 4H15C15.53 4 16.04 4.21 16.41 4.59C16.79 4.96 17 5.47 17 6V11M9 8H13M9 12H11M16.42 14.61C16.62 14.42 16.85 14.26 17.1 14.15C17.63 13.99 18.18 13.99 18.71 14.15C18.96 14.26 19.2 14.42 19.39 14.61C19.59 14.81 19.74 15.04 19.85 15.29C20.01 15.82 20.01 16.37 19.85 16.9C19.74 17.15 19.59 17.39 19.39 17.58L16 21H13V18L16.42 14.61Z"/></svg>
+              <span>Quoting</span>
+              <svg class="chevron" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div class="nav-sub">
+              <button class="nav-link" type="button"><span class="nav-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 3.5h7l4 4V19a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1z"/><path d="M14 3.5V8h4M9 12h4M12 10.5V15"/></svg></span><span>Quotes</span></button>
+              <button class="nav-link" type="button"><span class="nav-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 3.5h7l4 4V19a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1z"/><path d="M14 3.5V8h4M9.5 14.5l1.8 1.8 3.2-3.3"/></svg></span><span>Bookings</span></button>
+              <button class="nav-link" data-go="quote" data-navkey="quote" type="button"><span class="nav-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg></span><span>Quote PDF</span></button>
+            </div>
           </div>
-          <button class="nav-link" data-go="quote" data-navkey="quote" type="button">
-            <span class="nav-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2h9l5 5v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg></span>
-            Quote PDF
-          </button>
+          <div class="nav-block is-open" data-group="insights">
+            <button class="group-head" type="button" data-go="toggle">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19V13a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1m5-1a1 1 0 0 1-1 1H4m5-1V9a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v10m0 0a1 1 0 0 1-1 1h-4M4 20h16m-5-1V5a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v14"/></svg>
+              <span>Insights</span>
+              <svg class="chevron" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div class="nav-sub">
+              <button class="nav-link" type="button"><span class="nav-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6.5 17.5h2.83V13.25H6.5V17.5Zm4.33 0h2.84V10.38h-2.84V17.5Zm4.34 0H18V7.5h-2.83V17.5Z"/></svg></span><span>Reports</span></button>
+              <button class="nav-link" data-go="analytics" data-navkey="analytics" type="button"><span class="nav-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M18 11.56H11.56V18h5.75c.18 0 .36-.07.49-.2.13-.13.2-.31.2-.49V11.56ZM6.5 17.31c0 .18.07.36.2.49.13.13.31.2.49.2h2.86V11.56H6.5v5.75ZM18 7.19c0-.18-.07-.36-.2-.49-.13-.13-.31-.2-.49-.2H11.56v3.56H18V7.19ZM6.5 10.06h3.56V6.5H7.19c-.18 0-.36.07-.49.2-.13.13-.2.31-.2.49v2.87Z"/></svg></span><span>Analytics</span></button>
+            </div>
+          </div>
+          <div class="nav-block" data-group="business">
+            <button class="group-head" type="button" data-go="toggle">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M9 8h1M9 12h1M9 16h1M14 8h1M14 12h1M14 16h1M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/></svg>
+              <span>My business</span>
+              <svg class="chevron" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div class="nav-sub">
+              <button class="nav-link" type="button"><span class="nav-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 3h7l5 5v13H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v6h6"/></svg></span><span>Documents</span></button>
+              <button class="nav-link" type="button"><span class="nav-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="8"/><path d="M3 12h18M12 4c2.5 2.4 2.5 13.6 0 16M12 4c-2.5 2.4-2.5 13.6 0 16"/></svg></span><span>Network</span></button>
+            </div>
+          </div>
+          <div class="nav-block" data-group="tasks">
+            <button class="group-head" type="button" data-go="toggle">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 5h8M13 9h5M13 15h8M13 19h5M3 7l2 2 4-4M4 14h4a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1z"/></svg>
+              <span>Tasks</span>
+              <svg class="chevron" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div class="nav-sub">
+              <button class="nav-link" type="button"><span class="nav-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="3"/><path d="M6 19c.6-2.6 2.8-4 6-4s5.4 1.4 6 4"/></svg></span><span>Assigned to me</span></button>
+              <button class="nav-link" type="button"><span class="nav-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m12 3 2.2 4.6L19 8.2l-3.5 3.4.8 4.9L12 14.8 7.7 16.5l.8-4.9L5 8.2l4.8-.6L12 3z"/></svg></span><span>Followed by me</span></button>
+              <button class="nav-link" type="button"><span class="nav-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2"/></svg></span><span>Active</span></button>
+            </div>
+          </div>
+          <div class="nav-block">
+            <button class="group-head" type="button">
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12.3 6.7a2.5 2.5 0 0 0-2.1-.8H9.2a1.7 1.7 0 0 0 0 3.3h1.6a1.7 1.7 0 0 1 0 3.4H9.2a2.5 2.5 0 0 1-2.1-.8M10 5v8.3M4.2 17.5V4.2A1.7 1.7 0 0 1 5.8 2.5h8.4a1.7 1.7 0 0 1 1.6 1.7v13.3L13.3 15.8 11.7 17.5 10 15.8 8.3 17.5 6.7 15.8 4.2 17.5z"/></svg>
+              <span>Invoices</span>
+              <svg class="chevron" width="12" height="12" viewBox="0 0 20 20" fill="none"><path d="M7.5 5 12.5 10 7.5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
         </div>
       </div>
       <div class="powered">
         <span>POWERED BY</span>
-        <svg width="55" height="22" viewBox="0 0 80 32" fill="none" aria-label="Silq">
+        <svg class="wordmark" width="55" height="22" viewBox="0 0 80 32" fill="none" aria-label="Silq">
           <path fill-rule="evenodd" d="M63.9041 4.79999L59.0019 6.29337V25.145H63.9041V4.79999ZM56.9494 11.7106H52.0129V25.145H56.9494V11.7106ZM44.3636 25.2516C43.3279 25.2427 42.2958 25.1304 41.2833 24.9164C40.3848 24.7796 39.5206 24.4787 38.7357 24.0295V20.7624C39.5276 21.2398 40.3856 21.6031 41.2833 21.8413C42.1789 22.1049 43.1077 22.2455 44.0428 22.2588C44.5818 22.2834 45.1212 22.2174 45.6374 22.0637C45.7921 22.0145 45.9255 21.916 46.0163 21.784C46.1072 21.652 46.1503 21.4941 46.1389 21.3353C46.1436 21.2105 46.1201 21.0863 46.07 20.9714C46.02 20.8566 45.9446 20.7539 45.8492 20.6709C45.5872 20.4512 45.2788 20.2909 44.946 20.2016C44.5567 20.0522 43.9027 19.842 42.9839 19.5646C42.1045 19.3103 41.2515 18.9756 40.4362 18.565C39.8723 18.2509 39.398 17.8034 39.0565 17.2636C38.7314 16.6478 38.5758 15.9598 38.6049 15.2673C38.6049 13.8837 39.1239 12.8495 40.1621 12.1648C41.2003 11.48 42.634 11.1285 44.4633 11.1102C45.3823 11.1151 46.2981 11.2173 47.1947 11.415C47.968 11.5364 48.7134 11.7902 49.3967 12.1648V15.3588C48.7811 14.9599 48.0992 14.6691 47.3816 14.4993C46.6045 14.2824 45.8008 14.1706 44.9927 14.1671C44.4183 14.1459 43.8444 14.2201 43.2953 14.3865C43.1174 14.4423 42.9634 14.5542 42.8574 14.7047C42.7514 14.8553 42.6995 15.036 42.7098 15.2186C42.711 15.3916 42.7646 15.5604 42.8638 15.7036C42.963 15.8469 43.1035 15.9581 43.2673 16.0232C43.9641 16.3084 44.6826 16.5397 45.4163 16.715L45.9489 16.8552C46.8615 17.0857 47.7368 17.4396 48.5495 17.9067C49.115 18.2183 49.5685 18.6929 49.8483 19.2659C50.1352 19.8821 50.2717 20.5551 50.2469 21.2317C50.2604 21.8054 50.1294 22.3735 49.8654 22.8859C49.6015 23.3983 49.2126 23.8392 48.7333 24.1697C47.7325 24.889 46.2759 25.2496 44.3636 25.2516ZM54.3612 5.51542C53.7492 5.51259 53.161 5.74781 52.7261 6.16934C52.2913 6.59086 52.0454 7.16416 52.0425 7.76311C52.0396 8.36207 52.28 8.93761 52.7107 9.36314C53.1415 9.78866 53.7274 10.0293 54.3394 10.0321H54.5793C54.8896 10.0446 55.1992 9.9958 55.4898 9.88855C55.7804 9.7813 56.0459 9.61784 56.2705 9.40793C56.4951 9.19802 56.6741 8.94597 56.7969 8.66684C56.9197 8.38771 56.9838 8.08722 56.9852 7.78332C56.9867 7.47942 56.9255 7.17835 56.8054 6.89809C56.6853 6.61784 56.5087 6.36415 56.2862 6.15217C56.0637 5.9402 55.7997 5.77429 55.5102 5.66437C55.2207 5.55444 54.9115 5.50275 54.6011 5.51237L54.3612 5.51542ZM75.294 24.3008C74.3232 24.947 73.1728 25.2854 71.9988 25.2699C68.6445 25.2699 65.5766 23.0634 65.5766 18.1931C65.5766 13.7252 68.6694 11.3053 71.9645 11.3053C73.2904 11.2887 74.5836 11.7084 75.6366 12.497L75.7269 11.5461H80V30H75.3282L75.294 24.3008ZM73.0764 14.7005C73.8955 14.654 74.7002 14.9256 75.3158 15.4563L75.294 21.1555C74.8392 21.5639 74.179 21.8809 73.0764 21.8809C71.351 21.8809 70.1893 20.357 70.1893 18.2785C70.1893 16.2761 71.3728 14.7005 73.0764 14.7005Z" fill="#052868"/>
           <path fill-rule="evenodd" d="M38.0324 2.88643L32.9301 2.03122C31.1156 1.19502 6.59601 17.4345 6.59601 17.4345L6.19739 18.5937L34.7988 4.86291C25.9177 10.3489 0.996261 25.6603 0.996261 25.6603C0.776469 25.8058 0.587879 25.9931 0.441388 26.2114C0.24797 26.5744 0.103238 26.9609 0.0108843 27.3612C-0.00272716 27.4116 -0.00358552 27.4646 0.00838441 27.5154C0.0203543 27.5662 0.0447812 27.6133 0.0794948 27.6525C0.114208 27.6917 0.158132 27.7217 0.20736 27.74C0.256588 27.7582 0.309594 27.7641 0.361665 27.7571C2.60985 27.3802 11.8609 25.8155 15.2316 24.8241C23.5483 22.3788 26.8074 19.1702 28.7494 16.2023C30.9976 12.7625 37.1299 3.70362 37.9973 2.94344L38.042 2.89593L38.0324 2.88643ZM26.5778 13.3928C25.94 14.7231 24.91 16.82 22.4322 18.5209C19.8141 20.32 12.403 22.591 8.71983 23.3164L26.6703 13.1806C26.6354 13.2495 26.6045 13.3204 26.5778 13.3928Z" fill="#EF6445"/>
         </svg>
+        <svg class="bird" width="40" height="32" viewBox="0 0 40 32" fill="none" aria-hidden="true"><path fill="#EF6445" d="M38 3 33 2C31 1 7 17 7 17l-.4 1.2L35 5C26 10 1 26 1 26c-.2.1-.4.3-.5.5-.2.4-.3.8-.4 1.2 0 .1 0 .2.1.3l.1.1c.1.1.2.1.3.1 2.2-.4 11.5-1.9 14.8-2.9 8.3-2.4 11.6-5.6 13.5-8.6 2.2-3.4 8.4-12.5 9.2-13.3l.1-.1-.1-.1Z"/></svg>
       </div>
     </aside>
     <div class="canvas-wrap">
@@ -1018,6 +1093,10 @@
         const active = (key === "shipments" && (state.page === "list" || state.page === "detail")) || (key === "analytics" && state.page === "analytics") || (key === "quote" && state.page === "quote");
         el.classList.toggle("is-selected", active);
       });
+      if (state.page === "quote" || state.page === "analytics") {
+        const group = document.querySelector('[data-group="' + (state.page === "quote" ? "quoting" : "insights") + '"]');
+        if (group) group.classList.add("is-open");
+      }
       view.scrollTop = 0;
     }
 
@@ -1025,6 +1104,15 @@
       const target = event.target.closest("[data-go]");
       if (!target) return;
       const go = target.dataset.go;
+      if (go === "toggle") {
+        const block = target.closest("[data-group]");
+        if (block) block.classList.toggle("is-open");
+        return;
+      }
+      if (go === "collapse") {
+        document.querySelector(".app").classList.toggle("is-collapsed");
+        return;
+      }
       if (go === "sort") {
         state.sort = state.sort === "desc" ? "asc" : "desc";
       } else if (go === "variant") {
