@@ -577,6 +577,8 @@
       flex: none;
       height: 40px;
       padding: 0 16px;
+      border: 0;
+      background: transparent;
       color: var(--gray-600);
       font-size: 14px;
       font-weight: 500;
@@ -650,8 +652,8 @@
               <svg class="chevron" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
             <div class="nav-sub">
-              <button class="nav-link" type="button"><span class="nav-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6.5 17.5h2.83V13.25H6.5V17.5Zm4.33 0h2.84V10.38h-2.84V17.5Zm4.34 0H18V7.5h-2.83V17.5Z"/></svg></span><span>Reports</span></button>
-              <button class="nav-link" data-go="analytics" data-navkey="analytics" type="button"><span class="nav-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M18 11.56H11.56V18h5.75c.18 0 .36-.07.49-.2.13-.13.2-.31.2-.49V11.56ZM6.5 17.31c0 .18.07.36.2.49.13.13.31.2.49.2h2.86V11.56H6.5v5.75ZM18 7.19c0-.18-.07-.36-.2-.49-.13-.13-.31-.2-.49-.2H11.56v3.56H18V7.19ZM6.5 10.06h3.56V6.5H7.19c-.18 0-.36.07-.49.2-.13.13-.2.31-.2.49v2.87Z"/></svg></span><span>Analytics</span></button>
+              <button class="nav-link" data-go="reports" data-navkey="reports" type="button"><span class="nav-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6.5 17.5h2.83V13.25H6.5V17.5Zm4.33 0h2.84V10.38h-2.84V17.5Zm4.34 0H18V7.5h-2.83V17.5Z"/></svg></span><span>Reports</span></button>
+              <button class="nav-link" type="button"><span class="nav-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M18 11.56H11.56V18h5.75c.18 0 .36-.07.49-.2.13-.13.2-.31.2-.49V11.56ZM6.5 17.31c0 .18.07.36.2.49.13.13.31.2.49.2h2.86V11.56H6.5v5.75ZM18 7.19c0-.18-.07-.36-.2-.49-.13-.13-.31-.2-.49-.2H11.56v3.56H18V7.19ZM6.5 10.06h3.56V6.5H7.19c-.18 0-.36.07-.49.2-.13.13-.2.31-.2.49v2.87Z"/></svg></span><span>Analytics</span></button>
             </div>
           </div>
           <div class="nav-block" data-group="business">
@@ -790,7 +792,7 @@
     }
 
     const DATA = SHIPMENTS.map(derive);
-    const state = { page: "list", id: "SHP-001", sort: "desc", filter: "all", origin: "list", detailVariant: "page" };
+    const state = { page: "list", id: "SHP-001", sort: "desc", filter: "all", origin: "list", detailVariant: "page", report: "utilization" };
 
     function esc(value) {
       return String(value).replace(/[&<>"']/g, (char) => ({
@@ -1013,13 +1015,16 @@
           "</tr>"
         );
       }).join("");
-      const tabs = ["CRD", "Milestone", "Shipments", "Transit time", "Inspections", "Carbon emissions"].map((label) =>
-        '<span class="analytics-tab' + (label === "Shipments" ? " is-selected" : "") + '">' + label + "</span>"
+      const reportTabs = [
+        ["products", "Product level analytics"],
+        ["shipments", "Shipments report"],
+        ["utilization", "Container utilization"],
+      ];
+      const tabs = reportTabs.map(([key, label]) =>
+        '<button class="analytics-tab' + (state.report === key ? " is-selected" : "") + '" type="button" data-go="report" data-report="' + key + '">' + label + "</button>"
       ).join("");
-      return (
-        '<div class="page">' +
-          '<div class="analytics-tabs">' + tabs + "</div>" +
-          '<p class="lede">FCL and FTL only. Portfolio util is the average overall utilization. Unused capacity is the quoted rate times the unused share. Potential savings is that unused cost on shipments under 76%.</p>' +
+      const bodyContent = state.report === "utilization"
+        ? '<p class="lede">FCL and FTL only. Portfolio util is the average overall utilization. Unused capacity is the quoted rate times the unused share. Potential savings is that unused cost on shipments under 76%.</p>' +
           '<div class="kpis">' +
             '<div class="kpi"><div class="k">Portfolio util</div><div class="n">' + formatPct(avg("overallPct")) + "</div></div>" +
             '<div class="kpi"><div class="k">Quoted spend</div><div class="n">' + formatMoney(spend) + "</div></div>" +
@@ -1036,7 +1041,12 @@
             body +
           "</tbody></table></div>" +
           legend() +
-          '<p class="caption">Container rates: 20 GP $3,500 · 40 GP $5,200 · 40 HC $5,600 · FTL $2,800. Weight and volume show the RFQ actual against that container’s capacity.</p>' +
+          '<p class="caption">Container rates: 20 GP $3,500 · 40 GP $5,200 · 40 HC $5,600 · FTL $2,800. Weight and volume show the RFQ actual against that container’s capacity.</p>'
+        : '<p class="lede">This report is not part of this prototype. Container utilization is the report to open.</p>';
+      return (
+        '<div class="page">' +
+          '<div class="analytics-tabs">' + tabs + "</div>" +
+          bodyContent +
         "</div>"
       );
     }
@@ -1079,10 +1089,10 @@
         title.textContent = "Quote PDF";
         view.innerHTML = renderQuote();
       } else if (state.page === "detail") {
-        title.innerHTML = '<button class="crumb" type="button" data-go="' + state.origin + '">' + (state.origin === "analytics" ? "Analytics" : "Shipments") + "</button>" + crumb + '<span class="current">' + esc(shipment.silqId) + "</span>";
+        title.innerHTML = '<button class="crumb" type="button" data-go="' + state.origin + '">' + (state.origin === "reports" ? "Reports" : "Shipments") + "</button>" + crumb + '<span class="current">' + esc(shipment.silqId) + "</span>";
         view.innerHTML = renderDetail();
-      } else if (state.page === "analytics") {
-        title.textContent = "Analytics";
+      } else if (state.page === "reports") {
+        title.textContent = "Reports";
         view.innerHTML = renderAnalytics();
       } else {
         title.textContent = "Shipments";
@@ -1090,10 +1100,10 @@
       }
       document.querySelectorAll("[data-navkey]").forEach((el) => {
         const key = el.dataset.navkey;
-        const active = (key === "shipments" && (state.page === "list" || state.page === "detail")) || (key === "analytics" && state.page === "analytics") || (key === "quote" && state.page === "quote");
+        const active = (key === "shipments" && (state.page === "list" || state.page === "detail")) || (key === "reports" && state.page === "reports") || (key === "quote" && state.page === "quote");
         el.classList.toggle("is-selected", active);
       });
-      if (state.page === "quote" || state.page === "analytics") {
+      if (state.page === "quote" || state.page === "reports") {
         const group = document.querySelector('[data-group="' + (state.page === "quote" ? "quoting" : "insights") + '"]');
         if (group) group.classList.add("is-open");
       }
@@ -1115,13 +1125,16 @@
       }
       if (go === "sort") {
         state.sort = state.sort === "desc" ? "asc" : "desc";
+      } else if (go === "report") {
+        state.report = target.dataset.report || "utilization";
+        state.page = "reports";
       } else if (go === "variant") {
         state.detailVariant = target.dataset.variant === "overview" ? "overview" : "page";
       } else if (go === "quote") {
         state.page = "quote";
       } else if (go === "detail") {
         if (state.page !== "quote") {
-          state.origin = state.page === "analytics" ? "analytics" : "list";
+          state.origin = state.page === "reports" ? "reports" : "list";
         }
         state.id = target.dataset.id || state.id;
         state.page = "detail";
