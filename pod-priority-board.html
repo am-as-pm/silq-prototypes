@@ -306,6 +306,7 @@
   .header-pod-info strong { color: var(--text); font-weight: 600; }
 
   .header-actions { display: flex; gap: 10px; align-items: center; }
+  .view-toggle-wrap { display: flex; align-items: center; gap: 8px; }
 
   .live-badge {
     display: flex;
@@ -1919,6 +1920,21 @@
     color: var(--text);
     box-shadow: var(--elevation-ui);
     font-weight: 600;
+  }
+
+  .breadboard-view {
+    display: none;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+  }
+  .breadboard-view.visible { display: flex; }
+  .breadboard-view iframe {
+    flex: 1;
+    width: 100%;
+    border: 0;
+    min-height: calc(100vh - 72px);
+    background: #FBFBFB;
   }
 
   /* Ops milestone tracker on cards */
@@ -3601,11 +3617,16 @@
       </div>
     </div>
     <div class="header-actions">
-      <div class="view-toggle">
-        <button class="toggle-option" id="toggleTable" onclick="switchView('table')">Table View</button>
-        <button class="toggle-option active" id="toggleAction" onclick="switchView('action')">Action</button>
-        <button class="toggle-option" id="toggleHealth" onclick="switchView('health')">Pod Health</button>
-        <button class="toggle-option" id="togglePodSetup" onclick="switchView('podsetup')">Pod Setup</button>
+      <div class="view-toggle-wrap">
+        <div class="view-toggle">
+          <button class="toggle-option" id="toggleTable" onclick="switchView('table')">Table View</button>
+          <button class="toggle-option active" id="toggleAction" onclick="switchView('action')">Action</button>
+          <button class="toggle-option" id="toggleHealth" onclick="switchView('health')">Pod Health</button>
+          <button class="toggle-option" id="togglePodSetup" onclick="switchView('podsetup')">Pod Setup</button>
+        </div>
+        <div class="view-toggle" id="breadboardBar">
+          <button class="toggle-option" id="toggleBreadboard" onclick="switchView('breadboard')">Breadboard</button>
+        </div>
       </div>
       <span class="live-badge"><span class="live-dot"></span> Live</span>
       <button class="btn" onclick="window.print()">
@@ -3766,6 +3787,11 @@
     <div class="board-container">
       <div class="board" id="board"></div>
     </div>
+  </div>
+
+  <!-- BREADBOARD VIEW -->
+  <div class="breadboard-view" id="breadboardView">
+    <iframe title="Quoting Action breadboard" src="neap-quoting-action-breadboard.html"></iframe>
   </div>
 
   <!-- TABLE VIEW -->
@@ -5629,11 +5655,18 @@ function switchView(view) {
   document.getElementById("toggleTable").classList.toggle("active", view === "table");
   document.getElementById("toggleHealth").classList.toggle("active", view === "health");
   document.getElementById("togglePodSetup").classList.toggle("active", view === "podsetup");
+  document.getElementById("toggleBreadboard").classList.toggle("active", view === "breadboard");
   document.getElementById("actionView").classList.toggle("hidden", view !== "action");
   document.getElementById("tableView").classList.toggle("visible", view === "table");
   document.getElementById("healthView").classList.toggle("visible", view === "health");
   document.getElementById("podSetupView").classList.toggle("visible", view === "podsetup");
+  document.getElementById("breadboardView").classList.toggle("visible", view === "breadboard");
   document.getElementById("pipelineToggle").style.display = view === "action" ? "flex" : "none";
+  if (view === "breadboard") {
+    if (location.hash !== "#breadboard") history.replaceState(null, "", "#breadboard");
+  } else if (location.hash === "#breadboard") {
+    history.replaceState(null, "", location.pathname + location.search);
+  }
   if (view === "table") renderTableView();
   if (view === "health") renderHealthView();
   if (view === "podsetup") renderPodSetup();
@@ -7884,6 +7917,7 @@ renderBoard(RFQS);
 renderSummary(RFQS);
 document.getElementById("totalRfqBadge").textContent = RFQS.length;
 applySidebarCollapsed(isSidebarCollapsed());
+if (location.hash === "#breadboard") switchView("breadboard");
 </script>
 </body>
 </html>
