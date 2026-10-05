@@ -183,41 +183,41 @@
   <h2>User stories</h2>
   <p class="lede">Each block on this page maps to a ticket. Open the story for acceptance criteria.</p>
   <div class="stories">
-    <a class="story" href="https://linear.app/silq/issue/CON-7878" target="_blank" rel="noopener">
+    <a class="story" href="https://linear.app/silq/issue/CON-7878/user-story-1-quoting-action-swim-lanes-placement-pod-scope-lane" target="_blank" rel="noopener">
       <span class="id">CON-7878</span>
-      <b>Story 1 · Swimlanes</b>
-      <span>Where a card sits. Main lanes vs User actionables. Convert, cancel, fold groups.</span>
+      <b>Story 1 · Swim lanes</b>
+      <span>Placement, pod scope, Main vs User actionables, lane headers, Include Air on Expired.</span>
     </a>
-    <a class="story" href="https://linear.app/silq/issue/CON-7879" target="_blank" rel="noopener">
+    <a class="story" href="https://linear.app/silq/issue/CON-7879/user-story-2-quoting-action-cards-fields-indicators-reassign-actions" target="_blank" rel="noopener">
       <span class="id">CON-7879</span>
       <b>Story 2 · Cards</b>
-      <span>What is on a card. Click goes to Bookings or Review Quotes.</span>
+      <span>Fields, indicators, reassign, Convert / Cancel, click to Bookings or Review Quotes.</span>
     </a>
-    <a class="story" href="https://linear.app/silq/issue/CON-7880" target="_blank" rel="noopener">
+    <a class="story" href="https://linear.app/silq/issue/CON-7880/user-story-3-quoting-action-page-layout-and-filters" target="_blank" rel="noopener">
       <span class="id">CON-7880</span>
-      <b>Story 3 · Layout and filters</b>
-      <span>Page order, search, sort, chips, demo and Air defaults.</span>
+      <b>Story 3 · Page layout and filters</b>
+      <span>Page order, count pills, search, sort, chips, Include demo.</span>
     </a>
-    <a class="story" href="https://linear.app/silq/issue/CON-7894" target="_blank" rel="noopener">
+    <a class="story" href="https://linear.app/silq/issue/CON-7894/user-story-4-projections-and-target-panel" target="_blank" rel="noopener">
       <span class="id">CON-7894</span>
-      <b>Story 4 · Target panel</b>
+      <b>Story 4 · Projections and Target</b>
       <span>This month’s bar. Achieved = first quote accept, not bookings.</span>
     </a>
-    <a class="story" href="https://linear.app/silq/issue/CON-7896" target="_blank" rel="noopener">
+    <a class="story" href="https://linear.app/silq/issue/CON-7896/user-story-5-summary-impact-strip-pulse-do-next-view-all" target="_blank" rel="noopener">
       <span class="id">CON-7896</span>
-      <b>Story 5 · Summary strip</b>
-      <span>Pulse, Do next (top 3), See all, Astra. Collapse rules.</span>
+      <b>Story 5 · Summary impact strip</b>
+      <span>Pulse, Do next (top 3), View All, Astra. Collapse rules.</span>
     </a>
-    <a class="story" href="https://linear.app/silq/issue/CON-7945" target="_blank" rel="noopener">
+    <a class="story" href="https://linear.app/silq/issue/CON-7945/user-story-6-pre-release-stale-rfq-and-quote-data-cleanup" target="_blank" rel="noopener">
       <span class="id">CON-7945</span>
-      <b>Story 6 · Stale data</b>
-      <span>Cleanup before release. No new UI on this board.</span>
+      <b>Story 6 · Stale data cleanup</b>
+      <span>Sheet + confirmed cancel/reject before go-live. No new UI on this board.</span>
     </a>
   </div>
 </section>
 
 <section>
-  <p class="kicker">Stories 1 and 2</p>
+  <p class="kicker">Stories 1 and 2 · <a href="https://linear.app/silq/issue/CON-7878/user-story-1-quoting-action-swim-lanes-placement-pod-scope-lane" target="_blank" rel="noopener">CON-7878</a> · <a href="https://linear.app/silq/issue/CON-7879/user-story-2-quoting-action-cards-fields-indicators-reassign-actions" target="_blank" rel="noopener">CON-7879</a></p>
   <h2>How work moves</h2>
   <p class="lede">Read top to bottom. One card sits in one lane at a time. Colored chips are the lanes on the board.</p>
 
@@ -246,6 +246,7 @@
         <ul>
           <li><b>Submit:</b> moves to Submitted.</li>
           <li><b>Delete:</b> leaves the board. Nothing is quoted.</li>
+          <li><b>Card click:</b> existing Review Quotes page (same as other RFQ lanes).</li>
         </ul>
       </div>
     </div>
@@ -268,32 +269,34 @@
       <div class="card">
         <span class="chip wait">Awaiting Client</span>
         <h3>Wait for the client</h3>
-        <p class="sub">Quote is out. Only three things can happen next.</p>
+        <p class="sub">Quote is out. Client accept and decline are the clean exits. Validity is not a third exit from this lane.</p>
         <div class="fork">
           <div class="card">
             <span class="chip ok">Accepted</span>
             <h3>A. Client accepts</h3>
             <ul>
-              <li><b>First-time accept:</b> stays in Accepted until the AM sends the booking email, then leaves the board.</li>
-              <li><b>Requote accept:</b> leaves the board immediately. No stay in Accepted.</li>
+              <li><b>First-time accept:</b> stays in Accepted until booking email is sent, then leaves.</li>
+              <li><b>Requote accept:</b> leaves immediately. Never sits in Accepted.</li>
+              <li>If a first-time Accepted quote lapses <b>before</b> the booking email: moves to Expired.</li>
             </ul>
           </div>
           <div class="card">
             <span class="chip no">Rejected</span>
             <h3>B. Client declines</h3>
             <ul>
-              <li>Lands in Rejected.</li>
+              <li>Lands in Rejected. Stays until a new quote path starts.</li>
               <li><b>New quote:</b> back to Submitted.</li>
-              <li><b>Cancel:</b> off the board. No loop.</li>
+              <li><b>Cancel:</b> off the board.</li>
             </ul>
           </div>
           <div class="card">
+            <span class="chip wait">Awaiting Client</span>
             <span class="chip no">Expired</span>
             <h3>C. Validity lapses</h3>
             <ul>
-              <li>Lands in Expired (requote pending).</li>
+              <li><b>Still Awaiting:</b> stays in Awaiting. Do not move to Expired.</li>
+              <li><b>Expired lane:</b> latest client-facing quote is expired and the RFQ is back at Submitted, or first-time Accepted lapsed before booking email. A requote that left the board can re-enter here if it later expires.</li>
               <li><b>Reissue:</b> back to Submitted.</li>
-              <li><b>Cancel:</b> off the board. No loop.</li>
             </ul>
           </div>
         </div>
@@ -305,10 +308,10 @@
 <section>
   <p class="kicker">Stories 1, 3, 4, 5</p>
   <h2>The page, top to bottom</h2>
-  <p class="lede">Same screen all day. Regions stay in this order. Summary is the daily starting point.</p>
+  <p class="lede">Same screen all day. Regions stay in this Story 3 order. Summary is the daily starting point.</p>
 
   <div class="layer">
-    <p class="meta"><a href="https://linear.app/silq/issue/CON-7880" target="_blank" rel="noopener">Story 3</a></p>
+    <p class="meta"><a href="https://linear.app/silq/issue/CON-7880/user-story-3-quoting-action-page-layout-and-filters" target="_blank" rel="noopener">CON-7880</a></p>
     <h3>Sidebar</h3>
     <ul>
       <li>App nav for the rest of Silq.</li>
@@ -316,91 +319,94 @@
     </ul>
   </div>
   <div class="layer">
-    <p class="meta"><a href="https://linear.app/silq/issue/CON-7880" target="_blank" rel="noopener">Story 3</a></p>
+    <p class="meta"><a href="https://linear.app/silq/issue/CON-7878/user-story-1-quoting-action-swim-lanes-placement-pod-scope-lane" target="_blank" rel="noopener">CON-7878</a> · <a href="https://linear.app/silq/issue/CON-7880/user-story-3-quoting-action-page-layout-and-filters" target="_blank" rel="noopener">CON-7880</a></p>
     <h3>Header</h3>
     <ul>
-      <li>Pod picker.</li>
-      <li>Switching pod rescopes the board, assignees, and target.</li>
+      <li>Pod picker: [Pod Name] - [AM Name]. Exactly one pod.</li>
+      <li>Default: the user’s pod, or Pod 1 if they belong to none.</li>
+      <li>Switching pod rescopes lanes, pills, filters, target, and the summary strip.</li>
     </ul>
   </div>
   <div class="layer">
-    <p class="meta"><a href="https://linear.app/silq/issue/CON-7880" target="_blank" rel="noopener">Story 3</a></p>
+    <p class="meta"><a href="https://linear.app/silq/issue/CON-7880/user-story-3-quoting-action-page-layout-and-filters" target="_blank" rel="noopener">CON-7880</a></p>
     <h3>Count pills</h3>
     <ul>
-      <li>Active RFQs, expired, rejected, new clients.</li>
-      <li>Bookings are not in the Active RFQs count.</li>
-      <li>Tapping a pill can clear filters.</li>
-    </ul>
-  </div>
-  <div class="layer">
-    <p class="meta"><a href="https://linear.app/silq/issue/CON-7894" target="_blank" rel="noopener">Story 4</a></p>
-    <h3>Target vs achieved</h3>
-    <ul>
-      <li>This month’s bar, with Air / Ocean / Inspections.</li>
-      <li>Achieved = first quote accept. Bookings do not count.</li>
-      <li>Upload projections. See upload history.</li>
+      <li>Bookings, Active RFQs (Submitted + Awaiting + Accepted), Expired, New clients.</li>
+      <li>Rejected is not a pill.</li>
+      <li>Counts follow the selected pod only. They ignore page filters.</li>
     </ul>
   </div>
   <div class="layer hi">
-    <p class="meta"><a href="https://linear.app/silq/issue/CON-7896" target="_blank" rel="noopener">Story 5</a></p>
+    <p class="meta"><a href="https://linear.app/silq/issue/CON-7896/user-story-5-summary-impact-strip-pulse-do-next-view-all" target="_blank" rel="noopener">CON-7896</a></p>
     <h3>Summary strip</h3>
     <ul>
-      <li>Pulse line and last refreshed (PT) always stay on screen.</li>
-      <li>Do next (top 3), See all, and Astra can fold away together.</li>
+      <li>Pulse line and last generated (PT) always stay on screen.</li>
+      <li>Do next (top 3), View All, and Astra can fold away together.</li>
       <li>Pulse does not fold.</li>
-      <li>See all and Astra never both open.</li>
+      <li>View All and Astra never both open.</li>
       <li>Astra does not reorder Do next.</li>
+      <li>Strip uses the full selected pod. It ignores page filters.</li>
     </ul>
   </div>
   <div class="layer">
-    <p class="meta"><a href="https://linear.app/silq/issue/CON-7880" target="_blank" rel="noopener">Story 3</a></p>
+    <p class="meta"><a href="https://linear.app/silq/issue/CON-7894/user-story-4-projections-and-target-panel" target="_blank" rel="noopener">CON-7894</a></p>
+    <h3>Target vs achieved</h3>
+    <ul>
+      <li>This month’s bar, with Air / Ocean / Inspections.</li>
+      <li>Achieved = first quote accept in the current month (PT). Bookings do not count.</li>
+      <li>Requote accepts stay on the parent’s first-accept month.</li>
+      <li>Upload projections. File history. Download sheet.</li>
+    </ul>
+  </div>
+  <div class="layer">
+    <p class="meta"><a href="https://linear.app/silq/issue/CON-7880/user-story-3-quoting-action-page-layout-and-filters" target="_blank" rel="noopener">CON-7880</a></p>
     <h3>Filters</h3>
     <ul>
       <li>Narrow the same board. Do not send the AM to another page.</li>
     </ul>
   </div>
   <div class="layer">
-    <p class="meta"><a href="https://linear.app/silq/issue/CON-7878" target="_blank" rel="noopener">Story 1</a></p>
+    <p class="meta"><a href="https://linear.app/silq/issue/CON-7878/user-story-1-quoting-action-swim-lanes-placement-pod-scope-lane" target="_blank" rel="noopener">CON-7878</a></p>
     <h3>Board</h3>
     <ul>
-      <li><b>Main:</b> Shipper bookings → Submitted → Awaiting → Rejected → Accepted.</li>
-      <li><b>User actionables:</b> Draft, Expired.</li>
-      <li>Each group can fold to a rail.</li>
+      <li><b>Main (open by default):</b> Shipper bookings → Submitted for Quote → Awaiting Client Response → Rejected → Accepted.</li>
+      <li><b>User actionables (collapsed by default):</b> Draft → Expired (requote pending).</li>
+      <li>Each group can fold to a rail. Collapse state resets each visit.</li>
     </ul>
   </div>
 </section>
 
 <section>
-  <p class="kicker">Story 5 · <a href="https://linear.app/silq/issue/CON-7896" target="_blank" rel="noopener">CON-7896</a></p>
+  <p class="kicker">Story 5 · <a href="https://linear.app/silq/issue/CON-7896/user-story-5-summary-impact-strip-pulse-do-next-view-all" target="_blank" rel="noopener">CON-7896</a></p>
   <h2>Summary strip</h2>
-  <p class="lede">This is the daily starting point. Pulse tells what changed. Do next tells what to do.</p>
+  <p class="lede">This is the daily starting point. Pulse tells what changed. Do next tells what to do. A row focuses the card on the board. It does not open Review Quotes.</p>
 
   <div class="layer hi">
     <h3>Pulse</h3>
     <ul>
       <li>One line: new RFQs and new bookings since yesterday (PT).</li>
       <li>Pending to quote = Submitted only, plus how many already waited a day.</li>
-      <li>New rejections.</li>
-      <li>Cleanup only if too many CRD-stale cards.</li>
+      <li>New rejections, or “no new rejections”.</li>
+      <li>Cleanup only if more than 6 CRD-stale cards.</li>
       <li>Never a Do next row.</li>
     </ul>
   </div>
   <div class="layer">
     <h3>Do next</h3>
-    <p class="sub" style="margin:0 0 8px;font-size:12px;color:var(--grey-600)">Show three rows, in this order. A row focuses that card.</p>
+    <p class="sub" style="margin:0 0 8px;font-size:12px;color:var(--grey-600)">Show three rows, in this order.</p>
     <ul>
-      <li>Quote now (Submitted waiting)</li>
-      <li>Convert now (booking waiting)</li>
-      <li>Send booking</li>
-      <li>Follow up</li>
-      <li>Reissue</li>
-      <li>Win back</li>
+      <li>Quote now: Submitted waiting ≥ 1 day</li>
+      <li>Convert now: booking waiting ≥ 1 day</li>
+      <li>Send booking: Accepted ≥ 1 day, first-time only</li>
+      <li>Follow up: Awaiting at risk, silent, or Needs attention</li>
+      <li>Reissue: Expired lane (Air never included here)</li>
+      <li>Win back: Rejected</li>
     </ul>
   </div>
   <div class="layer">
-    <h3>See all</h3>
+    <h3>View All</h3>
     <ul>
-      <li>Opens the full ranked list.</li>
+      <li>Opens the full ranked list, grouped by verb.</li>
       <li>Closes Astra.</li>
       <li>Pick a row to focus that card.</li>
     </ul>
@@ -409,42 +415,41 @@
     <h3>Astra</h3>
     <ul>
       <li>Opens chat about this board.</li>
-      <li>Closes See all.</li>
+      <li>Closes View All.</li>
       <li>Does not move cards or change the list.</li>
     </ul>
   </div>
 </section>
 
 <section>
-  <p class="kicker">Story 3 · <a href="https://linear.app/silq/issue/CON-7880" target="_blank" rel="noopener">CON-7880</a></p>
+  <p class="kicker">Story 3 · <a href="https://linear.app/silq/issue/CON-7880/user-story-3-quoting-action-page-layout-and-filters" target="_blank" rel="noopener">CON-7880</a> · Include Air in <a href="https://linear.app/silq/issue/CON-7878/user-story-1-quoting-action-swim-lanes-placement-pod-scope-lane" target="_blank" rel="noopener">CON-7878</a></p>
   <h2>Filters</h2>
-  <p class="lede">All of these stay on this page. They stack: a card must match every active control.</p>
+  <p class="lede">All of these stay on this page.</p>
 
   <h3>Who and what</h3>
   <ul>
     <li><b>Assignee:</b> one person. AM or associate on this pod.</li>
     <li><b>Organization:</b> one or many clients.</li>
-    <li><b>Service:</b> FCL, LCL, Air, Inspections. Default: all.</li>
+    <li><b>Services:</b> FCL, LCL, SCL, Air, Inspections. Default: all. A card with two modes shows if either mode is selected.</li>
   </ul>
 
   <h3>Find</h3>
   <ul>
-    <li><b>Sort:</b> inside each lane. Recent / earliest submitted, or CRD up / down. Bookings use booking date where that applies.</li>
-    <li><b>Search:</b> RFQ name, Silq id, booking name, booking id.</li>
+    <li><b>Sort:</b> inside each lane. Default: earliest submitted. Also recently submitted, or CRD up / down.</li>
+    <li><b>Search:</b> booking id, booking name, RFQ name, RFQ number (Silq id).</li>
   </ul>
 
   <h3>Chips</h3>
   <ul>
-    <li><b>High priority:</b> only flagged high-priority cards.</li>
-    <li><b>Needs attention:</b> only cards the AM starred.</li>
-    <li><b>Requotes:</b> only requote cards.</li>
+    <li><b>High priority / Needs attention / Requotes / CRD passed:</b> turning one on clears Assignee, Organization, and Services.</li>
+    <li><b>Requotes:</b> RFQ requotes only. Bookings are out.</li>
     <li><b>CRD passed:</b> cargo-ready date at least 2 days past.</li>
+    <li><b>Include demo:</b> off at first. ANDs with everything else. Does not clear the other filters.</li>
   </ul>
 
-  <h3>Defaults (off at first)</h3>
+  <h3>Expired lane only</h3>
   <ul>
-    <li><b>Include demo:</b> demo cards stay hidden until this is on.</li>
-    <li><b>Include Air:</b> on the Expired lane only. Expired Air stays hidden until this is on.</li>
+    <li><b>Include Air:</b> off at first, resets each visit. Expired Air stays hidden until this is on. Does not change the summary strip.</li>
   </ul>
 </section>
 
@@ -453,7 +458,7 @@
   <h2>Not on this board yet</h2>
   <h3>No UI this release</h3>
   <ul class="out">
-    <li><a href="https://linear.app/silq/issue/CON-7945" target="_blank" rel="noopener">Story 6 (CON-7945)</a>: stale RFQ and quote cleanup. Backend / data only.</li>
+    <li><a href="https://linear.app/silq/issue/CON-7945/user-story-6-pre-release-stale-rfq-and-quote-data-cleanup" target="_blank" rel="noopener">Story 6 (CON-7945)</a>: stale RFQ and quote cleanup. Sheet + confirmed mutations. No new board UI.</li>
   </ul>
   <h3>Other views, not Quoting Action</h3>
   <ul class="out">
