@@ -138,6 +138,11 @@
     top: 0; left: 0; bottom: 0;
     z-index: 50;
     box-shadow: 4px 20px 25px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    transition: width 180ms ease;
+  }
+  .sidebar.is-collapsed {
+    width: 64px;
   }
 
   .sidebar-logo {
@@ -149,7 +154,14 @@
 
   .silq-logo { display: flex; align-items: center; color: var(--silq-white); }
   .silq-wordmark { width: 80px; height: 32px; display: block; }
+  .silq-mark { display: none; width: 28px; height: 22px; }
   .silq-logo-text { display: none; }
+  .sidebar.is-collapsed .sidebar-logo {
+    justify-content: center;
+    padding: 16px 8px 12px;
+  }
+  .sidebar.is-collapsed .silq-wordmark { display: none; }
+  .sidebar.is-collapsed .silq-mark { display: block; }
 
   .sidebar-nav {
     display: flex;
@@ -172,7 +184,10 @@
     cursor: pointer;
     transition: background 120ms ease, color 120ms ease;
     text-decoration: none;
+    position: relative;
+    white-space: nowrap;
   }
+  .nav-label { overflow: hidden; }
 
   .nav-item:hover { background: rgba(255,255,255,0.08); color: var(--silq-white); }
   .nav-item.active { background: var(--sidebar-active); color: var(--silq-white); font-weight: 600; }
@@ -196,13 +211,65 @@
     box-sizing: border-box;
   }
 
+  .sidebar.is-collapsed .sidebar-nav { padding: 0 8px; }
+  .sidebar.is-collapsed .nav-item {
+    justify-content: center;
+    padding: 8px;
+    gap: 0;
+  }
+  .sidebar.is-collapsed .nav-label { display: none; }
+  .sidebar.is-collapsed .nav-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    margin-left: 0;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    font-size: 9px;
+    line-height: 16px;
+  }
+
+  .sidebar-collapse-btn {
+    margin: 8px 12px 16px;
+    width: calc(100% - 24px);
+    height: 32px;
+    padding: 0;
+    border: none;
+    border-radius: 5px;
+    background: transparent;
+    color: rgba(255,255,255,0.72);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .sidebar-collapse-btn:hover {
+    background: rgba(255,255,255,0.08);
+    color: var(--silq-white);
+  }
+  .sidebar-collapse-btn svg {
+    width: 12px;
+    height: 12px;
+    display: block;
+    transition: transform 180ms ease;
+  }
+  .sidebar.is-collapsed .sidebar-collapse-btn {
+    margin: 8px auto 16px;
+    width: 32px;
+  }
+  .sidebar.is-collapsed .sidebar-collapse-btn svg { transform: rotate(180deg); }
+
   .main {
     flex: 1;
     margin-left: 220px;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    transition: margin-left 180ms ease;
   }
+  .sidebar.is-collapsed + .main { margin-left: 64px; }
 
   .app-header {
     background: var(--card);
@@ -994,17 +1061,32 @@
     gap: 14px;
     align-items: flex-start;
   }
-  /* Collapse/expand controls for the "User actionables" section */
-  .group-collapse-btn {
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    font-size: 15px;
-    line-height: 1;
-    color: var(--text-secondary);
+  /* Silq IconButton — square icon-only (Figma: 28/32/40, 5px radius, ghost for lane chrome) */
+  .silq-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
     padding: 0;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    flex-shrink: 0;
+    font-family: inherit;
+    color: var(--silq-grey-800);
+    background: transparent;
   }
-  .group-collapse-btn:hover { color: var(--primary); }
+  .silq-icon-btn:hover { background: var(--silq-grey-100); }
+  .silq-icon-btn:active { background: var(--silq-grey-200); }
+  .silq-icon-btn:focus-visible {
+    outline: none;
+    box-shadow: var(--elevation-ui), var(--focus-ring);
+  }
+  .silq-icon-btn--sm { width: 28px; height: 28px; }
+  .silq-icon-btn--md { width: 32px; height: 32px; }
+  .silq-icon-btn--lg { width: 40px; height: 40px; }
+  .silq-icon-btn svg { display: block; }
+
   .aside-rail {
     height: 100%;
     min-height: 260px;
@@ -1023,7 +1105,7 @@
     transition: background .15s ease, color .15s ease;
   }
   .aside-rail:hover { background: var(--primary-lighter); color: var(--primary); }
-  .aside-rail-chevron { font-size: 16px; font-weight: 700; }
+  .aside-rail svg { flex-shrink: 0; }
   .aside-rail-label {
     writing-mode: vertical-rl;
     transform: rotate(180deg);
@@ -3444,7 +3526,7 @@
 </head>
 <body>
 
-<nav class="sidebar">
+<nav class="sidebar" id="appSidebar">
   <div class="sidebar-logo">
     <div class="silq-logo" aria-label="Silq">
       <svg class="silq-wordmark" width="80" height="32" viewBox="0 0 80 32" fill="none" xmlns="http://www.w3.org/2000/svg" role="img">
@@ -3452,39 +3534,57 @@
         <path fill-rule="evenodd" clip-rule="evenodd" d="M63.9041 4.79999L59.0019 6.29337V25.145H63.9041V4.79999ZM56.9494 11.7106H52.0129V25.145H56.9494V11.7106ZM44.3636 25.2516C43.3279 25.2427 42.2958 25.1304 41.2833 24.9164C40.3848 24.7796 39.5206 24.4787 38.7357 24.0295V20.7624C39.5276 21.2398 40.3856 21.6031 41.2833 21.8413C42.1789 22.1049 43.1077 22.2455 44.0428 22.2588C44.5818 22.2834 45.1212 22.2174 45.6374 22.0637C45.7921 22.0145 45.9255 21.916 46.0163 21.784C46.1072 21.652 46.1503 21.4941 46.1389 21.3353C46.1436 21.2105 46.1201 21.0863 46.07 20.9714C46.02 20.8566 45.9446 20.7539 45.8492 20.6709C45.5872 20.4512 45.2788 20.2909 44.946 20.2016C44.5567 20.0522 43.9027 19.842 42.9839 19.5646C42.1045 19.3103 41.2515 18.9756 40.4362 18.565C39.8723 18.2509 39.398 17.8034 39.0565 17.2636C38.7314 16.6478 38.5758 15.9598 38.6049 15.2673C38.6049 13.8837 39.1239 12.8495 40.1621 12.1648C41.2003 11.48 42.634 11.1285 44.4633 11.1102C45.3823 11.1151 46.2981 11.2173 47.1947 11.415C47.968 11.5364 48.7134 11.7902 49.3967 12.1648V15.3588C48.7811 14.9599 48.0992 14.6691 47.3816 14.4993C46.6045 14.2824 45.8008 14.1706 44.9927 14.1671C44.4183 14.1459 43.8444 14.2201 43.2953 14.3865C43.1174 14.4423 42.9634 14.5542 42.8574 14.7047C42.7514 14.8553 42.6995 15.036 42.7098 15.2186C42.711 15.3916 42.7646 15.5604 42.8638 15.7036C42.963 15.8469 43.1035 15.9581 43.2673 16.0232C43.9641 16.3084 44.6826 16.5397 45.4163 16.715L45.9489 16.8552C46.8615 17.0857 47.7368 17.4396 48.5495 17.9067C49.115 18.2183 49.5685 18.6929 49.8483 19.2659C50.1352 19.8821 50.2717 20.5551 50.2469 21.2317C50.2604 21.8054 50.1294 22.3735 49.8654 22.8859C49.6015 23.3983 49.2126 23.8392 48.7333 24.1697C47.7325 24.889 46.2759 25.2496 44.3636 25.2516ZM54.3612 5.51542C53.7492 5.51259 53.161 5.74781 52.7261 6.16934C52.2913 6.59086 52.0454 7.16416 52.0425 7.76311C52.0396 8.36207 52.28 8.93761 52.7107 9.36314C53.1415 9.78866 53.7274 10.0293 54.3394 10.0321H54.5793C54.8896 10.0446 55.1992 9.9958 55.4898 9.88855C55.7804 9.7813 56.0459 9.61784 56.2705 9.40793C56.4951 9.19802 56.6741 8.94597 56.7969 8.66684C56.9197 8.38771 56.9838 8.08722 56.9852 7.78332C56.9867 7.47942 56.9255 7.17835 56.8054 6.89809C56.6853 6.61784 56.5087 6.36415 56.2862 6.15217C56.0637 5.9402 55.7997 5.77429 55.5102 5.66437C55.2207 5.55444 54.9115 5.50275 54.6011 5.51237L54.3612 5.51542ZM75.294 24.3008C74.3232 24.947 73.1728 25.2854 71.9988 25.2699C68.6445 25.2699 65.5766 23.0634 65.5766 18.1931C65.5766 13.7252 68.6694 11.3053 71.9645 11.3053C73.2904 11.2887 74.5836 11.7084 75.6366 12.497L75.7269 11.5461H80V30H75.3282L75.294 24.3008ZM73.0764 14.7005C73.8955 14.654 74.7002 14.9256 75.3158 15.4563L75.294 21.1555C74.8392 21.5639 74.179 21.8809 73.0764 21.8809C71.351 21.8809 70.1893 20.357 70.1893 18.2785C70.1893 16.2761 71.3728 14.7005 73.0764 14.7005Z" fill="#FFFFFF"/>
         <path fill-rule="evenodd" clip-rule="evenodd" d="M38.0324 2.88643L32.9301 2.03122C31.1156 1.19502 6.59601 17.4345 6.59601 17.4345L6.19739 18.5937L34.7988 4.86291C25.9177 10.3489 0.996261 25.6603 0.996261 25.6603C0.776469 25.8058 0.587879 25.9931 0.441388 26.2114C0.24797 26.5744 0.103238 26.9609 0.0108843 27.3612C-0.00272716 27.4116 -0.00358552 27.4646 0.00838441 27.5154C0.0203543 27.5662 0.0447812 27.6133 0.0794948 27.6525C0.114208 27.6917 0.158132 27.7217 0.20736 27.74C0.256588 27.7582 0.309594 27.7641 0.361665 27.7571C2.60985 27.3802 11.8609 25.8155 15.2316 24.8241C23.5483 22.3788 26.8074 19.1702 28.7494 16.2023C30.9976 12.7625 37.1299 3.70362 37.9973 2.94344L38.042 2.89593L38.0324 2.88643ZM26.5778 13.3928C25.94 14.7231 24.91 16.82 22.4322 18.5209C19.8141 20.32 12.403 22.591 8.71983 23.3164L26.6703 13.1806C26.6354 13.2495 26.6045 13.3204 26.5778 13.3928Z" fill="#EF6445"/>
       </svg>
+      <svg class="silq-mark" width="28" height="22" viewBox="0 0 39 30" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M38.0324 2.88643L32.9301 2.03122C31.1156 1.19502 6.59601 17.4345 6.59601 17.4345L6.19739 18.5937L34.7988 4.86291C25.9177 10.3489 0.996261 25.6603 0.996261 25.6603C0.776469 25.8058 0.587879 25.9931 0.441388 26.2114C0.24797 26.5744 0.103238 26.9609 0.0108843 27.3612C-0.00272716 27.4116 -0.00358552 27.4646 0.00838441 27.5154C0.0203543 27.5662 0.0447812 27.6133 0.0794948 27.6525C0.114208 27.6917 0.158132 27.7217 0.20736 27.74C0.256588 27.7582 0.309594 27.7641 0.361665 27.7571C2.60985 27.3802 11.8609 25.8155 15.2316 24.8241C23.5483 22.3788 26.8074 19.1702 28.7494 16.2023C30.9976 12.7625 37.1299 3.70362 37.9973 2.94344L38.042 2.89593L38.0324 2.88643ZM26.5778 13.3928C25.94 14.7231 24.91 16.82 22.4322 18.5209C19.8141 20.32 12.403 22.591 8.71983 23.3164L26.6703 13.1806C26.6354 13.2495 26.6045 13.3204 26.5778 13.3928Z" fill="#EF6445"/>
+      </svg>
     </div>
   </div>
   <div class="sidebar-nav">
-    <a class="nav-item" href="#">
+    <a class="nav-item" href="#" title="Projects">
       <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
-      Projects
+      <span class="nav-label">Projects</span>
     </a>
-    <a class="nav-item" href="#">
+    <a class="nav-item" href="#" title="Shipments">
       <svg viewBox="0 0 20 20" fill="currentColor"><path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/><path d="M3 4h1l1.68 8.39A2 2 0 007.65 14h4.7a2 2 0 001.97-1.61L16 6H5"/></svg>
-      Shipments
+      <span class="nav-label">Shipments</span>
     </a>
-    <a class="nav-item" href="#">
+    <a class="nav-item" href="#" title="Invoices">
       <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/></svg>
-      Invoices
+      <span class="nav-label">Invoices</span>
     </a>
-    <a class="nav-item" href="#">
+    <a class="nav-item" href="#" title="Rates">
       <svg viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/><path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"/></svg>
-      Rates
+      <span class="nav-label">Rates</span>
     </a>
-    <a class="nav-item" href="#">
+    <a class="nav-item" href="#" title="Credit Limits">
       <svg viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V8a2 2 0 00-2-2h-5L9 4H4z"/></svg>
-      Credit Limits
+      <span class="nav-label">Credit Limits</span>
     </a>
-    <a class="nav-item active" href="#">
+    <a class="nav-item active" href="#" title="Pod Board">
       <svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 6a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zm10 0a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
-      Pod Board
+      <span class="nav-label">Pod Board</span>
       <span class="nav-badge" id="totalRfqBadge">24</span>
     </a>
-    <a class="nav-item" href="#">
+    <a class="nav-item" href="#" title="Settings">
       <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/></svg>
-      Settings
+      <span class="nav-label">Settings</span>
     </a>
   </div>
+  <button type="button" class="sidebar-collapse-btn" id="sidebarCollapseBtn" onclick="toggleSidebarCollapse()" aria-expanded="true" aria-controls="appSidebar" title="Collapse sidebar">
+    <svg viewBox="0 0 12 12" fill="none" aria-hidden="true">
+      <path d="M7.5 2.5L4 6L7.5 9.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
+  <script>
+  (function () {
+    try {
+      if (localStorage.getItem("silq_pod_sidebar_collapsed") === "1") {
+        var sb = document.getElementById("appSidebar");
+        if (sb) sb.classList.add("is-collapsed");
+      }
+    } catch (e) {}
+  })();
+  </script>
 </nav>
 
 <div class="main">
@@ -4291,6 +4391,25 @@ function formatLastRefreshedPt(date) {
     timeZone: "America/Los_Angeles"
   });
   return `${formatted} PT`;
+}
+
+const SIDEBAR_COLLAPSE_KEY = "silq_pod_sidebar_collapsed";
+function isSidebarCollapsed() {
+  return !!document.getElementById("appSidebar")?.classList.contains("is-collapsed");
+}
+function applySidebarCollapsed(collapsed) {
+  const sb = document.getElementById("appSidebar");
+  const btn = document.getElementById("sidebarCollapseBtn");
+  if (sb) sb.classList.toggle("is-collapsed", collapsed);
+  if (btn) {
+    btn.setAttribute("aria-expanded", collapsed ? "false" : "true");
+    btn.title = collapsed ? "Expand sidebar" : "Collapse sidebar";
+    btn.setAttribute("aria-label", collapsed ? "Expand sidebar" : "Collapse sidebar");
+  }
+  try { localStorage.setItem(SIDEBAR_COLLAPSE_KEY, collapsed ? "1" : "0"); } catch (e) {}
+}
+function toggleSidebarCollapse() {
+  applySidebarCollapsed(!isSidebarCollapsed());
 }
 
 const ASTRA_BRIEF_COLLAPSE_KEY = "silq_pod_astra_brief_collapsed";
@@ -5888,6 +6007,13 @@ function closeProjHistory() {
   document.getElementById("projDrawerOverlay").classList.remove("open");
 }
 
+/* Silq icon library glyphs (ChevronLeft / ChevronRight) + IconButton wrapper */
+const SILQ_ICON_CHEVRON_LEFT = `<svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M12.5 5L7.5 10L12.5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const SILQ_ICON_CHEVRON_RIGHT = `<svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M7.5 5L12.5 10L7.5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+function silqIconButton({ icon, label, onclick, variant = "ghost", size = "sm" }) {
+  return `<button type="button" class="silq-icon-btn silq-icon-btn--${variant} silq-icon-btn--${size}" onclick="${onclick}" title="${label}" aria-label="${label}">${icon}</button>`;
+}
+
 function renderBoard(rfqs) {
   const board = document.getElementById("board");
   board.innerHTML = "";
@@ -5904,14 +6030,14 @@ function renderBoard(rfqs) {
     if (mainCollapsed) {
       mainGroup.innerHTML = `
         <button class="aside-rail" onclick="toggleMainCollapse()" title="Show main swimlanes">
-          <span class="aside-rail-chevron">›</span>
+          ${SILQ_ICON_CHEVRON_RIGHT}
           <span class="aside-rail-label">Main swimlanes</span>
         </button>`;
       mainLanes = document.createElement("div"); // detached — not appended to the board
     } else {
       mainGroup.innerHTML = `
         <div class="board-group-header">
-          <button class="group-collapse-btn" onclick="toggleMainCollapse()" title="Hide main swimlanes">‹</button>
+          ${silqIconButton({ icon: SILQ_ICON_CHEVRON_LEFT, label: "Hide main swimlanes", onclick: "toggleMainCollapse()" })}
           Main swimlanes
         </div>`;
       mainLanes = document.createElement("div");
@@ -5925,14 +6051,14 @@ function renderBoard(rfqs) {
       // Collapsed: show a thin clickable rail; lanes are built but kept off-board
       asideGroup.innerHTML = `
         <button class="aside-rail" onclick="toggleAsideCollapse()" title="Show user actionables">
-          <span class="aside-rail-chevron">‹</span>
+          ${SILQ_ICON_CHEVRON_LEFT}
           <span class="aside-rail-label">User actionables</span>
         </button>`;
       asideLanes = document.createElement("div"); // detached — not appended to the board
     } else {
       asideGroup.innerHTML = `
         <div class="board-group-header">
-          <button class="group-collapse-btn" onclick="toggleAsideCollapse()" title="Hide user actionables">›</button>
+          ${silqIconButton({ icon: SILQ_ICON_CHEVRON_RIGHT, label: "Hide user actionables", onclick: "toggleAsideCollapse()" })}
           User actionables
         </div>`;
       asideLanes = document.createElement("div");
@@ -7757,6 +7883,7 @@ renderViewTabs();
 renderBoard(RFQS);
 renderSummary(RFQS);
 document.getElementById("totalRfqBadge").textContent = RFQS.length;
+applySidebarCollapsed(isSidebarCollapsed());
 </script>
 </body>
 </html>
