@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Silq: Pod Priority Board</title>
+<script>
+(function () {
+  if (String(location.hash).toLowerCase() === "#breadboard") {
+    document.documentElement.setAttribute("data-view", "breadboard");
+  }
+})();
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -1936,6 +1943,14 @@
     min-height: calc(100vh - 72px);
     background: #FBFBFB;
   }
+  html[data-view="breadboard"] .action-view,
+  html[data-view="breadboard"] .table-view,
+  html[data-view="breadboard"] .health-view,
+  html[data-view="breadboard"] .pod-setup-view {
+    display: none !important;
+  }
+  html[data-view="breadboard"] .breadboard-view { display: flex !important; }
+  html[data-view="breadboard"] #pipelineToggle { display: none !important; }
 
   /* Ops milestone tracker on cards */
   .ops-tracker {
@@ -3793,6 +3808,20 @@
   <div class="breadboard-view" id="breadboardView">
     <iframe title="Quoting Action breadboard" src="neap-quoting-action-breadboard.html"></iframe>
   </div>
+  <script>
+    (function () {
+      if (String(location.hash).toLowerCase() !== "#breadboard") return;
+      document.documentElement.setAttribute("data-view", "breadboard");
+      var action = document.getElementById("actionView");
+      var board = document.getElementById("breadboardView");
+      var toggleAction = document.getElementById("toggleAction");
+      var toggleBb = document.getElementById("toggleBreadboard");
+      if (action) action.classList.add("hidden");
+      if (board) board.classList.add("visible");
+      if (toggleAction) toggleAction.classList.remove("active");
+      if (toggleBb) toggleBb.classList.add("active");
+    })();
+  </script>
 
   <!-- TABLE VIEW -->
   <div class="table-view" id="tableView">
@@ -5651,6 +5680,7 @@ function inRange(dateStr, range) {
 
 function switchView(view) {
   currentBoardView = view;
+  document.documentElement.setAttribute("data-view", view);
   document.getElementById("toggleAction").classList.toggle("active", view === "action");
   document.getElementById("toggleTable").classList.toggle("active", view === "table");
   document.getElementById("toggleHealth").classList.toggle("active", view === "health");
@@ -5661,10 +5691,11 @@ function switchView(view) {
   document.getElementById("healthView").classList.toggle("visible", view === "health");
   document.getElementById("podSetupView").classList.toggle("visible", view === "podsetup");
   document.getElementById("breadboardView").classList.toggle("visible", view === "breadboard");
-  document.getElementById("pipelineToggle").style.display = view === "action" ? "flex" : "none";
+  const pipeline = document.getElementById("pipelineToggle");
+  if (pipeline) pipeline.style.display = view === "action" ? "flex" : "none";
   if (view === "breadboard") {
-    if (location.hash !== "#breadboard") history.replaceState(null, "", "#breadboard");
-  } else if (location.hash === "#breadboard") {
+    if (location.hash.toLowerCase() !== "#breadboard") history.replaceState(null, "", "#breadboard");
+  } else if (location.hash.toLowerCase() === "#breadboard") {
     history.replaceState(null, "", location.pathname + location.search);
   }
   if (view === "table") renderTableView();
@@ -7917,7 +7948,10 @@ renderBoard(RFQS);
 renderSummary(RFQS);
 document.getElementById("totalRfqBadge").textContent = RFQS.length;
 applySidebarCollapsed(isSidebarCollapsed());
-if (location.hash === "#breadboard") switchView("breadboard");
+if (String(location.hash).toLowerCase() === "#breadboard") switchView("breadboard");
+window.addEventListener("hashchange", function () {
+  if (String(location.hash).toLowerCase() === "#breadboard") switchView("breadboard");
+});
 </script>
 </body>
 </html>
