@@ -194,7 +194,34 @@
   .group-row td {
     background: var(--silq-grey-50); font: var(--type-micro-semi-bold);
     text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--text-secondary);
+    cursor: pointer; user-select: none;
   }
+  .group-row:hover td { background: var(--silq-grey-100); }
+  .group-row .sub { text-transform: none; letter-spacing: 0; font-weight: 400; margin-top: 4px; display: block; }
+  .group-hd { display: flex; align-items: center; gap: 8px; }
+  .caret {
+    display: inline-block; width: 0; height: 0; flex-shrink: 0;
+    border-left: 4px solid transparent; border-right: 4px solid transparent;
+    border-top: 5px solid var(--silq-grey-600);
+    transition: transform 0.15s ease;
+  }
+  .group-row.collapsed .caret { transform: rotate(-90deg); }
+  tr.group-hide { display: none; }
+  .latest-query { margin-top: 6px; }
+  .qlog {
+    display: flex; flex-direction: column; gap: 8px;
+    max-height: 260px; overflow: auto; margin: 12px 0;
+    padding: 2px;
+  }
+  .qlog-empty { font: var(--type-content-small); color: var(--text-secondary); padding: 8px 0; }
+  .qlog-item {
+    padding: 10px 12px; border: 1px solid var(--border); border-radius: 5px;
+    background: var(--silq-grey-50);
+  }
+  .qlog-item.query { background: var(--bg-warning); border-color: #FCD1A7; }
+  .qlog-item.resolve { background: var(--bg-success); border-color: transparent; }
+  .qlog-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+  .qlog-who { font: var(--type-content-small); color: var(--text-secondary); }
   .charge { font: var(--type-ui-normal-semi-bold); color: var(--silq-navy); }
   .sub { font: var(--type-content-small); color: var(--text-secondary); font-weight: 400; }
   .quoted { color: var(--text-secondary); }
@@ -208,6 +235,29 @@
     border: 1px solid var(--border); border-radius: 5px; padding: 6px 8px; box-shadow: var(--elevation-ui);
   }
   tr.row-query { background: var(--bg-warning); }
+  tr.row-elsewhere { background: var(--bg-info); }
+  tr.row-ifapp-off { background: var(--silq-grey-50); }
+  tr.row-ifapp-off .charge { color: var(--silq-grey-600); }
+  .ifapp-check {
+    display: flex; align-items: flex-start; gap: 6px; margin-top: 8px;
+    font: var(--type-content-small); color: var(--silq-navy); cursor: pointer; font-weight: 400;
+  }
+  .ifapp-check input {
+    appearance: none; width: 16px; height: 16px; margin: 2px 0 0; flex-shrink: 0;
+    border: 1px solid var(--silq-grey-400); border-radius: 3px; background: var(--silq-white);
+    box-shadow: var(--elevation-ui); cursor: pointer;
+  }
+  .ifapp-check input:checked {
+    background: var(--silq-navy); border-color: var(--silq-navy);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23fff' stroke-width='2' d='M3.5 8.5l3 3 6-7'/%3E%3C/svg%3E");
+    background-size: 12px 12px; background-position: center; background-repeat: no-repeat;
+  }
+  .ifapp-check input:focus-visible { outline: none; box-shadow: 0 0 0 2px rgba(18, 52, 59, 0.60); }
+  tfoot td {
+    font: var(--type-ui-normal-semi-bold); background: var(--silq-grey-50);
+    border-bottom: none; border-top: 2px solid var(--silq-grey-300);
+  }
+  input.money[readonly], input.money:disabled { background: var(--silq-grey-100); color: var(--text-secondary); box-shadow: none; cursor: not-allowed; }
   tr.row-dispute { background: var(--bg-error); }
   .foot {
     display: grid; grid-template-columns: 1fr 1fr 1fr auto auto; gap: 12px; align-items: end;
@@ -349,6 +399,7 @@
             </tr>
           </thead>
           <tbody id="tbody"></tbody>
+          <tfoot id="tfoot"></tfoot>
         </table>
       </div>
 
@@ -391,16 +442,26 @@
 </div>
 <div class="modal-back" id="flagModal">
   <div class="modal">
-    <h2>Query</h2>
-    <p class="warn">Internal. Raise a query on this charge with Ops. Same action whether you need a confirm or you are challenging the billed amount.</p>
+    <h2 id="flagTitle">Query</h2>
+    <p class="hint">Internal thread on this charge. Add a Query or Resolve. The charge row shows only the latest query.</p>
     <div class="facts" id="flagMeta" style="grid-template-columns:1fr 1fr 1fr;margin-bottom:12px;"></div>
-    <div class="fld">
-      <label>Note</label>
-      <input class="input" id="flagNote" placeholder="What needs confirming, or why this billed value is wrong.">
+    <div class="qlog" id="flagLog"></div>
+    <div class="pick" style="grid-template-columns:140px 1fr;margin-top:4px;">
+      <div class="fld">
+        <label>Type</label>
+        <select class="input" id="flagType">
+          <option value="query">Query</option>
+          <option value="resolve">Resolve</option>
+        </select>
+      </div>
+      <div class="fld">
+        <label>Note</label>
+        <input class="input" id="flagNote" placeholder="What needs confirming, or how this was resolved.">
+      </div>
     </div>
     <div class="modal-actions">
-          <button class="btn" type="button" id="cancelFlag">Cancel</button>
-          <button class="btn btn-primary" type="button" id="confirmFlag">Mark query</button>
+      <button class="btn" type="button" id="cancelFlag">Close</button>
+      <button class="btn btn-primary" type="button" id="confirmFlag">Add to log</button>
     </div>
   </div>
 </div>
@@ -417,21 +478,15 @@ const GROUPS = [
   { id: 'freight', label: 'Freight' },
   { id: 'origin', label: 'Origin' },
   { id: 'destination', label: 'Destination' },
-  { id: 'customs', label: 'Customs' }
+  { id: 'customs', label: 'Customs' },
+  { id: 'ifapp', label: 'If applicable' }
 ];
-const SOURCE = {
-  quote: { label: 'Quote', cls: 'tag-gray' },
-  contract: { label: 'Contract', cls: 'tag-ok' },
-  sheet: { label: 'Sheet', cls: 'tag-review' },
-  cached: { label: 'Cached', cls: 'tag-blue' }
-};
-
 function L(id, group, charge, uom, buyUnit, sellUnit, grain, extra) {
   return Object.assign({
     id, group, charge, uom, buyUnit, sellUnit, grain,
-    extra: false, added: false, actual: null, flag: null, proof: null,
+    extra: false, added: false, actual: null, queries: [], proof: null,
     source: 'quote', qtyField: null, catalogOnly: false, proofRequired: false,
-    modes: ['FCL', 'LCL', 'Air']
+    modes: ['FCL', 'LCL', 'Air'], applicable: false
   }, extra || {});
 }
 
@@ -441,8 +496,6 @@ const CATALOG = [
   L('oflcl', 'freight', 'Ocean Freight', 'CBM', 140, 150, 'per_unit', { qtyField: 'cbm', modes: ['LCL'] }),
   L('airfr', 'freight', 'Freight', 'kg', 4.2, 5.8, 'per_unit', { qtyField: 'kg', modes: ['Air'] }),
   L('cprot', 'freight', 'Cargo Protection (minimum)*', 'job', 20, 35, 'per_quote'),
-  L('pss', 'freight', 'Peak season surcharge', 'container', 0, 0, 'per_unit', { extra: true, modes: ['FCL'] }),
-  L('baf', 'freight', 'Bunker / BAF', 'container', 0, 0, 'per_unit', { extra: true, modes: ['FCL', 'LCL'] }),
   L('aps', 'freight', 'Airport Pickup surcharge', 'shipment', 75, 110, 'per_shipment', { modes: ['Air'] }),
   L('pick', 'origin', 'Origin cartage / factory pickup', 'container', 185, 240, 'per_unit', { modes: ['FCL'] }),
   L('othc', 'origin', 'Origin Terminal Handling', 'container', 155, 210, 'per_unit', { modes: ['FCL'] }),
@@ -467,20 +520,26 @@ const CATALOG = [
   L('atrans', 'destination', 'Airport Transfer', 'kg', 0.55, 0.8, 'per_unit', { qtyField: 'kg', modes: ['Air'] }),
   L('athc', 'destination', 'Airport Terminal Handling', 'kg', 0.4, 0.6, 'per_unit', { qtyField: 'kg', modes: ['Air'] }),
   L('cartage', 'destination', 'Cartage', 'shipment', 185, 260, 'per_shipment', { modes: ['Air'] }),
-  L('det', 'destination', 'Detention', 'day', 0, 0, 'per_unit', { extra: true, proofRequired: true, qtyField: 'detDays', modes: ['FCL'] }),
-  L('dem', 'destination', 'Demurrage', 'day', 0, 0, 'per_unit', { extra: true, proofRequired: true, qtyField: 'demDays', modes: ['FCL'] }),
   L('isf', 'customs', 'Import Security Filing (ISF)', 'HBL', 28, 45, 'per_unit', { qtyField: 'hbl', modes: ['FCL', 'LCL'] }),
-  L('cclear', 'customs', 'Customs Clearance Fee', 'shipment', 95, 145, 'per_shipment')
+  L('cclear', 'customs', 'Customs Clearance Fee', 'shipment', 95, 145, 'per_shipment'),
+  L('pss', 'ifapp', 'Peak season surcharge', 'container', 180, 250, 'per_unit', { modes: ['FCL'] }),
+  L('baf', 'ifapp', 'Bunker / BAF', 'container', 90, 120, 'per_unit', { modes: ['FCL', 'LCL'] }),
+  L('chassis', 'ifapp', 'Chassis Fees', 'container', 75, 85, 'per_unit', { modes: ['FCL'] }),
+  L('det', 'ifapp', 'Detention', 'day', 125, 150, 'per_unit', { proofRequired: true, qtyField: 'detDays', modes: ['FCL'] }),
+  L('dem', 'ifapp', 'Demurrage', 'day', 175, 200, 'per_unit', { proofRequired: true, qtyField: 'demDays', modes: ['FCL'] }),
+  L('store', 'ifapp', 'Storage Fee', 'shipment', 40, 55, 'per_shipment'),
+  L('wait', 'ifapp', 'Waiting Time', 'shipment', 65, 85, 'per_shipment'),
+  L('lift', 'ifapp', 'Liftgate', 'shipment', 55, 75, 'per_shipment', { modes: ['FCL', 'LCL', 'Air'] })
 ];
 
-const APEX_IDS = ['pick', 'othc', 'odoc', 'ocfs', 'otruck', 'of40', 'cprot', 'isf', 'cclear', 'shand', 'ddoc', 'pier', 'dray', 'dfuel', 'det', 'dem'];
-const VANDELAY_IDS = ['of40', 'shand', 'ddoc', 'pier', 'ctf', 'dray', 'dfuel', 'isf', 'cclear', 'cprot'];
-const LCL_IDS = ['oflcl', 'othclcl', 'odoc', 'ocfs', 'otruck', 'obl', 'ohand', 'cprot', 'shand', 'ddoc', 'cfspick', 'strip', 'oncar', 'isf', 'cclear'];
-const AIR_IDS = ['airfr', 'aps', 'awb', 'othcair', 'odoc', 'otruck', 'ohand', 'cprot', 'shand', 'ddoc', 'atrans', 'athc', 'cartage', 'cclear'];
+const APEX_IDS = ['pick', 'othc', 'odoc', 'ocfs', 'otruck', 'of40', 'cprot', 'isf', 'cclear', 'shand', 'ddoc', 'pier', 'dray', 'dfuel', 'pss', 'chassis', 'det', 'dem', 'store'];
+const VANDELAY_IDS = ['of40', 'shand', 'ddoc', 'pier', 'ctf', 'dray', 'dfuel', 'isf', 'cclear', 'cprot', 'chassis', 'det', 'store'];
+const LCL_IDS = ['oflcl', 'othclcl', 'odoc', 'ocfs', 'otruck', 'obl', 'ohand', 'cprot', 'shand', 'ddoc', 'cfspick', 'strip', 'oncar', 'isf', 'cclear', 'baf', 'store', 'wait', 'lift'];
+const AIR_IDS = ['airfr', 'aps', 'awb', 'othcair', 'odoc', 'otruck', 'ohand', 'cprot', 'shand', 'ddoc', 'atrans', 'athc', 'cartage', 'cclear', 'store', 'wait', 'lift'];
 
 function fromCatalog(id) {
   const c = CATALOG.find(x => x.id === id);
-  return { ...c };
+  return { ...c, queries: [] };
 }
 
 function qtyFrom(l, s, quoted) {
@@ -518,15 +577,16 @@ const QUOTES = [
       {
         id: 'shp-01', shipId: 'SHP-482910-01', mode: 'FCL', incoterm: 'EXW', coverage: 'D2D',
         container: '40HC', origin: 'CNYTN', dest: 'USLAX', mbl: 'MEDU1234567', blLabel: 'MBL',
-        vendorHint: 'Shipco America', shipQty: 1, quoteShipQty: 1, hblQty: 1, quoteHbl: 1,
+        vendorHint: 'Shipco America', appVendor: 'DT', shipQty: 1, quoteShipQty: 1, hblQty: 1, quoteHbl: 1,
         cbm: 62, quoteCbm: 58, kg: 8450, quoteKg: 8200,
-        detDays: 0, quoteDetDays: 0, demDays: 0, quoteDemDays: 0,
+        detDays: 3, quoteDetDays: 2, demDays: 0, quoteDemDays: 0,
         gatedIn: '2026-08-12', etd: '2026-08-20', eta: '2026-09-12',
         lines: APEX_IDS.map(fromCatalog), originEntered: true,
         docs: [{ id: 'd-apex-1', name: 'Yantian-origin-invoice.pdf', size: 184320, when: '2026-08-13', kind: 'Vendor bill' }],
         history: [
+          { at: '2026-08-13T11:32:00', by: 'Priya Shah', team: 'FinOps', text: 'Detention marked applicable on this shipment. Billed $390 vs buy $250 on 2 quote days.' },
           { at: '2026-08-13T11:30:00', by: 'Priya Shah', team: 'FinOps', text: 'Uploaded vendor bill Yantian-origin-invoice.pdf' },
-          { at: '2026-08-13T11:24:00', by: 'Priya Shah', team: 'FinOps', text: 'Peak season surcharge billed $150. Not on the quote, so this is all extra cost.' },
+          { at: '2026-08-13T11:26:00', by: 'Priya Shah', team: 'FinOps', text: 'Cargo Protection billed $20. Once per quote, not to be billed again on SHP-482910-02' },
           { at: '2026-08-13T11:22:00', by: 'Priya Shah', team: 'FinOps', text: 'Query on Origin Terminal Handling: billed $170 vs buy $155' },
           { at: '2026-08-13T11:20:00', by: 'Priya Shah', team: 'FinOps', text: 'Origin Terminal Handling billed set to $170' },
           { at: '2026-08-13T11:18:00', by: 'Priya Shah', team: 'FinOps', text: 'Origin cartage and Documentation billed from sheet' },
@@ -536,13 +596,14 @@ const QUOTES = [
       {
         id: 'shp-02', shipId: 'SHP-482910-02', mode: 'FCL', incoterm: 'EXW', coverage: 'D2D',
         container: '40HC', origin: 'CNYTN', dest: 'USLAX', mbl: 'MEDU1234599', blLabel: 'MBL',
-        vendorHint: 'Shipco America', shipQty: 1, quoteShipQty: 1, hblQty: 1, quoteHbl: 1,
+        vendorHint: 'Shipco America', appVendor: 'DT', shipQty: 1, quoteShipQty: 1, hblQty: 1, quoteHbl: 1,
         cbm: 61, quoteCbm: 61, kg: 7900, quoteKg: 7900,
         detDays: 0, quoteDetDays: 0, demDays: 0, quoteDemDays: 0,
         gatedIn: '2026-08-18', etd: '2026-08-27', eta: '2026-09-18',
         lines: APEX_IDS.map(fromCatalog),
         history: [
-          { at: '2026-08-18T08:40:00', by: 'System', team: 'Tasks', text: 'Gated in recorded' }
+          { at: '2026-08-18T08:40:00', by: 'System', team: 'Tasks', text: 'Gated in recorded' },
+          { at: '2026-08-13T11:26:00', by: 'Priya Shah', team: 'FinOps', text: 'Cargo Protection already billed on SHP-482910-01. Do not capture again on this shipment.' }
         ]
       }
     ]
@@ -552,7 +613,7 @@ const QUOTES = [
     shipments: [{
       id: 'shp-v1', shipId: 'SHP-4228268-01', mode: 'FCL', incoterm: 'FOB', coverage: 'Port to door',
       container: '40HC', origin: 'CNYTN', dest: 'USLAX', mbl: 'ONEYSH6ABC123', blLabel: 'MBL',
-      vendorHint: 'Ocean Network Express', shipQty: 1, quoteShipQty: 1, hblQty: 1, quoteHbl: 1,
+      vendorHint: 'Ocean Network Express', appVendor: 'DT', shipQty: 1, quoteShipQty: 1, hblQty: 1, quoteHbl: 1,
       cbm: 54, quoteCbm: 54, kg: 7600, quoteKg: 7600,
       detDays: 0, quoteDetDays: 0, demDays: 0, quoteDemDays: 0,
         gatedIn: '2026-05-08', etd: '2026-05-14', eta: '2026-06-04',
@@ -571,7 +632,7 @@ const QUOTES = [
     shipments: [{
       id: 'shp-lcl', shipId: 'SHP-3910044-01', mode: 'LCL', incoterm: 'EXW', coverage: 'D2D',
       container: '', origin: 'CNSHA', dest: 'USLAX', mbl: 'EGLV142600123456', blLabel: 'MBL',
-      vendorHint: 'Ecu Worldwide', shipQty: 1, quoteShipQty: 1, hblQty: 1, quoteHbl: 1,
+      vendorHint: 'Ecu Worldwide', appVendor: 'DT', shipQty: 1, quoteShipQty: 1, hblQty: 1, quoteHbl: 1,
       cbm: 12.4, quoteCbm: 12, kg: 3180, quoteKg: 2900,
       detDays: 0, quoteDetDays: 0, demDays: 0, quoteDemDays: 0,
       gatedIn: '2026-07-22', etd: '2026-07-28', eta: '2026-08-18',
@@ -588,7 +649,7 @@ const QUOTES = [
     shipments: [{
       id: 'shp-air', shipId: 'SHP-5102201-01', mode: 'Air', incoterm: 'EXW', coverage: 'Airport to door',
       container: '', origin: 'CNPVG', dest: 'USLAX', mbl: '180-12345678', blLabel: 'MAWB',
-      vendorHint: 'DHL Global Forwarding', shipQty: 1, quoteShipQty: 1, hblQty: 1, quoteHbl: 1,
+      vendorHint: 'DHL Global Forwarding', appVendor: 'DT', shipQty: 1, quoteShipQty: 1, hblQty: 1, quoteHbl: 1,
       cbm: 2.1, quoteCbm: 1.9, kg: 448, quoteKg: 420,
       detDays: 0, quoteDetDays: 0, demDays: 0, quoteDemDays: 0,
       gatedIn: '2026-09-04', etd: '2026-09-05', eta: '2026-09-06',
@@ -626,6 +687,7 @@ let who = 'finops';
 let pendingFlag = null;
 let lineStep = 'cat';
 let lineGroup = '';
+const collapsedGroups = {};
 
 function quote() { return QUOTES.find(q => q.id === quoteId); }
 function ship() {
@@ -667,16 +729,60 @@ function markupOf(l) {
 
 function quoteAllSell(l, q) {
   if (!onQuote(l)) return null;
+  if (l.grain === 'per_quote') return Number(l.sellUnit || 0);
   return q.shipments.reduce((n, s) => {
     const x = s.lines.find(y => y.id === l.id && onQuote(y));
     return n + (x ? Number(x.expSell || 0) : 0);
   }, 0);
 }
 
+function billedElsewhere(l, s, q) {
+  if (!q || l.grain !== 'per_quote') return null;
+  return q.shipments.find(other => {
+    if (other.id === s.id) return false;
+    const x = other.lines.find(y => y.id === l.id);
+    return x && x.actual !== null && x.actual !== '';
+  }) || null;
+}
+
+function isIfApp(l) { return l.group === 'ifapp'; }
+function ifAppOff(l) { return isIfApp(l) && !l.applicable; }
+function inTotals(l, s, q) {
+  if (ifAppOff(l)) return false;
+  if (billedElsewhere(l, s, q)) return false;
+  return true;
+}
+
+function otherLine(l, other) {
+  return other ? other.lines.find(y => y.id === l.id) : null;
+}
+
+function queryLog(l) {
+  if (!l.queries) l.queries = [];
+  return l.queries;
+}
+function latestQuery(l) {
+  const qs = queryLog(l).filter(e => e.type === 'query');
+  return qs.length ? qs[qs.length - 1] : null;
+}
+function lastQueryEvent(l) {
+  const log = queryLog(l);
+  return log.length ? log[log.length - 1] : null;
+}
+function queryOpen(l) {
+  const last = lastQueryEvent(l);
+  return !!(last && last.type === 'query');
+}
+function qEntry(type, note, byKey, at) {
+  const p = PEOPLE[byKey] || PEOPLE.finops;
+  return { type, note, by: p.name, team: p.team, at };
+}
+
 function ensure(s) {
   if (!s.invoice) s.invoice = { vendor: s.vendorHint || '', invoiceNo: '', invoiceDate: '', saved: false };
   if (!s.docs) s.docs = [];
   if (!s.history) s.history = [];
+  s.lines.forEach(l => { if (!l.queries) l.queries = []; });
   if (s.seeded) return;
   s.seeded = true;
   if (s.originEntered && s.mode === 'FCL') {
@@ -687,20 +793,23 @@ function ensure(s) {
     if (odoc) { odoc.actual = odoc.quoted; odoc.source = 'sheet'; }
     if (othc) {
       othc.actual = 170; othc.source = 'sheet';
-      othc.flag = { type: 'query', note: 'Billed $170 vs buy rate $155.', by: 'Priya Shah', team: 'FinOps', resolved: false };
+      othc.queries = [
+        qEntry('query', 'Please confirm origin THC. Bill came in at $170.', 'origin', '2026-08-12T16:40:00'),
+        qEntry('query', 'Billed $170 vs buy rate $155.', 'finops', '2026-08-13T11:22:00')
+      ];
+    }
+    const cprot = s.lines.find(l => l.id === 'cprot');
+    if (s.id === 'shp-01' && cprot && (cprot.actual == null || cprot.actual === '')) {
+      cprot.actual = 20;
+      cprot.source = 'sheet';
+    }
+    const det = s.lines.find(l => l.id === 'det');
+    if (s.id === 'shp-01' && det) {
+      det.applicable = true;
+      det.actual = 390;
+      det.source = 'sheet';
     }
     s.invoice.vendor = 'Yantian origin agent';
-    if (s.id === 'shp-01' && !s.lines.some(l => l.id === 'pss' && l.added)) {
-      const extra = fromCatalog('pss');
-      extra.added = true;
-      extra.extra = true;
-      extra.quoted = 0;
-      extra.expSell = 0;
-      extra.buyUnit = 0;
-      extra.sellUnit = 0;
-      extra.actual = 150;
-      s.lines.push(enrich(extra, s, quote()));
-    }
   }
   if (s.id === 'shp-lcl') {
     const of = s.lines.find(l => l.id === 'oflcl');
@@ -710,7 +819,9 @@ function ensure(s) {
     if (ocfs) { ocfs.actual = Math.round(ocfs.buyUnit * s.cbm); ocfs.source = 'sheet'; }
     if (othc) {
       othc.actual = 240; othc.source = 'sheet';
-      othc.flag = { type: 'query', note: 'Billed $240 vs buy rate on quote CBM.', by: 'Priya Shah', team: 'FinOps', resolved: false };
+      othc.queries = [
+        qEntry('query', 'Billed $240 vs buy rate on quote CBM.', 'finops', '2026-07-23T14:10:00')
+      ];
     }
     s.invoice.vendor = 'Shanghai CFS agent';
     s.invoice.invoiceNo = 'SHA-LCL-8841';
@@ -724,7 +835,10 @@ function ensure(s) {
     if (aps) { aps.actual = aps.quoted; aps.source = 'sheet'; }
     if (awb) {
       awb.actual = 80; awb.source = 'sheet';
-      awb.flag = { type: 'query', note: 'AWB billed $80 vs buy rate $45.', by: 'Priya Shah', team: 'FinOps', resolved: false };
+      awb.queries = [
+        qEntry('query', 'AWB billed $80 vs buy rate $45.', 'finops', '2026-09-05T16:40:00'),
+        qEntry('resolve', 'Confirmed extra AWB fee on this HAWB. Leave billed at $80.', 'dest', '2026-09-05T17:05:00')
+      ];
     }
     s.invoice.vendor = 'PVG GHA';
     s.invoice.invoiceNo = 'PVG-AWB-2201';
@@ -733,8 +847,8 @@ function ensure(s) {
 }
 
 function totals(s, q) {
-  const quoted = billable(s).filter(onQuote);
-  const lines = billable(s);
+  const lines = billable(s).filter(l => inTotals(l, s, q));
+  const quoted = lines.filter(onQuote);
   const actualSell = quoted.reduce((n, l) => n + Number(l.expSell || 0), 0);
   const buy = quoted.reduce((n, l) => n + Number(l.quoted || 0), 0);
   const withA = lines.filter(l => l.actual !== null && l.actual !== '');
@@ -795,6 +909,7 @@ function renderFacts() {
     ['Incoterm', s.incoterm + ' · ' + s.coverage],
     ['Mode', modeLabel(s)],
     ['Gated in', fmtDate(s.gatedIn)],
+    ['Vendor (from app)', s.appVendor || 'DT'],
     ['Quote qty', qtyFacts(s, true)],
     ['HBL quantity', qtyFacts(s, false)]
   ].map(([k, v]) => `<div class="fld"><label>${k}</label><div class="v ro">${v}</div></div>`).join('');
@@ -814,25 +929,24 @@ function renderKpis() {
   </div>`;
 }
 
-function srcTag(l) {
-  const s = SOURCE[l.source] || SOURCE.quote;
-  return `<span class="tag ${s.cls}">${s.label}</span>`;
-}
 function varHtml(n) {
   if (n == null) return '<span class="empty">-</span>';
   if (Math.abs(n) < 0.5) return money(0);
   return `<span class="${n > 0 ? 'over' : 'under'}">${n > 0 ? '+' : ''}${money(n)}</span>`;
 }
 function flagCell(l) {
-  const query = !l.flag
-    ? `<button type="button" class="btn btn-tiny" data-flag="query" data-id="${l.id}">Query</button>`
-    : `<span class="tag tag-review">Query</span>${l.flag.resolved ? '<span class="tag tag-ok">Resolved</span>' : ''}
-    <div class="sub">${l.flag.note}</div>
-    ${l.flag.resolved ? '' : `<button type="button" class="btn btn-tiny" data-resolve="${l.id}">Resolve</button>`}`;
+  const latest = latestQuery(l);
+  const latestHtml = latest
+    ? `<div class="latest-query"><span class="tag tag-review">Query</span><div class="sub">${latest.note}</div></div>`
+    : '';
   const remove = onQuote(l)
     ? ''
     : `<button type="button" class="btn btn-tiny btn-danger" data-rm-line="${l.id}">Remove</button>`;
-  return `<div class="row-actions">${query}${remove}</div>`;
+  return `<div class="row-actions">
+    <button type="button" class="btn btn-tiny" data-flag="query" data-id="${l.id}">Query</button>
+    ${remove}
+    ${latestHtml}
+  </div>`;
 }
 
 function renderTable() {
@@ -841,53 +955,111 @@ function renderTable() {
   document.getElementById('tbody').innerHTML = GROUPS.map(g => {
     const rows = billable(s).filter(l => l.group === g.id);
     if (!rows.length) return '';
-    return `<tr class="group-row"><td colspan="8">${g.label}</td></tr>` + rows.map(l => {
+    const groupHint = g.id === 'ifapp'
+      ? '<div class="sub">Quote values stay visible. Totals include a line only when Applies on this shipment is checked.</div>'
+      : '';
+    const shut = !!collapsedGroups[g.id];
+    return `<tr class="group-row${shut ? ' collapsed' : ''}" data-collapse="${g.id}">
+      <td colspan="8">
+        <div class="group-hd"><span class="caret" aria-hidden="true"></span><span>${g.label} · ${rows.length}</span></div>
+        ${groupHint}
+      </td>
+    </tr>` + rows.map(l => {
       const quotedLine = onQuote(l);
+      const elseShip = billedElsewhere(l, s, q);
+      const elseLn = otherLine(l, elseShip);
+      const capturedHere = quotedLine && l.grain === 'per_quote' && l.actual !== null && l.actual !== '';
       const allSell = quotedLine ? quoteAllSell(l, q) : null;
       const buy = buyRate(l);
-      const costVar = lineVar(l);
-      const gp = lineGp(l);
+      const off = ifAppOff(l);
+      const costVar = elseShip || off ? null : lineVar(l);
+      const gp = elseShip || off ? null : lineGp(l);
       const qQty = quoteQtyOf(l, s);
       const fQty = fileQtyOf(l, s);
       const diff = quotedLine && Math.abs(Number(qQty) - Number(fQty)) > 0.0005;
       const rowCls = [
         costVar > 0.5 ? 'over' : '',
-        l.flag && !l.flag.resolved ? 'row-query' : ''
+        queryOpen(l) ? 'row-query' : '',
+        elseShip ? 'row-elsewhere' : '',
+        off ? 'row-ifapp-off' : '',
+        shut ? 'group-hide' : ''
       ].join(' ');
-      const qtyCell = quotedLine
-        ? `<div class="qty-stack">
+      const grainTag = l.grain === 'per_quote'
+        ? `<span class="tag tag-blue">Once per quote</span>${elseShip ? `<span class="tag tag-ok">Billed on ${elseShip.shipId}</span>` : ''}${capturedHere ? '<span class="tag tag-ok">Captured here</span>' : ''}`
+        : '';
+      const ifAppBox = isIfApp(l)
+        ? `<label class="ifapp-check"><input type="checkbox" data-applicable="${l.id}" ${l.applicable ? 'checked' : ''}> Applies on this shipment</label>`
+        : '';
+      const qtyCell = !quotedLine
+        ? `<span class="empty">-</span><div class="sub">Not on quote</div>`
+        : l.grain === 'per_quote'
+          ? `<div class="qty-stack"><div class="quoted">Quote 1 job</div><div>${elseShip ? 'On ' + elseShip.shipId : 'HBL 1 job'}</div></div>`
+          : `<div class="qty-stack">
             <div class="quoted">Quote ${qQty} ${l.uom}</div>
             <div class="${diff ? 'diff' : ''}">HBL ${fQty} ${l.uom}</div>
-          </div>`
-        : `<span class="empty">-</span><div class="sub">Not on quote</div>`;
+          </div>`;
       const sellCell = !quotedLine
         ? '<span class="empty">-</span>'
-        : (l.grain === 'per_quote' && !l.expSell ? '<span class="empty">Other shipment</span>' : money(l.expSell));
+        : elseShip
+          ? `<span class="empty">-</span><div class="sub">On ${elseShip.shipId}</div>`
+          : (l.grain === 'per_quote' && !l.expSell ? '<span class="empty">Once per quote</span>' : money(l.expSell));
       const buyCell = !quotedLine
         ? '<span class="empty">-</span><div class="sub">No buy on quote</div>'
-        : `${money(buy)}<div class="sub">markup ${money(markupOf(l))}</div>`;
-      const varCell = costVar == null
-        ? '<span class="empty">-</span>'
-        : varHtml(costVar) + (!quotedLine ? '<div class="sub">Off quote, all extra</div>' : '');
-      const gpCell = gp == null
-        ? '<span class="empty">-</span>'
-        : (gp < -0.5 ? `<span class="over">${money(gp)}</span>` : money(gp)) + (!quotedLine ? '<div class="sub">No sell to offset</div>' : '');
+        : elseShip
+          ? `<span class="empty">-</span><div class="sub">On ${elseShip.shipId}</div>`
+          : l.grain === 'per_quote' && !l.quoted
+            ? '<span class="empty">Once per quote</span>'
+            : `${money(buy)}<div class="sub">markup ${money(markupOf(l))}</div>`;
+      const billedCell = elseShip && elseLn
+        ? `${money(elseLn.actual)}<div class="sub">Already on ${elseShip.shipId}${elseShip.invoice && elseShip.invoice.invoiceNo ? ' · ' + elseShip.invoice.invoiceNo : ''}</div>`
+        : `<input class="money" data-id="${l.id}" value="${l.actual == null ? '' : l.actual}" placeholder="-" ${off ? 'disabled' : ''}>${off ? '<div class="sub">Check applies to enter billed</div>' : ''}`;
+      const varCell = elseShip
+        ? `<span class="empty">-</span><div class="sub">On ${elseShip.shipId}</div>`
+        : off
+          ? '<span class="empty">-</span><div class="sub">Not in totals</div>'
+          : costVar == null
+            ? '<span class="empty">-</span>'
+            : varHtml(costVar) + (!quotedLine ? '<div class="sub">Off quote, all extra</div>' : '');
+      const gpCell = elseShip
+        ? `<span class="empty">-</span><div class="sub">On ${elseShip.shipId}</div>`
+        : off
+          ? '<span class="empty">-</span><div class="sub">Not in totals</div>'
+          : gp == null
+            ? '<span class="empty">-</span>'
+            : (gp < -0.5 ? `<span class="over">${money(gp)}</span>` : money(gp)) + (!quotedLine ? '<div class="sub">No sell to offset</div>' : '');
       return `<tr class="${rowCls}">
         <td>
-          <div class="charge">${l.charge}${quotedLine ? srcTag(l) : '<span class="tag tag-review">Not on quote</span>'}</div>
-          <div class="sub">${quotedLine ? money(l.sellUnit) + ' sell / ' + l.uom : 'Added from catalog'}</div>
+          <div class="charge">${l.charge}${quotedLine ? '' : '<span class="tag tag-review">Not on quote</span>'}${grainTag}</div>
+          <div class="sub">${quotedLine ? money(l.sellUnit) + ' sell / ' + l.uom : 'Added from catalog'}${l.grain === 'per_quote' ? ' · bill once on this quote' : ''}</div>
+          ${ifAppBox}
           ${flagCell(l)}
         </td>
         <td class="num quoted">${quotedLine ? money(allSell) : '<span class="empty">-</span>'}${quotedLine ? '<div class="sub">' + q.shipments.length + ' shipments</div>' : ''}</td>
         <td class="num">${qtyCell}</td>
         <td class="num quoted">${sellCell}</td>
         <td class="num quoted">${buyCell}</td>
-        <td class="num"><input class="money" data-id="${l.id}" value="${l.actual == null ? '' : l.actual}" placeholder="-"></td>
+        <td class="num">${billedCell}</td>
         <td class="num">${varCell}</td>
         <td class="num">${gpCell}</td>
       </tr>`;
     }).join('');
   }).join('');
+}
+
+function renderFoot() {
+  const q = quote();
+  const s = ship();
+  const t = totals(s, q);
+  document.getElementById('tfoot').innerHTML = `<tr>
+    <td>Total (this shipment)<div class="sub">If applicable only when checked. Once-per-quote billed elsewhere excluded.</div></td>
+    <td class="num">${money(t.qSell)}</td>
+    <td class="num"><span class="empty">-</span></td>
+    <td class="num">${money(t.actualSell)}</td>
+    <td class="num">${money(t.buy)}</td>
+    <td class="num">${t.billedN ? money(t.billed) : '-'}</td>
+    <td class="num">${t.variance == null ? '-' : varHtml(t.variance)}</td>
+    <td class="num">${t.gp < -0.5 ? `<span class="over">${money(t.gp)}</span>` : money(t.gp)}</td>
+  </tr>`;
 }
 
 function fmtSize(n) {
@@ -945,10 +1117,11 @@ function render() {
   const s = ship();
   document.getElementById('after').classList.toggle('hidden', !s);
   if (!s) return;
-  ensure(s);
+  quote().shipments.forEach(ensure);
   renderFacts();
   renderKpis();
   renderTable();
+  renderFoot();
   renderDocs();
   renderHistory();
   document.getElementById('vendor').value = s.invoice.vendor || '';
@@ -1008,7 +1181,8 @@ document.getElementById('lineBody').addEventListener('click', e => {
   line.buyUnit = 0;
   line.sellUnit = 0;
   line.actual = null;
-  line.flag = null;
+  line.queries = [];
+  if (isIfApp(line)) line.applicable = true;
   s.lines.push(enrich(line, s, quote()));
   pushHistory(s, 'Added ' + line.charge + ' from catalog. Not on the quote.');
   document.getElementById('lineModal').classList.remove('open');
@@ -1016,6 +1190,17 @@ document.getElementById('lineBody').addEventListener('click', e => {
   render();
 });
 document.getElementById('tbody').addEventListener('change', e => {
+  const app = e.target.closest('[data-applicable]');
+  if (app) {
+    const line = ship().lines.find(l => l.id === app.dataset.applicable);
+    line.applicable = app.checked;
+    persistInvoice();
+    pushHistory(ship(), line.charge + (app.checked
+      ? ' marked applicable on this shipment. Values included in totals.'
+      : ' unmarked. Values excluded from totals.'));
+    render();
+    return;
+  }
   const inp = e.target.closest('[data-id]');
   if (!inp) return;
   const line = ship().lines.find(l => l.id === inp.dataset.id);
@@ -1028,16 +1213,16 @@ document.getElementById('tbody').addEventListener('change', e => {
   render();
 });
 document.getElementById('tbody').addEventListener('click', e => {
-  const flagBtn = e.target.closest('[data-flag]');
-  if (flagBtn) { openFlag(flagBtn.dataset.id); return; }
-  const res = e.target.closest('[data-resolve]');
-  if (res) {
-    const line = ship().lines.find(l => l.id === res.dataset.resolve);
-    line.flag.resolved = true;
-    pushHistory(ship(), 'Resolved query on ' + line.charge);
-    render();
+  const grp = e.target.closest('[data-collapse]');
+  if (grp && !e.target.closest('[data-flag], [data-rm-line], [data-applicable], .money, .ifapp-check')) {
+    const id = grp.dataset.collapse;
+    collapsedGroups[id] = !collapsedGroups[id];
+    renderTable();
+    renderFoot();
     return;
   }
+  const flagBtn = e.target.closest('[data-flag]');
+  if (flagBtn) { openFlag(flagBtn.dataset.id); return; }
   const rm = e.target.closest('[data-rm-line]');
   if (!rm) return;
   const s = ship();
@@ -1092,27 +1277,53 @@ document.getElementById('saveBtn').addEventListener('click', () => {
   render();
 });
 
+function renderFlagLog(line) {
+  const log = queryLog(line);
+  const box = document.getElementById('flagLog');
+  if (!log.length) {
+    box.innerHTML = '<div class="qlog-empty">No queries on this charge yet.</div>';
+    return;
+  }
+  box.innerHTML = log.map(e =>
+    `<div class="qlog-item ${e.type}">
+      <div class="qlog-top">
+        <span class="tag ${e.type === 'resolve' ? 'tag-ok' : 'tag-review'}">${e.type === 'resolve' ? 'Resolve' : 'Query'}</span>
+        <span class="qlog-who">${fmtWhen(e.at)} · ${e.by}${e.team ? ' · ' + e.team : ''}</span>
+      </div>
+      <div class="hist-text">${e.note}</div>
+    </div>`
+  ).join('');
+  box.scrollTop = box.scrollHeight;
+}
+
 function openFlag(lineId) {
   const line = ship().lines.find(l => l.id === lineId);
   pendingFlag = { lineId };
+  document.getElementById('flagTitle').textContent = 'Query · ' + line.charge;
   document.getElementById('flagMeta').innerHTML = `
     <div class="fld"><label>Charge</label><div class="v ro">${line.charge}</div></div>
     <div class="fld"><label>Buy rate</label><div class="v ro">${onQuote(line) ? money(line.quoted) : '-'}</div></div>
     <div class="fld"><label>Billed</label><div class="v ro">${money(line.actual)}</div></div>`;
-  document.getElementById('flagNote').value = line.flag && line.flag.note ? line.flag.note : '';
+  document.getElementById('flagType').value = 'query';
+  document.getElementById('flagNote').value = '';
+  renderFlagLog(line);
   document.getElementById('flagModal').classList.add('open');
 }
 document.getElementById('cancelFlag').onclick = () => document.getElementById('flagModal').classList.remove('open');
 document.getElementById('confirmFlag').addEventListener('click', () => {
-  const note = document.getElementById('flagNote').value.trim();
-  if (!note) { toast('Add a note.'); return; }
+  const type = document.getElementById('flagType').value === 'resolve' ? 'resolve' : 'query';
+  const note = document.getElementById('flagNote').value.trim() || (type === 'resolve' ? 'Resolved' : '');
+  if (type === 'query' && !note) { toast('Add a query note.'); return; }
   const line = ship().lines.find(l => l.id === pendingFlag.lineId);
-  line.flag = {
-    type: 'query', note, by: PEOPLE[who].name, team: PEOPLE[who].team, resolved: false
-  };
-  pushHistory(ship(), 'Query on ' + line.charge + ': ' + note);
-  document.getElementById('flagModal').classList.remove('open');
+  queryLog(line).push({
+    type, note, by: PEOPLE[who].name, team: PEOPLE[who].team, at: new Date().toISOString()
+  });
+  pushHistory(ship(), (type === 'resolve' ? 'Resolved ' : 'Query on ') + line.charge + ': ' + note);
+  document.getElementById('flagNote').value = '';
+  document.getElementById('flagType').value = 'query';
   render();
+  renderFlagLog(line);
+  toast(type === 'resolve' ? 'Resolve added to the log.' : 'Query added. Row shows this note.');
 });
 
 render();
