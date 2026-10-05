@@ -19,12 +19,13 @@ Interactive HTML prototypes for Silq product features. Hosted via GitHub Pages.
 | File | Feature | Owner |
 |---|---|---|
 | `vendor-billed-costs.html` | Vendor Billed Costs (FCL / LCL / Air, HBL qty, vendor bill upload) | VP |
-| `pod-priority-board.html` | Pod Priority Board (Kanban + Pod Health) | — |
+| `pod-priority-board.html` | Pod Priority Board (Kanban + Pod Health + Breadboard view) | — |
+| `neap-quoting-action-breadboard.html` | Quoting Action breadboard (opened from the Pod Board Breadboard view) | — |
 | `credit-limit-table.html` | Client Credit Limit Table (QuickBooks integration) | — |
 | `tag-management-system/` | Tag Management System (typed tags + settings) | AM |
 | `comments-audit-log/` | Comment Versioning & Audit Trail (roles + tracked changes) | AM |
 | `product-metadata-ops-review.html` | Product Information — Ops Review (catalog layers, sources, gaps, feedback) | AM |
-| `container-utilization.html` | Container Utilization (weight, volume, and overall constraint) | AM |
+| `container-utilization.html` | Container Utilization (FCL/FTL volume on the list, overall on the shipment) | AM |
 
 ## Adding a new prototype
 
