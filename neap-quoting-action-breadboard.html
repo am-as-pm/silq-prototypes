@@ -34,7 +34,7 @@
   }
   header h1 { font-size: 18px; font-weight: 600; margin: 0 0 4px; }
   header p { margin: 0; font-size: 13px; color: rgba(255,255,255,.72); max-width: 720px; }
-  .page { max-width: 880px; margin: 0 auto; padding: 28px 32px 72px; }
+  .page { max-width: 920px; margin: 0 auto; padding: 28px 32px 72px; }
   h2 {
     font-size: 16px;
     font-weight: 600;
@@ -84,7 +84,16 @@
   .story b { font-size: 13px; }
   .story span { font-size: 12px; color: var(--grey-600); }
 
-  .flow { display: flex; flex-direction: column; }
+  .journey {
+    background: var(--white);
+    border: 1px solid var(--grey-200);
+    border-radius: 8px;
+    padding: 12px 8px 4px;
+    margin: 0 0 20px;
+    overflow-x: auto;
+  }
+  .journey svg { display: block; width: 100%; min-width: 760px; height: auto; }
+  .journey-cap { font-size: 12px; color: var(--grey-600); margin: 0 8px 12px; }
   .step {
     display: grid;
     grid-template-columns: 36px 1fr;
@@ -219,7 +228,115 @@
 <section>
   <p class="kicker">Stories 1 and 2 · <a href="https://linear.app/silq/issue/CON-7878/user-story-1-quoting-action-swim-lanes-placement-pod-scope-lane" target="_blank" rel="noopener">CON-7878</a> · <a href="https://linear.app/silq/issue/CON-7879/user-story-2-quoting-action-cards-fields-indicators-reassign-actions" target="_blank" rel="noopener">CON-7879</a></p>
   <h2>How work moves</h2>
-  <p class="lede">Read top to bottom. One card sits in one lane at a time. Colored chips are the lanes on the board.</p>
+  <p class="lede">One card sits in one lane at a time. Follow the orange arrows for the user journey.</p>
+
+  <h3>User journey</h3>
+  <div class="journey">
+    <svg viewBox="0 0 860 520" role="img" aria-label="Flowchart of booking to RFQ journeys">
+      <defs>
+        <marker id="arr" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+          <path d="M0,0 L8,4 L0,8 Z" fill="#EF6445"/>
+        </marker>
+      </defs>
+
+      <!-- Happy path -->
+      <text x="430" y="18" text-anchor="middle" fill="#6C6C6C" font-size="11" font-weight="600">HAPPY PATH</text>
+
+      <rect x="8" y="32" width="108" height="44" rx="6" fill="#fff" stroke="#12343B" stroke-dasharray="4 3"/>
+      <text x="62" y="58" text-anchor="middle" fill="#6C6C6C" font-size="11" font-weight="600">Booking arrives</text>
+
+      <line x1="116" y1="54" x2="148" y2="54" stroke="#EF6445" stroke-width="1.5" marker-end="url(#arr)"/>
+      <text x="132" y="46" text-anchor="middle" fill="#6C6C6C" font-size="9">lands in</text>
+
+      <rect x="152" y="32" width="122" height="44" rx="6" fill="#EBEDFF" stroke="#12343B"/>
+      <text x="213" y="58" text-anchor="middle" fill="#12343B" font-size="11" font-weight="600">Shipper bookings</text>
+
+      <line x1="274" y1="54" x2="306" y2="54" stroke="#EF6445" stroke-width="1.5" marker-end="url(#arr)"/>
+      <text x="290" y="46" text-anchor="middle" fill="#6C6C6C" font-size="9">convert</text>
+
+      <rect x="310" y="32" width="108" height="44" rx="6" fill="#EBEBEB" stroke="#12343B"/>
+      <text x="364" y="52" text-anchor="middle" fill="#12343B" font-size="11" font-weight="600">Draft</text>
+      <text x="364" y="66" text-anchor="middle" fill="#6C6C6C" font-size="9">optional</text>
+
+      <line x1="418" y1="54" x2="450" y2="54" stroke="#EF6445" stroke-width="1.5" marker-end="url(#arr)"/>
+      <text x="434" y="46" text-anchor="middle" fill="#6C6C6C" font-size="9">submit</text>
+
+      <rect x="454" y="32" width="108" height="44" rx="6" fill="#E7F5FF" stroke="#12343B"/>
+      <text x="508" y="58" text-anchor="middle" fill="#12343B" font-size="11" font-weight="600">Submitted</text>
+
+      <line x1="562" y1="54" x2="594" y2="54" stroke="#EF6445" stroke-width="1.5" marker-end="url(#arr)"/>
+      <text x="578" y="46" text-anchor="middle" fill="#6C6C6C" font-size="9">send quote</text>
+
+      <rect x="598" y="32" width="122" height="44" rx="6" fill="#FEF5E8" stroke="#12343B"/>
+      <text x="659" y="58" text-anchor="middle" fill="#12343B" font-size="11" font-weight="600">Awaiting Client</text>
+
+      <line x1="720" y1="54" x2="752" y2="54" stroke="#EF6445" stroke-width="1.5" marker-end="url(#arr)"/>
+      <text x="736" y="46" text-anchor="middle" fill="#6C6C6C" font-size="9">accept</text>
+
+      <rect x="756" y="32" width="96" height="44" rx="6" fill="#EAF6ED" stroke="#12343B"/>
+      <text x="804" y="58" text-anchor="middle" fill="#12343B" font-size="11" font-weight="600">Accepted</text>
+
+      <!-- Booking email off -->
+      <line x1="804" y1="76" x2="804" y2="108" stroke="#EF6445" stroke-width="1.5" marker-end="url(#arr)"/>
+      <text x="810" y="98" fill="#6C6C6C" font-size="9">booking email</text>
+      <rect x="748" y="112" width="112" height="36" rx="6" fill="#fff" stroke="#12343B" stroke-dasharray="4 3"/>
+      <text x="804" y="134" text-anchor="middle" fill="#6C6C6C" font-size="11" font-weight="600">Off the board</text>
+
+      <!-- Cancel from bookings -->
+      <line x1="213" y1="76" x2="213" y2="108" stroke="#EF6445" stroke-width="1.5" marker-end="url(#arr)"/>
+      <text x="219" y="98" fill="#6C6C6C" font-size="9">cancel</text>
+      <rect x="157" y="112" width="112" height="36" rx="6" fill="#fff" stroke="#12343B" stroke-dasharray="4 3"/>
+      <text x="213" y="134" text-anchor="middle" fill="#6C6C6C" font-size="11" font-weight="600">Off the board</text>
+
+      <!-- Skip draft -->
+      <path d="M213,54 C213,20 508,20 508,32" fill="none" stroke="#EF6445" stroke-width="1.25" stroke-dasharray="4 3" marker-end="url(#arr)"/>
+      <text x="360" y="16" text-anchor="middle" fill="#6C6C6C" font-size="9">or skip Draft</text>
+
+      <!-- From Awaiting: three journeys -->
+      <text x="430" y="186" text-anchor="middle" fill="#6C6C6C" font-size="11" font-weight="600">FROM AWAITING</text>
+      <line x1="659" y1="76" x2="659" y2="200" stroke="#EF6445" stroke-width="1.5"/>
+      <line x1="120" y1="200" x2="740" y2="200" stroke="#EF6445" stroke-width="1.5"/>
+      <line x1="120" y1="200" x2="120" y2="218" stroke="#EF6445" stroke-width="1.5" marker-end="url(#arr)"/>
+      <line x1="430" y1="200" x2="430" y2="218" stroke="#EF6445" stroke-width="1.5" marker-end="url(#arr)"/>
+      <line x1="740" y1="200" x2="740" y2="218" stroke="#EF6445" stroke-width="1.5" marker-end="url(#arr)"/>
+      <text x="120" y="196" text-anchor="middle" fill="#EF6445" font-size="9" font-weight="600">first-time accept</text>
+      <text x="430" y="196" text-anchor="middle" fill="#EF6445" font-size="9" font-weight="600">decline</text>
+      <text x="740" y="196" text-anchor="middle" fill="#EF6445" font-size="9" font-weight="600">requote accept</text>
+
+      <rect x="54" y="222" width="132" height="40" rx="6" fill="#EAF6ED" stroke="#12343B"/>
+      <text x="120" y="246" text-anchor="middle" fill="#12343B" font-size="11" font-weight="600">Accepted</text>
+      <line x1="120" y1="262" x2="120" y2="286" stroke="#EF6445" stroke-width="1.5" marker-end="url(#arr)"/>
+      <text x="126" y="280" fill="#6C6C6C" font-size="9">booking email</text>
+      <rect x="64" y="290" width="112" height="36" rx="6" fill="#fff" stroke="#12343B" stroke-dasharray="4 3"/>
+      <text x="120" y="312" text-anchor="middle" fill="#6C6C6C" font-size="11" font-weight="600">Off the board</text>
+      <line x1="120" y1="326" x2="120" y2="350" stroke="#EF6445" stroke-width="1.5" marker-end="url(#arr)"/>
+      <text x="126" y="344" fill="#6C6C6C" font-size="9">lapse before email</text>
+      <rect x="54" y="354" width="132" height="40" rx="6" fill="#FAE9EA" stroke="#12343B"/>
+      <text x="120" y="378" text-anchor="middle" fill="#12343B" font-size="11" font-weight="600">Expired</text>
+      <line x1="186" y1="374" x2="368" y2="312" stroke="#EF6445" stroke-width="1.25" stroke-dasharray="4 3" marker-end="url(#arr)"/>
+      <text x="250" y="336" fill="#6C6C6C" font-size="9">reissue</text>
+
+      <rect x="364" y="222" width="132" height="40" rx="6" fill="#FAE9EA" stroke="#12343B"/>
+      <text x="430" y="246" text-anchor="middle" fill="#12343B" font-size="11" font-weight="600">Rejected</text>
+      <line x1="430" y1="262" x2="430" y2="286" stroke="#EF6445" stroke-width="1.5" marker-end="url(#arr)"/>
+      <text x="436" y="280" fill="#6C6C6C" font-size="9">new quote</text>
+      <rect x="374" y="290" width="112" height="36" rx="6" fill="#E7F5FF" stroke="#12343B"/>
+      <text x="430" y="312" text-anchor="middle" fill="#12343B" font-size="11" font-weight="600">Submitted</text>
+
+      <rect x="678" y="222" width="124" height="40" rx="6" fill="#fff" stroke="#12343B" stroke-dasharray="4 3"/>
+      <text x="740" y="246" text-anchor="middle" fill="#6C6C6C" font-size="11" font-weight="600">Off immediately</text>
+
+      <!-- Validity stay -->
+      <text x="430" y="420" text-anchor="middle" fill="#6C6C6C" font-size="11" font-weight="600">IF VALIDITY LAPSES WHILE STILL AWAITING</text>
+      <rect x="348" y="432" width="164" height="40" rx="6" fill="#FEF5E8" stroke="#12343B"/>
+      <text x="430" y="456" text-anchor="middle" fill="#12343B" font-size="11" font-weight="600">Stay in Awaiting</text>
+      <text x="430" y="490" text-anchor="middle" fill="#6C6C6C" font-size="11">Do not move to Expired. Follow up from this lane.</text>
+    </svg>
+    <p class="journey-cap">Solid arrows are the usual path. Dashed arrows skip Draft, loop a requote, or leave on requote accept.</p>
+  </div>
+
+  <h3>Lane notes</h3>
+  <p class="lede">Same journeys, with the AM actions on each lane.</p>
 
   <div class="flow">
     <div class="step">
