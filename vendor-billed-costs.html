@@ -333,14 +333,21 @@
   .toolbar { display: flex; justify-content: flex-end; padding: 10px 16px 0; }
   .table-wrap { overflow-x: auto; }
   .proc {
-    display: grid; grid-template-columns: 72px 40px 52px; gap: 4px; justify-content: end;
+    display: grid; grid-template-columns: 86px 44px 56px; gap: 4px; justify-content: end;
   }
   .proc select, .proc .mini, .cur-sel {
-    width: 100%; height: 28px; font: 400 11px/14px var(--font-body);
-    border: 1px solid var(--border); border-radius: 5px; padding: 2px 4px;
-    box-shadow: var(--elevation-ui); background: var(--silq-white); color: var(--text);
+    width: 100%; min-height: 28px; height: 28px; font: 400 12px/16px var(--font-body);
+    border: 1px solid var(--silq-grey-600); border-radius: 5px; padding: 4px 8px;
+    background: var(--silq-white); color: var(--silq-grey-800);
   }
-  .proc .mini { text-align: right; }
+  .proc select:hover, .proc .mini:hover, .cur-sel:hover { border-color: var(--silq-grey-800); }
+  .proc select:focus, .proc .mini:focus, .cur-sel:focus {
+    outline: none; border-width: 1.5px; border-color: var(--silq-grey-600);
+  }
+  .proc select:disabled, .proc .mini:disabled, .cur-sel:disabled {
+    opacity: 0.5; background: var(--silq-grey-100); cursor: not-allowed; pointer-events: none;
+  }
+  .proc .mini { text-align: right; padding: 4px 6px; }
   .proc-val { margin-top: 4px; font: 600 12px/16px var(--font-body); color: var(--silq-navy); }
   .proc-tools { display: flex; justify-content: flex-end; align-items: center; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
   .cur-sel { max-width: 88px; }
@@ -548,6 +555,7 @@ const GROUPS = [
   { id: 'origin', label: 'Origin' },
   { id: 'destination', label: 'Destination' },
   { id: 'customs', label: 'Customs' },
+  { id: 'inspections', label: 'Inspections' },
   { id: 'ifapp', label: 'If applicable' }
 ];
 const CURRENCIES = [
@@ -559,7 +567,7 @@ const CURRENCIES = [
   { code: 'AED', symbol: 'د.إ' },
   { code: 'HKD', symbol: 'HK$' }
 ];
-const UOMS = ['container', 'CBM', 'kg', 'shipment', 'HBL', 'HAWB', 'day', 'job', '1000kg'];
+const UOMS = ['container', 'CBM', 'kg', 'shipment', 'HBL', 'HAWB', 'day', 'job', '1000kg', 'man day', 'SKU', 'unit'];
 const ICON_DOTS = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M 1 0 L 1 -0.75 L 1 0 Z M -0.75 8 C -0.75 8.464 -0.566 8.909 -0.237 9.237 L 0.823 8.177 C 0.776 8.13 0.75 8.066 0.75 8 L -0.75 8 Z M -0.237 9.237 C 0.091 9.566 0.536 9.75 1 9.75 L 1 8.25 C 0.934 8.25 0.87 8.224 0.823 8.177 L -0.237 9.237 Z M 1 9.75 C 1.464 9.75 1.909 9.566 2.237 9.237 L 1.177 8.177 C 1.13 8.224 1.066 8.25 1 8.25 L 1 9.75 Z M 2.237 9.237 C 2.566 8.909 2.75 8.464 2.75 8 L 1.25 8 C 1.25 8.066 1.224 8.13 1.177 8.177 L 2.237 9.237 Z M 2.75 8 C 2.75 7.536 2.566 7.091 2.237 6.763 L 1.177 7.823 C 1.224 7.87 1.25 7.934 1.25 8 L 2.75 8 Z M 2.237 6.763 C 1.909 6.434 1.464 6.25 1 6.25 L 1 7.75 C 1.066 7.75 1.13 7.776 1.177 7.823 L 2.237 6.763 Z M 1 6.25 C 0.536 6.25 0.091 6.434 -0.237 6.763 L 0.823 7.823 C 0.87 7.776 0.934 7.75 1 7.75 L 1 6.25 Z M -0.237 6.763 C -0.566 7.091 -0.75 7.536 -0.75 8 L 0.75 8 C 0.75 7.934 0.776 7.87 0.823 7.823 L -0.237 6.763 Z M -0.75 15 C -0.75 15.464 -0.566 15.909 -0.237 16.237 L 0.823 15.177 C 0.776 15.13 0.75 15.066 0.75 15 L -0.75 15 Z M -0.237 16.237 C 0.091 16.566 0.536 16.75 1 16.75 L 1 15.25 C 0.934 15.25 0.87 15.224 0.823 15.177 L -0.237 16.237 Z M 1 16.75 C 1.464 16.75 1.909 16.566 2.237 16.237 L 1.177 15.177 C 1.13 15.224 1.066 15.25 1 15.25 L 1 16.75 Z M 2.237 16.237 C 2.566 15.909 2.75 15.464 2.75 15 L 1.25 15 C 1.25 15.066 1.224 15.13 1.177 15.177 L 2.237 16.237 Z M 2.75 15 C 2.75 14.536 2.566 14.091 2.237 13.763 L 1.177 14.823 C 1.224 14.87 1.25 14.934 1.25 15 L 2.75 15 Z M 2.237 13.763 C 1.909 13.434 1.464 13.25 1 13.25 L 1 14.75 C 1.066 14.75 1.13 14.776 1.177 14.823 L 2.237 13.763 Z M 1 13.25 C 0.536 13.25 0.091 13.434 -0.237 13.763 L 0.823 14.823 C 0.87 14.776 0.934 14.75 1 14.75 L 1 13.25 Z M -0.237 13.763 C -0.566 14.091 -0.75 14.536 -0.75 15 L 0.75 15 C 0.75 14.934 0.776 14.87 0.823 14.823 L -0.237 13.763 Z M -0.75 1 C -0.75 1.464 -0.566 1.909 -0.237 2.237 L 0.823 1.177 C 0.776 1.13 0.75 1.066 0.75 1 L -0.75 1 Z M -0.237 2.237 C 0.091 2.566 0.536 2.75 1 2.75 L 1 1.25 C 0.934 1.25 0.87 1.224 0.823 1.177 L -0.237 2.237 Z M 1 2.75 C 1.464 2.75 1.909 2.566 2.237 2.237 L 1.177 1.177 C 1.13 1.224 1.066 1.25 1 1.25 L 1 2.75 Z M 2.237 2.237 C 2.566 1.909 2.75 1.464 2.75 1 L 1.25 1 C 1.25 1.066 1.224 1.13 1.177 1.177 L 2.237 2.237 Z M 2.75 1 C 2.75 0.536 2.566 0.091 2.237 -0.237 L 1.177 0.823 C 1.224 0.87 1.25 0.934 1.25 1 L 2.75 1 Z M 2.237 -0.237 C 1.909 -0.566 1.464 -0.75 1 -0.75 L 1 0.75 C 1.066 0.75 1.13 0.776 1.177 0.823 L 2.237 -0.237 Z M 1 -0.75 C 0.536 -0.75 0.091 -0.566 -0.237 -0.237 L 0.823 0.823 C 0.87 0.776 0.934 0.75 1 0.75 L 1 -0.75 Z M -0.237 -0.237 C -0.566 0.091 -0.75 0.536 -0.75 1 L 0.75 1 C 0.75 0.934 0.776 0.87 0.823 0.823 L -0.237 -0.237 Z" fill-rule="nonzero" transform="matrix(1 0 0 1 11 4)"/></svg>';
 const ICON_WARN = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M 0 9 L -0.75 9 L 0 9 Z M 9 18 L 9 17.25 L 9 18 Z M 18 9 L 17.25 9 L 18 9 Z M 9 0 L 9 0.75 L 9 0 Z M 9.75 5 C 9.75 4.586 9.414 4.25 9 4.25 C 8.586 4.25 8.25 4.586 8.25 5 L 9 5 L 9.75 5 Z M 8.25 9 C 8.25 9.414 8.586 9.75 9 9.75 C 9.414 9.75 9.75 9.414 9.75 9 L 9 9 L 8.25 9 Z M 9 12.25 C 8.586 12.25 8.25 12.586 8.25 13 C 8.25 13.414 8.586 13.75 9 13.75 L 9 13 L 9 12.25 Z M 9.01 13.75 C 9.424 13.75 9.76 13.414 9.76 13 C 9.76 12.586 9.424 12.25 9.01 12.25 L 9.01 13 L 9.01 13.75 Z M 0 9 L -0.75 9 C -0.75 10.28 -0.498 11.548 -0.008 12.731 L 0.685 12.444 L 1.378 12.157 C 0.963 11.156 0.75 10.083 0.75 9 L 0 9 Z M 0.685 12.444 L -0.008 12.731 C 0.482 13.914 1.2 14.989 2.106 15.894 L 2.636 15.364 L 3.166 14.834 C 2.4 14.068 1.793 13.158 1.378 12.157 L 0.685 12.444 Z M 2.636 15.364 L 2.106 15.894 C 3.011 16.8 4.086 17.518 5.269 18.008 L 5.556 17.315 L 5.843 16.622 C 4.842 16.207 3.932 15.6 3.166 14.834 L 2.636 15.364 Z M 5.556 17.315 L 5.269 18.008 C 6.452 18.498 7.72 18.75 9 18.75 L 9 18 L 9 17.25 C 7.917 17.25 6.844 17.037 5.843 16.622 L 5.556 17.315 Z M 9 18 L 9 18.75 C 10.28 18.75 11.548 18.498 12.731 18.008 L 12.444 17.315 L 12.157 16.622 C 11.156 17.037 10.083 17.25 9 17.25 L 9 18 Z M 12.444 17.315 L 12.731 18.008 C 13.914 17.518 14.989 16.8 15.894 15.894 L 15.364 15.364 L 14.834 14.834 C 14.068 15.6 13.158 16.207 12.157 16.622 L 12.444 17.315 Z M 15.364 15.364 L 15.894 15.894 C 16.8 14.989 17.518 13.914 18.008 12.731 L 17.315 12.444 L 16.622 12.157 C 16.207 13.158 15.6 14.068 14.834 14.834 L 15.364 15.364 Z M 17.315 12.444 L 18.008 12.731 C 18.498 11.548 18.75 10.28 18.75 9 L 18 9 L 17.25 9 C 17.25 10.083 17.037 11.156 16.622 12.157 L 17.315 12.444 Z M 18 9 L 18.75 9 C 18.75 6.414 17.723 3.934 15.894 2.106 L 15.364 2.636 L 14.834 3.166 C 16.381 4.714 17.25 6.812 17.25 9 L 18 9 Z M 15.364 2.636 L 15.894 2.106 C 14.066 0.277 11.586 -0.75 9 -0.75 L 9 0 L 9 0.75 C 11.188 0.75 13.286 1.619 14.834 3.166 L 15.364 2.636 Z M 9 0 L 9 -0.75 C 6.414 -0.75 3.934 0.277 2.106 2.106 L 2.636 2.636 L 3.166 3.166 C 4.714 1.619 6.812 0.75 9 0.75 L 9 0 Z M 2.636 2.636 L 2.106 2.106 C 0.277 3.934 -0.75 6.414 -0.75 9 L 0 9 L 0.75 9 C 0.75 6.812 1.619 4.714 3.166 3.166 L 2.636 2.636 Z M 9 5 L 8.25 5 L 8.25 9 L 9 9 L 9.75 9 L 9.75 5 L 9 5 Z M 9 13 L 9 13.75 L 9.01 13.75 L 9.01 13 L 9.01 12.25 L 9 12.25 L 9 13 Z" fill-rule="nonzero" transform="matrix(1 0 0 1 3 3)"/></svg>';
 
@@ -569,7 +577,8 @@ function L(id, group, charge, uom, buyUnit, sellUnit, grain, extra) {
     extra: false, added: false, actual: null, queries: [], proof: null,
     source: 'quote', qtyField: null, catalogOnly: false, proofRequired: false,
     modes: ['FCL', 'LCL', 'Air'], applicable: false,
-    currency: 'USD', procQty: null, procRate: null, actuals: null, absorbed: false, complete: false
+    currency: 'USD', procQty: null, procRate: null, actuals: null, absorbed: false, complete: false,
+    quoteUom: uom, procUom: uom
   }, extra || {});
 }
 
@@ -612,17 +621,26 @@ const CATALOG = [
   L('dem', 'ifapp', 'Demurrage', 'day', 175, 200, 'per_unit', { proofRequired: true, qtyField: 'demDays', modes: ['FCL'] }),
   L('store', 'ifapp', 'Storage Fee', 'shipment', 40, 55, 'per_shipment'),
   L('wait', 'ifapp', 'Waiting Time', 'shipment', 65, 85, 'per_shipment'),
-  L('lift', 'ifapp', 'Liftgate', 'shipment', 55, 75, 'per_shipment', { modes: ['FCL', 'LCL', 'Air'] })
+  L('lift', 'ifapp', 'Liftgate', 'shipment', 55, 75, 'per_shipment', { modes: ['FCL', 'LCL', 'Air'] }),
+  L('finalinsp', 'inspections', 'Final Inspection', 'man day', 75, 200, 'per_unit', { qtyField: 'inspDays', modes: ['Inspections'] }),
+  L('inlineinsp', 'inspections', 'In-line Inspection', 'man day', 60, 200, 'per_unit', { qtyField: 'inspDays', modes: ['Inspections'] }),
+  L('ppsample', 'inspections', 'Pre-production Sample', 'SKU', 25, 99, 'per_unit', { qtyField: 'skus', modes: ['Inspections'] }),
+  L('topsample', 'inspections', 'TOP Sample', 'SKU', 25, 99, 'per_unit', { qtyField: 'skus', modes: ['Inspections'] }),
+  L('factoryaud', 'inspections', 'Factory Audit', 'man day', 80, 200, 'per_unit', { qtyField: 'inspDays', modes: ['Inspections'] }),
+  L('packingaud', 'inspections', 'Packing Audit', 'man day', 80, 200, 'per_unit', { qtyField: 'inspDays', modes: ['Inspections'] }),
+  L('bulkfab', 'inspections', 'Bulk Fabric Inspection', 'man day', 70, 200, 'per_unit', { qtyField: 'inspDays', modes: ['Inspections'] }),
+  L('perunit', 'inspections', 'Per Unit Fee', 'unit', 0.04, 0.08, 'per_unit', { qtyField: 'units', modes: ['Inspections'] })
 ];
 
 const APEX_IDS = ['pick', 'othc', 'odoc', 'ocfs', 'otruck', 'of40', 'cprot', 'isf', 'cclear', 'shand', 'ddoc', 'pier', 'dray', 'dfuel', 'pss', 'chassis', 'det', 'dem', 'store'];
 const VANDELAY_IDS = ['of40', 'shand', 'ddoc', 'pier', 'ctf', 'dray', 'dfuel', 'isf', 'cclear', 'cprot', 'chassis', 'det', 'store'];
 const LCL_IDS = ['oflcl', 'othclcl', 'odoc', 'ocfs', 'otruck', 'obl', 'ohand', 'cprot', 'shand', 'ddoc', 'cfspick', 'strip', 'oncar', 'isf', 'cclear', 'baf', 'store', 'wait', 'lift'];
 const AIR_IDS = ['airfr', 'aps', 'awb', 'othcair', 'odoc', 'otruck', 'ohand', 'cprot', 'shand', 'ddoc', 'atrans', 'athc', 'cartage', 'cclear', 'store', 'wait', 'lift'];
+const INSPECT_IDS = ['finalinsp', 'inlineinsp', 'ppsample', 'perunit'];
 
 function fromCatalog(id) {
   const c = CATALOG.find(x => x.id === id);
-  return { ...c, queries: [], procQty: null, procRate: null, actuals: null, absorbed: false, complete: false, currency: c.currency || 'USD' };
+  return { ...c, queries: [], procQty: null, procRate: null, actuals: null, absorbed: false, complete: false, currency: c.currency || 'USD', quoteUom: c.quoteUom || c.uom, procUom: c.procUom || c.uom };
 }
 
 function qtyFrom(l, s, quoted) {
@@ -632,6 +650,9 @@ function qtyFrom(l, s, quoted) {
   if (l.qtyField === 'hbl') return (quoted ? s.quoteHbl : s.hblQty) || 0;
   if (l.qtyField === 'detDays') return (quoted ? s.quoteDetDays : s.detDays) || 0;
   if (l.qtyField === 'demDays') return (quoted ? s.quoteDemDays : s.demDays) || 0;
+  if (l.qtyField === 'inspDays') return (quoted ? s.quoteInspDays : s.inspDays) || 0;
+  if (l.qtyField === 'skus') return (quoted ? s.quoteSkus : s.skus) || 0;
+  if (l.qtyField === 'units') return (quoted ? s.quoteUnits : s.units) || 0;
   if (l.grain === 'per_unit') return (quoted ? s.quoteShipQty : s.shipQty) || 1;
   return 1;
 }
@@ -743,6 +764,28 @@ const QUOTES = [
       ],
       lines: AIR_IDS.map(fromCatalog), originEntered: true
     }]
+  },
+  {
+    id: 'pinnacle', quoteId: 'SILQ-6041182Q1', client: 'Pinnacle Apparel', mode: 'Inspections',
+    shipments: [{
+      id: 'shp-insp', shipId: 'INSP-6041182-01', mode: 'Inspections', incoterm: 'Factory QC', coverage: 'Inspections only',
+      container: '', containerNo: '', origin: 'Pune, IN', dest: '-', mbl: 'QC-6041182', blLabel: 'Job',
+      vendorHint: 'West India QC partner', appVendor: 'QC', shipQty: 1, quoteShipQty: 1, hblQty: 2, quoteHbl: 2,
+      cbm: 0, quoteCbm: 0, kg: 0, quoteKg: 0,
+      detDays: 0, quoteDetDays: 0, demDays: 0, quoteDemDays: 0,
+      inspDays: 1, quoteInspDays: 1, skus: 2, quoteSkus: 2, units: 4200, quoteUnits: 4000,
+      factoryName: 'West Deccan Knits', factoryPlace: 'Pune, Maharashtra, India',
+      inspTypes: 'Pre-production, In-line, Final',
+      gatedIn: '2026-09-18', etd: '2026-09-18', eta: '2026-09-18',
+      history: [
+        { at: '2026-09-18T15:20:00', by: 'Priya Shah', team: 'FinOps', text: 'Query on Final Inspection: billed $95 vs buy $75 on 1 man day.' },
+        { at: '2026-09-18T15:12:00', by: 'Priya Shah', team: 'FinOps', text: 'In-line Inspection procured $60 and marked complete.' },
+        { at: '2026-09-18T14:50:00', by: 'Wei Chen', team: 'Origin Ops', text: 'Uploaded vendor bill Pune-QC-invoice.pdf' },
+        { at: '2026-09-18T09:00:00', by: 'System', team: 'Tasks', text: 'Inspection completed at factory' }
+      ],
+      docs: [{ id: 'd-insp-1', name: 'Pune-QC-invoice.pdf', size: 96256, when: '2026-09-18', kind: 'Vendor bill' }],
+      lines: INSPECT_IDS.map(fromCatalog), originEntered: true
+    }]
   }
 ];
 
@@ -755,7 +798,9 @@ function money(n, code) {
   if (n === null || n === undefined || n === '') return '-';
   const v = Number(n);
   const c = curOf(code || 'USD');
-  return (v < 0 ? '-' : '') + c.symbol + Math.abs(v).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  const abs = Math.abs(v);
+  const digits = abs > 0 && abs < 1 ? 2 : 0;
+  return (v < 0 ? '-' : '') + c.symbol + abs.toLocaleString('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits });
 }
 function procuredOf(l) {
   if (l.procQty == null || l.procQty === '' || l.procRate == null || l.procRate === '') return null;
@@ -892,7 +937,11 @@ function ensure(s) {
   if (!s.invoice) s.invoice = { vendor: s.vendorHint || '', invoiceNo: '', invoiceDate: '', saved: false };
   if (!s.docs) s.docs = [];
   if (!s.history) s.history = [];
-  s.lines.forEach(l => { if (!l.queries) l.queries = []; });
+  s.lines.forEach(l => {
+    if (!l.queries) l.queries = [];
+    if (!l.quoteUom) l.quoteUom = l.uom;
+    if (!l.procUom) l.procUom = l.uom;
+  });
   if (s.seeded) return;
   s.seeded = true;
   if (s.originEntered && s.mode === 'FCL') {
@@ -960,6 +1009,25 @@ function ensure(s) {
     s.invoice.invoiceNo = 'PVG-AWB-2201';
     s.invoice.invoiceDate = '2026-09-05';
   }
+  if (s.id === 'shp-insp') {
+    const fin = s.lines.find(l => l.id === 'finalinsp');
+    const inline = s.lines.find(l => l.id === 'inlineinsp');
+    const pp = s.lines.find(l => l.id === 'ppsample');
+    const pu = s.lines.find(l => l.id === 'perunit');
+    if (inline) { setProcured(inline, 1, 60); inline.source = 'sheet'; inline.complete = true; }
+    if (pp) { setProcured(pp, s.skus, 25); pp.source = 'sheet'; }
+    if (pu) { setProcured(pu, s.units, 0.05); pu.source = 'sheet'; }
+    if (fin) {
+      setProcured(fin, 1, 95);
+      fin.source = 'sheet';
+      fin.queries = [
+        qEntry('query', 'Final inspection billed $95 vs buy rate $75 on 1 man day.', 'finops', '2026-09-18T15:20:00')
+      ];
+    }
+    s.invoice.vendor = 'West India QC partner';
+    s.invoice.invoiceNo = 'PUN-QC-4412';
+    s.invoice.invoiceDate = '2026-09-18';
+  }
 }
 
 function totals(s, q) {
@@ -1005,10 +1073,20 @@ function renderPickers() {
 }
 
 function modeLabel(s) {
+  if (s.mode === 'Inspections') return 'Inspections · factory QC';
   return s.mode === 'FCL' && s.container ? s.mode + ' · ' + s.container : s.mode;
 }
-function fileQtyLabel(s) { return s.mode === 'Air' ? 'HAWB' : 'HBL'; }
+function fileQtyLabel(s) {
+  if (s.mode === 'Inspections') return 'Inspected';
+  return s.mode === 'Air' ? 'HAWB' : 'HBL';
+}
 function qtyFacts(s, quoted) {
+  if (s.mode === 'Inspections') {
+    const skus = quoted ? s.quoteSkus : s.skus;
+    const units = quoted ? s.quoteUnits : s.units;
+    const days = quoted ? s.quoteInspDays : s.inspDays;
+    return (days || 0) + ' man day · ' + (skus || 0) + ' SKU · ' + (units || 0) + ' units';
+  }
   const cbm = quoted ? s.quoteCbm : s.cbm;
   const kg = quoted ? s.quoteKg : s.kg;
   const hbl = quoted ? s.quoteHbl : s.hblQty;
@@ -1022,22 +1100,38 @@ function inMode(c, s) {
 function renderFacts() {
   const q = quote();
   const s = ship();
-  const rows = [
-    ['Client', q.client],
-    [s.blLabel || 'MBL', s.mbl],
-    ['Route', s.origin + ' → ' + s.dest],
-    ['Incoterm', s.incoterm + ' · ' + s.coverage],
-    ['Mode', modeLabel(s)],
-    ['Container number', s.containerNo || '-'],
-    ['Gated in', fmtDate(s.gatedIn)],
-    ['Vendor (from app)', s.appVendor || 'DT'],
-    ['Quote qty', qtyFacts(s, true)]
-  ];
-  if (s.mode === 'Air') {
-    rows.push(['Chargeable weight', (s.kg || 0) + ' kg']);
-    rows.push(['HAWB quantity', (s.hblQty || 0) + ' HAWB']);
+  let rows;
+  if (s.mode === 'Inspections') {
+    rows = [
+      ['Client', q.client],
+      ['Job', s.mbl],
+      ['Factory', s.factoryName || '-'],
+      ['Location', s.factoryPlace || s.origin],
+      ['Mode', modeLabel(s)],
+      ['Inspection types', s.inspTypes || '-'],
+      ['Inspection date', fmtDate(s.gatedIn)],
+      ['Vendor (from app)', s.appVendor || 'QC'],
+      ['Quote qty', qtyFacts(s, true)],
+      ['Inspected qty', qtyFacts(s, false)]
+    ];
   } else {
-    rows.push(['HBL quantity', qtyFacts(s, false)]);
+    rows = [
+      ['Client', q.client],
+      [s.blLabel || 'MBL', s.mbl],
+      ['Route', s.origin + ' → ' + s.dest],
+      ['Incoterm', s.incoterm + ' · ' + s.coverage],
+      ['Mode', modeLabel(s)],
+      ['Container number', s.containerNo || '-'],
+      ['Gated in', fmtDate(s.gatedIn)],
+      ['Vendor (from app)', s.appVendor || 'DT'],
+      ['Quote qty', qtyFacts(s, true)]
+    ];
+    if (s.mode === 'Air') {
+      rows.push(['Chargeable weight', (s.kg || 0) + ' kg']);
+      rows.push(['HAWB quantity', (s.hblQty || 0) + ' HAWB']);
+    } else {
+      rows.push(['HBL quantity', qtyFacts(s, false)]);
+    }
   }
   document.getElementById('facts').innerHTML = rows.map(([k, v]) => `<div class="fld"><label>${k}</label><div class="v ro">${v}</div></div>`).join('');
 }
@@ -1066,6 +1160,8 @@ function flagCell(l) {
   return `<div class="row-actions"><button type="button" class="btn btn-tiny btn-danger" data-rm-line="${l.id}">Remove</button></div>`;
 }
 
+function quoteUomOf(l) { return l.quoteUom || l.uom; }
+function procUomOf(l) { return l.procUom || l.uom; }
 function uomOptions(current) {
   const list = UOMS.slice();
   if (current && list.indexOf(current) < 0) list.unshift(current);
@@ -1087,7 +1183,7 @@ function copyLineToSiblings(line, s, q) {
     if (other.id === s.id) return;
     const x = other.lines.find(y => y.id === line.id);
     if (!x) return;
-    x.uom = line.uom;
+    x.procUom = procUomOf(line);
     setProcured(x, line.procQty, line.procRate, line.currency);
     n += 1;
   });
@@ -1144,13 +1240,13 @@ function procCell(l, s, q, elseShip, elseLn, off) {
   const code = l.currency || 'USD';
   if (elseShip && elseLn) {
     const val = procuredOf(elseLn);
-    return `${val == null ? '-' : money(val, elseLn.currency)}<div class="sub">${elseLn.procQty || '-'} ${elseLn.uom} × ${money(elseLn.procRate, elseLn.currency)} · already on ${elseShip.shipId}</div>`;
+    return `${val == null ? '-' : money(val, elseLn.currency)}<div class="sub">${elseLn.procQty || '-'} ${procUomOf(elseLn)} × ${money(elseLn.procRate, elseLn.currency)} · already on ${elseShip.shipId}</div>`;
   }
   const locked = off || !!l.complete;
   const dis = locked ? 'disabled' : '';
   const val = procuredOf(l);
   return `<div class="proc">
-      <select data-uom="${l.id}" ${dis} aria-label="UOM">${uomOptions(l.uom)}</select>
+      <select class="silq-sb-mini" data-uom="${l.id}" ${dis} aria-label="Procured UOM">${uomOptions(procUomOf(l))}</select>
       <input class="mini" data-proc-qty="${l.id}" value="${l.procQty == null ? '' : l.procQty}" placeholder="Qty" ${dis}>
       <input class="mini" data-proc-rate="${l.id}" value="${l.procRate == null ? '' : l.procRate}" placeholder="Rate" ${dis}>
     </div>
@@ -1207,8 +1303,8 @@ function renderTable() {
         : l.grain === 'per_quote'
           ? `<div class="qty-stack"><div class="quoted">Quote 1 job</div><div>${elseShip ? 'On ' + elseShip.shipId : fileQtyLabel(s) + ' 1 job'}</div></div>`
           : `<div class="qty-stack">
-            <div class="quoted">Quote ${qQty} ${l.uom}</div>
-            <div class="${diff ? 'diff' : ''}">${fileQtyLabel(s)} ${fQty} ${l.uom}</div>
+            <div class="quoted">Quote ${qQty} ${quoteUomOf(l)}</div>
+            <div class="${diff ? 'diff' : ''}">${fileQtyLabel(s)} ${fQty} ${quoteUomOf(l)}</div>
           </div>`;
       const sellCell = !quotedLine
         ? '<span class="empty">-</span>'
@@ -1248,7 +1344,7 @@ function renderTable() {
             ${queryOpen(l) ? `<button type="button" class="query-flag is-open" data-flag="query" data-id="${l.id}" title="Outstanding query">${ICON_WARN}</button>` : ''}
             <div>
               <div class="charge">${l.charge}${quotedLine ? '' : '<span class="tag tag-review">Not on quote</span>'}${grainTag}</div>
-              <div class="sub">${quotedLine ? money(l.sellUnit) + ' sell / ' + l.uom : 'Added from catalog'}${l.grain === 'per_quote' ? ' · bill once on this quote' : ''}</div>
+              <div class="sub">${quotedLine ? money(l.sellUnit) + ' sell / ' + quoteUomOf(l) : 'Added from catalog'}${l.grain === 'per_quote' ? ' · bill once on this quote' : ''}</div>
               ${l.absorbed ? '<span class="silq-badge">Absorbed by Silq</span>' : ''}
               ${ifAppBox}
               ${flagCell(l)}
@@ -1347,7 +1443,9 @@ function render() {
   if (!s) return;
   quote().shipments.forEach(ensure);
   const qtyHead = document.getElementById('qtyHead');
-  if (qtyHead) qtyHead.textContent = s.mode === 'Air' ? 'Qty (quote / HAWB)' : 'Qty (quote / HBL)';
+  if (qtyHead) {
+    qtyHead.textContent = s.mode === 'Inspections' ? 'Qty (quote / inspected)' : s.mode === 'Air' ? 'Qty (quote / HAWB)' : 'Qty (quote / HBL)';
+  }
   renderFacts();
   renderKpis();
   renderTable();
@@ -1451,9 +1549,9 @@ document.getElementById('tbody').addEventListener('change', e => {
   const line = ship().lines.find(l => l.id === id);
   if (!line || line.complete) return;
   if (uom) {
-    line.uom = uom.value;
+    line.procUom = uom.value;
     persistInvoice();
-    pushHistory(ship(), line.charge + ' UOM set to ' + line.uom);
+    pushHistory(ship(), line.charge + ' procured UOM set to ' + line.procUom + '. Quote qty unchanged.');
     render();
     return;
   }
