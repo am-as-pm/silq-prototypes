@@ -18,7 +18,7 @@ Interactive HTML prototypes for Silq product features. Hosted via GitHub Pages.
 
 | File | Feature | Owner |
 |---|---|---|
-| `vendor-billed-costs.html` | Vendor Billed Costs (if applicable, query log, collapsible groups, FCL / LCL / Air) | VP |
+| `vendor-billed-costs.html` | Vendor Billed Costs (kebab row menu, complete lock, query flag, procured / actuals, FCL / LCL / Air) | VP |
 | `pod-priority-board.html` | Pod Priority Board (Kanban + Pod Health + Breadboard view) | — |
 | `neap-quoting-action-breadboard.html` | Quoting Action breadboard (opened from the Pod Board Breadboard view) | — |
 | `credit-limit-table.html` | Client Credit Limit Table (QuickBooks integration) | — |
