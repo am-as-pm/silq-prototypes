@@ -355,7 +355,7 @@
     background: var(--silq-grey-100); border: 1px solid var(--silq-grey-400); border-radius: 5px;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .proc.proc-act { grid-template-columns: 64px; }
+  .proc.proc-act { grid-template-columns: 44px 56px; }
   .proc-val { margin-top: 4px; font: 600 12px/16px var(--font-body); color: var(--silq-navy); }
   .qty-var { white-space: nowrap; }
   .proc-tools { display: flex; justify-content: flex-end; align-items: center; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
@@ -890,16 +890,16 @@ function setProcured(l, qty, rate, currency) {
   return syncProcured(l);
 }
 function actualsOf(l) {
-  if (l.actRate == null || l.actRate === '') return null;
-  if (l.procQty == null || l.procQty === '') return null;
-  return Math.round(Number(l.procQty) * Number(l.actRate) * 100) / 100;
+  if (l.actQty == null || l.actQty === '' || l.actRate == null || l.actRate === '') return null;
+  return Math.round(Number(l.actQty) * Number(l.actRate) * 100) / 100;
 }
 function syncActuals(l) {
   l.actuals = actualsOf(l);
   return l;
 }
-function setActuals(l, rate) {
+function setActuals(l, qty, rate) {
   if (!l) return null;
+  l.actQty = qty;
   l.actRate = rate;
   return syncActuals(l);
 }
@@ -1000,6 +1000,11 @@ function qtyNum(v) {
 }
 function lineQtyVar(l, s) {
   const procQ = qtyNum(l.procQty);
+  const actQ = qtyNum(l.actQty);
+  if (actualsOf(l) != null && actQ != null) {
+    if (procQ == null) return null;
+    return { n: actQ - procQ, uom: procUomOf(l) };
+  }
   if (procQ == null || !onQuote(l) || !s) return null;
   if (procUomOf(l) !== quoteUomOf(l)) return null;
   return { n: procQ - Number(quoteQtyOf(l, s) || 0), uom: procUomOf(l) };
@@ -1101,7 +1106,7 @@ function ensure(s) {
     if (othc) {
       setProcured(othc, 1, 170);
       othc.source = 'sheet';
-      setActuals(othc, 165);
+      setActuals(othc, 1, 165);
       othc.queries = [
         qEntry('query', 'Please confirm origin THC. Bill came in at $170.', 'origin', '2026-08-12T16:40:00'),
         qEntry('query', 'Billed $170 vs buy rate $155.', 'finops', '2026-08-13T11:22:00')
@@ -1119,7 +1124,7 @@ function ensure(s) {
     if (s.id === 'shp-01' && det) {
       det.applicable = true;
       setProcured(det, 3, 130);
-      setActuals(det, 125);
+      setActuals(det, 3, 125);
       det.source = 'sheet';
     }
     s.invoice.vendor = 'Yantian origin agent';
@@ -1433,6 +1438,7 @@ function actCell(l, elseShip, off) {
   const dis = locked ? 'disabled' : '';
   const val = actualsOf(l);
   return `<div class="proc proc-act">
+      <input class="mini" data-act-qty="${l.id}" value="${l.actQty == null ? '' : l.actQty}" placeholder="Qty" ${dis}>
       <input class="mini" data-act-rate="${l.id}" value="${l.actRate == null ? '' : l.actRate}" placeholder="Rate" ${dis}>
     </div>
     <div class="proc-val">${val == null ? '<span class="empty">-</span>' : money(val, code)}</div>${off ? '<div class="sub">Check applies to enter actuals</div>' : (l.complete ? '<div class="sub">Complete, locked</div>' : '')}`;
@@ -1729,13 +1735,15 @@ document.getElementById('tbody').addEventListener('change', e => {
   const cur = e.target.closest('[data-currency]');
   const qty = e.target.closest('[data-proc-qty]');
   const rate = e.target.closest('[data-proc-rate]');
+  const aqty = e.target.closest('[data-act-qty]');
   const arate = e.target.closest('[data-act-rate]');
-  const el = uom || cur || qty || rate || arate;
+  const el = uom || cur || qty || rate || aqty || arate;
   if (!el) return;
   const id = uom ? uom.dataset.uom
     : cur ? cur.dataset.currency
     : qty ? qty.dataset.procQty
     : rate ? rate.dataset.procRate
+    : aqty ? aqty.dataset.actQty
     : arate.dataset.actRate;
   const line = ship().lines.find(l => l.id === id);
   if (!line || line.complete) return;
@@ -1771,7 +1779,13 @@ document.getElementById('tbody').addEventListener('change', e => {
     return;
   }
   const prevA = actualsOf(line);
-  line.actRate = arate.value === '' ? null : Number(arate.value);
+  if (aqty) line.actQty = aqty.value === '' ? null : Number(aqty.value);
+  if (arate) {
+    line.actRate = arate.value === '' ? null : Number(arate.value);
+    if (line.actRate != null && (line.actQty == null || line.actQty === '')) {
+      line.actQty = (line.procQty != null && line.procQty !== '') ? line.procQty : fileQtyOf(line, ship());
+    }
+  }
   syncActuals(line);
   persistInvoice();
   const afterA = actualsOf(line) == null ? 'cleared' : money(actualsOf(line), line.currency);
