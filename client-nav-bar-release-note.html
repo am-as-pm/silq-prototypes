@@ -35,7 +35,7 @@
       }
 
       main {
-        width: min(720px, calc(100% - 32px));
+        width: min(960px, calc(100% - 32px));
         margin: 40px auto 64px;
         background: var(--surface);
         border: 1px solid var(--line);
@@ -101,12 +101,30 @@
       }
 
       .note {
-        margin: 0 0 8px;
+        margin: 0 0 16px;
         padding: 12px 14px;
         background: #f7f8fa;
         border-radius: 8px;
         color: var(--text);
         font-size: 15px;
+      }
+
+      figure {
+        margin: 0 0 20px;
+      }
+
+      img {
+        display: block;
+        width: 100%;
+        height: auto;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: #fff;
+      }
+
+      img.top-bar {
+        width: min(480px, 100%);
+        margin: 0 auto;
       }
     </style>
   </head>
@@ -144,6 +162,12 @@
           keep your menu short and show only the group names. Click a group
           name to switch between the two.
         </p>
+        <figure>
+          <img
+            src="client-nav-menu.png"
+            alt="Left-hand menu with Projects, Shipments, and Inspections at the top, and Quoting and Tasks expanded."
+          />
+        </figure>
       </section>
 
       <section>
@@ -153,6 +177,13 @@
           the top of every page. You can reach them from anywhere in platform
           without scrolling.
         </p>
+        <figure>
+          <img
+            class="top-bar"
+            src="client-nav-top-bar.png"
+            alt="Top bar with New RFQ, notifications, and the account menu."
+          />
+        </figure>
       </section>
 
       <section>
@@ -163,6 +194,12 @@
           more projects than fit, click the number at the end of the bar to see
           the full list.
         </p>
+        <figure>
+          <img
+            src="client-nav-most-visited.png"
+            alt="Most visited projects bar with project IDs and a +14 overflow count."
+          />
+        </figure>
       </section>
     </main>
   </body>
