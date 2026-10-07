@@ -145,6 +145,7 @@
     box-shadow: var(--elevation-ui);
   }
   .fld .v.ro { background: var(--silq-grey-100); box-shadow: none; }
+  select.input option:disabled { color: var(--silq-grey-500); }
   select.input:focus, input.input:focus, input.money:focus {
     outline: none; border-color: var(--silq-navy); box-shadow: 0 0 0 2px rgba(18, 52, 59, 0.60);
   }
@@ -432,19 +433,19 @@
   <div class="page">
     <div class="crumb">Shipments / Vendor billed costs</div>
     <h1>Vendor billed costs</h1>
-    <p class="lede">Select a quote, then a shipment, then who is working the file.</p>
+    <p class="lede">Select a shipment. The quote fills in from that file. Cancelled and archived files stay listed but cannot be opened.</p>
 
     <div class="card">
-      <div class="card-hd"><h2>Quote & Shipment</h2></div>
+      <div class="card-hd"><h2>Shipment & Quote</h2></div>
       <div class="card-bd">
         <div class="pick">
           <div class="fld">
-            <label>Quote</label>
-            <select class="input" id="quoteSel"></select>
-          </div>
-          <div class="fld">
             <label>Shipment</label>
             <select class="input" id="shipSel"></select>
+          </div>
+          <div class="fld">
+            <label>Quote</label>
+            <div class="v ro" id="quoteBox">Select a shipment first</div>
           </div>
           <div class="fld">
             <label>Persona</label>
@@ -485,7 +486,7 @@
               <th class="num">Procured<div class="sub">UOM · qty · rate</div></th>
               <th class="num">Actuals<div class="sub">qty · rate</div></th>
               <th class="num"><span class="th-var">Variance<button type="button" class="silq-icon-btn silq-icon-btn--xs" id="varTipBtn" aria-label="How variance is calculated" aria-describedby="varTip"></button></span></th>
-              <th class="num">Gross profit</th>
+              <th class="num"><span class="th-var">Gross profit<button type="button" class="silq-icon-btn silq-icon-btn--xs" id="gpTipBtn" aria-label="How gross profit is calculated" aria-describedby="gpTip"></button></span></th>
               <th class="col-menu"></th>
             </tr>
           </thead>
@@ -561,6 +562,10 @@
 <div id="rowMenu" class="silq-dd" role="menu" aria-hidden="true"></div>
 <div id="varTip" class="silq-tip" role="tooltip">
   <div class="silq-tip-base">Procured - Buy if no actuals, Actuals - Procured once actuals added</div>
+  <svg width="11" height="5.5" viewBox="0 0 11 5.5" aria-hidden="true"><path d="M 0 0 L 11 0 L 5.5 5.5 Z" fill="#202020"></path></svg>
+</div>
+<div id="gpTip" class="silq-tip" role="tooltip">
+  <div class="silq-tip-base">Sell - Procured if no actuals, Sell - Actuals once actuals added</div>
   <svg width="11" height="5.5" viewBox="0 0 11 5.5" aria-hidden="true"><path d="M 0 0 L 11 0 L 5.5 5.5 Z" fill="#202020"></path></svg>
 </div>
 <input type="file" id="billFile" accept=".pdf,image/*,.png,.jpg,.jpeg" multiple hidden>
@@ -707,6 +712,7 @@ const QUOTES = [
         vendorHint: 'Shipco America', appVendor: 'DT', shipQty: 1, quoteShipQty: 1, hblQty: 1, quoteHbl: 1,
         cbm: 62, quoteCbm: 58, kg: 8450, quoteKg: 8200,
         detDays: 3, quoteDetDays: 2, demDays: 0, quoteDemDays: 0,
+        executionStatus: 'IN_PROGRESS', status: 'AT_DESTINATION_PORT',
         gatedIn: '2026-08-12', etd: '2026-08-20', eta: '2026-09-12',
         lines: APEX_IDS.map(fromCatalog), originEntered: true,
         docs: [{ id: 'd-apex-1', name: 'Yantian-origin-invoice.pdf', size: 184320, when: '2026-08-13', kind: 'Vendor bill' }],
@@ -726,11 +732,38 @@ const QUOTES = [
         vendorHint: 'Shipco America', appVendor: 'DT', shipQty: 1, quoteShipQty: 1, hblQty: 1, quoteHbl: 1,
         cbm: 61, quoteCbm: 61, kg: 7900, quoteKg: 7900,
         detDays: 0, quoteDetDays: 0, demDays: 0, quoteDemDays: 0,
+        executionStatus: 'IN_PROGRESS', status: 'IN_TRANSIT_TO_DESTINATION_PORT',
         gatedIn: '2026-08-18', etd: '2026-08-27', eta: '2026-09-18',
         lines: APEX_IDS.map(fromCatalog),
         history: [
           { at: '2026-08-18T08:40:00', by: 'System', team: 'Tasks', text: 'Gated in recorded' },
           { at: '2026-08-13T11:26:00', by: 'Priya Shah', team: 'FinOps', text: 'Cargo Protection already billed on SHP-482910-01. Do not capture again on this shipment.' }
+        ]
+      },
+      {
+        id: 'shp-cx', shipId: 'SHP-482910-03', mode: 'FCL', incoterm: 'EXW', coverage: 'D2D',
+        container: '40HC', containerNo: 'TCLU4829103', origin: 'CNYTN', dest: 'USLAX', mbl: 'MEDU1234600', blLabel: 'MBL',
+        vendorHint: 'Shipco America', appVendor: 'DT', shipQty: 1, quoteShipQty: 1, hblQty: 1, quoteHbl: 1,
+        cbm: 55, quoteCbm: 55, kg: 7100, quoteKg: 7100,
+        detDays: 0, quoteDetDays: 0, demDays: 0, quoteDemDays: 0,
+        executionStatus: 'CANCELLED', status: 'AT_ORIGIN_PORT',
+        gatedIn: '2026-08-10', etd: '2026-08-19', eta: '2026-09-10',
+        lines: APEX_IDS.map(fromCatalog),
+        history: [
+          { at: '2026-08-11T16:00:00', by: 'System', team: 'Tasks', text: 'Shipment cancelled. Vendor billed capture is locked.' }
+        ]
+      },
+      {
+        id: 'shp-arch', shipId: 'SHP-482910-04', mode: 'FCL', incoterm: 'EXW', coverage: 'D2D',
+        container: '40HC', containerNo: 'TCLU4829104', origin: 'CNYTN', dest: 'USLAX', mbl: 'MEDU1234601', blLabel: 'MBL',
+        vendorHint: 'Shipco America', appVendor: 'DT', shipQty: 1, quoteShipQty: 1, hblQty: 1, quoteHbl: 1,
+        cbm: 50, quoteCbm: 50, kg: 6400, quoteKg: 6400,
+        detDays: 0, quoteDetDays: 0, demDays: 0, quoteDemDays: 0,
+        executionStatus: 'ARCHIVED', status: 'AT_CONSIGNEE_LOCATION',
+        gatedIn: '2026-07-02', etd: '2026-07-08', eta: '2026-07-30',
+        lines: APEX_IDS.map(fromCatalog),
+        history: [
+          { at: '2026-08-01T09:00:00', by: 'System', team: 'Tasks', text: 'Shipment archived.' }
         ]
       }
     ]
@@ -743,6 +776,7 @@ const QUOTES = [
       vendorHint: 'Ocean Network Express', appVendor: 'DT', shipQty: 1, quoteShipQty: 1, hblQty: 1, quoteHbl: 1,
       cbm: 54, quoteCbm: 54, kg: 7600, quoteKg: 7600,
       detDays: 0, quoteDetDays: 0, demDays: 0, quoteDemDays: 0,
+        executionStatus: 'DONE', status: 'AT_CONSIGNEE_LOCATION',
         gatedIn: '2026-05-08', etd: '2026-05-14', eta: '2026-06-04',
         history: [
           { at: '2026-05-08T10:00:00', by: 'System', team: 'Tasks', text: 'Gated in recorded' }
@@ -762,6 +796,7 @@ const QUOTES = [
       vendorHint: 'Ecu Worldwide', appVendor: 'DT', shipQty: 1, quoteShipQty: 1, hblQty: 1, quoteHbl: 1,
       cbm: 12.4, quoteCbm: 12, kg: 3180, quoteKg: 2900,
       detDays: 0, quoteDetDays: 0, demDays: 0, quoteDemDays: 0,
+      executionStatus: 'IN_PROGRESS', status: 'AT_DESTINATION_PORT',
       gatedIn: '2026-07-22', etd: '2026-07-28', eta: '2026-08-18',
       history: [
         { at: '2026-07-23T14:10:00', by: 'Priya Shah', team: 'FinOps', text: 'Query on Origin Terminal Handling: billed $240 vs buy on quote CBM' },
@@ -779,6 +814,7 @@ const QUOTES = [
       vendorHint: 'DHL Global Forwarding', appVendor: 'DT', shipQty: 1, quoteShipQty: 1, hblQty: 1, quoteHbl: 1,
       cbm: 2.1, quoteCbm: 1.9, kg: 448, quoteKg: 420,
       detDays: 0, quoteDetDays: 0, demDays: 0, quoteDemDays: 0,
+      executionStatus: 'IN_PROGRESS', status: 'AT_CONSIGNEE_LOCATION',
       gatedIn: '2026-09-04', etd: '2026-09-05', eta: '2026-09-06',
       history: [
         { at: '2026-09-05T16:40:00', by: 'Priya Shah', team: 'FinOps', text: 'Query on Airway Bill (AWB): billed $80 vs buy $45' },
@@ -799,6 +835,7 @@ const QUOTES = [
       inspDays: 1, quoteInspDays: 1, skus: 2, quoteSkus: 2, units: 4200, quoteUnits: 4000,
       factoryName: 'West Deccan Knits', factoryPlace: 'Pune, Maharashtra, India',
       inspTypes: 'Pre-production, In-line, Final',
+      executionStatus: 'DONE', status: 'SELLER_LOCATION',
       gatedIn: '2026-09-18', etd: '2026-09-18', eta: '2026-09-18',
       history: [
         { at: '2026-09-18T15:20:00', by: 'Priya Shah', team: 'FinOps', text: 'Query on Final Inspection: billed $95 vs buy $75 on 1 man day.' },
@@ -879,10 +916,46 @@ let lineGroup = '';
 let menuLineId = null;
 const collapsedGroups = {};
 
-function quote() { return QUOTES.find(q => q.id === quoteId); }
+const EXEC_LABELS = {
+  NEW: 'New',
+  IN_PROGRESS: 'In progress',
+  ON_HOLD: 'On hold',
+  DONE: 'Done',
+  CANCELLED: 'Cancelled',
+  ARCHIVED: 'Archived'
+};
+const LOC_LABELS = {
+  UNKNOWN: 'Unknown',
+  SELLER_LOCATION: 'At seller location',
+  IN_TRANSIT_TO_ORIGIN_PORT: 'In transit to origin port',
+  AT_ORIGIN_PORT: 'At origin port',
+  IN_TRANSIT_TO_DESTINATION_PORT: 'In transit to destination port',
+  AT_DESTINATION_PORT: 'At destination port',
+  IN_TRANSIT_TO_CONSIGNEE_LOCATION: 'In transit to final destination',
+  AT_CONSIGNEE_LOCATION: 'Delivered'
+};
+const BLOCKED_EXEC = { CANCELLED: true, ARCHIVED: true };
+
+function execLabel(s) { return EXEC_LABELS[s.executionStatus] || 'Unknown'; }
+function locLabel(s) { return LOC_LABELS[s.status] || ''; }
+function canSelectShipment(s) { return s && !BLOCKED_EXEC[s.executionStatus]; }
+function quoteOfShip(id) {
+  return QUOTES.find(q => q.shipments.some(s => s.id === id)) || null;
+}
+function allShipments() {
+  const rows = [];
+  QUOTES.forEach(q => q.shipments.forEach(s => rows.push({ q, s })));
+  return rows;
+}
+function quote() {
+  if (quoteId) return QUOTES.find(q => q.id === quoteId);
+  return quoteOfShip(shipId);
+}
 function ship() {
   const q = quote();
-  return q ? q.shipments.find(s => s.id === shipId) : null;
+  if (!q || !shipId) return null;
+  const s = q.shipments.find(x => x.id === shipId);
+  return canSelectShipment(s) ? s : null;
 }
 function toast(msg) {
   const el = document.getElementById('toast');
@@ -925,12 +998,17 @@ function lineQtyVar(l, s) {
   return { n: procQ - Number(quoteQtyOf(l, s) || 0), uom: procUomOf(l) };
 }
 function lineGp(l) {
-  const basis = costBasis(l);
+  const act = actualsOf(l);
+  const proc = procuredOf(l);
+  const cost = act != null ? act : proc;
   if (!onQuote(l)) {
-    if (basis == null) return null;
-    return -Math.abs(basis);
+    if (cost == null) return null;
+    return -Math.abs(cost);
   }
-  return Number(l.expSell || 0) - runBuy(l);
+  const sell = Number(l.expSell || 0);
+  if (act != null) return sell - act;
+  if (proc != null) return sell - proc;
+  return sell - Number(l.quoted || 0);
 }
 function buyRate(l) {
   if (!onQuote(l)) return null;
@@ -1003,6 +1081,8 @@ function ensure(s) {
     if (l.actQty === undefined) l.actQty = null;
     if (l.actRate === undefined) l.actRate = null;
   });
+  if (!s.executionStatus) s.executionStatus = 'IN_PROGRESS';
+  if (!s.status) s.status = 'UNKNOWN';
   if (s.seeded) return;
   s.seeded = true;
   if (s.originEntered && s.mode === 'FCL') {
@@ -1114,19 +1194,20 @@ function totals(s, q) {
 }
 
 function renderPickers() {
-  document.getElementById('quoteSel').innerHTML =
-    `<option value="">Select a quote</option>` +
-    QUOTES.map(q => `<option value="${q.id}" ${q.id === quoteId ? 'selected' : ''}>${q.quoteId} · ${q.client} · ${q.mode}</option>`).join('');
-  const q = quote();
   const ss = document.getElementById('shipSel');
-  if (!q) {
-    ss.innerHTML = `<option value="">Select a quote first</option>`;
-    ss.disabled = true;
-  } else {
-    ss.disabled = false;
-    ss.innerHTML = `<option value="">Select a shipment</option>` +
-      q.shipments.map(s => `<option value="${s.id}" ${s.id === shipId ? 'selected' : ''}>${s.shipId} · ${s.mode} · ${s.mbl}</option>`).join('');
-  }
+  ss.disabled = false;
+  ss.innerHTML = `<option value="">Select a shipment</option>` +
+    allShipments().map(({ s }) => {
+      const blocked = !canSelectShipment(s);
+      const loc = locLabel(s);
+      const label = s.shipId + ' · ' + execLabel(s) + (loc ? ' · ' + loc : '') + (blocked ? ' · cannot select' : '');
+      return `<option value="${s.id}" ${s.id === shipId && !blocked ? 'selected' : ''} ${blocked ? 'disabled' : ''}>${label}</option>`;
+    }).join('');
+  const q = quote();
+  const box = document.getElementById('quoteBox');
+  box.textContent = q && ship()
+    ? q.quoteId + ' · ' + q.client + ' · ' + q.mode
+    : 'Select a shipment first';
   document.getElementById('whoSel').innerHTML = Object.keys(PEOPLE).map(k => {
     const p = PEOPLE[k];
     return `<option value="${k}" ${k === who ? 'selected' : ''}>${p.team} · ${p.name}</option>`;
@@ -1169,6 +1250,7 @@ function renderFacts() {
       ['Factory', s.factoryName || '-'],
       ['Location', s.factoryPlace || s.origin],
       ['Mode', modeLabel(s)],
+      ['Status', execLabel(s) + (locLabel(s) ? ' · ' + locLabel(s) : '')],
       ['Inspection types', s.inspTypes || '-'],
       ['Inspection date', fmtDate(s.gatedIn)],
       ['Vendor (from app)', s.appVendor || 'QC'],
@@ -1182,6 +1264,7 @@ function renderFacts() {
       ['Route', s.origin + ' → ' + s.dest],
       ['Incoterm', s.incoterm + ' · ' + s.coverage],
       ['Mode', modeLabel(s)],
+      ['Status', execLabel(s) + (locLabel(s) ? ' · ' + locLabel(s) : '')],
       ['Container number', s.containerNo || '-'],
       ['Gated in', fmtDate(s.gatedIn)],
       ['Vendor (from app)', s.appVendor || 'DT'],
@@ -1227,7 +1310,7 @@ function qtyVarHtml(qv) {
   const n = qv.n;
   const signed = (n > 0.0005 ? '+' : '') + fmtQty(n);
   const cls = Math.abs(n) < 0.0005 ? '' : (n > 0 ? 'over' : 'under');
-  return `<div class="sub">Quantity variance ${cls ? `<span class="${cls}">${signed} ${qv.uom}</span>` : signed + ' ' + qv.uom}</div>`;
+  return `<div class="sub">Qty variance = ${cls ? `<span class="${cls}">${signed}</span>` : signed}</div>`;
 }
 function flagCell(l) {
   if (onQuote(l)) return '';
@@ -1413,12 +1496,8 @@ function renderTable() {
         : off
           ? '<span class="empty">-</span><div class="sub">Not in totals</div>'
           : costVar == null
-            ? '<span class="empty">-</span>'
-            : varHtml(costVar)
-              + (actualsOf(l) != null
-                ? '<div class="sub">Actuals vs procured</div>'
-                : (!quotedLine ? '<div class="sub">Off quote, procured vs buy</div>' : '<div class="sub">Procured vs buy</div>'))
-              + qtyVarHtml(qv);
+            ? '<span class="empty">-</span>' + qtyVarHtml(qv)
+            : varHtml(costVar) + qtyVarHtml(qv);
       const gpCell = elseShip
         ? `<span class="empty">-</span><div class="sub">On ${elseShip.shipId}</div>`
         : off
@@ -1571,11 +1650,24 @@ function showCatalogCharges(groupId) {
   }).join('')}</div>`;
 }
 
-document.getElementById('quoteSel').addEventListener('change', e => {
-  quoteId = e.target.value; shipId = ''; render();
-});
 document.getElementById('shipSel').addEventListener('change', e => {
-  shipId = e.target.value; render();
+  const id = e.target.value;
+  if (!id) {
+    shipId = '';
+    quoteId = '';
+    render();
+    return;
+  }
+  const q = quoteOfShip(id);
+  const s = q ? q.shipments.find(x => x.id === id) : null;
+  if (!canSelectShipment(s)) {
+    toast('Cancelled and archived shipments cannot be opened.');
+    e.target.value = shipId || '';
+    return;
+  }
+  shipId = id;
+  quoteId = q.id;
+  render();
 });
 document.getElementById('whoSel').addEventListener('change', e => {
   who = e.target.value; render();
@@ -1857,16 +1949,21 @@ document.getElementById('confirmFlag').addEventListener('click', () => {
 });
 
 
-let varTipTimer = null;
-function hideVarTip() {
-  clearTimeout(varTipTimer);
-  const tip = document.getElementById('varTip');
+const tipTimers = {};
+function hideTip(tipId) {
+  clearTimeout(tipTimers[tipId]);
+  const tip = document.getElementById(tipId);
   if (tip) tip.classList.remove('open');
 }
-function showVarTip() {
-  const btn = document.getElementById('varTipBtn');
-  const tip = document.getElementById('varTip');
+function hideAllTips() {
+  hideTip('varTip');
+  hideTip('gpTip');
+}
+function showTip(btnId, tipId) {
+  const btn = document.getElementById(btnId);
+  const tip = document.getElementById(tipId);
   if (!btn || !tip) return;
+  hideAllTips();
   tip.classList.add('open');
   const r = btn.getBoundingClientRect();
   const tw = tip.offsetWidth;
@@ -1879,19 +1976,26 @@ function showVarTip() {
   tip.style.left = left + 'px';
   tip.style.top = top + 'px';
 }
-(function wireVarTip() {
-  const btn = document.getElementById('varTipBtn');
+function wireTip(btnId, tipId) {
+  const btn = document.getElementById(btnId);
   if (!btn) return;
   btn.innerHTML = ICON_INFO;
-  const enter = () => { clearTimeout(varTipTimer); varTipTimer = setTimeout(showVarTip, 200); };
+  const enter = () => {
+    clearTimeout(tipTimers[tipId]);
+    tipTimers[tipId] = setTimeout(() => showTip(btnId, tipId), 200);
+  };
   btn.addEventListener('mouseenter', enter);
   btn.addEventListener('focus', enter);
-  btn.addEventListener('mouseleave', hideVarTip);
-  btn.addEventListener('blur', hideVarTip);
+  btn.addEventListener('mouseleave', () => hideTip(tipId));
+  btn.addEventListener('blur', () => hideTip(tipId));
+}
+wireTip('varTipBtn', 'varTip');
+wireTip('gpTipBtn', 'gpTip');
+(function wireTipDismiss() {
   const wrap = document.querySelector('.table-wrap');
-  if (wrap) wrap.addEventListener('scroll', hideVarTip);
-  window.addEventListener('scroll', hideVarTip, true);
-  window.addEventListener('resize', hideVarTip);
+  if (wrap) wrap.addEventListener('scroll', hideAllTips);
+  window.addEventListener('scroll', hideAllTips, true);
+  window.addEventListener('resize', hideAllTips);
 })();
 
 render();
