@@ -207,7 +207,7 @@
     border-top: 5px solid var(--silq-grey-600);
     transition: transform 0.15s ease;
   }
-  .group-row.collapsed .caret { transform: rotate(-90deg); }
+  .group-row.collapsed .caret, .proj-row.collapsed .caret { transform: rotate(-90deg); }
   tr.group-hide { display: none; }
   .latest-query { margin-top: 6px; }
   .qlog {
@@ -433,6 +433,25 @@
     padding: 12px; margin-bottom: 12px; font: var(--type-content-small); color: var(--brand-text);
   }
   .hidden { display: none !important; }
+  .page-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+  .page-head .lede { max-width: 720px; }
+  .proj-row { cursor: pointer; }
+  .proj-row td { font: var(--type-ui-normal-semi-bold); color: var(--silq-navy); }
+  .proj-row:hover td { background: var(--silq-grey-50); }
+  .proj-row .caret { margin-right: 2px; }
+  .proj-id { font-variant-numeric: tabular-nums; font-weight: 500; }
+  .proj-client { font: var(--type-content-normal); font-weight: 400; }
+  .child-wrap { padding: 0 12px 12px 36px; }
+  .child-table { width: 100%; border: 1px solid var(--silq-grey-200); border-radius: 5px; overflow: hidden; }
+  .child-table th {
+    background: var(--silq-grey-50); padding: 8px 12px;
+    font: var(--type-micro-semi-bold); text-transform: uppercase; letter-spacing: var(--tracking-wide);
+  }
+  .child-table td { padding: 8px 12px; }
+  .child-row { cursor: pointer; }
+  .child-row:hover td { background: var(--bg-info); }
+  .child-row.child-locked { cursor: default; opacity: 0.65; }
+  .child-row.child-locked:hover td { background: transparent; }
   @media (max-width: 1100px) {
     .pick, .facts, .kpi, .foot { grid-template-columns: 1fr 1fr; }
     .sidebar { display: none; }
@@ -452,15 +471,15 @@
     </div>
   </div>
   <div class="sidebar-nav">
-    <a class="nav-item" href="#">Projects</a>
-    <a class="nav-item active" href="#">Shipments</a>
+    <a class="nav-item" href="#capture" id="navCapture">Vendor billed</a>
+    <a class="nav-item" href="#consolidated" id="navConsol">Consolidated view</a>
     <a class="nav-item" href="#">Invoices</a>
     <a class="nav-item" href="#">Rates</a>
   </div>
 </nav>
 
 <div class="main">
-  <div class="page">
+  <div class="page" id="pageCapture">
     <div class="crumb">Shipments / Vendor billed costs</div>
     <h1>Vendor billed costs</h1>
     <p class="lede">Select a shipment. The quote fills in from that file. Cancelled and archived files stay listed but cannot be opened.</p>
@@ -547,6 +566,32 @@
       <div class="card">
         <div class="card-hd"><h2>Edit history</h2></div>
         <div class="card-bd" id="history"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page hidden" id="pageConsolidated">
+    <div class="page-head">
+      <div>
+        <div class="crumb">Finance / Consolidated view</div>
+        <h1>Consolidated view</h1>
+        <p class="lede">One row per project. Open a shipping project to see files. Open an inspections project to see the quote. Totals come from vendor billed capture on each file.</p>
+      </div>
+      <button class="btn" type="button" id="exportXls">Export to Excel</button>
+    </div>
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Project ID</th>
+              <th>Project name</th>
+              <th class="num">Gross profit</th>
+              <th>Client</th>
+            </tr>
+          </thead>
+          <tbody id="consolBody"></tbody>
+        </table>
       </div>
     </div>
   </div>
@@ -756,6 +801,7 @@ function enrich(l, s, q) {
 const QUOTES = [
   {
     id: 'apex', quoteId: 'SILQ-482910Q1', client: 'Apex Outdoor', mode: 'FCL',
+    projectId: 'PRJ-482910', projectName: 'Apex Yantian to Los Angeles',
     shipments: [
       {
         id: 'shp-01', shipId: 'SHP-482910-01', mode: 'FCL', incoterm: 'EXW', coverage: 'D2D',
@@ -821,6 +867,7 @@ const QUOTES = [
   },
   {
     id: 'vandelay', quoteId: 'SILQ-4228268Q1', client: 'Vandelay Industries', mode: 'FCL',
+    projectId: 'PRJ-4228268', projectName: 'Vandelay Yantian to Los Angeles',
     shipments: [{
       id: 'shp-v1', shipId: 'SHP-4228268-01', mode: 'FCL', incoterm: 'FOB', coverage: 'Port to door',
       container: '40HC', containerNo: 'TCLU4228268', origin: 'CNYTN', dest: 'USLAX', mbl: 'ONEYSH6ABC123', blLabel: 'MBL',
@@ -841,6 +888,7 @@ const QUOTES = [
   },
   {
     id: 'northwind', quoteId: 'SILQ-3910044Q1', client: 'Northwind Traders', mode: 'LCL',
+    projectId: 'PRJ-3910044', projectName: 'Northwind Shanghai to Los Angeles',
     shipments: [{
       id: 'shp-lcl', shipId: 'SHP-3910044-01', mode: 'LCL', incoterm: 'EXW', coverage: 'D2D',
       container: '', origin: 'CNSHA', dest: 'USLAX', mbl: 'EGLV142600123456', blLabel: 'MBL',
@@ -859,6 +907,7 @@ const QUOTES = [
   },
   {
     id: 'initech', quoteId: 'SILQ-5102201Q1', client: 'Initech', mode: 'Air',
+    projectId: 'PRJ-5102201', projectName: 'Initech PVG to Los Angeles',
     shipments: [{
       id: 'shp-air', shipId: 'SHP-5102201-01', mode: 'Air', incoterm: 'EXW', coverage: 'Airport to door',
       container: '', origin: 'CNPVG', dest: 'USLAX', mbl: '180-12345678', blLabel: 'MAWB',
@@ -877,6 +926,7 @@ const QUOTES = [
   },
   {
     id: 'pinnacle', quoteId: 'SILQ-6041182Q1', client: 'Pinnacle Apparel', mode: 'Inspections',
+    projectId: 'PRJ-6041182', projectName: 'Pinnacle factory QC',
     shipments: [{
       id: 'shp-insp', shipId: 'INSP-6041182-01', mode: 'Inspections', incoterm: 'Factory QC', coverage: 'Inspections only',
       container: '', containerNo: '', origin: 'Pune, IN', dest: '-', mbl: 'QC-6041182', blLabel: 'Job',
@@ -928,6 +978,14 @@ function addCur(map, code, n) {
   if (n == null || n === '' || !Number.isFinite(Number(n))) return;
   const c = code || quoteCur();
   map[c] = Math.round(((map[c] || 0) + Number(n)) * 100) / 100;
+}
+function mergeCur(into, from) {
+  curKeys(from).forEach(c => addCur(into, c, from[c]));
+}
+function stackPlain(map) {
+  const codes = curKeys(map);
+  if (!codes.length) return '';
+  return codes.map(c => money(map[c], c)).join(' / ');
 }
 function moneyStack(map, opts) {
   const codes = curKeys(map);
@@ -999,6 +1057,7 @@ let lineGroup = '';
 let menuLineId = null;
 let copyLineId = null;
 const collapsedGroups = {};
+const collapsedProjects = {};
 
 const EXEC_LABELS = {
   NEW: 'New',
@@ -1296,6 +1355,159 @@ function totals(s, q) {
     varBy, gpBy, mixed,
     qSell, shipments: q.shipments.length
   };
+}
+
+function seedAll() {
+  QUOTES.forEach(q => q.shipments.forEach(ensure));
+}
+function isInspectionQuote(q) { return q.mode === 'Inspections'; }
+function rollupShips(q) {
+  return (q.shipments || []).filter(canSelectShipment);
+}
+function projectTotals(q) {
+  const billedBy = {};
+  const actualsBy = {};
+  const varBy = {};
+  const gpBy = {};
+  rollupShips(q).forEach(s => {
+    const t = totals(s, q);
+    mergeCur(billedBy, t.billedBy);
+    mergeCur(actualsBy, t.actualsBy);
+    mergeCur(varBy, t.varBy);
+    mergeCur(gpBy, t.gpBy);
+  });
+  return { billedBy, actualsBy, varBy, gpBy };
+}
+function inspServices(q) {
+  const s = (q.shipments || [])[0];
+  if (!s) return '';
+  ensure(s);
+  const names = billable(s).filter(onQuote).map(l => l.charge);
+  return names.length ? names.join(', ') : (s.inspTypes || 'Inspections');
+}
+function gpLossHtml(map) {
+  if (!curKeys(map).length) return '<span class="empty">-</span>';
+  const qGp = map[quoteCur()];
+  const html = moneyStack(map);
+  if (qGp != null && qGp < -0.5) return `<span class="over">${html}</span>`;
+  return html;
+}
+function childMoneyCell(map) {
+  return curKeys(map).length ? moneyStack(map) : '<span class="empty">-</span>';
+}
+function renderConsolidated() {
+  seedAll();
+  document.getElementById('consolBody').innerHTML = QUOTES.map(q => {
+    const open = collapsedProjects[q.id] === false;
+    const pt = projectTotals(q);
+    const insp = isInspectionQuote(q);
+    const kids = q.shipments || [];
+    const childHead = insp
+      ? '<tr><th>Quote ID</th><th>Services</th><th class="num">Total procured</th><th class="num">Total actuals</th><th class="num">Total variance</th><th class="num">Gross profit / Loss</th></tr>'
+      : '<tr><th>Shipment ID</th><th>Mode</th><th class="num">Total procured</th><th class="num">Total actuals</th><th class="num">Total variance</th><th class="num">Gross profit / Loss</th></tr>';
+    let childRows = '';
+    if (insp) {
+      const s = kids[0];
+      const t = s ? totals(s, q) : { billedBy: {}, actualsBy: {}, varBy: {}, gpBy: {} };
+      childRows = s ? `<tr class="child-row" data-open-ship="${s.id}">
+        <td>${q.quoteId}</td>
+        <td>${inspServices(q)}</td>
+        <td class="num">${childMoneyCell(t.billedBy)}</td>
+        <td class="num">${childMoneyCell(t.actualsBy)}</td>
+        <td class="num">${childMoneyCell(t.varBy)}</td>
+        <td class="num">${gpLossHtml(t.gpBy)}</td>
+      </tr>` : '';
+    } else {
+      childRows = kids.map(s => {
+        const t = totals(s, q);
+        const locked = !canSelectShipment(s);
+        return `<tr class="child-row${locked ? ' child-locked' : ''}" ${locked ? '' : 'data-open-ship="' + s.id + '"'}>
+          <td>${s.shipId}${locked ? '<div class="sub">' + execLabel(s) + '</div>' : ''}</td>
+          <td>${s.mode}</td>
+          <td class="num">${childMoneyCell(t.billedBy)}</td>
+          <td class="num">${childMoneyCell(t.actualsBy)}</td>
+          <td class="num">${childMoneyCell(t.varBy)}</td>
+          <td class="num">${gpLossHtml(t.gpBy)}</td>
+        </tr>`;
+      }).join('');
+    }
+    const sub = insp ? 'Inspections' : (kids.length + ' shipment' + (kids.length === 1 ? '' : 's'));
+    return `<tr class="proj-row${open ? '' : ' collapsed'}" data-proj="${q.id}">
+      <td class="proj-id"><span class="group-hd"><span class="caret" aria-hidden="true"></span>${q.projectId}</span></td>
+      <td>${q.projectName}<div class="sub">${sub}</div></td>
+      <td class="num">${gpLossHtml(pt.gpBy)}</td>
+      <td class="proj-client">${q.client}</td>
+    </tr>
+    <tr class="proj-detail${open ? '' : ' group-hide'}" data-proj-detail="${q.id}">
+      <td colspan="4"><div class="child-wrap"><table class="child-table"><thead>${childHead}</thead><tbody>${childRows}</tbody></table></div></td>
+    </tr>`;
+  }).join('');
+}
+function showView(v) {
+  const consol = v === 'consolidated';
+  document.getElementById('pageCapture').classList.toggle('hidden', consol);
+  document.getElementById('pageConsolidated').classList.toggle('hidden', !consol);
+  document.getElementById('navCapture').classList.toggle('active', !consol);
+  document.getElementById('navConsol').classList.toggle('active', consol);
+  if (consol) renderConsolidated();
+  else render();
+}
+function xmlEsc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function xlsRow(cells) {
+  return '<Row>' + cells.map(c => '<Cell><Data ss:Type="String">' + xmlEsc(c) + '</Data></Cell>').join('') + '</Row>';
+}
+function exportConsolidated() {
+  seedAll();
+  const projRows = [xlsRow(['Project ID', 'Project name', 'Client', 'Kind', 'Gross profit', 'Procured', 'Actuals', 'Variance'])];
+  const detRows = [xlsRow(['Project ID', 'Project name', 'Client', 'Row type', 'ID', 'Mode / Services', 'Procured', 'Actuals', 'Variance', 'Gross profit / Loss'])];
+  QUOTES.forEach(q => {
+    const insp = isInspectionQuote(q);
+    const pt = projectTotals(q);
+    projRows.push(xlsRow([
+      q.projectId, q.projectName, q.client, insp ? 'Inspections' : 'Shipping',
+      stackPlain(pt.gpBy), stackPlain(pt.billedBy), stackPlain(pt.actualsBy), stackPlain(pt.varBy)
+    ]));
+    if (insp) {
+      const s = q.shipments[0];
+      const t = s ? totals(s, q) : { billedBy: {}, actualsBy: {}, varBy: {}, gpBy: {} };
+      detRows.push(xlsRow([
+        q.projectId, q.projectName, q.client, 'Quote', q.quoteId, inspServices(q),
+        stackPlain(t.billedBy), stackPlain(t.actualsBy), stackPlain(t.varBy), stackPlain(t.gpBy)
+      ]));
+    } else {
+      q.shipments.forEach(s => {
+        const t = totals(s, q);
+        detRows.push(xlsRow([
+          q.projectId, q.projectName, q.client, 'Shipment', s.shipId, s.mode,
+          stackPlain(t.billedBy), stackPlain(t.actualsBy), stackPlain(t.varBy), stackPlain(t.gpBy)
+        ]));
+      });
+    }
+  });
+  const xml = '<?xml version="1.0"?><?mso-application progid="Excel.Sheet"?>'
+    + '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'
+    + '<Worksheet ss:Name="Projects"><Table>' + projRows.join('') + '</Table></Worksheet>'
+    + '<Worksheet ss:Name="Details"><Table>' + detRows.join('') + '</Table></Worksheet>'
+    + '</Workbook>';
+  const blob = new Blob([xml], { type: 'application/vnd.ms-excel' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'silq-consolidated-projects.xls';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  toast('Exported project-level totals to Excel.');
+}
+function openCaptureShip(id) {
+  const q = quoteOfShip(id);
+  const s = q ? q.shipments.find(x => x.id === id) : null;
+  if (!canSelectShipment(s)) return;
+  shipId = id;
+  quoteId = q.id;
+  if (location.hash !== '#capture') location.hash = 'capture';
+  showView('capture');
 }
 
 function renderPickers() {
@@ -2180,7 +2392,23 @@ wireTip('gpTipBtn', 'gpTip');
   window.addEventListener('resize', hideAllTips);
 })();
 
-render();
+document.getElementById('consolBody').addEventListener('click', e => {
+  const openShip = e.target.closest('[data-open-ship]');
+  if (openShip) {
+    openCaptureShip(openShip.dataset.openShip);
+    return;
+  }
+  const proj = e.target.closest('[data-proj]');
+  if (!proj) return;
+  const id = proj.dataset.proj;
+  collapsedProjects[id] = collapsedProjects[id] === false;
+  renderConsolidated();
+});
+document.getElementById('exportXls').addEventListener('click', exportConsolidated);
+window.addEventListener('hashchange', () => {
+  showView(location.hash === '#consolidated' ? 'consolidated' : 'capture');
+});
+showView(location.hash === '#consolidated' ? 'consolidated' : 'capture');
 </script>
 </body>
 </html>
