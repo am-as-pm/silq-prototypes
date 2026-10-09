@@ -138,6 +138,36 @@
     display: block; font: var(--type-micro-semi-bold); color: var(--text-secondary);
     letter-spacing: var(--tracking-wide); text-transform: uppercase; margin-bottom: 6px;
   }
+  .fld label.lbl-with-tip {
+    display: inline-flex; align-items: center; gap: 4px; margin-bottom: 6px;
+  }
+  .usd-eq { font-variant-numeric: tabular-nums; }
+  .fx-note { font: var(--type-content-small); color: var(--text-secondary); margin-top: 8px; }
+  .fx-date-chip {
+    display: inline-flex; align-items: center; margin-top: 8px; padding: 4px 8px;
+    border: 1px solid transparent; border-radius: 5px; background: transparent;
+    font: var(--type-content-small); cursor: pointer; text-align: left;
+  }
+  .fx-date-chip.missing {
+    color: var(--error-text); background: var(--bg-error); border-color: var(--error);
+  }
+  .fx-date-chip:not(.missing) { color: var(--text-secondary); }
+  .fx-date-chip:hover:not(:disabled) { background: var(--silq-grey-50); }
+  .fx-date-chip.missing:hover:not(:disabled) { background: var(--bg-error); }
+  .fx-date-chip:disabled { opacity: 0.55; cursor: default; }
+  .fx-date-chip:focus-visible { outline: none; box-shadow: 0 0 0 2px rgba(207, 34, 46, 0.35); }
+  input.input.err { border-color: var(--error); box-shadow: 0 0 0 2px rgba(207, 34, 46, 0.18); }
+  .charge-save {
+    display: flex; flex-direction: column; align-items: flex-end; gap: 12px;
+    padding: 12px 16px 16px;
+  }
+  .save-err {
+    width: 100%; box-sizing: border-box;
+    background: var(--bg-error); border: 1px solid var(--error); border-radius: var(--radius-sm);
+    padding: 12px; font: var(--type-content-small); color: var(--error-text);
+  }
+  .save-err strong { display: block; }
+  .save-err ul { margin: 8px 0 0; padding-left: 18px; }
   .fld .v, select.input, input.input {
     font: var(--type-ui-sizefix-normal, 400 13px/16px var(--font-body));
     border: 1px solid var(--border); border-radius: 5px; padding: 8px 12px;
@@ -513,6 +543,21 @@
       </div>
 
       <div class="card">
+        <div class="card-hd"><h2>Vendor details</h2></div>
+        <div class="card-bd">
+          <div class="foot">
+            <div class="fld"><label>Vendor</label><select class="input" id="vendor"></select></div>
+            <div class="fld"><label>Invoice #</label><input class="input" id="invoiceNo"></div>
+            <div class="fld">
+              <label class="lbl-with-tip" for="invoiceDate">Bill Raised Date<button type="button" class="silq-icon-btn silq-icon-btn--xs" id="billTipBtn" aria-label="What Bill Raised Date means" aria-describedby="billTip"></button></label>
+              <input class="input" id="invoiceDate" type="date">
+            </div>
+            <button class="btn" type="button" id="uploadBtn">Upload vendor bill</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
         <div class="card-hd"><h2>Charge summaries</h2></div>
         <div class="card-bd" id="kpis"></div>
       </div>
@@ -532,7 +577,7 @@
               <th class="num" id="qtyHead">Qty (quote)</th>
               <th class="num">Actual sell</th>
               <th class="num">Buy rate<div class="sub">Quoted sell - markup</div></th>
-              <th class="num">Procured<div class="sub">UOM · qty · rate</div></th>
+              <th class="num"><span class="th-var">Procured<button type="button" class="silq-icon-btn silq-icon-btn--xs" id="procTipBtn" aria-label="How procured USD is calculated" aria-describedby="procTip"></button></span><div class="sub">UOM · qty · rate</div></th>
               <th class="num">Actuals</th>
               <th class="num"><span class="th-var">Variance<button type="button" class="silq-icon-btn silq-icon-btn--xs" id="varTipBtn" aria-label="How variance is calculated" aria-describedby="varTip"></button></span></th>
               <th class="num"><span class="th-var">Gross profit<button type="button" class="silq-icon-btn silq-icon-btn--xs" id="gpTipBtn" aria-label="How gross profit is calculated" aria-describedby="gpTip"></button></span></th>
@@ -543,18 +588,9 @@
           <tfoot id="tfoot"></tfoot>
         </table>
         </div>
-      </div>
-
-      <div class="card">
-        <div class="card-hd"><h2>Vendor details</h2></div>
-        <div class="card-bd">
-          <div class="foot">
-            <div class="fld"><label>Vendor</label><select class="input" id="vendor"></select></div>
-            <div class="fld"><label>Invoice #</label><input class="input" id="invoiceNo"></div>
-            <div class="fld"><label>Date</label><input class="input" id="invoiceDate" type="date"></div>
-            <button class="btn" type="button" id="uploadBtn">Upload vendor bill</button>
-            <button class="btn btn-primary" type="button" id="saveBtn">Save on this shipment</button>
-          </div>
+        <div class="charge-save">
+          <div class="save-err" id="saveErr" hidden></div>
+          <button class="btn btn-primary" type="button" id="saveBtn">Save on this shipment</button>
         </div>
       </div>
 
@@ -633,10 +669,25 @@
     </div>
   </div>
 </div>
+<div class="modal-back" id="fxDateModal">
+  <div class="modal">
+    <h2>Bill raised date (for FX)</h2>
+    <p class="hint" id="fxDateHint">Converts this charge to USD. On Save it must match the vendor Bill Raised Date.</p>
+    <div class="fld">
+      <label for="fxDateInput">Bill raised date (for FX)</label>
+      <input class="input" id="fxDateInput" type="date">
+    </div>
+    <div class="save-err" id="fxDateErr" hidden></div>
+    <div class="modal-actions">
+      <button class="btn" type="button" id="fxDateCancel">Cancel</button>
+      <button class="btn btn-primary" type="button" id="fxDateConfirm">Save date</button>
+    </div>
+  </div>
+</div>
 <div class="modal-back" id="copyModal">
   <div class="modal">
     <h2>Other shipments within this quote</h2>
-    <p class="hint" id="copyHint">Copies procured UOM, qty, rate, and currency to the files you pick. Cancelled and archived files are not listed.</p>
+    <p class="hint" id="copyHint">Copies procured UOM, qty, rate, currency, and Bill raised date (for FX) to the files you pick. Cancelled and archived files are not listed.</p>
     <div class="copy-list" id="copyBody"></div>
     <div class="modal-actions">
       <button class="btn" type="button" id="copyCancel">Cancel</button>
@@ -647,11 +698,19 @@
 <div class="toast" id="toast"></div>
 <div id="rowMenu" class="silq-dd" role="menu" aria-hidden="true"></div>
 <div id="varTip" class="silq-tip" role="tooltip">
-  <div class="silq-tip-base">Procured - Buy if no actuals, Actuals - Procured once actuals added</div>
+  <div class="silq-tip-base">Procured - Buy if no actuals, Actuals - Procured once actuals added. Compared in USD using Bill raised date (for FX) on the row.</div>
   <svg width="11" height="5.5" viewBox="0 0 11 5.5" aria-hidden="true"><path d="M 0 0 L 11 0 L 5.5 5.5 Z" fill="#202020"></path></svg>
 </div>
 <div id="gpTip" class="silq-tip" role="tooltip">
-  <div class="silq-tip-base">Sell - Procured if no actuals, Sell - Actuals once actuals added</div>
+  <div class="silq-tip-base">Sell - Procured if no actuals, Sell - Actuals once actuals added. Non-USD costs convert at the row Bill raised date (for FX).</div>
+  <svg width="11" height="5.5" viewBox="0 0 11 5.5" aria-hidden="true"><path d="M 0 0 L 11 0 L 5.5 5.5 Z" fill="#202020"></path></svg>
+</div>
+<div id="billTip" class="silq-tip" role="tooltip">
+  <div class="silq-tip-base">This is the date the bill was raised, not the day it is being added to the system.</div>
+  <svg width="11" height="5.5" viewBox="0 0 11 5.5" aria-hidden="true"><path d="M 0 0 L 11 0 L 5.5 5.5 Z" fill="#202020"></path></svg>
+</div>
+<div id="procTip" class="silq-tip" role="tooltip">
+  <div class="silq-tip-base">Enter in any currency. Non-USD rows need a Bill raised date (for FX). Conversion uses that date, not today.</div>
   <svg width="11" height="5.5" viewBox="0 0 11 5.5" aria-hidden="true"><path d="M 0 0 L 11 0 L 5.5 5.5 Z" fill="#202020"></path></svg>
 </div>
 <input type="file" id="billFile" accept=".pdf,image/*,.png,.jpg,.jpeg" multiple hidden>
@@ -679,6 +738,13 @@ const CURRENCIES = [
   { code: 'AED', symbol: 'د.إ' },
   { code: 'HKD', symbol: 'HK$' }
 ];
+const FX_RATES = [
+  { date: '2026-05-08', rates: { USD: 1, EUR: 1.128, GBP: 1.268, CNY: 0.1372, INR: 0.0117, AED: 0.2723, HKD: 0.1281 } },
+  { date: '2026-07-23', rates: { USD: 1, EUR: 1.162, GBP: 1.291, CNY: 0.1384, INR: 0.0119, AED: 0.2722, HKD: 0.1279 } },
+  { date: '2026-08-13', rates: { USD: 1, EUR: 1.171, GBP: 1.304, CNY: 0.1393, INR: 0.0120, AED: 0.2723, HKD: 0.1282 } },
+  { date: '2026-09-05', rates: { USD: 1, EUR: 1.178, GBP: 1.312, CNY: 0.1401, INR: 0.0118, AED: 0.2723, HKD: 0.1284 } },
+  { date: '2026-09-18', rates: { USD: 1, EUR: 1.182, GBP: 1.318, CNY: 0.1406, INR: 0.0119, AED: 0.2722, HKD: 0.1285 } }
+];
 const UOMS = ['container', 'CBM', 'kg', 'shipment', 'HBL', 'HAWB', 'day', 'job', '1000kg', 'man day', 'SKU', 'unit'];
 const VENDORS = [
   'Yantian origin agent',
@@ -701,7 +767,7 @@ function L(id, group, charge, uom, buyUnit, sellUnit, grain, extra) {
     extra: false, added: false, actual: null, queries: [], proof: null,
     source: 'quote', qtyField: null, catalogOnly: false, proofRequired: false,
     modes: ['FCL', 'LCL', 'Air'], applicable: false,
-    currency: 'USD', procQty: null, procRate: null, actuals: null, actQty: null, actRate: null, absorbed: false, complete: false,
+    currency: 'USD', procQty: null, procRate: null, actuals: null, actQty: null, actRate: null, fxDate: null, absorbed: false, complete: false,
     quoteUom: uom, procUom: uom
   }, extra || {});
 }
@@ -966,6 +1032,80 @@ function money(n, code) {
 function quoteCur() { return 'USD'; }
 function lineCur(l) { return (l && l.currency) || quoteCur(); }
 function sameAsQuote(l) { return lineCur(l) === quoteCur(); }
+function billDateOf(s) { return (s && s.invoice && s.invoice.invoiceDate) || ''; }
+function fxSnap(date) {
+  if (!date) return null;
+  let best = null;
+  FX_RATES.forEach(row => {
+    if (row.date <= date && (!best || row.date > best.date)) best = row;
+  });
+  return best;
+}
+function fxRate(code, date) {
+  const c = code || 'USD';
+  if (c === 'USD') return 1;
+  const snap = fxSnap(date);
+  if (!snap || snap.rates[c] == null) return null;
+  return snap.rates[c];
+}
+function lineFxDate(l) { return (l && l.fxDate) || ''; }
+function needsFxDate(l) { return lineCur(l) !== 'USD'; }
+function toUsd(n, code, l) {
+  if (n == null || n === '') return null;
+  const c = code || 'USD';
+  if (c === 'USD') return Math.round(Number(n) * 100) / 100;
+  const r = fxRate(c, lineFxDate(l));
+  if (r == null) return null;
+  return Math.round(Number(n) * r * 100) / 100;
+}
+function usdEqHtml(native, code, l) {
+  if (native == null) return '';
+  if ((code || 'USD') === 'USD') return '';
+  const u = toUsd(native, code, l);
+  if (u == null) return '';
+  const r = fxRate(code, lineFxDate(l));
+  return `<div class="sub usd-eq">${money(u, 'USD')} at ${r} on ${fmtDate(lineFxDate(l))}</div>`;
+}
+function fxDateChip(l, locked) {
+  if (!needsFxDate(l)) return '';
+  const missing = !l.fxDate;
+  const label = missing ? 'Add Bill raised date (for FX)' : fmtDate(l.fxDate);
+  const dis = locked ? 'disabled' : '';
+  return `<button type="button" class="fx-date-chip${missing ? ' missing' : ''}" data-open-fx="${l.id}" ${dis} aria-label="${missing ? label : 'Bill raised date (for FX) ' + label}">${label}</button>`;
+}
+function fxSaveErrors(s) {
+  const bill = billDateOf(s);
+  const lines = (s.lines || []).filter(needsFxDate);
+  const msgs = [];
+  const uniq = [];
+  lines.forEach(l => {
+    if (!l.fxDate) {
+      msgs.push(l.charge + ': add Bill raised date (for FX).');
+      return;
+    }
+    if (uniq.indexOf(l.fxDate) < 0) uniq.push(l.fxDate);
+    if (!bill) {
+      msgs.push(l.charge + ': vendor Bill Raised Date is missing. It must match Bill raised date (for FX).');
+    } else if (l.fxDate !== bill) {
+      msgs.push(l.charge + ': Bill raised date (for FX) (' + fmtDate(l.fxDate) + ') does not match vendor Bill Raised Date (' + fmtDate(bill) + ').');
+    }
+  });
+  if (uniq.length > 1) {
+    msgs.push('Bill raised dates (for FX) differ across lines. They must all match the vendor Bill Raised Date.');
+  }
+  return msgs;
+}
+function showSaveErr(msgs) {
+  const el = document.getElementById('saveErr');
+  if (!el) return;
+  if (!msgs || !msgs.length) {
+    el.hidden = true;
+    el.innerHTML = '';
+    return;
+  }
+  el.hidden = false;
+  el.innerHTML = '<strong>Cannot save.</strong> Bill raised date (for FX) on each non-USD line must match the vendor Bill Raised Date.<ul>' + msgs.map(m => '<li>' + m + '</li>').join('') + '</ul>';
+}
 function curKeys(map) {
   const order = CURRENCIES.map(c => c.code);
   return Object.keys(map || {}).sort((a, b) => {
@@ -1056,6 +1196,7 @@ let lineStep = 'cat';
 let lineGroup = '';
 let menuLineId = null;
 let copyLineId = null;
+let fxLineId = null;
 const collapsedGroups = {};
 const collapsedProjects = {};
 
@@ -1113,17 +1254,20 @@ function runBuy(l) {
   if (!onQuote(l)) return basis == null ? 0 : basis;
   return basis == null ? Number(l.quoted || 0) : basis;
 }
-function lineVar(l) {
+function lineVar(l, s) {
   const act = actualsOf(l);
   const proc = procuredOf(l);
+  const actU = toUsd(act, lineCur(l), l);
+  const procU = toUsd(proc, lineCur(l), l);
   if (act != null) {
     if (proc == null) return null;
-    return act - proc;
+    if (actU == null || procU == null) return null;
+    return actU - procU;
   }
   if (proc == null) return null;
-  if (!onQuote(l)) return proc;
-  if (!sameAsQuote(l)) return null;
-  return proc - Number(l.quoted || 0);
+  if (procU == null) return null;
+  if (!onQuote(l)) return procU;
+  return procU - Number(l.quoted || 0);
 }
 function qtyNum(v) {
   if (v == null || v === '') return null;
@@ -1142,18 +1286,20 @@ function lineQtyVar(l, s) {
   if (procQ == null) return null;
   return { n: procQ - quoteQ, uom: procUomOf(l) };
 }
-function lineGp(l) {
+function lineGp(l, s) {
   const act = actualsOf(l);
   const proc = procuredOf(l);
   const cost = act != null ? act : proc;
+  const costU = toUsd(cost, lineCur(l), l);
   if (!onQuote(l)) {
     if (cost == null) return null;
-    return -Math.abs(cost);
+    if (costU == null) return null;
+    return -Math.abs(costU);
   }
   const sell = Number(l.expSell || 0);
-  if (cost != null && !sameAsQuote(l)) return null;
-  if (act != null) return sell - act;
-  if (proc != null) return sell - proc;
+  if (cost != null && costU == null) return null;
+  if (act != null) return sell - costU;
+  if (proc != null) return sell - costU;
   return sell - Number(l.quoted || 0);
 }
 function gpCurrency(l) {
@@ -1230,6 +1376,7 @@ function ensure(s) {
     if (!l.procUom) l.procUom = l.uom;
     if (l.actQty === undefined) l.actQty = null;
     if (l.actRate === undefined) l.actRate = null;
+    if (l.fxDate === undefined) l.fxDate = null;
   });
   if (!s.executionStatus) s.executionStatus = 'IN_PROGRESS';
   if (!s.status) s.status = 'UNKNOWN';
@@ -1247,7 +1394,7 @@ function ensure(s) {
       setActuals(othc, 1, 1180);
       othc.queries = [
         qEntry('query', 'Please confirm origin THC. Bill came in at ¥1,220.', 'origin', '2026-08-12T16:40:00'),
-        qEntry('query', 'Billed ¥1,220. Quote buy is USD, so GP stays off this line.', 'finops', '2026-08-13T11:22:00')
+        qEntry('query', 'Billed ¥1,220. USD on Bill Raised Date is about $170.', 'finops', '2026-08-13T11:22:00')
       ];
     }
     const of40 = s.lines.find(l => l.id === 'of40');
@@ -1266,6 +1413,8 @@ function ensure(s) {
       det.source = 'sheet';
     }
     s.invoice.vendor = 'Yantian origin agent';
+    s.invoice.invoiceNo = 'YTN-482910';
+    s.invoice.invoiceDate = '2026-08-13';
   }
   if (s.id === 'shp-lcl') {
     const of = s.lines.find(l => l.id === 'oflcl');
@@ -1332,18 +1481,40 @@ function totals(s, q) {
   withP.forEach(l => addCur(billedBy, lineCur(l), procuredOf(l)));
   const actualsBy = {};
   withAct.forEach(l => addCur(actualsBy, lineCur(l), actualsOf(l)));
-  const varBy = {};
+  let billedUsd = 0;
+  let actualsUsd = 0;
+  let varUsd = 0;
+  let gpUsd = 0;
+  let varN = 0;
+  let gpN = 0;
+  let fxUsed = 0;
+  withP.forEach(l => {
+    const u = toUsd(procuredOf(l), lineCur(l), l);
+    if (u == null) return;
+    billedUsd += u;
+    if (!sameAsQuote(l)) fxUsed += 1;
+  });
+  withAct.forEach(l => {
+    const u = toUsd(actualsOf(l), lineCur(l), l);
+    if (u == null) return;
+    actualsUsd += u;
+  });
   lines.forEach(l => {
-    const v = lineVar(l);
+    const v = lineVar(l, s);
     if (v == null) return;
-    addCur(varBy, lineCur(l), v);
+    varUsd += v;
+    varN += 1;
   });
-  const gpBy = {};
   lines.forEach(l => {
-    const g = lineGp(l);
+    const g = lineGp(l, s);
     if (g == null) return;
-    addCur(gpBy, gpCurrency(l), g);
+    gpUsd += g;
+    gpN += 1;
   });
+  billedUsd = Math.round(billedUsd * 100) / 100;
+  actualsUsd = Math.round(actualsUsd * 100) / 100;
+  varUsd = Math.round(varUsd * 100) / 100;
+  gpUsd = Math.round(gpUsd * 100) / 100;
   const qSell = quoted.reduce((n, l) => n + (quoteAllSell(l, q) || 0), 0);
   const costCodes = {};
   withP.concat(withAct).forEach(l => { costCodes[lineCur(l)] = true; });
@@ -1352,7 +1523,8 @@ function totals(s, q) {
     actualSell, buy,
     billedBy, billedN: withP.length, n: lines.length,
     actualsBy, actualsN: withAct.length,
-    varBy, gpBy, mixed,
+    billedUsd, actualsUsd, varUsd, gpUsd, varN, gpN, fxUsed,
+    mixed,
     qSell, shipments: q.shipments.length
   };
 }
@@ -1365,18 +1537,31 @@ function rollupShips(q) {
   return (q.shipments || []).filter(canSelectShipment);
 }
 function projectTotals(q) {
-  const billedBy = {};
-  const actualsBy = {};
-  const varBy = {};
-  const gpBy = {};
+  let billedUsd = 0;
+  let actualsUsd = 0;
+  let varUsd = 0;
+  let gpUsd = 0;
   rollupShips(q).forEach(s => {
     const t = totals(s, q);
-    mergeCur(billedBy, t.billedBy);
-    mergeCur(actualsBy, t.actualsBy);
-    mergeCur(varBy, t.varBy);
-    mergeCur(gpBy, t.gpBy);
+    billedUsd += t.billedUsd || 0;
+    actualsUsd += t.actualsUsd || 0;
+    varUsd += t.varN ? t.varUsd : 0;
+    gpUsd += t.gpN ? t.gpUsd : 0;
   });
-  return { billedBy, actualsBy, varBy, gpBy };
+  return {
+    billedUsd: Math.round(billedUsd * 100) / 100,
+    actualsUsd: Math.round(actualsUsd * 100) / 100,
+    varUsd: Math.round(varUsd * 100) / 100,
+    gpUsd: Math.round(gpUsd * 100) / 100
+  };
+}
+function usdCell(n) {
+  if (n == null || n === '') return '<span class="empty">-</span>';
+  return money(n, 'USD');
+}
+function gpUsdHtml(n) {
+  if (n == null) return '<span class="empty">-</span>';
+  return n < -0.5 ? `<span class="over">${money(n, 'USD')}</span>` : money(n, 'USD');
 }
 function inspServices(q) {
   const s = (q.shipments || [])[0];
@@ -1412,10 +1597,10 @@ function renderConsolidated() {
       childRows = s ? `<tr class="child-row" data-open-ship="${s.id}">
         <td>${q.quoteId}</td>
         <td>${inspServices(q)}</td>
-        <td class="num">${childMoneyCell(t.billedBy)}</td>
-        <td class="num">${childMoneyCell(t.actualsBy)}</td>
-        <td class="num">${childMoneyCell(t.varBy)}</td>
-        <td class="num">${gpLossHtml(t.gpBy)}</td>
+        <td class="num">${usdCell(t.billedN ? t.billedUsd : null)}</td>
+        <td class="num">${usdCell(t.actualsN ? t.actualsUsd : null)}</td>
+        <td class="num">${t.varN ? varHtml(t.varUsd, 'USD') : '<span class="empty">-</span>'}</td>
+        <td class="num">${t.gpN ? gpUsdHtml(t.gpUsd) : '<span class="empty">-</span>'}</td>
       </tr>` : '';
     } else {
       childRows = kids.map(s => {
@@ -1424,10 +1609,10 @@ function renderConsolidated() {
         return `<tr class="child-row${locked ? ' child-locked' : ''}" ${locked ? '' : 'data-open-ship="' + s.id + '"'}>
           <td>${s.shipId}${locked ? '<div class="sub">' + execLabel(s) + '</div>' : ''}</td>
           <td>${s.mode}</td>
-          <td class="num">${childMoneyCell(t.billedBy)}</td>
-          <td class="num">${childMoneyCell(t.actualsBy)}</td>
-          <td class="num">${childMoneyCell(t.varBy)}</td>
-          <td class="num">${gpLossHtml(t.gpBy)}</td>
+          <td class="num">${usdCell(t.billedN ? t.billedUsd : null)}</td>
+          <td class="num">${usdCell(t.actualsN ? t.actualsUsd : null)}</td>
+          <td class="num">${t.varN ? varHtml(t.varUsd, 'USD') : '<span class="empty">-</span>'}</td>
+          <td class="num">${t.gpN ? gpUsdHtml(t.gpUsd) : '<span class="empty">-</span>'}</td>
         </tr>`;
       }).join('');
     }
@@ -1435,7 +1620,7 @@ function renderConsolidated() {
     return `<tr class="proj-row${open ? '' : ' collapsed'}" data-proj="${q.id}">
       <td class="proj-id"><span class="group-hd"><span class="caret" aria-hidden="true"></span>${q.projectId}</span></td>
       <td>${q.projectName}<div class="sub">${sub}</div></td>
-      <td class="num">${gpLossHtml(pt.gpBy)}</td>
+      <td class="num">${gpUsdHtml(pt.gpUsd)}</td>
       <td class="proj-client">${q.client}</td>
     </tr>
     <tr class="proj-detail${open ? '' : ' group-hide'}" data-proj-detail="${q.id}">
@@ -1468,21 +1653,21 @@ function exportConsolidated() {
     const pt = projectTotals(q);
     projRows.push(xlsRow([
       q.projectId, q.projectName, q.client, insp ? 'Inspections' : 'Shipping',
-      stackPlain(pt.gpBy), stackPlain(pt.billedBy), stackPlain(pt.actualsBy), stackPlain(pt.varBy)
+      money(pt.gpUsd, 'USD'), money(pt.billedUsd, 'USD'), money(pt.actualsUsd, 'USD'), money(pt.varUsd, 'USD')
     ]));
     if (insp) {
       const s = q.shipments[0];
-      const t = s ? totals(s, q) : { billedBy: {}, actualsBy: {}, varBy: {}, gpBy: {} };
+      const t = s ? totals(s, q) : { billedUsd: '', actualsUsd: '', varUsd: '', gpUsd: '', billedN: 0, actualsN: 0, varN: 0, gpN: 0 };
       detRows.push(xlsRow([
         q.projectId, q.projectName, q.client, 'Quote', q.quoteId, inspServices(q),
-        stackPlain(t.billedBy), stackPlain(t.actualsBy), stackPlain(t.varBy), stackPlain(t.gpBy)
+        money(t.billedN ? t.billedUsd : '', 'USD'), money(t.actualsN ? t.actualsUsd : '', 'USD'), money(t.varN ? t.varUsd : '', 'USD'), money(t.gpN ? t.gpUsd : '', 'USD')
       ]));
     } else {
       q.shipments.forEach(s => {
         const t = totals(s, q);
         detRows.push(xlsRow([
           q.projectId, q.projectName, q.client, 'Shipment', s.shipId, s.mode,
-          stackPlain(t.billedBy), stackPlain(t.actualsBy), stackPlain(t.varBy), stackPlain(t.gpBy)
+          money(t.billedN ? t.billedUsd : '', 'USD'), money(t.actualsN ? t.actualsUsd : '', 'USD'), money(t.varN ? t.varUsd : '', 'USD'), money(t.gpN ? t.gpUsd : '', 'USD')
         ]));
       });
     }
@@ -1603,15 +1788,13 @@ function renderKpis() {
   const q = quote();
   const s = ship();
   const t = totals(s, q);
-  const varPos = curKeys(t.varBy).some(c => t.varBy[c] > 0);
-  const qGp = t.gpBy[quoteCur()];
   document.getElementById('kpis').innerHTML = `<div class="kpi">
     <div><span>Quoted (all shipments)</span><b>${money(t.qSell, quoteCur())}</b><span>${t.shipments} shipments · sell</span></div>
     <div><span>Actual sell (this shipment)</span><b>${money(t.actualSell, quoteCur())}</b></div>
     <div><span>Buy rate</span><b>${money(t.buy, quoteCur())}</b><span>Quoted sell - markup</span></div>
-    <div><span>Procured</span><b>${t.billedN ? moneyStack(t.billedBy) : '-'}</b><span>${t.billedN}/${t.n} lines${t.mixed ? ' · not converted' : ''}</span></div>
-    <div class="${!curKeys(t.varBy).length ? '' : (varPos ? 'over' : 'ok')}"><span>Variance</span><b>${varStackHtml(t.varBy)}</b></div>
-    <div class="${qGp != null && qGp < t.actualSell - t.buy - 0.5 ? 'over' : 'ok'}"><span>Gross profit</span><b>${moneyStack(t.gpBy)}</b>${t.mixed ? '<span>Quote currency only</span>' : ''}</div>
+    <div><span>Procured</span><b>${t.billedN ? money(t.billedUsd, 'USD') : '-'}</b><span>${t.billedN}/${t.n} lines · USD</span></div>
+    <div class="${!t.varN ? '' : (t.varUsd > 0 ? 'over' : 'ok')}"><span>Variance</span><b>${t.varN ? varHtml(t.varUsd, 'USD') : '-'}</b></div>
+    <div class="${t.gpN && t.gpUsd < t.actualSell - t.buy - 0.5 ? 'over' : 'ok'}"><span>Gross profit</span><b>${t.gpN ? money(t.gpUsd, 'USD') : '-'}</b></div>
   </div>`;
 }
 
@@ -1678,9 +1861,50 @@ function copyLineToSiblings(line, s, q, ids) {
     if (!x) return;
     x.procUom = procUomOf(line);
     setProcured(x, line.procQty, line.procRate, line.currency);
+    x.fxDate = line.fxDate || null;
     n += 1;
   });
   return n;
+}
+function openFxModal(line) {
+  if (!line || line.complete) return;
+  fxLineId = line.id;
+  const input = document.getElementById('fxDateInput');
+  const err = document.getElementById('fxDateErr');
+  document.getElementById('fxDateHint').textContent = line.charge + ' converts to USD on this date. On Save it must match the vendor Bill Raised Date.';
+  input.value = line.fxDate || '';
+  input.classList.remove('err');
+  err.hidden = true;
+  err.innerHTML = '';
+  document.getElementById('fxDateModal').classList.add('open');
+  setTimeout(() => input.focus(), 0);
+}
+function closeFxModal() {
+  const el = document.getElementById('fxDateModal');
+  if (el) el.classList.remove('open');
+  const input = document.getElementById('fxDateInput');
+  if (input) input.classList.remove('err');
+  fxLineId = null;
+}
+function confirmFxModal() {
+  const s = ship();
+  const line = s && s.lines.find(l => l.id === fxLineId);
+  const input = document.getElementById('fxDateInput');
+  const err = document.getElementById('fxDateErr');
+  if (!line || !input) { closeFxModal(); return; }
+  const val = input.value || '';
+  if (!val) {
+    input.classList.add('err');
+    err.hidden = false;
+    err.innerHTML = 'Add a Bill raised date (for FX) before saving.';
+    return;
+  }
+  line.fxDate = val;
+  persistInvoice();
+  pushHistory(s, line.charge + ' Bill raised date (for FX) set to ' + fmtDate(val) + '.');
+  closeFxModal();
+  toast('Bill raised date (for FX) set on ' + line.charge + '.');
+  render();
 }
 function closeCopyModal() {
   const el = document.getElementById('copyModal');
@@ -1703,7 +1927,7 @@ function openCopyModal(line) {
   if (!targets.length) return;
   copyLineId = line.id;
   document.getElementById('copyHint').textContent =
-    'Copies procured UOM, qty, rate, and currency for ' + line.charge + '. Cancelled and archived files are not listed.';
+    'Copies procured UOM, qty, rate, currency, and Bill raised date (for FX) for ' + line.charge + '. Cancelled and archived files are not listed.';
   document.getElementById('copyBody').innerHTML =
     `<label class="copy-row copy-all"><input type="checkbox" id="copySelAll" checked> Select all</label>` +
     targets.map(t => {
@@ -1739,6 +1963,10 @@ function openRowMenu(lineId, btn) {
     menuOpt('absorb', l.id, l.absorbed ? 'Remove absorbed' : 'Absorbed by Silq', !!l.absorbed),
     menuOpt('complete', l.id, l.complete ? 'Undo complete' : 'Mark as complete', !!l.complete)
   ];
+  if (needsFxDate(l) && !l.complete) {
+    items.push('<div class="silq-dd-sep"></div>');
+    items.push(menuOpt('fxdate', l.id, 'Bill raised date (for FX)', false));
+  }
   if (canCopyAll(l, s, q)) {
     items.push('<div class="silq-dd-sep"></div>');
     items.push(menuOpt('copy', l.id, 'Copy to all shipments', false));
@@ -1775,11 +2003,13 @@ function procCell(l, s, q, elseShip, elseLn, off) {
       <input class="mini" data-proc-rate="${l.id}" value="${l.procRate == null ? '' : l.procRate}" placeholder="Rate" ${dis}>
     </div>
     <div class="proc-val">${val == null ? '<span class="empty">-</span>' : money(val, code)}</div>
+    ${usdEqHtml(val, code, l)}
     <div class="proc-tools">
       <select class="cur-sel" data-currency="${l.id}" ${dis} aria-label="Currency">${currencyOptions(code)}</select>
-    </div>${off ? '<div class="sub">Check applies to enter procured</div>' : (l.complete ? '<div class="sub">Complete, locked</div>' : '')}`;
+    </div>
+    ${fxDateChip(l, locked)}${off ? '<div class="sub">Check applies to enter procured</div>' : (l.complete ? '<div class="sub">Complete, locked</div>' : '')}`;
 }
-function actCell(l, elseShip, off) {
+function actCell(l, elseShip, off, s) {
   if (elseShip) return '<span class="empty">-</span>';
   const code = l.currency || 'USD';
   const locked = off || !!l.complete;
@@ -1789,7 +2019,8 @@ function actCell(l, elseShip, off) {
       <input class="mini" data-act-qty="${l.id}" value="${l.actQty == null ? '' : l.actQty}" placeholder="Qty" ${dis}>
       <input class="mini" data-act-rate="${l.id}" value="${l.actRate == null ? '' : l.actRate}" placeholder="Rate" ${dis}>
     </div>
-    <div class="proc-val">${val == null ? '<span class="empty">-</span>' : money(val, code)}</div>${off ? '<div class="sub">Check applies to enter actuals</div>' : (l.complete ? '<div class="sub">Complete, locked</div>' : '')}`;
+    <div class="proc-val">${val == null ? '<span class="empty">-</span>' : money(val, code)}</div>
+    ${usdEqHtml(val, code, l)}${off ? '<div class="sub">Check applies to enter actuals</div>' : (l.complete ? '<div class="sub">Complete, locked</div>' : '')}`;
 }
 
 function renderTable() {
@@ -1815,8 +2046,8 @@ function renderTable() {
       const allSell = quotedLine ? quoteAllSell(l, q) : null;
       const buy = buyRate(l);
       const off = ifAppOff(l);
-      const costVar = elseShip || off ? null : lineVar(l);
-      const gp = elseShip || off ? null : lineGp(l);
+      const costVar = elseShip || off ? null : lineVar(l, s);
+      const gp = elseShip || off ? null : lineGp(l, s);
       const qQty = quoteQtyOf(l, s);
       const qv = elseShip || off ? null : lineQtyVar(l, s);
       const rowCls = [
@@ -1851,24 +2082,21 @@ function renderTable() {
             ? '<span class="empty">Once per quote</span>'
             : `${money(buy)}<div class="sub">markup ${money(markupOf(l))}</div>`;
       const billedCell = procCell(l, s, q, elseShip, elseLn, off);
-      const actualsCell = actCell(l, elseShip, off);
-      const mixNote = quotedLine && !sameAsQuote(l) && (procuredOf(l) != null || actualsOf(l) != null)
-        ? `<div class="sub">${lineCur(l)} vs ${quoteCur()} quote</div>`
-        : '';
+      const actualsCell = actCell(l, elseShip, off, s);
       const varCell = elseShip
         ? `<span class="empty">-</span><div class="sub">On ${elseShip.shipId}</div>`
         : off
           ? '<span class="empty">-</span><div class="sub">Not in totals</div>'
           : costVar == null
-            ? '<span class="empty">-</span>' + mixNote + qtyVarHtml(qv)
-            : varHtml(costVar, lineCur(l)) + qtyVarHtml(qv);
+            ? '<span class="empty">-</span>' + qtyVarHtml(qv)
+            : varHtml(costVar, 'USD') + qtyVarHtml(qv);
       const gpCell = elseShip
         ? `<span class="empty">-</span><div class="sub">On ${elseShip.shipId}</div>`
         : off
           ? '<span class="empty">-</span><div class="sub">Not in totals</div>'
           : gp == null
-            ? '<span class="empty">-</span>' + mixNote
-            : (gp < -0.5 ? `<span class="over">${money(gp, gpCurrency(l))}</span>` : money(gp, gpCurrency(l))) + (!quotedLine ? '<div class="sub">No sell to offset</div>' : '');
+            ? '<span class="empty">-</span>'
+            : (gp < -0.5 ? `<span class="over">${money(gp, 'USD')}</span>` : money(gp, 'USD')) + (!quotedLine ? '<div class="sub">No sell to offset</div>' : '');
       return `<tr class="${rowCls}">
         <td>
           <div class="charge-head">
@@ -1902,17 +2130,16 @@ function renderFoot() {
   const q = quote();
   const s = ship();
   const t = totals(s, q);
-  const qGp = t.gpBy[quoteCur()];
   document.getElementById('tfoot').innerHTML = `<tr>
-    <td>Total (this shipment)<div class="sub">If applicable only when checked. Once-per-quote billed elsewhere excluded.${t.mixed ? ' Costs are not FX-converted. Totals stack per currency. GP only includes quote-currency lines.' : ''}</div></td>
+    <td>Total (this shipment)<div class="sub">If applicable only when checked. Once-per-quote billed elsewhere excluded.</div><div class="fx-note">* Non-USD procured converts to USD at the rate on that line's Bill raised date (for FX). Save requires those dates to match the vendor Bill Raised Date.</div></td>
     <td class="num">${money(t.qSell, quoteCur())}</td>
     <td class="num"><span class="empty">-</span></td>
     <td class="num">${money(t.actualSell, quoteCur())}</td>
     <td class="num">${money(t.buy, quoteCur())}</td>
-    <td class="num">${t.billedN ? moneyStack(t.billedBy) : '-'}</td>
-    <td class="num">${t.actualsN ? moneyStack(t.actualsBy) : '-'}</td>
-    <td class="num">${varStackHtml(t.varBy)}</td>
-    <td class="num">${curKeys(t.gpBy).length ? (qGp != null && qGp < -0.5 ? `<span class="over">${moneyStack(t.gpBy)}</span>` : moneyStack(t.gpBy)) : '-'}</td>
+    <td class="num">${t.billedN ? money(t.billedUsd, 'USD') : '-'}</td>
+    <td class="num">${t.actualsN ? money(t.actualsUsd, 'USD') : '-'}</td>
+    <td class="num">${t.varN ? varHtml(t.varUsd, 'USD') : '-'}</td>
+    <td class="num">${t.gpN ? gpUsdHtml(t.gpUsd) : '-'}</td>
     <td class="col-menu"></td>
   </tr>`;
 }
@@ -2061,6 +2288,7 @@ document.getElementById('lineBody').addEventListener('click', e => {
   line.actuals = null;
   line.actQty = null;
   line.actRate = null;
+  line.fxDate = null;
   line.absorbed = false;
   line.complete = false;
   line.queries = [];
@@ -2107,10 +2335,20 @@ document.getElementById('tbody').addEventListener('change', e => {
     return;
   }
   if (cur) {
+    const wasUsd = !needsFxDate({ currency: line.currency });
     line.currency = cur.value;
+    if (!needsFxDate(line)) {
+      line.fxDate = null;
+      persistInvoice();
+      pushHistory(ship(), line.charge + ' currency set to ' + line.currency);
+      render();
+      return;
+    }
+    if (wasUsd) line.fxDate = null;
     persistInvoice();
     pushHistory(ship(), line.charge + ' currency set to ' + line.currency);
     render();
+    openFxModal(line);
     return;
   }
   if (qty || rate) {
@@ -2152,8 +2390,16 @@ document.getElementById('tbody').addEventListener('click', e => {
     openRowMenu(kebab.dataset.kebab, kebab);
     return;
   }
+  const fxChip = e.target.closest('[data-open-fx]');
+  if (fxChip) {
+    e.stopPropagation();
+    if (fxChip.disabled) return;
+    const line = ship().lines.find(l => l.id === fxChip.dataset.openFx);
+    if (line) openFxModal(line);
+    return;
+  }
   const grp = e.target.closest('[data-collapse]');
-  if (grp && !e.target.closest('[data-flag], [data-rm-line], [data-applicable], [data-kebab], .query-flag, .silq-icon-btn, .money, .ifapp-check, .proc, .cur-sel')) {
+  if (grp && !e.target.closest('[data-flag], [data-rm-line], [data-applicable], [data-kebab], .query-flag, .silq-icon-btn, .money, .ifapp-check, .proc, .cur-sel, .fx-date-chip, [data-open-fx]')) {
     const id = grp.dataset.collapse;
     collapsedGroups[id] = !collapsedGroups[id];
     renderTable();
@@ -2206,6 +2452,11 @@ document.getElementById('rowMenu').addEventListener('click', e => {
     render();
     return;
   }
+  if (action === 'fxdate') {
+    closeRowMenu();
+    openFxModal(line);
+    return;
+  }
   if (action === 'copy') {
     closeRowMenu();
     openCopyModal(line);
@@ -2218,6 +2469,17 @@ document.getElementById('copyBody').addEventListener('change', e => {
     return;
   }
   if (e.target.closest('[data-copy-ship]')) syncCopySelAll();
+});
+document.getElementById('fxDateCancel').addEventListener('click', closeFxModal);
+document.getElementById('fxDateConfirm').addEventListener('click', confirmFxModal);
+document.getElementById('fxDateModal').addEventListener('click', e => {
+  if (e.target.id === 'fxDateModal') closeFxModal();
+});
+document.getElementById('fxDateInput').addEventListener('input', () => {
+  document.getElementById('fxDateInput').classList.remove('err');
+  const err = document.getElementById('fxDateErr');
+  err.hidden = true;
+  err.innerHTML = '';
 });
 document.getElementById('copyCancel').addEventListener('click', closeCopyModal);
 document.getElementById('copyModal').addEventListener('click', e => {
@@ -2243,15 +2505,20 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('keydown', e => {
   if (e.key !== 'Escape') return;
+  if (document.getElementById('fxDateModal').classList.contains('open')) {
+    closeFxModal();
+    return;
+  }
   if (document.getElementById('copyModal').classList.contains('open')) {
     closeCopyModal();
     return;
   }
   closeRowMenu();
 });
-['vendor', 'invoiceNo', 'invoiceDate'].forEach(id => {
+['vendor', 'invoiceNo'].forEach(id => {
   document.getElementById(id).addEventListener('change', persistInvoice);
 });
+document.getElementById('invoiceDate').addEventListener('change', persistInvoice);
 document.getElementById('uploadBtn').addEventListener('click', () => {
   if (!ship()) { toast('Select a shipment first.'); return; }
   document.getElementById('billFile').click();
@@ -2286,6 +2553,13 @@ document.getElementById('docs').addEventListener('click', e => {
 document.getElementById('saveBtn').addEventListener('click', () => {
   persistInvoice();
   const s = ship();
+  if (!s) return;
+  const errs = fxSaveErrors(s);
+  if (errs.length) {
+    showSaveErr(errs);
+    return;
+  }
+  showSaveErr([]);
   s.invoice.saved = true;
   if (!s.invoice.invoiceNo) s.invoice.invoiceNo = 'VB-' + s.shipId.slice(-2);
   pushHistory(s, 'Saved procured on this shipment. Vendor ' + (s.invoice.vendor || '-') + ', invoice ' + (s.invoice.invoiceNo || '-') + '.');
@@ -2352,6 +2626,8 @@ function hideTip(tipId) {
 function hideAllTips() {
   hideTip('varTip');
   hideTip('gpTip');
+  hideTip('billTip');
+  hideTip('procTip');
 }
 function showTip(btnId, tipId) {
   const btn = document.getElementById(btnId);
@@ -2385,6 +2661,8 @@ function wireTip(btnId, tipId) {
 }
 wireTip('varTipBtn', 'varTip');
 wireTip('gpTipBtn', 'gpTip');
+wireTip('billTipBtn', 'billTip');
+wireTip('procTipBtn', 'procTip');
 (function wireTipDismiss() {
   const wrap = document.querySelector('.table-wrap');
   if (wrap) wrap.addEventListener('scroll', hideAllTips);
