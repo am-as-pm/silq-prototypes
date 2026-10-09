@@ -512,7 +512,7 @@
   <div class="page" id="pageCapture">
     <div class="crumb">Shipments / Vendor billed costs</div>
     <h1>Vendor billed costs</h1>
-    <p class="lede">Select a shipment. The quote fills in from that file. Cancelled and archived files stay listed but cannot be opened.</p>
+    <p class="lede">Select a shipment or an inspection job. The quote fills in from that file. Cancelled and archived files stay listed but cannot be opened.</p>
 
     <div class="card">
       <div class="card-hd"><h2>Shipment & Quote</h2></div>
@@ -745,7 +745,7 @@ const FX_RATES = [
   { date: '2026-09-05', rates: { USD: 1, EUR: 1.178, GBP: 1.312, CNY: 0.1401, INR: 0.0118, AED: 0.2723, HKD: 0.1284 } },
   { date: '2026-09-18', rates: { USD: 1, EUR: 1.182, GBP: 1.318, CNY: 0.1406, INR: 0.0119, AED: 0.2722, HKD: 0.1285 } }
 ];
-const UOMS = ['container', 'CBM', 'kg', 'shipment', 'HBL', 'HAWB', 'day', 'job', '1000kg', 'man day', 'SKU', 'unit'];
+const UOMS = ['container', 'CBM', 'kg', 'shipment', 'HBL', 'HAWB', 'day', 'job', '1000kg', 'Man Day', 'SKU', 'Other', 'Variation'];
 const VENDORS = [
   'Yantian origin agent',
   'Shanghai CFS agent',
@@ -812,14 +812,17 @@ const CATALOG = [
   L('store', 'ifapp', 'Storage Fee', 'shipment', 40, 55, 'per_shipment'),
   L('wait', 'ifapp', 'Waiting Time', 'shipment', 65, 85, 'per_shipment'),
   L('lift', 'ifapp', 'Liftgate', 'shipment', 55, 75, 'per_shipment', { modes: ['FCL', 'LCL', 'Air'] }),
-  L('finalinsp', 'inspections', 'Final Inspection', 'man day', 75, 200, 'per_unit', { qtyField: 'inspDays', modes: ['Inspections'] }),
-  L('inlineinsp', 'inspections', 'In-line Inspection', 'man day', 60, 200, 'per_unit', { qtyField: 'inspDays', modes: ['Inspections'] }),
-  L('ppsample', 'inspections', 'Pre-production Sample', 'SKU', 25, 99, 'per_unit', { qtyField: 'skus', modes: ['Inspections'] }),
-  L('topsample', 'inspections', 'TOP Sample', 'SKU', 25, 99, 'per_unit', { qtyField: 'skus', modes: ['Inspections'] }),
-  L('factoryaud', 'inspections', 'Factory Audit', 'man day', 80, 200, 'per_unit', { qtyField: 'inspDays', modes: ['Inspections'] }),
-  L('packingaud', 'inspections', 'Packing Audit', 'man day', 80, 200, 'per_unit', { qtyField: 'inspDays', modes: ['Inspections'] }),
-  L('bulkfab', 'inspections', 'Bulk Fabric Inspection', 'man day', 70, 200, 'per_unit', { qtyField: 'inspDays', modes: ['Inspections'] }),
-  L('perunit', 'inspections', 'Per Unit Fee', 'unit', 0.04, 0.08, 'per_unit', { qtyField: 'units', modes: ['Inspections'] })
+  L('finalinsp', 'inspections', 'Final Inspection', 'Man Day', 90, 200, 'per_unit', { qtyField: 'inspDays', modes: ['Inspections'] }),
+  L('inlineinsp', 'inspections', 'In-line Inspection', 'Man Day', 75, 225, 'per_unit', { qtyField: 'inspDays', modes: ['Inspections'] }),
+  L('ppsample', 'inspections', 'Pre-production Sample', 'SKU', 20, 99, 'per_unit', { qtyField: 'skus', modes: ['Inspections'] }),
+  L('topsample', 'inspections', 'TOP Sample', 'SKU', 20, 99, 'per_unit', { qtyField: 'skus', modes: ['Inspections'] }),
+  L('factoryaud', 'inspections', 'Factory Audit', 'Man Day', 80, 200, 'per_unit', { qtyField: 'inspDays', modes: ['Inspections'] }),
+  L('packingaud', 'inspections', 'Packing Audit', 'Man Day', 80, 200, 'per_unit', { qtyField: 'inspDays', modes: ['Inspections'] }),
+  L('bulkfab', 'inspections', 'Bulk Fabric Inspection', 'Man Day', 70, 200, 'per_unit', { qtyField: 'inspDays', modes: ['Inspections'] }),
+  L('perunit', 'inspections', 'Per Unit Fee', 'Other', 0.10, 0.10, 'per_unit', { qtyField: 'units', modes: ['Inspections'] }),
+  L('lofinline', 'inspections', 'Large Order Fee - In Line', 'Variation', 1, 1, 'per_unit', { modes: ['Inspections'] }),
+  L('lofpp', 'inspections', 'Large Order Fee - PP', 'Variation', 1, 1, 'per_unit', { modes: ['Inspections'] }),
+  L('loftop', 'inspections', 'Large Order Fee - TOP', 'Variation', 1, 1, 'per_unit', { modes: ['Inspections'] })
 ];
 
 const APEX_IDS = ['pick', 'othc', 'odoc', 'ocfs', 'otruck', 'of40', 'cprot', 'isf', 'cclear', 'shand', 'ddoc', 'pier', 'dray', 'dfuel', 'pss', 'chassis', 'det', 'dem', 'store'];
@@ -995,8 +998,8 @@ const QUOTES = [
     projectId: 'PRJ-6041182', projectName: 'Pinnacle factory QC',
     shipments: [{
       id: 'shp-insp', shipId: 'INSP-6041182-01', mode: 'Inspections', incoterm: 'Factory QC', coverage: 'Inspections only',
-      container: '', containerNo: '', origin: 'Pune, IN', dest: '-', mbl: 'QC-6041182', blLabel: 'Job',
-      vendorHint: 'West India QC partner', appVendor: 'QC', shipQty: 1, quoteShipQty: 1, hblQty: 2, quoteHbl: 2,
+      container: '', containerNo: '', origin: 'Pune, IN', dest: '', mbl: 'QC-6041182', blLabel: 'Job',
+      vendorHint: 'West India QC partner', appVendor: 'QC', shipQty: 1, quoteShipQty: 1, hblQty: 0, quoteHbl: 0,
       cbm: 0, quoteCbm: 0, kg: 0, quoteKg: 0,
       detDays: 0, quoteDetDays: 0, demDays: 0, quoteDemDays: 0,
       inspDays: 1, quoteInspDays: 1, skus: 2, quoteSkus: 2, units: 4200, quoteUnits: 4000,
@@ -1005,8 +1008,8 @@ const QUOTES = [
       executionStatus: 'DONE', status: 'SELLER_LOCATION',
       gatedIn: '2026-09-18', etd: '2026-09-18', eta: '2026-09-18',
       history: [
-        { at: '2026-09-18T15:20:00', by: 'Priya Shah', team: 'FinOps', text: 'Query on Final Inspection: billed $95 vs buy $75 on 1 man day.' },
-        { at: '2026-09-18T15:12:00', by: 'Priya Shah', team: 'FinOps', text: 'In-line Inspection procured $60 and marked complete.' },
+        { at: '2026-09-18T15:20:00', by: 'Priya Shah', team: 'FinOps', text: 'Query on Final Inspection: billed $95 vs buy $90 on 1 Man Day.' },
+        { at: '2026-09-18T15:12:00', by: 'Priya Shah', team: 'FinOps', text: 'In-line Inspection procured $75 and marked complete.' },
         { at: '2026-09-18T14:50:00', by: 'Wei Chen', team: 'Origin Ops', text: 'Uploaded vendor bill Pune-QC-invoice.pdf' },
         { at: '2026-09-18T09:00:00', by: 'System', team: 'Tasks', text: 'Inspection completed at factory' }
       ],
@@ -1454,14 +1457,14 @@ function ensure(s) {
     const inline = s.lines.find(l => l.id === 'inlineinsp');
     const pp = s.lines.find(l => l.id === 'ppsample');
     const pu = s.lines.find(l => l.id === 'perunit');
-    if (inline) { setProcured(inline, 1, 60); inline.source = 'sheet'; inline.complete = true; }
-    if (pp) { setProcured(pp, s.skus, 25); pp.source = 'sheet'; }
-    if (pu) { setProcured(pu, s.units, 0.05); pu.source = 'sheet'; }
+    if (inline) { setProcured(inline, 1, 75); inline.source = 'sheet'; inline.complete = true; }
+    if (pp) { setProcured(pp, s.skus, 20); pp.source = 'sheet'; }
+    if (pu) { setProcured(pu, s.units, 0.10); pu.source = 'sheet'; }
     if (fin) {
       setProcured(fin, 1, 95);
       fin.source = 'sheet';
       fin.queries = [
-        qEntry('query', 'Final inspection billed $95 vs buy rate $75 on 1 man day.', 'finops', '2026-09-18T15:20:00')
+        qEntry('query', 'Final Inspection billed $95 vs buy rate $90 on 1 Man Day.', 'finops', '2026-09-18T15:20:00')
       ];
     }
     s.invoice.vendor = 'West India QC partner';
@@ -1530,7 +1533,12 @@ function totals(s, q) {
 }
 
 function seedAll() {
-  QUOTES.forEach(q => q.shipments.forEach(ensure));
+  QUOTES.forEach(q => q.shipments.forEach(s => {
+    ensure(s);
+    if (s.mode === 'Inspections' && shippingLeakOn(s).length) {
+      s.lines = s.lines.filter(l => l.group === 'inspections');
+    }
+  }));
 }
 function isInspectionQuote(q) { return q.mode === 'Inspections'; }
 function rollupShips(q) {
@@ -1567,7 +1575,7 @@ function inspServices(q) {
   const s = (q.shipments || [])[0];
   if (!s) return '';
   ensure(s);
-  const names = billable(s).filter(onQuote).map(l => l.charge);
+  const names = billable(s).filter(l => onQuote(l) && l.group === 'inspections').map(l => l.charge);
   return names.length ? names.join(', ') : (s.inspTypes || 'Inspections');
 }
 function gpLossHtml(map) {
@@ -1698,7 +1706,7 @@ function openCaptureShip(id) {
 function renderPickers() {
   const ss = document.getElementById('shipSel');
   ss.disabled = false;
-  ss.innerHTML = `<option value="">Select a shipment</option>` +
+  ss.innerHTML = `<option value="">Select a shipment or inspection job</option>` +
     allShipments().map(({ s }) => {
       const blocked = !canSelectShipment(s);
       const loc = locLabel(s);
@@ -1711,7 +1719,7 @@ function renderPickers() {
   const box = document.getElementById('quoteBox');
   box.textContent = q && ship()
     ? q.quoteId + ' · ' + q.client + ' · ' + q.mode
-    : 'Select a shipment first';
+    : 'Select a shipment or inspection job first';
   document.getElementById('whoSel').innerHTML = Object.keys(PEOPLE).map(k => {
     const p = PEOPLE[k];
     return `<option value="${k}" ${k === who ? 'selected' : ''}>${p.team} · ${p.name}</option>`;
@@ -1731,7 +1739,7 @@ function qtyFacts(s, quoted) {
     const skus = quoted ? s.quoteSkus : s.skus;
     const units = quoted ? s.quoteUnits : s.units;
     const days = quoted ? s.quoteInspDays : s.inspDays;
-    return (days || 0) + ' man day · ' + (skus || 0) + ' SKU · ' + (units || 0) + ' units';
+    return (days || 0) + ' Man Day · ' + (skus || 0) + ' SKU · ' + (units || 0) + ' Other';
   }
   const cbm = quoted ? s.quoteCbm : s.cbm;
   const kg = quoted ? s.quoteKg : s.kg;
@@ -1740,7 +1748,18 @@ function qtyFacts(s, quoted) {
   return cbm + ' CBM · ' + kg + ' kg · ' + hbl + ' HBL';
 }
 function inMode(c, s) {
-  return !c.modes || c.modes.indexOf(s.mode) !== -1;
+  const modes = c.modes || [];
+  if (s.mode === 'Inspections') return modes.indexOf('Inspections') !== -1;
+  return modes.indexOf(s.mode) !== -1;
+}
+function groupsFor(s) {
+  if (!s) return GROUPS;
+  if (s.mode === 'Inspections') return GROUPS.filter(g => g.id === 'inspections');
+  return GROUPS.filter(g => g.id !== 'inspections');
+}
+function shippingLeakOn(s) {
+  if (!s || s.mode !== 'Inspections') return [];
+  return (s.lines || []).filter(l => l.group !== 'inspections' || /freight|ocean|dray|thc|customs|isf|hbl|container|trucking|airway|pierpass|chassis|demurrage|detention/i.test(l.charge || ''));
 }
 
 function renderFacts() {
@@ -1788,9 +1807,10 @@ function renderKpis() {
   const q = quote();
   const s = ship();
   const t = totals(s, q);
+  const insp = s.mode === 'Inspections';
   document.getElementById('kpis').innerHTML = `<div class="kpi">
-    <div><span>Quoted (all shipments)</span><b>${money(t.qSell, quoteCur())}</b><span>${t.shipments} shipments · sell</span></div>
-    <div><span>Actual sell (this shipment)</span><b>${money(t.actualSell, quoteCur())}</b></div>
+    <div><span>${insp ? 'Quoted (this quote)' : 'Quoted (all shipments)'}</span><b>${money(t.qSell, quoteCur())}</b><span>${insp ? '1 job · sell' : t.shipments + ' shipments · sell'}</span></div>
+    <div><span>${insp ? 'Actual sell (this job)' : 'Actual sell (this shipment)'}</span><b>${money(t.actualSell, quoteCur())}</b></div>
     <div><span>Buy rate</span><b>${money(t.buy, quoteCur())}</b><span>Quoted sell - markup</span></div>
     <div><span>Procured</span><b>${t.billedN ? money(t.billedUsd, 'USD') : '-'}</b><span>${t.billedN}/${t.n} lines · USD</span></div>
     <div class="${!t.varN ? '' : (t.varUsd > 0 ? 'over' : 'ok')}"><span>Variance</span><b>${t.varN ? varHtml(t.varUsd, 'USD') : '-'}</b></div>
@@ -2026,7 +2046,7 @@ function actCell(l, elseShip, off, s) {
 function renderTable() {
   const q = quote();
   const s = ship();
-  document.getElementById('tbody').innerHTML = GROUPS.map(g => {
+  document.getElementById('tbody').innerHTML = groupsFor(s).map(g => {
     const rows = billable(s).filter(l => l.group === g.id);
     if (!rows.length) return '';
     const groupHint = g.id === 'ifapp'
@@ -2131,7 +2151,7 @@ function renderFoot() {
   const s = ship();
   const t = totals(s, q);
   document.getElementById('tfoot').innerHTML = `<tr>
-    <td>Total (this shipment)<div class="sub">If applicable only when checked. Once-per-quote billed elsewhere excluded.</div><div class="fx-note">* Non-USD procured converts to USD at the rate on that line's Bill raised date (for FX). Save requires those dates to match the vendor Bill Raised Date.</div></td>
+    <td>Total (${s.mode === 'Inspections' ? 'this job' : 'this shipment'})<div class="sub">${s.mode === 'Inspections' ? 'Inspection charges only. No shipping lines on this quote.' : 'If applicable only when checked. Once-per-quote billed elsewhere excluded.'}</div><div class="fx-note">* Non-USD procured converts to USD at the rate on that line's Bill raised date (for FX). Save requires those dates to match the vendor Bill Raised Date.</div></td>
     <td class="num">${money(t.qSell, quoteCur())}</td>
     <td class="num"><span class="empty">-</span></td>
     <td class="num">${money(t.actualSell, quoteCur())}</td>
@@ -2201,6 +2221,9 @@ function render() {
   document.getElementById('after').classList.toggle('hidden', !s);
   if (!s) return;
   quote().shipments.forEach(ensure);
+  if (s.mode === 'Inspections' && shippingLeakOn(s).length) {
+    s.lines = s.lines.filter(l => l.group === 'inspections');
+  }
   const qtyHead = document.getElementById('qtyHead');
   if (qtyHead) {
     qtyHead.textContent = 'Qty (quote)';
@@ -2222,9 +2245,11 @@ function openLineModal() {
   lineStep = 'cat';
   lineGroup = '';
   document.getElementById('lineTitle').textContent = 'Add line';
-  document.getElementById('lineHint').textContent = 'Pick a category from the system catalog.';
+  document.getElementById('lineHint').textContent = ship() && ship().mode === 'Inspections'
+    ? 'Inspection catalog only. Shipping charges are not on this quote.'
+    : 'Pick a category from the system catalog.';
   document.getElementById('lineBack').classList.add('hidden');
-  document.getElementById('lineBody').innerHTML = `<div class="cat-list">${GROUPS.filter(g => CATALOG.some(c => c.group === g.id && inMode(c, ship()))).map(g =>
+  document.getElementById('lineBody').innerHTML = `<div class="cat-list">${groupsFor(ship()).filter(g => CATALOG.some(c => c.group === g.id && inMode(c, ship()))).map(g =>
     `<button type="button" data-cat="${g.id}">${g.label}</button>`).join('')}</div>`;
   document.getElementById('lineModal').classList.add('open');
 }
