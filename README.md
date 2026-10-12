@@ -20,7 +20,7 @@ Interactive HTML prototypes for Silq product features. Hosted via GitHub Pages.
 |---|---|---|
 | `vendor-billed-costs.html` | Vendor Billed Costs (project details, quote charges, QC Name on inspections) | VP |
 | `pod-priority-board.html` | Pod Priority Board (Kanban + Pod Health + Breadboard view) | — |
-| `neap-quoting-action-breadboard.html` | Quoting Action breadboard (opened from the Pod Board Breadboard view) | — |
+| `neap-quoting-action-breadboard.html` | Quoting Action breadboard (Shape Up logic flow, opened from Pod Board Breadboard) | — |
 | `credit-limit-table.html` | Client Credit Limit Table (QuickBooks integration) | — |
 | `tag-management-system/` | Tag Management System (typed tags + settings) | AM |
 | `comments-audit-log/` | Comment Versioning & Audit Trail (roles + tracked changes) | AM |

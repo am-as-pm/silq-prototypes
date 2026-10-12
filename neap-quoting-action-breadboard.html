@@ -176,6 +176,82 @@
   .meta { font-size: 11px; color: var(--grey-600); margin: 0 0 6px; }
 
   .out { color: var(--grey-600); }
+
+  .bb-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin: 0 0 16px;
+    font-size: 12px;
+    color: var(--grey-600);
+  }
+  .bb-legend b { color: var(--navy); font-weight: 600; }
+  .bb-map {
+    background: var(--white);
+    border: 1px solid var(--grey-200);
+    border-radius: 8px;
+    padding: 12px 8px 8px;
+    margin: 0 0 16px;
+    overflow-x: auto;
+  }
+  .bb-map svg { display: block; width: 100%; min-width: 760px; height: auto; }
+  .bb-places {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+  }
+  .bb-place {
+    background: var(--white);
+    border: 1px solid var(--grey-200);
+    border-radius: 8px;
+    padding: 12px 14px 14px;
+  }
+  .bb-place.wide { grid-column: 1 / -1; }
+  .bb-place.exist {
+    border-style: dashed;
+    background: var(--grey-50);
+  }
+  .bb-place h3 {
+    display: inline-block;
+    margin: 0 0 10px;
+    padding: 0 0 3px;
+    font-size: 14px;
+    border-bottom: 2px solid var(--navy);
+  }
+  .bb-place.exist h3 { border-bottom-style: dashed; color: var(--grey-600); }
+  .bb-aff {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .bb-aff li {
+    margin: 0 0 6px;
+    padding: 0 0 6px;
+    border-bottom: 1px solid var(--grey-200);
+    font-size: 13px;
+  }
+  .bb-aff li:last-child { margin: 0; padding: 0; border: 0; }
+  .bb-aff .to {
+    display: block;
+    margin-top: 2px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--cta);
+  }
+  .bb-aff .stay { color: var(--grey-600); font-weight: 500; }
+  .bb-els {
+    margin-top: 16px;
+    background: var(--white);
+    border: 1px solid var(--grey-200);
+    border-radius: 8px;
+    padding: 12px 14px 14px;
+  }
+  .bb-els h3 { margin: 0 0 8px; }
+  @media (max-width: 720px) {
+    .bb-places { grid-template-columns: 1fr; }
+    .bb-place.wide { grid-column: auto; }
+  }
+
   body.embed header { display: none; }
   body.embed .page { padding-top: 20px; }
 </style>
@@ -222,6 +298,174 @@
       <b>Story 6 · Stale data cleanup</b>
       <span>Sheet + confirmed cancel/reject before go-live. No new UI on this board.</span>
     </a>
+  </div>
+</section>
+
+<section>
+  <p class="kicker">Shape Up · places, affordances, connections</p>
+  <h2>Logic flow</h2>
+  <p class="lede">Where the new thing sits, how you get to it, what you can act on, where that takes you. Words and arrows only. Not a layout. Visual design is still yours.</p>
+  <div class="bb-legend">
+    <span><b>Place</b> underlined. A screen, tray, or dialog. We do not pick which.</span>
+    <span><b>Affordance</b> under the line. A button, field, or copy you can act on.</span>
+    <span><b>Connection</b> orange. Where that affordance takes you.</span>
+  </div>
+
+  <div class="bb-map">
+    <svg viewBox="0 0 860 280" role="img" aria-label="Quoting Action places and connections">
+      <defs>
+        <marker id="bbarr" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+          <path d="M0,0 L8,4 L0,8 Z" fill="#EF6445"/>
+        </marker>
+      </defs>
+      <rect x="8" y="16" width="120" height="40" rx="6" fill="#fff" stroke="#12343B" stroke-dasharray="4 3"/>
+      <text x="68" y="40" text-anchor="middle" fill="#6C6C6C" font-size="12" font-weight="600">Silq</text>
+      <line x1="128" y1="36" x2="168" y2="36" stroke="#EF6445" stroke-width="1.5" marker-end="url(#bbarr)"/>
+      <text x="148" y="28" text-anchor="middle" fill="#6C6C6C" font-size="9">Quoting Action</text>
+      <rect x="172" y="12" width="516" height="48" rx="6" fill="#fff" stroke="#12343B" stroke-width="1.5"/>
+      <text x="430" y="32" text-anchor="middle" fill="#12343B" font-size="13" font-weight="600">Quoting Action</text>
+      <text x="430" y="48" text-anchor="middle" fill="#6C6C6C" font-size="10">pod · pills · pulse · Do next · target · filters · board</text>
+
+      <line x1="220" y1="60" x2="220" y2="92" stroke="#EF6445" stroke-width="1.5" marker-end="url(#bbarr)"/>
+      <text x="226" y="82" fill="#6C6C6C" font-size="9">View All</text>
+      <rect x="156" y="96" width="128" height="40" rx="6" fill="#E7F5FF" stroke="#12343B"/>
+      <text x="220" y="120" text-anchor="middle" fill="#12343B" font-size="12" font-weight="600">View All</text>
+
+      <line x1="360" y1="60" x2="360" y2="92" stroke="#EF6445" stroke-width="1.5" marker-end="url(#bbarr)"/>
+      <text x="366" y="82" fill="#6C6C6C" font-size="9">Astra</text>
+      <rect x="296" y="96" width="128" height="40" rx="6" fill="#EBEDFF" stroke="#12343B"/>
+      <text x="360" y="120" text-anchor="middle" fill="#12343B" font-size="12" font-weight="600">Astra</text>
+
+      <line x1="500" y1="60" x2="500" y2="92" stroke="#EF6445" stroke-width="1.5" marker-end="url(#bbarr)"/>
+      <text x="506" y="82" fill="#6C6C6C" font-size="9">File history</text>
+      <rect x="436" y="96" width="128" height="40" rx="6" fill="#FEF5E8" stroke="#12343B"/>
+      <text x="500" y="120" text-anchor="middle" fill="#12343B" font-size="12" font-weight="600">File history</text>
+
+      <line x1="640" y1="60" x2="640" y2="92" stroke="#EF6445" stroke-width="1.5" marker-end="url(#bbarr)"/>
+      <text x="646" y="82" fill="#6C6C6C" font-size="9">Upload</text>
+      <rect x="576" y="96" width="128" height="40" rx="6" fill="#EAF6ED" stroke="#12343B"/>
+      <text x="640" y="120" text-anchor="middle" fill="#12343B" font-size="12" font-weight="600">Upload</text>
+      <line x1="640" y1="136" x2="640" y2="160" stroke="#EF6445" stroke-width="1.5" marker-end="url(#bbarr)"/>
+      <text x="646" y="154" fill="#6C6C6C" font-size="9">if Target exists</text>
+      <rect x="568" y="164" width="144" height="36" rx="6" fill="#fff" stroke="#12343B"/>
+      <text x="640" y="186" text-anchor="middle" fill="#12343B" font-size="11" font-weight="600">Confirm overwrite</text>
+
+      <line x1="172" y1="36" x2="80" y2="36" stroke="#EF6445" stroke-width="1.25"/>
+      <line x1="80" y1="36" x2="80" y2="208" stroke="#EF6445" stroke-width="1.5" marker-end="url(#bbarr)"/>
+      <text x="8" y="200" fill="#6C6C6C" font-size="9">booking card</text>
+      <rect x="16" y="208" width="128" height="40" rx="6" fill="#fff" stroke="#12343B" stroke-dasharray="4 3"/>
+      <text x="80" y="232" text-anchor="middle" fill="#6C6C6C" font-size="12" font-weight="600">Bookings</text>
+
+      <line x1="688" y1="36" x2="720" y2="36" stroke="#EF6445" stroke-width="1.25"/>
+      <line x1="720" y1="36" x2="720" y2="164" stroke="#EF6445" stroke-width="1.25"/>
+      <line x1="720" y1="164" x2="748" y2="164" stroke="#EF6445" stroke-width="1.5" marker-end="url(#bbarr)"/>
+      <text x="726" y="88" fill="#6C6C6C" font-size="9">RFQ card</text>
+      <rect x="752" y="144" width="100" height="40" rx="6" fill="#fff" stroke="#12343B" stroke-dasharray="4 3"/>
+      <text x="802" y="162" text-anchor="middle" fill="#6C6C6C" font-size="11" font-weight="600">Review</text>
+      <text x="802" y="176" text-anchor="middle" fill="#6C6C6C" font-size="11" font-weight="600">Quotes</text>
+
+      <line x1="430" y1="60" x2="430" y2="208" stroke="#EF6445" stroke-width="1.5" marker-end="url(#bbarr)"/>
+      <text x="436" y="200" fill="#6C6C6C" font-size="9">Delete RFQ</text>
+      <rect x="366" y="208" width="128" height="40" rx="6" fill="#FAE9EA" stroke="#12343B"/>
+      <text x="430" y="232" text-anchor="middle" fill="#12343B" font-size="12" font-weight="600">Confirm delete</text>
+
+      <text x="430" y="268" text-anchor="middle" fill="#6C6C6C" font-size="11">Dashed places already exist. Opening View All closes Astra, and the other way around. Convert, Cancel, Reassign, and filters stay on Quoting Action.</text>
+    </svg>
+  </div>
+
+  <div class="bb-places">
+    <div class="bb-place exist">
+      <h3>Silq</h3>
+      <ul class="bb-aff">
+        <li>Quoting Action<span class="to">→ Quoting Action</span></li>
+      </ul>
+    </div>
+    <div class="bb-place exist">
+      <h3>Bookings</h3>
+      <ul class="bb-aff">
+        <li>Existing booking page. Convert and Cancel on the board use the same lifecycle as here.</li>
+      </ul>
+    </div>
+    <div class="bb-place exist">
+      <h3>Review Quotes</h3>
+      <ul class="bb-aff">
+        <li>Existing RFQ page. Drafts and later RFQ lanes all land here on card click.</li>
+      </ul>
+    </div>
+
+    <div class="bb-place wide">
+      <h3>Quoting Action</h3>
+      <ul class="bb-aff">
+        <li>Pod picker<span class="to stay">stays. Rescopes this place, pills, strip, target, and filters.</span></li>
+        <li>Count pills · Pulse<span class="to stay">read. Full selected pod. Ignore page filters.</span></li>
+        <li>Do next row<span class="to stay">stays. Focuses that card on the board. Does not open Review Quotes.</span></li>
+        <li>View All<span class="to">→ View All (closes Astra)</span></li>
+        <li>Astra<span class="to">→ Astra (closes View All)</span></li>
+        <li>Upload · File history · Download<span class="to">→ Upload / File history. Download is a file, not a place.</span></li>
+        <li>Filters, sort, search, chips, Include Air<span class="to stay">stay. Narrow the same board. Do not open another page.</span></li>
+        <li>Fold Main / User actionables<span class="to stay">stay. Reset each visit.</span></li>
+        <li>Booking card<span class="to">→ Bookings</span></li>
+        <li>Convert · Cancel booking<span class="to stay">stay. Convert puts a card in Draft or Submitted. Cancel leaves the board.</span></li>
+        <li>RFQ card (incl. Draft)<span class="to">→ Review Quotes</span></li>
+        <li>Reassign · Needs attention<span class="to stay">stay. Board metadata only.</span></li>
+        <li>Delete RFQ<span class="to">→ Confirm delete</span></li>
+      </ul>
+    </div>
+
+    <div class="bb-place">
+      <h3>View All</h3>
+      <ul class="bb-aff">
+        <li>Pulse (same line as the strip)</li>
+        <li>Ranked rows by verb<span class="to">→ Quoting Action, focus that card</span></li>
+        <li>Close<span class="to">→ Quoting Action</span></li>
+      </ul>
+    </div>
+    <div class="bb-place">
+      <h3>Astra</h3>
+      <ul class="bb-aff">
+        <li>Chat about this pod’s RFQs, quotes, bookings<span class="to stay">does not reorder Do next</span></li>
+        <li>Close<span class="to">→ Quoting Action</span></li>
+      </ul>
+    </div>
+    <div class="bb-place">
+      <h3>File history</h3>
+      <ul class="bb-aff">
+        <li>Rows: file, who, when (this pod)</li>
+        <li>Close<span class="to">→ Quoting Action</span></li>
+      </ul>
+    </div>
+    <div class="bb-place">
+      <h3>Upload</h3>
+      <ul class="bb-aff">
+        <li>Pick .xlsx / .xls / .csv</li>
+        <li>Submit, Target already set<span class="to">→ Confirm overwrite</span></li>
+        <li>Submit, empty Target<span class="to">→ Quoting Action (bar updates, or toast on reject)</span></li>
+      </ul>
+    </div>
+    <div class="bb-place">
+      <h3>Confirm overwrite</h3>
+      <ul class="bb-aff">
+        <li>Proceed<span class="to">→ Quoting Action</span></li>
+        <li>Back<span class="to">→ Upload</span></li>
+      </ul>
+    </div>
+    <div class="bb-place">
+      <h3>Confirm delete</h3>
+      <ul class="bb-aff">
+        <li>Confirm<span class="to">→ Quoting Action (card gone)</span></li>
+        <li>Cancel<span class="to">→ Quoting Action</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="bb-els">
+    <h3>Elements (what we actually add)</h3>
+    <ul>
+      <li>A Quoting Action place off existing Silq nav. Pod picker, pills, strip, target, filters, and the seven-lane board live here.</li>
+      <li>View All and Astra as two side places that never open together. A Do next / View All row focuses a card. It does not open Review Quotes.</li>
+      <li>Upload, Confirm overwrite, and File history as the Target places. Download is not a place.</li>
+      <li>Booking card → existing Bookings. RFQ card → existing Review Quotes. Delete RFQ → Confirm delete. Convert, Cancel, Reassign stay on the board.</li>
+    </ul>
   </div>
 </section>
 
