@@ -355,12 +355,12 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 }
 .whats-new-fab {
   position: relative;
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   border: 0;
-  border-radius: 8px;
+  border-radius: 50%;
   background: white;
-  color: var(--gray-800);
+  color: #111;
   box-shadow: var(--shadow-panel);
   display: grid;
   place-items: center;
