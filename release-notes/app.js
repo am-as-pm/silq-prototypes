@@ -506,7 +506,7 @@ function detailHtml() {
   const cta = external
     ? `<a class="btn btn-primary" href="${esc(href)}" target="_blank" rel="noopener noreferrer">${esc(note.ctaLabel || "Read article")}</a>`
     : `<a class="btn btn-primary" href="${esc(href)}" data-action="deeplink" data-href="${esc(href)}">${esc(note.ctaLabel || "Try it")}</a>`;
-  return `<div class="page">
+  return `<div class="page page-detail">
     <article class="article">
       <h1>${esc(note.title)}</h1>
       <div class="article-meta">

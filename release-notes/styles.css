@@ -728,11 +728,14 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 .shot svg { width: 100%; height: 100%; display: block; }
 .shot-photo { grid-template-rows: minmax(0, 1fr); }
 .shot-photo img { width: 100%; height: 100%; object-fit: cover; object-position: top left; display: block; }
-.shot-hero.shot-photo { min-height: 0; }
-.shot-hero.shot-photo img { height: 320px; }
-.prose .shot { height: auto; min-height: 180px; margin: 8px 0 4px; }
+.shot-hero.shot-photo { min-height: 0; height: auto; background: var(--gray-100); }
+.shot-hero.shot-photo img { height: auto; max-height: 360px; object-fit: contain; object-position: center; }
+.prose .shot { height: auto; min-height: 0; margin: 4px 0; }
+.prose .shot-photo { height: auto; background: var(--gray-100); }
+.prose .shot-photo img { width: 100%; height: auto; max-height: 420px; object-fit: contain; object-position: center; }
 
-.article { max-width: 760px; display: grid; gap: 16px; }
+.page-detail { justify-items: center; }
+.article { width: min(680px, 100%); max-width: 680px; justify-self: center; display: grid; gap: 16px; }
 .article h1 {
   margin: 8px 0 0;
   font-size: 20px;
@@ -762,7 +765,7 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 .callout.warning { border-color: var(--warning-300); background: var(--warning-100); color: #854f0b; }
 .callout.tip { border-color: #b7e0c2; background: var(--success-100); color: var(--success-900); }
 .callout p { margin: 0; font-size: 13px; line-height: 1.5; }
-.related { display: grid; gap: 10px; max-width: 760px; }
+.related { display: grid; gap: 10px; width: min(680px, 100%); max-width: 680px; justify-self: center; }
 .related h2 {
   margin: 8px 0 0;
   font-size: 16px;
@@ -789,7 +792,9 @@ button:focus-visible, a:focus-visible, input:focus-visible {
   flex-wrap: wrap;
   align-items: center;
   gap: 8px 12px;
-  max-width: 760px;
+  width: min(680px, 100%);
+  max-width: 680px;
+  justify-self: center;
   margin-top: 8px;
   padding-top: 16px;
   border-top: 1px solid var(--gray-200);
