@@ -9,7 +9,7 @@ const CATEGORIES = [
   "Astra AI",
 ];
 const TYPES = ["New", "Improved", "Fixed"];
-const READ_KEY = "silq-release-notes-read-v1";
+const READ_KEY = "silq-release-notes-read-v2";
 const FEEDBACK_KEY = "silq-release-notes-feedback-v1";
 
 const state = {
@@ -257,7 +257,8 @@ function media(src, alt, variant) {
     return shot(src.slice("placeholder:".length), alt, variant);
   }
   if (typeof src === "string" && /^https:\/\//.test(src)) {
-    return `<img src="${esc(src)}" alt="${esc(alt)}" />`;
+    const hero = variant === "hero" ? " shot-hero" : "";
+    return `<div class="shot shot-photo${hero}"><img src="${esc(src)}" alt="${esc(alt)}" /></div>`;
   }
   return shot("map", alt, variant);
 }
@@ -324,6 +325,7 @@ function renderMarkdown(source) {
 }
 
 function typePill(type) {
+  if (type !== "New" && type !== "Improved" && type !== "Fixed") return "";
   const name = type === "Fixed" ? "fixed" : type === "Improved" ? "improved" : "new";
   return `<span class="pill pill-${name}">${esc(type)}</span>`;
 }
@@ -495,9 +497,15 @@ function detailHtml() {
   markRead(note.id);
   const vote = state.feedback[note.id] || "";
   const related = relatedNotes(note);
-  const href = typeof note.ctaHref === "string" && note.ctaHref.startsWith("/") && !note.ctaHref.startsWith("//")
+  const external = typeof note.ctaHref === "string" && note.ctaHref.startsWith("https://www.onesilq.com/");
+  const href = external
     ? note.ctaHref
-    : "/projects?config=active";
+    : typeof note.ctaHref === "string" && note.ctaHref.startsWith("/") && !note.ctaHref.startsWith("//")
+      ? note.ctaHref
+      : "/projects?config=active";
+  const cta = external
+    ? `<a class="btn btn-primary" href="${esc(href)}" target="_blank" rel="noopener noreferrer">${esc(note.ctaLabel || "Read article")}</a>`
+    : `<a class="btn btn-primary" href="${esc(href)}" data-action="deeplink" data-href="${esc(href)}">${esc(note.ctaLabel || "Try it")}</a>`;
   return `<div class="page">
     <article class="article">
       <h1>${esc(note.title)}</h1>
@@ -509,7 +517,7 @@ function detailHtml() {
       </div>
       ${media(note.imageUrl, note.title, "hero")}
       <div class="prose">${renderMarkdown(note.body)}</div>
-      <div><a class="btn btn-primary" href="${esc(href)}" data-action="deeplink" data-href="${esc(href)}">${esc(note.ctaLabel || "Try it")}</a></div>
+      <div>${cta}</div>
     </article>
     ${related.length ? `<section class="related"><h2>Related updates</h2>${related.map((item) => cardHtml(item, true)).join("")}</section>` : ""}
     <div class="feedback">

@@ -726,6 +726,10 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 }
 .shot-chrome i:first-child { background: #ef6445; }
 .shot svg { width: 100%; height: 100%; display: block; }
+.shot-photo { grid-template-rows: minmax(0, 1fr); }
+.shot-photo img { width: 100%; height: 100%; object-fit: cover; object-position: top left; display: block; }
+.shot-hero.shot-photo { min-height: 0; }
+.shot-hero.shot-photo img { height: 320px; }
 .prose .shot { height: auto; min-height: 180px; margin: 8px 0 4px; }
 
 .article { max-width: 760px; display: grid; gap: 16px; }
