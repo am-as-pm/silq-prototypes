@@ -347,12 +347,46 @@ button:focus-visible, a:focus-visible, input:focus-visible {
   display: grid;
   place-items: center;
 }
-.whats-new-wrap { position: relative; }
+.whats-new-wrap {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 30;
+}
+.whats-new-fab {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 8px;
+  background: white;
+  color: var(--gray-800);
+  box-shadow: var(--shadow-panel);
+  display: grid;
+  place-items: center;
+}
+.whats-new-fab:hover,
+.whats-new-fab.is-open { background: var(--gray-100); }
+.fab-count {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: var(--accent-500);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+}
 .pop {
   position: absolute;
-  top: calc(100% + 8px);
+  bottom: calc(100% + 8px);
   right: 0;
-  width: min(360px, calc(100vw - 24px));
+  width: min(360px, calc(100vw - 48px));
   padding: 8px;
   background: white;
   border: 1px solid var(--gray-300);
@@ -427,7 +461,7 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 
 #view { overflow: auto; min-height: 0; }
 .page {
-  padding: 24px 32px 48px;
+  padding: 24px 32px 88px;
   display: grid;
   gap: 20px;
   align-content: start;
@@ -899,10 +933,11 @@ button:focus-visible, a:focus-visible, input:focus-visible {
   .menu-btn { display: grid; }
   .canvas-wrap { padding: 0; }
   .canvas { border-radius: 0; }
-  .page { padding: 16px 16px 40px; }
+  .page { padding: 16px 16px 88px; }
 }
 
 @media (max-width: 720px) {
+  .whats-new-wrap { right: 16px; bottom: 16px; }
   .note-card, .skel-card, .related-card { grid-template-columns: 1fr; }
   .note-card .shot, .skel-thumb { height: 160px; }
   .related-card .shot { height: 120px; }
