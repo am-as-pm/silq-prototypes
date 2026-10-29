@@ -185,17 +185,52 @@
       gap: 12px;
       margin-bottom: 12px;
     }
+    .kpis + .kpis { margin-bottom: 20px; }
     .kpis.five { grid-template-columns: repeat(5, minmax(0, 1fr)); margin-bottom: 20px; }
     .kpi {
+      position: relative;
       background: var(--gray-100);
       border-radius: 10px;
       padding: 12px 14px;
       text-decoration: none;
       color: inherit;
     }
+    .kpi:hover { background: var(--gray-150); }
     .kpi span { display: block; color: var(--gray-600); font-size: 12px; margin-bottom: 6px; }
     .kpi strong { font-size: 22px; font-weight: 600; letter-spacing: -0.03em; }
     .kpi em { display: block; margin-top: 4px; font-style: normal; color: var(--gray-500); font-size: 12px; }
+    .kpi .tip {
+      display: none;
+      position: absolute;
+      z-index: 6;
+      top: calc(100% + 8px);
+      left: 0;
+      width: 240px;
+      margin: 0;
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: var(--gray-800);
+      color: white;
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 1.45;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.16);
+    }
+    .kpi .tip::before {
+      content: "";
+      position: absolute;
+      top: -5px;
+      left: 18px;
+      border: 5px solid transparent;
+      border-top: 0;
+      border-bottom-color: var(--gray-800);
+    }
+    .kpi:hover .tip,
+    .kpi:focus-visible .tip { display: block; }
+    .kpis .kpi:nth-child(n + 5) .tip,
+    .kpis.five .kpi:nth-child(n + 4) .tip { left: auto; right: 0; }
+    .kpis .kpi:nth-child(n + 5) .tip::before,
+    .kpis.five .kpi:nth-child(n + 4) .tip::before { left: auto; right: 18px; }
     .section { margin-top: 28px; }
     .section h2 { margin: 0 0 4px; font-size: 16px; font-weight: 600; }
     .section .note { margin: 0 0 12px; color: var(--gray-600); font-size: 13px; }
@@ -247,13 +282,22 @@
     .stack { display: grid; grid-template-columns: repeat(24, 1fr); gap: 3px; min-width: 640px; height: 88px; align-items: end; }
     .stack b { display: flex; flex-direction: column-reverse; height: 100%; justify-content: flex-start; }
     .stack span { display: block; width: 100%; }
-    .topic { display: grid; grid-template-columns: 160px 1fr 52px; gap: 8px; align-items: center; margin: 6px 0; font-size: 13px; }
-    .topic.wide { grid-template-columns: 168px 1fr 56px; }
+    .topic { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(64px, 1fr) 52px; gap: 8px; align-items: center; margin: 6px 0; font-size: 13px; }
+    .topic.wide { grid-template-columns: minmax(0, 1.15fr) minmax(64px, 1fr) 52px; }
+    .topic > span { min-width: 0; }
     .track { height: 8px; background: var(--gray-150); border-radius: 99px; overflow: hidden; }
     .track span { display: block; height: 100%; background: var(--info); border-radius: 99px; }
     .topic strong { font-weight: 500; text-align: right; }
     @media (max-width: 1100px) {
       .kpis, .kpis.five, .tiles, .tiles.two { grid-template-columns: 1fr 1fr; }
+      .kpis .kpi:nth-child(n + 5) .tip,
+      .kpis.five .kpi:nth-child(n + 4) .tip { left: 0; right: auto; }
+      .kpis .kpi:nth-child(even) .tip,
+      .kpis.five .kpi:nth-child(even) .tip { left: auto; right: 0; }
+      .kpis .kpi:nth-child(n + 5) .tip::before,
+      .kpis.five .kpi:nth-child(n + 4) .tip::before { left: 18px; right: auto; }
+      .kpis .kpi:nth-child(even) .tip::before,
+      .kpis.five .kpi:nth-child(even) .tip::before { left: auto; right: 18px; }
     }
     @media (max-width: 800px) {
       .app, .app.is-collapsed { grid-template-columns: 1fr; }
@@ -459,6 +503,10 @@
         legend([["Under 1%", "#eaf6ed"], ["1–2%", "#fef5e8"], ["2–3%", "#f8d7a8"], ["3%+", "#f4c7cb"], ["Error", "#cf222e"], ["Timeout", "#f49d1a"], ["Empty", "#909090"], ["Silent", "#334bfa"]]);
     }
 
+    function kpiCard(href, label, valueHtml, sub, tip) {
+      return '<a class="kpi" href="' + href + '"><span>' + label + "</span>" + valueHtml + "<em>" + sub + '</em><p class="tip">' + tip + "</p></a>";
+    }
+
     function render() {
       const dailyA = [16.2, 16.8, 17.1, 15.4, 14.8, 17.9, 18.6, 18.2, 19.1, 17.4, 16.9, 18.8, 19.4, 18.4];
       const dailyOpen = [38, 39, 40, 36, 35, 42, 44, 41, 43, 40, 39, 42, 45, 41];
@@ -466,19 +514,20 @@
       view.innerHTML =
         '<p class="lede">Sample numbers for the last ' + state.window + " complete days, in Asia/Kolkata. Internal and test accounts are left out. Queries are not connected yet.</p>" +
         '<div class="kpis">' +
-          '<a class="kpi" href="#adoption"><span>Adoption</span><strong>18.4%</strong><em>2,280 of 12,400 active</em></a>' +
-          '<a class="kpi" href="#adoption"><span>Activation</span><strong>41.2%</strong><em>Opened Astra, then sent</em></a>' +
-          '<a class="kpi" href="#retention"><span>D7 retention</span><strong>30.2%</strong><em>Week of 6 Oct</em></a>' +
-          '<a class="kpi" href="#failures"><span>Failure rate</span><strong id="fail-kpi">' + (state.window === 7 ? "1.84" : "1.52") + '%</strong><em>Last ' + state.window + " days</em></a>" +
-          '<a class="kpi" href="#speed"><span>p90 total time</span><strong>6.40s</strong><em>p90 first token 2.10s</em></a>' +
-          '<a class="kpi" href="#feedback"><span>Negative feedback</span><strong>6.8%</strong><em>1.4% down · 5.6% regenerate</em></a>' +
+          kpiCard("#adoption", "Adoption", "<strong>18.4%</strong>", "2,280 of 12,400 active", "People who used Silq and sent Astra at least one message, divided by people active in Silq. Opening Astra without typing does not count.") +
+          kpiCard("#adoption", "Activation", "<strong>41.2%</strong>", "Opened Astra, then sent", "Of the people who opened Astra, the share who then sent a message.") +
+          kpiCard("#retention", "D7 retention", "<strong>30.2%</strong>", "Week of 6 Oct", "New Astra users who send another message on days 7 to 13 after their first one. The week shown is the latest one that has finished that window.") +
+          kpiCard("#failures", "Failure rate", '<strong id="fail-kpi">' + (state.window === 7 ? "1.84" : "1.52") + "%</strong>", "Last " + state.window + " days", "Messages that did not get a usable reply. That includes errors, timeouts, empty replies, and silence.") +
+          kpiCard("#speed", "p90 total time", "<strong>6.40s</strong>", "p90 first token 2.10s", "90% of successful replies finished in this time or less, from send to the full reply. The smaller figure is the same measure for the first token.") +
+          kpiCard("#feedback", "Negative feedback", "<strong>6.8%</strong>", "1.4% down · 5.6% regenerate", "Successful replies the user marked down or asked to regenerate. A reply with both counts once.") +
         "</div>" +
-        '<div class="kpis five">' +
-          '<a class="kpi" href="#quality"><span>Bounce rate</span><strong>22.6%</strong><em>Stopped after one reply</em></a>' +
-          '<a class="kpi" href="#quality"><span>Sessions per user</span><strong>2.4</strong><em>Average this period</em></a>' +
-          '<a class="kpi" href="#quality"><span>Median length</span><strong>3</strong><em>Messages in a chat</em></a>' +
-          '<a class="kpi" href="#quality"><span>Resolution rate</span><strong>86.4%</strong><em>Usable answer, no negative rating</em></a>' +
-          '<a class="kpi" href="#quality"><span>No answer</span><strong>4.8%</strong><em>Astra had no answer</em></a>' +
+        '<div class="kpis">' +
+          kpiCard("#quality", "Bounce rate", "<strong>22.6%</strong>", "Stopped after one reply", "Chats that stop after the first reply. The person does not send a second message.") +
+          kpiCard("#quality", "Sessions per user", "<strong>2.4</strong>", "Average this period", "Average number of separate Astra chats each person starts in this period.") +
+          kpiCard("#quality", "Median length", "<strong>3</strong>", "Messages in a chat", "Half of chats have fewer user messages than this, and half have more.") +
+          kpiCard("#quality", "Resolution rate", "<strong>86.4%</strong>", "Usable answer, no negative rating", "Chats where Astra returned a usable reply and the user did not mark it down or regenerate.") +
+          kpiCard("#quality", "No answer", "<strong>4.8%</strong>", "Astra had no answer", "Messages Astra could not answer. Counted apart from errors, timeouts, and empty replies.") +
+          kpiCard("#scope", "Scoped", "<strong>76%</strong>", "24% started with none", "Chats that had an organization, project, or shipment selected when the first message was sent. A fresh chat starts empty. Opening Astra from a project selects that organization and project.") +
         "</div>" +
         '<section class="section" id="adoption"><h2>Adoption</h2><p class="note">Share of active app users who sent Astra at least one message. The gray line is activation: people who opened Astra and then typed.</p><div class="tiles">' +
           '<article class="tile"><h3>Daily</h3>' + chart([{ name: "Adoption", color: "#334bfa", values: dailyA }, { name: "Activation", color: "#b1b1b1", values: dailyOpen }], ["15 Oct", "28 Oct"]) + legend([["Adoption", "#334bfa"], ["Activation", "#b1b1b1"]]) + "</article>" +
@@ -519,6 +568,11 @@
         '</div><div class="tiles two">' +
           '<article class="tile"><h3>Resolution rate</h3>' + chart([{ name: "Resolved", color: "#299446", values: [81.0, 82.4, 83.1, 84.0, 84.6, 85.2, 85.8, 86.4] }], ["8 Sep", "27 Oct"]) + "</article>" +
           '<article class="tile"><h3>No answer, by topic</h3>' + topics("missed") + "</article>" +
+        "</div></section>" +
+        '<section class="section" id="scope"><h2>Scope</h2><p class="note">A fresh chat starts with nothing selected. The user can add an organization, and a project or shipment. Opening Astra from a project selects that organization and project before the first message.</p><div class="tiles">' +
+          '<article class="tile"><h3>How the chat started</h3>' + shareBars([["From a project", 38.0], ["User added a scope", 38.0], ["Nothing selected", 24.0]]) + '<p class="note">From a project means the organization and project were already selected. The other two are fresh chats.</p></article>' +
+          '<article class="tile"><h3>What was selected</h3>' + shareBars([["Org and project", 56.0], ["No scope", 24.0], ["Org and shipment", 11.0], ["Org only", 9.0]]) + '<p class="note">Counted on the first message. Org and project includes chats opened from a project.</p></article>' +
+          '<article class="tile"><h3>Scoped chats</h3>' + chart([{ name: "Scoped", color: "#334bfa", values: [62, 64, 66, 68, 70, 72, 74, 76] }], ["8 Sep", "27 Oct"]) + "</article>" +
         "</div></section>" +
         '<section class="section" id="topics"><h2>Topics</h2><p class="note">Share of classified conversations. Coverage is 97.4%.</p><div class="tiles two">' +
           '<article class="tile"><h3>This period</h3>' + topics("share") + "</article>" +
