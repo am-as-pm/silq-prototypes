@@ -183,8 +183,9 @@
       display: grid;
       grid-template-columns: repeat(6, minmax(0, 1fr));
       gap: 12px;
-      margin-bottom: 20px;
+      margin-bottom: 12px;
     }
+    .kpis.five { grid-template-columns: repeat(5, minmax(0, 1fr)); margin-bottom: 20px; }
     .kpi {
       background: var(--gray-100);
       border-radius: 10px;
@@ -199,6 +200,7 @@
     .section h2 { margin: 0 0 4px; font-size: 16px; font-weight: 600; }
     .section .note { margin: 0 0 12px; color: var(--gray-600); font-size: 13px; }
     .tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .tiles + .tiles { margin-top: 12px; }
     .tiles.two { grid-template-columns: 1.4fr 1fr; }
     .tile {
       border: 1px solid var(--gray-250);
@@ -246,17 +248,18 @@
     .stack b { display: flex; flex-direction: column-reverse; height: 100%; justify-content: flex-start; }
     .stack span { display: block; width: 100%; }
     .topic { display: grid; grid-template-columns: 160px 1fr 52px; gap: 8px; align-items: center; margin: 6px 0; font-size: 13px; }
+    .topic.wide { grid-template-columns: 168px 1fr 56px; }
     .track { height: 8px; background: var(--gray-150); border-radius: 99px; overflow: hidden; }
     .track span { display: block; height: 100%; background: var(--info); border-radius: 99px; }
     .topic strong { font-weight: 500; text-align: right; }
     @media (max-width: 1100px) {
-      .kpis, .tiles, .tiles.two { grid-template-columns: 1fr 1fr; }
+      .kpis, .kpis.five, .tiles, .tiles.two { grid-template-columns: 1fr 1fr; }
     }
     @media (max-width: 800px) {
       .app, .app.is-collapsed { grid-template-columns: 1fr; }
       .sidebar { display: none; }
       .canvas-wrap { padding: 0; }
-      .kpis, .tiles, .tiles.two { grid-template-columns: 1fr; }
+      .kpis, .kpis.five, .tiles, .tiles.two { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -330,17 +333,17 @@
   <script>
     const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     const TOPICS = [
-      ["Shipment status", 28.4, 3.1, 1.1],
-      ["Documents", 16.1, 7.6, 1.9],
-      ["Quotes and rates", 13.6, 9.1, 2.6],
-      ["Tasks and milestones", 11.2, 4.4, 1.4],
-      ["Exceptions and customs", 8.7, 12.4, 3.4],
-      ["Bookings", 6.9, 5.1, 1.6],
-      ["Cargo and containers", 5.4, 3.8, 1.2],
-      ["Invoices and payments", 4.1, 5.2, 1.5],
-      ["Parties and contacts", 2.8, 2.4, 0.8],
-      ["How to use Silq", 1.6, 6.8, 0.9],
-      ["Other", 1.2, 4.0, 1.0]
+      ["Shipment status", 28.4, 3.1, 1.1, 1.2],
+      ["Documents", 16.1, 7.6, 1.9, 3.4],
+      ["Quotes and rates", 13.6, 9.1, 2.6, 6.8],
+      ["Tasks and milestones", 11.2, 4.4, 1.4, 2.1],
+      ["Exceptions and customs", 8.7, 12.4, 3.4, 8.9],
+      ["Bookings", 6.9, 5.1, 1.6, 2.4],
+      ["Cargo and containers", 5.4, 3.8, 1.2, 1.8],
+      ["Invoices and payments", 4.1, 5.2, 1.5, 4.2],
+      ["Parties and contacts", 2.8, 2.4, 0.8, 1.1],
+      ["How to use Silq", 1.6, 6.8, 0.9, 11.4],
+      ["Other", 1.2, 4.0, 1.0, 9.6]
     ];
     const COHORTS = [
       ["1 Sep", 186, "42.5%", "28.0%", "21.5%", "14.0%"],
@@ -410,12 +413,20 @@
     }
 
     function topics(kind) {
-      const index = kind === "share" ? 1 : kind === "feedback" ? 2 : 3;
+      const index = kind === "share" ? 1 : kind === "feedback" ? 2 : kind === "missed" ? 4 : 3;
       const rows = TOPICS.slice().sort((a, b) => b[index] - a[index]);
       const max = rows[0][index];
       return rows.map((row) => {
         const width = Math.max(4, (row[index] / max) * 100);
         return '<div class="topic"><span>' + row[0] + '</span><div class="track"><span style="width:' + width + '%"></span></div><strong>' + row[index].toFixed(1) + "%</strong></div>";
+      }).join("");
+    }
+
+    function shareBars(rows) {
+      const max = Math.max(...rows.map((row) => row[1]));
+      return rows.map((row) => {
+        const width = Math.max(4, (row[1] / max) * 100);
+        return '<div class="topic wide"><span>' + row[0] + '</span><div class="track"><span style="width:' + width + '%"></span></div><strong>' + row[1].toFixed(1) + "%</strong></div>";
       }).join("");
     }
 
@@ -462,6 +473,13 @@
           '<a class="kpi" href="#speed"><span>p90 total time</span><strong>6.40s</strong><em>p90 first token 2.10s</em></a>' +
           '<a class="kpi" href="#feedback"><span>Negative feedback</span><strong>6.8%</strong><em>1.4% down · 5.6% regenerate</em></a>' +
         "</div>" +
+        '<div class="kpis five">' +
+          '<a class="kpi" href="#quality"><span>Bounce rate</span><strong>22.6%</strong><em>Stopped after one reply</em></a>' +
+          '<a class="kpi" href="#quality"><span>Sessions per user</span><strong>2.4</strong><em>Average this period</em></a>' +
+          '<a class="kpi" href="#quality"><span>Median length</span><strong>3</strong><em>Messages in a chat</em></a>' +
+          '<a class="kpi" href="#quality"><span>Resolution rate</span><strong>86.4%</strong><em>Usable answer, no negative rating</em></a>' +
+          '<a class="kpi" href="#quality"><span>No answer</span><strong>4.8%</strong><em>Astra had no answer</em></a>' +
+        "</div>" +
         '<section class="section" id="adoption"><h2>Adoption</h2><p class="note">Share of active app users who sent Astra at least one message. The gray line is activation: people who opened Astra and then typed.</p><div class="tiles">' +
           '<article class="tile"><h3>Daily</h3>' + chart([{ name: "Adoption", color: "#334bfa", values: dailyA }, { name: "Activation", color: "#b1b1b1", values: dailyOpen }], ["15 Oct", "28 Oct"]) + legend([["Adoption", "#334bfa"], ["Activation", "#b1b1b1"]]) + "</article>" +
           '<article class="tile"><h3>Weekly</h3>' + chart([{ name: "Adoption", color: "#334bfa", values: [12.4, 13.1, 14.6, 15.2, 16.8, 17.4, 18.1, 18.4] }], ["8 Sep", "27 Oct"]) + "</article>" +
@@ -492,6 +510,16 @@
             { name: "Regenerate", color: "#f49d1a", values: [6.6, 6.2, 5.8, 5.7, 6.0, 5.4, 5.2, 5.6] }
           ], ["8 Sep", "27 Oct"]) + legend([["Combined", "#334bfa"], ["Thumbs-down", "#cf222e"], ["Regenerate", "#f49d1a"]]) + "</article>" +
           '<article class="tile"><h3>Thumbs-down by topic</h3>' + topics("feedback") + "</article></div></section>" +
+        '<section class="section" id="quality"><h2>Conversation quality</h2><p class="note">Bounce is a chat that stops after the first reply. Resolved means Astra gave a usable answer and the user did not mark it down or regenerate. No answer is separate from a technical failure.</p><div class="tiles two">' +
+          '<article class="tile"><h3>Bounce rate</h3>' + chart([{ name: "Bounce", color: "#ef6445", values: [28.4, 26.1, 25.4, 24.8, 23.9, 24.2, 23.1, 22.6] }], ["8 Sep", "27 Oct"]) + "</article>" +
+          '<article class="tile"><h3>Sessions per user</h3>' + chart([{ name: "Sessions", color: "#334bfa", values: [1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.3, 2.4] }], ["8 Sep", "27 Oct"]) + "</article>" +
+        '</div><div class="tiles two">' +
+          '<article class="tile"><h3>Messages per conversation</h3>' + shareBars([["1 message", 22.6], ["2–3 messages", 41.0], ["4–6 messages", 24.0], ["7 or more", 12.4]]) + '<p class="note">Median is 3. A pile-up at one message is the bounce rate.</p></article>' +
+          '<article class="tile"><h3>Where chats stop</h3>' + shareBars([["Sent a first message", 100], ["Sent a second message", 77.4], ["Sent a third message", 48.2], ["Kept going", 28.6]]) + '<p class="note">Each step is a share of conversations that started.</p></article>' +
+        '</div><div class="tiles two">' +
+          '<article class="tile"><h3>Resolution rate</h3>' + chart([{ name: "Resolved", color: "#299446", values: [81.0, 82.4, 83.1, 84.0, 84.6, 85.2, 85.8, 86.4] }], ["8 Sep", "27 Oct"]) + "</article>" +
+          '<article class="tile"><h3>No answer, by topic</h3>' + topics("missed") + "</article>" +
+        "</div></section>" +
         '<section class="section" id="topics"><h2>Topics</h2><p class="note">Share of classified conversations. Coverage is 97.4%.</p><div class="tiles two">' +
           '<article class="tile"><h3>This period</h3>' + topics("share") + "</article>" +
           '<article class="tile"><h3>Failure rate by topic</h3>' + topics("failure") + "</article></div></section>";
