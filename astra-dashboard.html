@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Astra · Silq</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gray-0: #fff;
+      --gray-100: #f8f8f8;
+      --gray-150: #f2f2f2;
+      --gray-250: #e0e0e0;
+      --gray-400: #b1b1b1;
+      --gray-500: #909090;
+      --gray-600: #6c6c6c;
+      --gray-700: #464646;
+      --gray-800: #202020;
+      --app-bg: #f5f6f7;
+      --navy: #042868;
+      --brand: #ef6445;
+      --info: #334bfa;
+      --success: #299446;
+      --warning: #f49d1a;
+      --error: #cf222e;
+      --shadow-nav: 2px 2px 0 0 rgba(0, 0, 0, 0.15), 1px 1px 2px 0 rgba(0, 0, 0, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      font-family: Inter, system-ui, sans-serif;
+      background: var(--app-bg);
+      color: var(--gray-800);
+      font-size: 14px;
+    }
+    button { font-family: inherit; cursor: pointer; }
+    .app {
+      display: grid;
+      grid-template-columns: 208px minmax(0, 1fr);
+      height: 100%;
+      min-height: 0;
+    }
+    .app.is-collapsed { grid-template-columns: 88px minmax(0, 1fr); }
+    .sidebar {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      min-height: 0;
+      padding: 24px 0 20px;
+    }
+    .org {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 8px;
+      margin: 0 20px;
+    }
+    .org-name {
+      font-size: 14px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .collapse-btn, .org-mark {
+      display: grid;
+      place-items: center;
+      width: 20px;
+      height: 20px;
+      padding: 0;
+      border: 0;
+      border-radius: 5px;
+      background: transparent;
+      color: var(--gray-500);
+    }
+    .org-mark { display: none; width: 32px; height: 32px; background: var(--gray-800); color: white; font-size: 13px; font-weight: 600; }
+    .nav-scroll {
+      overflow: auto;
+      margin: 24px 0;
+      padding: 0 20px;
+      display: grid;
+      align-content: start;
+      gap: 24px;
+    }
+    .nav-primary, .nav-groups { display: grid; gap: 8px; align-content: start; }
+    .nav-groups { gap: 12px; }
+    .nav-link, .group-head, .nav-child {
+      display: grid;
+      align-items: center;
+      height: 30px;
+      border: 1px solid transparent;
+      border-radius: 5px;
+      background: transparent;
+      color: var(--gray-800);
+      text-align: left;
+    }
+    .nav-link, .group-head {
+      grid-template-columns: 24px minmax(0, 1fr) auto;
+      gap: 4px;
+      padding: 0 4px;
+      font-size: 14px;
+    }
+    .group-head { cursor: pointer; }
+    .nav-link svg, .group-head svg { display: block; }
+    .nav-link:hover, .group-head:hover, .nav-child:hover { background: rgba(0, 0, 0, 0.05); }
+    .chevron { opacity: 0; transition: transform 0.15s; }
+    .nav-block:hover .chevron, .nav-block.is-open .chevron { opacity: 1; }
+    .nav-block.is-open .chevron { transform: rotate(180deg); }
+    .nav-sub { display: none; gap: 4px; padding-top: 4px; }
+    .nav-block.is-open .nav-sub { display: grid; }
+    .nav-child {
+      margin-left: 22px;
+      padding: 0 10px;
+      font-size: 14px;
+    }
+    .nav-child.is-selected {
+      background: white;
+      border-color: var(--navy);
+      box-shadow: var(--shadow-nav);
+    }
+    .app.is-collapsed .org { grid-template-columns: 1fr; justify-items: center; }
+    .app.is-collapsed .org-name,
+    .app.is-collapsed .collapse-btn,
+    .app.is-collapsed .nav-link span,
+    .app.is-collapsed .group-head span,
+    .app.is-collapsed .chevron,
+    .app.is-collapsed .nav-sub,
+    .app.is-collapsed .powered span,
+    .app.is-collapsed .wordmark { display: none; }
+    .app.is-collapsed .org-mark,
+    .app.is-collapsed .bird { display: grid; }
+    .app.is-collapsed .group-head,
+    .app.is-collapsed .nav-link { grid-template-columns: 24px; justify-content: center; }
+    .powered {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 20px;
+      color: var(--gray-500);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+    .bird { display: none; }
+    .canvas-wrap { min-width: 0; min-height: 0; padding: 12px 12px 0 0; }
+    .canvas {
+      height: 100%;
+      min-height: 0;
+      background: white;
+      border: 1px solid var(--gray-250);
+      border-bottom: 0;
+      border-radius: 12px 12px 0 0;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+    }
+    .topnav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      height: 56px;
+      padding: 0 20px;
+      border-bottom: 1px solid var(--gray-150);
+    }
+    .page-title { font-size: 16px; font-weight: 600; }
+    .sample-pill {
+      border: 0;
+      border-radius: 999px;
+      background: #fef5e8;
+      color: #996c00;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+    }
+    main { overflow: auto; padding: 20px 24px 40px; }
+    .lede {
+      margin: 0 0 16px;
+      color: var(--gray-600);
+      font-size: 13px;
+    }
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .kpi {
+      background: var(--gray-100);
+      border-radius: 10px;
+      padding: 12px 14px;
+      text-decoration: none;
+      color: inherit;
+    }
+    .kpi span { display: block; color: var(--gray-600); font-size: 12px; margin-bottom: 6px; }
+    .kpi strong { font-size: 22px; font-weight: 600; letter-spacing: -0.03em; }
+    .kpi em { display: block; margin-top: 4px; font-style: normal; color: var(--gray-500); font-size: 12px; }
+    .section { margin-top: 28px; }
+    .section h2 { margin: 0 0 4px; font-size: 16px; font-weight: 600; }
+    .section .note { margin: 0 0 12px; color: var(--gray-600); font-size: 13px; }
+    .tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .tiles.two { grid-template-columns: 1.4fr 1fr; }
+    .tile {
+      border: 1px solid var(--gray-250);
+      border-radius: 10px;
+      padding: 14px;
+      background: white;
+      min-width: 0;
+      overflow-x: auto;
+    }
+    .tile h3 { margin: 0 0 10px; font-size: 13px; font-weight: 600; }
+    .legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; color: var(--gray-600); font-size: 12px; }
+    .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
+    svg.chart { width: 100%; height: 168px; display: block; }
+    .axis { fill: var(--gray-500); font-size: 10px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { text-align: right; padding: 8px 10px; border-bottom: 1px solid var(--gray-150); }
+    th:first-child, td:first-child { text-align: left; }
+    th { color: var(--gray-600); font-weight: 500; font-size: 12px; }
+    td.blank { color: var(--gray-400); }
+    .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+    .seg { display: inline-flex; padding: 2px; background: var(--gray-150); border-radius: 8px; }
+    .seg button {
+      border: 0;
+      background: transparent;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 13px;
+      color: var(--gray-700);
+    }
+    .seg button.is-on { background: white; font-weight: 600; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08); }
+    .heat-wrap { overflow-x: auto; }
+    .heat {
+      display: grid;
+      grid-template-columns: 72px repeat(24, minmax(18px, 1fr));
+      gap: 3px;
+      min-width: 640px;
+      align-items: center;
+    }
+    .heat .hlabel, .heat .dlabel { font-size: 10px; color: var(--gray-500); }
+    .heat .hlabel { text-align: center; }
+    .cell { height: 18px; border-radius: 3px; }
+    .bars { display: grid; grid-template-columns: repeat(24, 1fr); gap: 3px; min-width: 640px; height: 72px; align-items: end; margin-top: 8px; }
+    .bars i { display: block; background: #c4d4f5; border-radius: 2px 2px 0 0; }
+    .stack { display: grid; grid-template-columns: repeat(24, 1fr); gap: 3px; min-width: 640px; height: 88px; align-items: end; }
+    .stack b { display: flex; flex-direction: column-reverse; height: 100%; justify-content: flex-start; }
+    .stack span { display: block; width: 100%; }
+    .topic { display: grid; grid-template-columns: 160px 1fr 52px; gap: 8px; align-items: center; margin: 6px 0; font-size: 13px; }
+    .track { height: 8px; background: var(--gray-150); border-radius: 99px; overflow: hidden; }
+    .track span { display: block; height: 100%; background: var(--info); border-radius: 99px; }
+    .topic strong { font-weight: 500; text-align: right; }
+    @media (max-width: 1100px) {
+      .kpis, .tiles, .tiles.two { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 800px) {
+      .app, .app.is-collapsed { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .canvas-wrap { padding: 0; }
+      .kpis, .tiles, .tiles.two { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app" id="app">
+    <aside class="sidebar">
+      <div class="org">
+        <div class="org-name">Meridian Home</div>
+        <button class="org-mark" type="button" data-go="collapse" aria-label="Expand">M</button>
+        <button class="collapse-btn" type="button" data-go="collapse" aria-label="Collapse">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18 3a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3h12ZM6 5a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h4V5H6Zm6 7 5 5V7l-5 5Z"/></svg>
+        </button>
+      </div>
+      <div class="nav-scroll">
+        <div class="nav-primary">
+          <button class="nav-link" type="button"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M9.9 15.8H6.6v2.1h3.3v-2.1Zm8.1-2.7h-3.8V18h3.8v-4.9Zm-8.1-6.6H6.6v4.9h3.3V6.5Zm8.1 0h-3.8v2.2h3.8V6.5Z"/></svg><span>Projects</span></button>
+          <button class="nav-link" type="button"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19.3 7H5.7a.8.8 0 0 0 0 1.5h.9v8H5.7a.8.8 0 0 0 0 1.5h13.6a.8.8 0 0 0 0-1.5h-.9v-8h.9a.8.8 0 0 0 0-1.5ZM8.1 16.5h8.8v-8H8.1v8Z"/></svg><span>Shipments</span></button>
+          <button class="nav-link" type="button"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6.5 17.1V15.3a.8.8 0 0 1 1.5 0v1.8a1 1 0 0 0 1 1h2.6a.8.8 0 0 1 0 1.5H9a2.5 2.5 0 0 1-2.5-2.5Zm8.7-6.8 1 1a.8.8 0 0 1 0 1.1l-3.7 3.7a.8.8 0 0 1-1.1 0l-1.8-1.8a.8.8 0 0 1 1.1-1.1l1.2 1.3 3.3-3.2Z"/></svg><span>Inspections</span></button>
+        </div>
+        <div class="nav-groups">
+          <div class="nav-block" data-group="quoting">
+            <button class="group-head" type="button" data-go="toggle"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 3.5h7l4 4V19a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1z"/><path d="M14 3.5V8h4"/></svg><span>Quoting</span><svg class="chevron" width="12" height="12" viewBox="0 0 12 12"><path d="M3 4.5 6 7.5 9 4.5" fill="none" stroke="currentColor" stroke-linecap="round"/></svg></button>
+            <div class="nav-sub">
+              <button class="nav-child" type="button">Quotes</button>
+              <button class="nav-child" type="button">Bookings</button>
+              <button class="nav-child" type="button">Quote PDF</button>
+            </div>
+          </div>
+          <div class="nav-block is-open" data-group="insights">
+            <button class="group-head" type="button" data-go="toggle"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6.5 17.5h2.8v-4.2H6.5v4.2Zm4.3 0h2.9v-7.1h-2.9v7.1Zm4.4 0H18V7.5h-2.8v10Z"/></svg><span>Insights</span><svg class="chevron" width="12" height="12" viewBox="0 0 12 12"><path d="M3 4.5 6 7.5 9 4.5" fill="none" stroke="currentColor" stroke-linecap="round"/></svg></button>
+            <div class="nav-sub">
+              <button class="nav-child" type="button">Reports</button>
+              <button class="nav-child" type="button">Analytics</button>
+              <button class="nav-child is-selected" type="button">Astra</button>
+            </div>
+          </div>
+          <div class="nav-block" data-group="business">
+            <button class="group-head" type="button" data-go="toggle"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 20h16M7 20V8h4v12M13 20V4h4v16"/></svg><span>My business</span><svg class="chevron" width="12" height="12" viewBox="0 0 12 12"><path d="M3 4.5 6 7.5 9 4.5" fill="none" stroke="currentColor" stroke-linecap="round"/></svg></button>
+            <div class="nav-sub">
+              <button class="nav-child" type="button">Documents</button>
+              <button class="nav-child" type="button">Network</button>
+            </div>
+          </div>
+          <div class="nav-block" data-group="tasks">
+            <button class="group-head" type="button" data-go="toggle"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 7h11M9 12h11M9 17h11M4 7h.01M4 12h.01M4 17h.01"/></svg><span>Tasks</span><svg class="chevron" width="12" height="12" viewBox="0 0 12 12"><path d="M3 4.5 6 7.5 9 4.5" fill="none" stroke="currentColor" stroke-linecap="round"/></svg></button>
+            <div class="nav-sub">
+              <button class="nav-child" type="button">Assigned to me</button>
+              <button class="nav-child" type="button">Followed by me</button>
+              <button class="nav-child" type="button">Active</button>
+            </div>
+          </div>
+          <button class="nav-link" type="button"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 3h10v18l-2-1.2L13 21l-2-1.2L9 21l-2-1.2L5 21V3h2z"/><path d="M9 8h6M9 12h6"/></svg><span>Invoices</span></button>
+        </div>
+      </div>
+      <div class="powered">
+        <span>POWERED BY</span>
+        <svg class="wordmark" width="55" height="22" viewBox="0 0 80 32" aria-hidden="true"><path fill="#052868" d="M64 5 59 6.5V25h5V5ZM57 12h-5v13h5V12ZM44 25c-1 0-2-.1-3-.3-1-.1-1.8-.4-2.5-.9v-3.2c.8.5 1.6.8 2.5 1.1 1 .3 1.8.4 2.8.4.5 0 1 0 1.6-.2.2 0 .4-.1.5-.3.1-.1.1-.3.1-.4 0-.1 0-.3-.1-.4-.1-.1-.1-.2-.2-.3-.3-.2-.6-.4-.9-.5-.4-.1-1-.4-1.9-.6-.9-.3-1.7-.6-2.5-1-.6-.3-1.1-.8-1.4-1.3-.3-.6-.5-1.3-.5-2 .1-1.4.6-2.4 1.6-3.1 1-.7 2.5-1 4.3-1 .9 0 1.8.1 2.7.3.8.1 1.5.4 2.2.7v3.2c-.6-.4-1.3-.7-2-.9-.8-.2-1.6-.3-2.4-.3-.6 0-1.1.1-1.7.2-.2.1-.3.2-.4.3-.1.2-.2.3-.2.5 0 .2.1.3.2.4.1.2.2.3.4.3.7.3 1.4.5 2.1.7l.6.1c.9.2 1.8.6 2.6 1.1.6.3 1 .8 1.3 1.4.3.6.4 1.3.4 2 0 .6-.1 1.1-.4 1.7-.3.5-.7.9-1.1 1.3-1 .7-2.5 1.1-4.4 1.1Zm10-19.7a2.3 2.3 0 0 0-1.6.7 2.3 2.3 0 0 0-.7 1.6c0 .6.2 1.2.7 1.6.4.4 1 .7 1.6.7h.3c.3 0 .6 0 .9-.1.3-.1.5-.3.8-.5.2-.2.4-.4.5-.7.1-.3.2-.6.2-.9s-.1-.6-.2-.9-.3-.5-.5-.7-.5-.4-.8-.5-.6-.1-.9 0h-.3Zm21 18.8c-1 .6-2.1 1-3.3 1-3.4 0-6.4-2.2-6.4-7.1 0-4.5 3.1-6.9 6.4-6.9 1.3 0 2.6.4 3.7 1.2l.1-.9h4.3V30h-4.7l-.1-5.7Zm-2.2-9.6c.8 0 1.6.3 2.2.8v5.7c-.5.4-1.1.7-2.2.7-1.7 0-2.9-1.5-2.9-3.6 0-2 1.2-3.6 2.9-3.6Z"/><path fill="#EF6445" d="M38 3 33 2S7 17 7 17l-.4 1.2L35 5C26 10 1 26 1 26c-.2.1-.4.3-.5.5-.2.4-.3.8-.4 1.2 0 .1 0 .2.1.3l.1.1.2.1c2.2-.4 11.5-1.9 14.8-2.9 8.3-2.4 11.6-5.6 13.5-8.6 2.2-3.4 8.4-12.5 9.2-13.3l.1-.1-.1-.1Zm-11.5 10.5c-.6 1.3-1.7 3.4-4.1 5.1-2.6 1.8-10 4.1-13.7 4.8l18-10.1-.2.2Z"/></svg>
+        <svg class="bird" width="28" height="22" viewBox="0 0 40 32" aria-hidden="true"><path fill="#EF6445" d="M38 3 33 2C31 1 7 17 7 17l-.4 1.2L35 5C26 10 1 26 1 26c-.2.1-.4.3-.5.5-.2.4-.3.8-.4 1.2 0 .1 0 .2.1.3l.1.1c.1.1.2.1.3.1 2.2-.4 11.5-1.9 14.8-2.9 8.3-2.4 11.6-5.6 13.5-8.6 2.2-3.4 8.4-12.5 9.2-13.3l.1-.1-.1-.1Z"/></svg>
+      </div>
+    </aside>
+    <div class="canvas-wrap">
+      <div class="canvas">
+        <header class="topnav">
+          <div class="page-title">Astra</div>
+          <div class="sample-pill">Sample data</div>
+        </header>
+        <main id="view"></main>
+      </div>
+    </div>
+  </div>
+  <script>
+    const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    const TOPICS = [
+      ["Shipment status", 28.4, 3.1, 1.1],
+      ["Documents", 16.1, 7.6, 1.9],
+      ["Quotes and rates", 13.6, 9.1, 2.6],
+      ["Tasks and milestones", 11.2, 4.4, 1.4],
+      ["Exceptions and customs", 8.7, 12.4, 3.4],
+      ["Bookings", 6.9, 5.1, 1.6],
+      ["Cargo and containers", 5.4, 3.8, 1.2],
+      ["Invoices and payments", 4.1, 5.2, 1.5],
+      ["Parties and contacts", 2.8, 2.4, 0.8],
+      ["How to use Silq", 1.6, 6.8, 0.9],
+      ["Other", 1.2, 4.0, 1.0]
+    ];
+    const COHORTS = [
+      ["1 Sep", 186, "42.5%", "28.0%", "21.5%", "14.0%"],
+      ["8 Sep", 210, "44.3%", "29.5%", "22.4%", "15.2%"],
+      ["15 Sep", 198, "41.9%", "26.8%", "19.7%", "13.1%"],
+      ["22 Sep", 240, "46.7%", "31.3%", "23.8%", "—"],
+      ["29 Sep", 255, "43.1%", "27.5%", "20.4%", "—"],
+      ["6 Oct", 268, "45.5%", "30.2%", "—", "—"],
+      ["13 Oct", 241, "40.2%", "—", "—", "—"],
+      ["20 Oct", 190, "38.9%", "—", "—", "—"]
+    ];
+
+    const state = { window: 7 };
+
+    function failRate(dow, hour, days) {
+      const night = hour < 6 || hour >= 23;
+      const peak = hour >= 9 && hour <= 18;
+      let rate = peak ? 0.7 : night ? 3.4 : 1.5;
+      if (dow >= 6) rate += 0.5;
+      if (dow === 1 && hour === 9) rate = 2.4;
+      if (days === 28) rate = rate * 0.8 + 0.15;
+      return Math.round(rate * 100) / 100;
+    }
+
+    function volume(dow, hour) {
+      const peak = hour >= 9 && hour <= 18;
+      const base = peak ? 420 : hour < 6 ? 18 : 90;
+      return Math.round(base * (dow >= 6 ? 0.4 : 1));
+    }
+
+    function heatColor(rate) {
+      if (rate < 1) return "#eaf6ed";
+      if (rate < 2) return "#fef5e8";
+      if (rate < 3) return "#f8d7a8";
+      return "#f4c7cb";
+    }
+
+    function chart(series, labels) {
+      const w = 560;
+      const h = 168;
+      const pad = { l: 32, r: 8, t: 12, b: 22 };
+      const all = series.flatMap((item) => item.values);
+      const max = Math.max(...all) * 1.2 || 1;
+      const innerW = w - pad.l - pad.r;
+      const innerH = h - pad.t - pad.b;
+      const x = (i, n) => pad.l + (n === 1 ? innerW / 2 : (i * innerW) / (n - 1));
+      const y = (v) => pad.t + innerH - (v / max) * innerH;
+      const lines = series.map((item) => {
+        const pts = item.values.map((v, i) => [x(i, item.values.length), y(v), v]);
+        const d = pts.map((p, i) => (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" ");
+        const dots = pts.map((p) => '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="2.5" fill="' + item.color + '"><title>' + item.name + " " + p[2] + "</title></circle>").join("");
+        return '<path d="' + d + '" fill="none" stroke="' + item.color + '" stroke-width="2"/>' + dots;
+      }).join("");
+      const first = labels[0] || "";
+      const last = labels[labels.length - 1] || "";
+      return '<svg class="chart" viewBox="0 0 ' + w + " " + h + '" role="img">' +
+        '<line x1="' + pad.l + '" y1="' + (h - pad.b) + '" x2="' + (w - pad.r) + '" y2="' + (h - pad.b) + '" stroke="#ebebeb"/>' +
+        lines +
+        '<text class="axis" x="' + pad.l + '" y="' + (h - 6) + '">' + first + "</text>" +
+        '<text class="axis" x="' + (w - pad.r) + '" y="' + (h - 6) + '" text-anchor="end">' + last + "</text>" +
+        '<text class="axis" x="4" y="' + (pad.t + 8) + '">' + Math.round(max) + "</text>" +
+        "</svg>";
+    }
+
+    function legend(items) {
+      return '<div class="legend">' + items.map((item) => '<span><i class="swatch" style="background:' + item[1] + '"></i>' + item[0] + "</span>").join("") + "</div>";
+    }
+
+    function topics(kind) {
+      const index = kind === "share" ? 1 : kind === "feedback" ? 2 : 3;
+      const rows = TOPICS.slice().sort((a, b) => b[index] - a[index]);
+      const max = rows[0][index];
+      return rows.map((row) => {
+        const width = Math.max(4, (row[index] / max) * 100);
+        return '<div class="topic"><span>' + row[0] + '</span><div class="track"><span style="width:' + width + '%"></span></div><strong>' + row[index].toFixed(1) + "%</strong></div>";
+      }).join("");
+    }
+
+    function heatmap() {
+      const days = state.window;
+      let hours = '<div></div>' + Array.from({ length: 24 }, (_, hour) => '<div class="hlabel">' + (hour % 3 === 0 ? hour : "") + "</div>").join("");
+      const rows = DAYS.map((name, dow) => {
+        const cells = Array.from({ length: 24 }, (_, hour) => {
+          const rate = failRate(dow + 1, hour, days);
+          return '<div class="cell" style="background:' + heatColor(rate) + '" title="' + name + " " + hour + ":00 · " + rate.toFixed(2) + '%"></div>';
+        }).join("");
+        return '<div class="dlabel">' + name + "</div>" + cells;
+      }).join("");
+      const totals = Array.from({ length: 24 }, (_, hour) => DAYS.reduce((sum, _, dow) => sum + volume(dow + 1, hour), 0));
+      const max = Math.max(...totals);
+      const bars = totals.map((value) => '<i style="height:' + Math.max(4, (value / max) * 100) + '%" title="' + value.toLocaleString() + ' messages"></i>').join("");
+      const failCounts = totals.map((value) => Math.round(value * (state.window === 7 ? 0.018 : 0.015)));
+      const maxFail = Math.max(...failCounts, 1);
+      const stacks = failCounts.map((count) => {
+        const height = (count / maxFail) * 72;
+        const parts = [
+          ["#cf222e", 0.55],
+          ["#f49d1a", 0.25],
+          ["#909090", 0.12],
+          ["#334bfa", 0.08]
+        ];
+        return "<b>" + parts.map((part) => '<span style="height:' + Math.max(1, height * part[1]).toFixed(1) + "px;background:" + part[0] + '"></span>').join("") + "</b>";
+      }).join("");
+      return '<div class="heat-wrap"><div class="heat">' + hours + rows + '</div><div class="bars">' + bars + '</div><div class="stack">' + stacks + "</div></div>" +
+        legend([["Under 1%", "#eaf6ed"], ["1–2%", "#fef5e8"], ["2–3%", "#f8d7a8"], ["3%+", "#f4c7cb"], ["Error", "#cf222e"], ["Timeout", "#f49d1a"], ["Empty", "#909090"], ["Silent", "#334bfa"]]);
+    }
+
+    function render() {
+      const dailyA = [16.2, 16.8, 17.1, 15.4, 14.8, 17.9, 18.6, 18.2, 19.1, 17.4, 16.9, 18.8, 19.4, 18.4];
+      const dailyOpen = [38, 39, 40, 36, 35, 42, 44, 41, 43, 40, 39, 42, 45, 41];
+      const view = document.getElementById("view");
+      view.innerHTML =
+        '<p class="lede">Sample numbers for the last ' + state.window + " complete days, in Asia/Kolkata. Internal and test accounts are left out. Queries are not connected yet.</p>" +
+        '<div class="kpis">' +
+          '<a class="kpi" href="#adoption"><span>Adoption</span><strong>18.4%</strong><em>2,280 of 12,400 active</em></a>' +
+          '<a class="kpi" href="#adoption"><span>Activation</span><strong>41.2%</strong><em>Opened Astra, then sent</em></a>' +
+          '<a class="kpi" href="#retention"><span>D7 retention</span><strong>30.2%</strong><em>Week of 6 Oct</em></a>' +
+          '<a class="kpi" href="#failures"><span>Failure rate</span><strong id="fail-kpi">' + (state.window === 7 ? "1.84" : "1.52") + '%</strong><em>Last ' + state.window + " days</em></a>" +
+          '<a class="kpi" href="#speed"><span>p90 total time</span><strong>6.40s</strong><em>p90 first token 2.10s</em></a>' +
+          '<a class="kpi" href="#feedback"><span>Negative feedback</span><strong>6.8%</strong><em>1.4% down · 5.6% regenerate</em></a>' +
+        "</div>" +
+        '<section class="section" id="adoption"><h2>Adoption</h2><p class="note">Share of active app users who sent Astra at least one message. The gray line is activation: people who opened Astra and then typed.</p><div class="tiles">' +
+          '<article class="tile"><h3>Daily</h3>' + chart([{ name: "Adoption", color: "#334bfa", values: dailyA }, { name: "Activation", color: "#b1b1b1", values: dailyOpen }], ["15 Oct", "28 Oct"]) + legend([["Adoption", "#334bfa"], ["Activation", "#b1b1b1"]]) + "</article>" +
+          '<article class="tile"><h3>Weekly</h3>' + chart([{ name: "Adoption", color: "#334bfa", values: [12.4, 13.1, 14.6, 15.2, 16.8, 17.4, 18.1, 18.4] }], ["8 Sep", "27 Oct"]) + "</article>" +
+          '<article class="tile"><h3>Monthly</h3>' + chart([{ name: "Adoption", color: "#334bfa", values: [9.2, 11.4, 13.8, 16.1, 18.4] }], ["Jun", "Oct"]) + "</article>" +
+        "</div></section>" +
+        '<section class="section" id="retention"><h2>D7 retention</h2><p class="note">New Astra users who message again on days 7–13. A blank cell is a cohort that is not finished yet.</p><div class="tiles two">' +
+          '<article class="tile"><h3>By cohort week</h3>' + chart([{ name: "D7", color: "#299446", values: [28, 29.5, 26.8, 31.3, 27.5, 30.2] }], ["1 Sep", "6 Oct"]) + "</article>" +
+          '<article class="tile"><h3>Cohort curve</h3><table><thead><tr><th>Week</th><th>Users</th><th>D1</th><th>D7</th><th>D14</th><th>D30</th></tr></thead><tbody>' +
+          COHORTS.map((row) => "<tr>" + row.map((cell, i) => "<td" + (cell === "—" ? ' class="blank"' : "") + ">" + cell + "</td>").join("") + "</tr>").join("") +
+          "</tbody></table></article></div></section>" +
+        '<section class="section" id="failures"><div class="toolbar"><div><h2>Reply failures</h2><p class="note">Share of messages that did not get a usable reply. Pale hours had little traffic.</p></div><div class="seg"><button type="button" onclick="setWindow(7)"' + (state.window === 7 ? ' class="is-on"' : "") + '>7 days</button><button type="button" onclick="setWindow(28)"' + (state.window === 28 ? ' class="is-on"' : "") + ">28 days</button></div></div>" +
+          '<article class="tile"><h3>Hour and weekday</h3>' + heatmap() + '<p class="note">Bars under the grid are message volume. The stacked bars are failure counts by status.</p></article></section>' +
+        '<section class="section" id="speed"><h2>Response time</h2><p class="note">Successful replies only. Two hours this week had p90 first-token time above 3 seconds. 37 replies over 300 seconds are excluded.</p><div class="tiles two">' +
+          '<article class="tile"><h3>First token, seconds</h3>' + chart([
+            { name: "p50", color: "#b1b1b1", values: [0.9, 0.8, 1.0, 0.9, 1.1, 0.8, 0.9] },
+            { name: "p90", color: "#334bfa", values: [1.8, 1.7, 2.4, 3.2, 2.1, 1.9, 2.1] },
+            { name: "p99", color: "#ef6445", values: [4.2, 3.8, 5.1, 6.4, 4.6, 4.1, 4.8] }
+          ], ["22 Oct", "28 Oct"]) + legend([["p50", "#b1b1b1"], ["p90", "#334bfa"], ["p99", "#ef6445"]]) + "</article>" +
+          '<article class="tile"><h3>Total time, seconds</h3>' + chart([
+            { name: "p50", color: "#b1b1b1", values: [2.8, 2.6, 3.1, 3.4, 2.9, 2.7, 3.2] },
+            { name: "p90", color: "#334bfa", values: [5.4, 5.1, 6.8, 7.2, 6.1, 5.8, 6.4] },
+            { name: "p99", color: "#ef6445", values: [12, 11, 15, 16, 13, 12, 14] }
+          ], ["22 Oct", "28 Oct"]) + "</article></div></section>" +
+        '<section class="section" id="feedback"><h2>Negative feedback</h2><p class="note">Thumbs-down or regenerate, counted once per successful reply. Exceptions and quotes are the weak topics.</p><div class="tiles two">' +
+          '<article class="tile"><h3>Weekly rates</h3>' + chart([
+            { name: "Combined", color: "#334bfa", values: [8.2, 7.6, 7.1, 6.9, 7.4, 6.5, 6.2, 6.8] },
+            { name: "Thumbs-down", color: "#cf222e", values: [1.8, 1.6, 1.5, 1.4, 1.6, 1.3, 1.2, 1.4] },
+            { name: "Regenerate", color: "#f49d1a", values: [6.6, 6.2, 5.8, 5.7, 6.0, 5.4, 5.2, 5.6] }
+          ], ["8 Sep", "27 Oct"]) + legend([["Combined", "#334bfa"], ["Thumbs-down", "#cf222e"], ["Regenerate", "#f49d1a"]]) + "</article>" +
+          '<article class="tile"><h3>Thumbs-down by topic</h3>' + topics("feedback") + "</article></div></section>" +
+        '<section class="section" id="topics"><h2>Topics</h2><p class="note">Share of classified conversations. Coverage is 97.4%.</p><div class="tiles two">' +
+          '<article class="tile"><h3>This period</h3>' + topics("share") + "</article>" +
+          '<article class="tile"><h3>Failure rate by topic</h3>' + topics("failure") + "</article></div></section>";
+    }
+
+    function setWindow(days) {
+      state.window = days;
+      render();
+      const section = document.getElementById("failures");
+      if (section) section.scrollIntoView({ block: "start" });
+    }
+
+    document.addEventListener("click", (event) => {
+      const target = event.target.closest("[data-go]");
+      if (!target) return;
+      if (target.dataset.go === "collapse") {
+        document.getElementById("app").classList.toggle("is-collapsed");
+      }
+      if (target.dataset.go === "toggle") {
+        target.closest("[data-group]").classList.toggle("is-open");
+      }
+    });
+
+    render();
+  </script>
+</body>
+</html>
