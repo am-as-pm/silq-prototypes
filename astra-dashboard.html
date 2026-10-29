@@ -255,6 +255,12 @@
     th:first-child, td:first-child { text-align: left; }
     th { color: var(--gray-600); font-weight: 500; font-size: 12px; }
     td.blank { color: var(--gray-400); }
+    table.plain th, table.plain td { text-align: left; vertical-align: top; }
+    table.plain th.num, table.plain td.num { text-align: right; white-space: nowrap; }
+    table.plain td.muted { color: var(--gray-600); }
+    .section .tile + .tile { margin-top: 12px; }
+    table.queries td:nth-child(1) { white-space: nowrap; }
+    .sub { color: var(--gray-600); font-size: 12px; }
     .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
     .seg { display: inline-flex; padding: 2px; background: var(--gray-150); border-radius: 8px; }
     .seg button {
@@ -388,6 +394,23 @@
       ["Parties and contacts", 2.8, 2.4, 0.8, 1.1],
       ["How to use Silq", 1.6, 6.8, 0.9, 11.4],
       ["Other", 1.2, 4.0, 1.0, 9.6]
+    ];
+    const QUERIES = [
+      ["Priya Shah", "Meridian Home", "Where is SILQ-3792235 right now?", "Shipment status", "28 Oct"],
+      ["Arun Mehta", "Northwind Trading", "Send me the packing list for this shipment.", "Documents", "28 Oct"],
+      ["Lena Ortiz", "Harbor & Co", "What is the all-in rate from Shanghai to Rotterdam?", "Quotes and rates", "27 Oct"],
+      ["Noah Berg", "Meridian Home", "Which milestones are overdue on this project?", "Tasks and milestones", "27 Oct"],
+      ["Aisha Rahman", "Fellow Products", "Why is this shipment held at customs?", "Exceptions and customs", "27 Oct"],
+      ["Kenji Sato", "Pacific Line", "Who is the notify party on this booking?", "Parties and contacts", "26 Oct"],
+      ["Sofia Alvarez", "Meridian Home", "Has the freight invoice been paid?", "Invoices and payments", "26 Oct"],
+      ["Omar Haddad", "Cedar Logistics", "How do I share this project with my customer?", "How to use Silq", "25 Oct"]
+    ];
+    const ASKERS = [
+      ["Priya Shah", "Meridian Home", "22", "64", "Shipment status"],
+      ["Lena Ortiz", "Harbor & Co", "18", "41", "Quotes and rates"],
+      ["Aisha Rahman", "Fellow Products", "15", "37", "Exceptions and customs"],
+      ["Noah Berg", "Meridian Home", "14", "33", "Tasks and milestones"],
+      ["Arun Mehta", "Northwind Trading", "11", "29", "Documents"]
     ];
     const COHORTS = [
       ["1 Sep", 186, "42.5%", "28.0%", "21.5%", "14.0%"],
@@ -576,7 +599,14 @@
         "</div></section>" +
         '<section class="section" id="topics"><h2>Topics</h2><p class="note">Share of classified conversations. Coverage is 97.4%.</p><div class="tiles two">' +
           '<article class="tile"><h3>This period</h3>' + topics("share") + "</article>" +
-          '<article class="tile"><h3>Failure rate by topic</h3>' + topics("failure") + "</article></div></section>";
+          '<article class="tile"><h3>Failure rate by topic</h3>' + topics("failure") + "</article></div></section>" +
+        '<section class="section" id="queries"><h2>Queries</h2><p class="note">What people asked Astra, and who asked it. These rows are sample questions from the period.</p>' +
+          '<article class="tile"><h3>Recent questions</h3><table class="plain queries"><thead><tr><th>User</th><th>Organization</th><th>Query</th><th>Topic</th></tr></thead><tbody>' +
+          QUERIES.map((row) => '<tr><td>' + row[0] + '</td><td class="muted">' + row[1] + '</td><td>' + row[2] + '</td><td class="muted">' + row[3] + '<div class="sub">' + row[4] + '</div></td></tr>').join("") +
+          '</tbody></table></article>' +
+          '<article class="tile"><h3>Who asks the most</h3><table class="plain"><thead><tr><th>User</th><th>Organization</th><th>Mostly asks</th><th class="num">Chats</th><th class="num">Messages</th></tr></thead><tbody>' +
+          ASKERS.map((row) => '<tr><td>' + row[0] + '</td><td class="muted">' + row[1] + '</td><td class="muted">' + row[4] + '</td><td class="num">' + row[2] + '</td><td class="num">' + row[3] + '</td></tr>').join("") +
+          '</tbody></table></article></section>';
     }
 
     function setWindow(days) {
