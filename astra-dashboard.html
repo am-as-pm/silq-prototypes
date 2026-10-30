@@ -185,7 +185,12 @@
       gap: 12px;
       margin-bottom: 12px;
     }
-    .kpis + .kpis { margin-bottom: 20px; }
+    .kpis + .kpis { margin-bottom: 20px; grid-template-columns: repeat(7, minmax(0, 1fr)); }
+    .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 12px; }
+    .stat { background: var(--gray-100); border-radius: 10px; padding: 12px 14px; }
+    .stat span { display: block; color: var(--gray-600); font-size: 12px; margin-bottom: 4px; }
+    .stat strong { font-size: 22px; font-weight: 600; letter-spacing: -0.03em; }
+    .stat em { display: block; margin-top: 4px; font-style: normal; color: var(--gray-500); font-size: 12px; }
     .kpis.five { grid-template-columns: repeat(5, minmax(0, 1fr)); margin-bottom: 20px; }
     .kpi {
       position: relative;
@@ -235,7 +240,7 @@
     .section h2 { margin: 0 0 4px; font-size: 16px; font-weight: 600; }
     .section .note { margin: 0 0 12px; color: var(--gray-600); font-size: 13px; }
     .tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-    .tiles + .tiles { margin-top: 12px; }
+    .tiles + .tiles, .tiles + .tile { margin-top: 12px; }
     .tiles.two { grid-template-columns: 1.4fr 1fr; }
     .tile {
       border: 1px solid var(--gray-250);
@@ -256,7 +261,8 @@
     th { color: var(--gray-600); font-weight: 500; font-size: 12px; }
     td.blank { color: var(--gray-400); }
     table.plain th, table.plain td { text-align: left; vertical-align: top; }
-    table.plain th.num, table.plain td.num { text-align: right; white-space: nowrap; }
+    table.plain th.num, table.plain td.num { text-align: right; }
+    table.plain td.num { white-space: nowrap; }
     table.plain td.muted { color: var(--gray-600); }
     .section .tile + .tile { margin-top: 12px; }
     table.queries td:nth-child(1) { white-space: nowrap; }
@@ -295,7 +301,7 @@
     .track span { display: block; height: 100%; background: var(--info); border-radius: 99px; }
     .topic strong { font-weight: 500; text-align: right; }
     @media (max-width: 1100px) {
-      .kpis, .kpis.five, .tiles, .tiles.two { grid-template-columns: 1fr 1fr; }
+      .kpis, .kpis + .kpis, .kpis.five, .tiles, .tiles.two, .stats { grid-template-columns: 1fr 1fr; }
       .kpis .kpi:nth-child(n + 5) .tip,
       .kpis.five .kpi:nth-child(n + 4) .tip { left: 0; right: auto; }
       .kpis .kpi:nth-child(even) .tip,
@@ -309,7 +315,7 @@
       .app, .app.is-collapsed { grid-template-columns: 1fr; }
       .sidebar { display: none; }
       .canvas-wrap { padding: 0; }
-      .kpis, .kpis.five, .tiles, .tiles.two { grid-template-columns: 1fr; }
+      .kpis, .kpis + .kpis, .kpis.five, .tiles, .tiles.two, .stats { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -405,6 +411,32 @@
       ["Sofia Alvarez", "Meridian Home", "Has the freight invoice been paid?", "Invoices and payments", "26 Oct"],
       ["Omar Haddad", "Cedar Logistics", "How do I share this project with my customer?", "How to use Silq", "25 Oct"]
     ];
+    const SESSION_ORGS = [
+      ["Meridian Home", 4540, 1420, "3.2"],
+      ["Fellow Products", 2920, 1180, "2.5"],
+      ["Harbor & Co", 2270, 980, "2.3"],
+      ["Northwind Trading", 1950, 860, "2.3"],
+      ["Pacific Line", 1460, 740, "2.0"],
+      ["Cedar Logistics", 1140, 620, "1.8"],
+      ["Other organizations", 2520, 1575, "1.6"]
+    ];
+    const SESSION_USERS = [
+      ["Priya Shah", "Meridian Home", 6, 22],
+      ["Lena Ortiz", "Harbor & Co", 5, 18],
+      ["Aisha Rahman", "Fellow Products", 4, 15],
+      ["Noah Berg", "Meridian Home", 4, 14],
+      ["Arun Mehta", "Northwind Trading", 3, 11],
+      ["Kenji Sato", "Pacific Line", 2, 9],
+      ["Sofia Alvarez", "Meridian Home", 3, 8],
+      ["Omar Haddad", "Cedar Logistics", 2, 6]
+    ];
+    const POWER_USERS = [
+      ["Priya Shah", "Meridian Home", 22, 64, 14, "Shipment status"],
+      ["Lena Ortiz", "Harbor & Co", 18, 41, 11, "Quotes and rates"],
+      ["Aisha Rahman", "Fellow Products", 15, 37, 10, "Exceptions and customs"],
+      ["Noah Berg", "Meridian Home", 14, 33, 9, "Tasks and milestones"],
+      ["Arun Mehta", "Northwind Trading", 11, 29, 8, "Documents"]
+    ];
     const ASKERS = [
       ["Priya Shah", "Meridian Home", "22", "64", "Shipment status"],
       ["Lena Ortiz", "Harbor & Co", "18", "41", "Quotes and rates"],
@@ -489,11 +521,12 @@
       }).join("");
     }
 
-    function shareBars(rows) {
+    function shareBars(rows, asCount) {
       const max = Math.max(...rows.map((row) => row[1]));
       return rows.map((row) => {
         const width = Math.max(4, (row[1] / max) * 100);
-        return '<div class="topic wide"><span>' + row[0] + '</span><div class="track"><span style="width:' + width + '%"></span></div><strong>' + row[1].toFixed(1) + "%</strong></div>";
+        const label = asCount ? String(row[1]) : row[1].toFixed(1) + "%";
+        return '<div class="topic wide"><span>' + row[0] + '</span><div class="track"><span style="width:' + width + '%"></span></div><strong>' + label + "</strong></div>";
       }).join("");
     }
 
@@ -546,11 +579,12 @@
         "</div>" +
         '<div class="kpis">' +
           kpiCard("#quality", "Bounce rate", "<strong>22.6%</strong>", "Stopped after one reply", "Chats that stop after the first reply. The person does not send a second message.") +
-          kpiCard("#quality", "Sessions per user", "<strong>2.4</strong>", "Average this period", "Average number of separate Astra chats each person starts in this period.") +
+          kpiCard("#sessions", "Sessions per user", "<strong>2.4</strong>", "1,190 active yesterday", "Average Astra chats per person in the latest week. An active session is a chat with at least one message in that day, week, or month.") +
           kpiCard("#quality", "Median length", "<strong>3</strong>", "Messages in a chat", "Half of chats have fewer user messages than this, and half have more.") +
           kpiCard("#quality", "Resolution rate", "<strong>86.4%</strong>", "Usable answer, no negative rating", "Chats where Astra returned a usable reply and the user did not mark it down or regenerate.") +
           kpiCard("#quality", "No answer", "<strong>4.8%</strong>", "Astra had no answer", "Messages Astra could not answer. Counted apart from errors, timeouts, and empty replies.") +
           kpiCard("#scope", "Scoped", "<strong>76%</strong>", "24% started with none", "Chats that had an organization, project, or shipment selected when the first message was sent. A fresh chat starts empty. Opening Astra from a project selects that organization and project.") +
+          kpiCard("#power", "Power users", "<strong>186</strong>", "2.5% of people", "People who clear all three bars this month: 8 or more sessions, 24 or more queries, and a message on 8 or more days. Sessions or questions alone do not qualify.") +
         "</div>" +
         '<section class="section" id="adoption"><h2>Adoption</h2><p class="note">Share of active app users who sent Astra at least one message. The gray line is activation: people who opened Astra and then typed.</p><div class="tiles">' +
           '<article class="tile"><h3>Daily</h3>' + chart([{ name: "Adoption", color: "#334bfa", values: dailyA }, { name: "Activation", color: "#b1b1b1", values: dailyOpen }], ["15 Oct", "28 Oct"]) + legend([["Adoption", "#334bfa"], ["Activation", "#b1b1b1"]]) + "</article>" +
@@ -592,6 +626,27 @@
           '<article class="tile"><h3>Resolution rate</h3>' + chart([{ name: "Resolved", color: "#299446", values: [81.0, 82.4, 83.1, 84.0, 84.6, 85.2, 85.8, 86.4] }], ["8 Sep", "27 Oct"]) + "</article>" +
           '<article class="tile"><h3>No answer, by topic</h3>' + topics("missed") + "</article>" +
         "</div></section>" +
+        '<section class="section" id="sessions"><h2>Sessions</h2><p class="note">An active session is a chat with at least one message in that day, week, or month. The same chat can count on more than one day. October has 16,800 sessions across 7,375 people, about 2.3 each. The latest week averages 2.4.</p><div class="tiles">' +
+          '<article class="tile"><h3>Daily</h3>' + chart([{ name: "Active sessions", color: "#334bfa", values: [980, 1040, 990, 860, 720, 1100, 1180, 1210, 1090, 970, 840, 1160, 1240, 1190] }], ["15 Oct", "28 Oct"]) + "</article>" +
+          '<article class="tile"><h3>Weekly</h3>' + chart([{ name: "Active sessions", color: "#334bfa", values: [3100, 3280, 3420, 3600, 3550, 3780, 3920, 4100] }], ["8 Sep", "27 Oct"]) + "</article>" +
+          '<article class="tile"><h3>Monthly</h3>' + chart([{ name: "Active sessions", color: "#334bfa", values: [9800, 11200, 12800, 14600, 16800] }], ["Jun", "Oct"]) + "</article>" +
+        '</div><article class="tile"><h3>By organization</h3><table class="plain"><thead><tr><th>Organization</th><th class="num">Sessions</th><th class="num">Users</th><th class="num">Per user</th></tr></thead><tbody>' +
+          SESSION_ORGS.map((row) => '<tr><td>' + row[0] + '</td><td class="num">' + row[1].toLocaleString("en-US") + '</td><td class="num">' + row[2].toLocaleString("en-US") + '</td><td class="num">' + row[3] + '</td></tr>').join("") +
+          '</tbody></table><p class="note">October. Per user is sessions divided by people who sent at least one message.</p></article>' +
+          '<article class="tile"><h3>How many sessions each person has</h3>' + shareBars([["1 session", 46.0], ["2–3 sessions", 32.0], ["4–6 sessions", 15.0], ["7 or more", 7.0]]) + '<p class="note">Share of people in October. Most people come back once or twice. A few run a session almost every workday.</p></article>' +
+          '<article class="tile"><h3>Most active users</h3><table class="plain"><thead><tr><th>User</th><th>Organization</th><th class="num">This week</th><th class="num">This month</th></tr></thead><tbody>' +
+          SESSION_USERS.map((row) => '<tr><td>' + row[0] + '</td><td class="muted">' + row[1] + '</td><td class="num">' + row[2] + '</td><td class="num">' + row[3] + '</td></tr>').join("") +
+          '</tbody></table></article></section>' +
+        '<section class="section" id="power"><h2>Power users</h2><p class="note">A power user clears all three bars in the month: 8 or more sessions, 24 or more queries, and a message on 8 or more days. Kenji Sato has 9 sessions, but only 18 queries and 7 active days, so he is not included.</p><div class="stats">' +
+          '<div class="stat"><span>People</span><strong>186</strong><em>2.5% of 7,375</em></div>' +
+          '<div class="stat"><span>Share of sessions</span><strong>28%</strong><em>4,700 of 16,800</em></div>' +
+          '<div class="stat"><span>Share of queries</span><strong>34%</strong><em>14,300 of 42,000</em></div>' +
+        '</div><div class="tiles two">' +
+          '<article class="tile"><h3>How many, by month</h3>' + chart([{ name: "Power users", color: "#334bfa", values: [96, 112, 134, 158, 186] }], ["Jun", "Oct"]) + "</article>" +
+          '<article class="tile"><h3>Where they work</h3>' + shareBars([["Meridian Home", 48], ["Other organizations", 44], ["Fellow Products", 31], ["Harbor & Co", 24], ["Northwind Trading", 18], ["Pacific Line", 12], ["Cedar Logistics", 9]], true) + '<p class="note">Count of power users in October.</p></article>' +
+        '</div><article class="tile"><h3>Who qualifies</h3><table class="plain"><thead><tr><th>User</th><th>Organization</th><th class="num">Sessions</th><th class="num">Queries</th><th class="num">Days active</th><th>Mostly asks</th></tr></thead><tbody>' +
+          POWER_USERS.map((row) => '<tr><td>' + row[0] + '</td><td class="muted">' + row[1] + '</td><td class="num">' + row[2] + '</td><td class="num">' + row[3] + '</td><td class="num">' + row[4] + '</td><td class="muted">' + row[5] + '</td></tr>').join("") +
+          '</tbody></table><p class="note">October. Days active are days with at least one message. These five are the sample; 181 others also qualify.</p></article></section>' +
         '<section class="section" id="scope"><h2>Scope</h2><p class="note">A fresh chat starts with nothing selected. The user can add an organization, and a project or shipment. Opening Astra from a project selects that organization and project before the first message.</p><div class="tiles">' +
           '<article class="tile"><h3>How the chat started</h3>' + shareBars([["From a project", 38.0], ["User added a scope", 38.0], ["Nothing selected", 24.0]]) + '<p class="note">From a project means the organization and project were already selected. The other two are fresh chats.</p></article>' +
           '<article class="tile"><h3>What was selected</h3>' + shareBars([["Org and project", 56.0], ["No scope", 24.0], ["Org and shipment", 11.0], ["Org only", 9.0]]) + '<p class="note">Counted on the first message. Org and project includes chats opened from a project.</p></article>' +
