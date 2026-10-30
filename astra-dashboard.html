@@ -571,8 +571,8 @@
     function versionSwitch() {
       const on = (version) => (state.version === version ? ' class="is-on"' : "");
       const lede = state.version === 1
-        ? "Version 1. Adoption, how usable Astra is, and the questions people ask. Sample numbers for the last " + state.window + " complete days, in Asia/Kolkata. Internal and test accounts are left out."
-        : "Version 2. How people use Astra, the patterns in that behavior, and the gaps. Same sample period, in Asia/Kolkata. Internal and test accounts are left out.";
+        ? "Version 1. Adoption, how chats are scoped, who the power users are, and the questions people ask. Sample numbers for the last " + state.window + " complete days, in Asia/Kolkata. Internal and test accounts are left out."
+        : "Version 2. Sessions, whether people come back, how fast and usable the replies are, and where the gaps show up. Same sample period, in Asia/Kolkata. Internal and test accounts are left out.";
       return '<div class="version-switch"><div class="seg versions"><button type="button" onclick="setVersion(1)"' + on(1) + '>Version 1</button><button type="button" onclick="setVersion(2)"' + on(2) + '>Version 2</button></div><p class="lede">' + lede + "</p></div>";
     }
 
@@ -584,21 +584,63 @@
         '<div class="kpis">' +
           kpiCard("#adoption", "Adoption", "<strong>18.4%</strong>", "2,280 of 12,400 active", "People who used Silq and sent Astra at least one message, divided by people active in Silq. Opening Astra without typing does not count.") +
           kpiCard("#adoption", "Activation", "<strong>41.2%</strong>", "Opened Astra, then sent", "Of the people who opened Astra, the share who then sent a message.") +
-          kpiCard("#retention", "D7 retention", "<strong>30.2%</strong>", "Week of 6 Oct", "New Astra users who send another message on days 7 to 13 after their first one. The week shown is the latest one that has finished that window.") +
-          kpiCard("#failures", "Failure rate", '<strong id="fail-kpi">' + (state.window === 7 ? "1.84" : "1.52") + "%</strong>", "Last " + state.window + " days", "Messages that did not get a usable reply. That includes errors, timeouts, empty replies, and silence.") +
-          kpiCard("#speed", "p90 total time", "<strong>6.40s</strong>", "p90 first token 2.10s", "90% of successful replies finished in this time or less, from send to the full reply. The smaller figure is the same measure for the first token.") +
-          kpiCard("#feedback", "Negative feedback", "<strong>6.8%</strong>", "1.4% down · 5.6% regenerate", "Successful replies the user marked down or asked to regenerate. A reply with both counts once.") +
-        "</div>" +
-        '<div class="kpis three">' +
-          kpiCard("#quality", "Bounce rate", "<strong>22.6%</strong>", "Stopped after one reply", "Chats that stop after the first reply. The person does not send a second message.") +
-          kpiCard("#quality", "Resolution rate", "<strong>86.4%</strong>", "Usable answer, no negative rating", "Chats where Astra returned a usable reply and the user did not mark it down or regenerate.") +
-          kpiCard("#quality", "No answer", "<strong>4.8%</strong>", "Astra had no answer", "Messages Astra could not answer. Counted apart from errors, timeouts, and empty replies.") +
+          kpiCard("#scope", "Scoped", "<strong>76%</strong>", "24% started with none", "Chats that had an organization, project, or shipment selected when the first message was sent. A fresh chat starts empty. Opening Astra from a project selects that organization and project.") +
+          kpiCard("#power", "Power users", "<strong>186</strong>", "2.5% of people", "People who clear all three bars this month: 8 or more sessions, 24 or more queries, and a message on 8 or more days. Sessions or questions alone do not qualify.") +
+          kpiCard("#topics", "Failure rate", '<strong id="fail-kpi">' + (state.window === 7 ? "1.84" : "1.52") + "%</strong>", "Last " + state.window + " days", "Messages that did not get a usable reply. That includes errors, timeouts, empty replies, and silence.") +
+          kpiCard("#topics", "No answer", "<strong>4.8%</strong>", "Astra had no answer", "Messages Astra could not answer. Counted apart from errors, timeouts, and empty replies.") +
         "</div>" +
         '<section class="section" id="adoption"><h2>Adoption</h2><p class="note">Share of active app users who sent Astra at least one message. The gray line is activation: people who opened Astra and then typed.</p><div class="tiles">' +
           '<article class="tile"><h3>Daily</h3>' + chart([{ name: "Adoption", color: "#334bfa", values: dailyA }, { name: "Activation", color: "#b1b1b1", values: dailyOpen }], ["15 Oct", "28 Oct"]) + legend([["Adoption", "#334bfa"], ["Activation", "#b1b1b1"]]) + "</article>" +
           '<article class="tile"><h3>Weekly</h3>' + chart([{ name: "Adoption", color: "#334bfa", values: [12.4, 13.1, 14.6, 15.2, 16.8, 17.4, 18.1, 18.4] }], ["8 Sep", "27 Oct"]) + "</article>" +
           '<article class="tile"><h3>Monthly</h3>' + chart([{ name: "Adoption", color: "#334bfa", values: [9.2, 11.4, 13.8, 16.1, 18.4] }], ["Jun", "Oct"]) + "</article>" +
         "</div></section>" +
+        '<section class="section" id="scope"><h2>Scope</h2><p class="note">A fresh chat starts with nothing selected. The user can add an organization, and a project or shipment. Opening Astra from a project selects that organization and project before the first message.</p><div class="tiles">' +
+          '<article class="tile"><h3>How the chat started</h3>' + shareBars([["From a project", 38.0], ["User added a scope", 38.0], ["Nothing selected", 24.0]]) + '<p class="note">From a project means the organization and project were already selected. The other two are fresh chats.</p></article>' +
+          '<article class="tile"><h3>What was selected</h3>' + shareBars([["Org and project", 56.0], ["No scope", 24.0], ["Org and shipment", 11.0], ["Org only", 9.0]]) + '<p class="note">Counted on the first message. Org and project includes chats opened from a project.</p></article>' +
+          '<article class="tile"><h3>Scoped chats</h3>' + chart([{ name: "Scoped", color: "#334bfa", values: [62, 64, 66, 68, 70, 72, 74, 76] }], ["8 Sep", "27 Oct"]) + "</article>" +
+        "</div></section>" +
+        '<section class="section" id="power"><h2>Power users</h2><p class="note">A power user clears all three bars in the month: 8 or more sessions, 24 or more queries, and a message on 8 or more days. Kenji Sato has 9 sessions, but only 18 queries and 7 active days, so he is not included.</p><div class="stats">' +
+          '<div class="stat"><span>People</span><strong>186</strong><em>2.5% of 7,375</em></div>' +
+          '<div class="stat"><span>Share of sessions</span><strong>28%</strong><em>4,700 of 16,800</em></div>' +
+          '<div class="stat"><span>Share of queries</span><strong>34%</strong><em>14,300 of 42,000</em></div>' +
+        '</div><div class="tiles two">' +
+          '<article class="tile"><h3>How many, by month</h3>' + chart([{ name: "Power users", color: "#334bfa", values: [96, 112, 134, 158, 186] }], ["Jun", "Oct"]) + "</article>" +
+          '<article class="tile"><h3>Where they work</h3>' + shareBars([["Meridian Home", 48], ["Other organizations", 44], ["Fellow Products", 31], ["Harbor & Co", 24], ["Northwind Trading", 18], ["Pacific Line", 12], ["Cedar Logistics", 9]], true) + '<p class="note">Count of power users in October.</p></article>' +
+        '</div><article class="tile"><h3>Who qualifies</h3><table class="plain"><thead><tr><th>User</th><th>Organization</th><th class="num">Sessions</th><th class="num">Queries</th><th class="num">Days active</th><th>Mostly asks</th></tr></thead><tbody>' +
+          POWER_USERS.map((row) => '<tr><td>' + row[0] + '</td><td class="muted">' + row[1] + '</td><td class="num">' + row[2] + '</td><td class="num">' + row[3] + '</td><td class="num">' + row[4] + '</td><td class="muted">' + row[5] + '</td></tr>').join("") +
+          '</tbody></table><p class="note">October. Days active are days with at least one message. These five are the sample; 181 others also qualify.</p></article></section>' +
+        '<section class="section" id="topics"><h2>Topics</h2><p class="note">Share of classified conversations. Coverage is 97.4%.</p><article class="tile"><h3>This period</h3>' + topics("share") + "</article></section>" +
+        '<section class="section" id="queries"><h2>Queries</h2><p class="note">What people asked Astra, and who asked it. These rows are sample questions from the period.</p>' +
+          '<article class="tile"><h3>Recent questions</h3><table class="plain queries"><thead><tr><th>User</th><th>Organization</th><th>Query</th><th>Topic</th></tr></thead><tbody>' +
+          QUERIES.map((row) => '<tr><td>' + row[0] + '</td><td class="muted">' + row[1] + '</td><td>' + row[2] + '</td><td class="muted">' + row[3] + '<div class="sub">' + row[4] + '</div></td></tr>').join("") +
+          '</tbody></table></article>' +
+          '<article class="tile"><h3>Who asks the most</h3><table class="plain"><thead><tr><th>User</th><th>Organization</th><th>Mostly asks</th><th class="num">Chats</th><th class="num">Messages</th></tr></thead><tbody>' +
+          ASKERS.map((row) => '<tr><td>' + row[0] + '</td><td class="muted">' + row[1] + '</td><td class="muted">' + row[4] + '</td><td class="num">' + row[2] + '</td><td class="num">' + row[3] + '</td></tr>').join("") +
+          "</tbody></table></article></section>";
+      const versionTwo =
+        '<div class="kpis four">' +
+          kpiCard("#sessions", "Sessions per user", "<strong>2.4</strong>", "1,190 active yesterday", "Average Astra chats per person in the latest week. An active session is a chat with at least one message in that day, week, or month.") +
+          kpiCard("#patterns", "Median length", "<strong>3</strong>", "Messages in a chat", "Half of chats have fewer user messages than this, and half have more.") +
+          kpiCard("#retention", "D7 retention", "<strong>30.2%</strong>", "Week of 6 Oct", "New Astra users who send another message on days 7 to 13 after their first one. The week shown is the latest one that has finished that window.") +
+          kpiCard("#speed", "p90 total time", "<strong>6.40s</strong>", "p90 first token 2.10s", "90% of successful replies finished in this time or less, from send to the full reply. The smaller figure is the same measure for the first token.") +
+        "</div>" +
+        '<div class="kpis three">' +
+          kpiCard("#feedback", "Negative feedback", "<strong>6.8%</strong>", "1.4% down · 5.6% regenerate", "Successful replies the user marked down or asked to regenerate. A reply with both counts once.") +
+          kpiCard("#feedback", "Bounce rate", "<strong>22.6%</strong>", "Stopped after one reply", "Chats that stop after the first reply. The person does not send a second message.") +
+          kpiCard("#feedback", "Resolution rate", "<strong>86.4%</strong>", "Usable answer, no negative rating", "Chats where Astra returned a usable reply and the user did not mark it down or regenerate.") +
+        "</div>" +
+        '<section class="section" id="sessions"><h2>Sessions</h2><p class="note">An active session is a chat with at least one message in that day, week, or month. The same chat can count on more than one day. October has 16,800 sessions across 7,375 people, about 2.3 each. The latest week averages 2.4.</p><div class="tiles">' +
+          '<article class="tile"><h3>Daily</h3>' + chart([{ name: "Active sessions", color: "#334bfa", values: [980, 1040, 990, 860, 720, 1100, 1180, 1210, 1090, 970, 840, 1160, 1240, 1190] }], ["15 Oct", "28 Oct"]) + "</article>" +
+          '<article class="tile"><h3>Weekly</h3>' + chart([{ name: "Active sessions", color: "#334bfa", values: [3100, 3280, 3420, 3600, 3550, 3780, 3920, 4100] }], ["8 Sep", "27 Oct"]) + "</article>" +
+          '<article class="tile"><h3>Monthly</h3>' + chart([{ name: "Active sessions", color: "#334bfa", values: [9800, 11200, 12800, 14600, 16800] }], ["Jun", "Oct"]) + "</article>" +
+        '</div><article class="tile"><h3>By organization</h3><table class="plain"><thead><tr><th>Organization</th><th class="num">Sessions</th><th class="num">Users</th><th class="num">Per user</th></tr></thead><tbody>' +
+          SESSION_ORGS.map((row) => '<tr><td>' + row[0] + '</td><td class="num">' + row[1].toLocaleString("en-US") + '</td><td class="num">' + row[2].toLocaleString("en-US") + '</td><td class="num">' + row[3] + '</td></tr>').join("") +
+          '</tbody></table><p class="note">October. Per user is sessions divided by people who sent at least one message.</p></article>' +
+          '<article class="tile"><h3>How many sessions each person has</h3>' + shareBars([["1 session", 46.0], ["2–3 sessions", 32.0], ["4–6 sessions", 15.0], ["7 or more", 7.0]]) + '<p class="note">Share of people in October. Most people come back once or twice. A few run a session almost every workday.</p></article>' +
+          '<article class="tile"><h3>Sessions per user</h3>' + chart([{ name: "Sessions", color: "#334bfa", values: [1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.3, 2.4] }], ["8 Sep", "27 Oct"]) + "</article>" +
+          '<article class="tile"><h3>Most active users</h3><table class="plain"><thead><tr><th>User</th><th>Organization</th><th class="num">This week</th><th class="num">This month</th></tr></thead><tbody>' +
+          SESSION_USERS.map((row) => '<tr><td>' + row[0] + '</td><td class="muted">' + row[1] + '</td><td class="num">' + row[2] + '</td><td class="num">' + row[3] + '</td></tr>').join("") +
+          "</tbody></table></article></section>" +
         '<section class="section" id="retention"><h2>D7 retention</h2><p class="note">New Astra users who message again on days 7–13. A blank cell is a cohort that is not finished yet.</p><div class="tiles two">' +
           '<article class="tile"><h3>By cohort week</h3>' + chart([{ name: "D7", color: "#299446", values: [28, 29.5, 26.8, 31.3, 27.5, 30.2] }], ["1 Sep", "6 Oct"]) + "</article>" +
           '<article class="tile"><h3>Cohort curve</h3><table><thead><tr><th>Week</th><th>Users</th><th>D1</th><th>D7</th><th>D14</th><th>D30</th></tr></thead><tbody>' +
@@ -623,48 +665,6 @@
           ], ["8 Sep", "27 Oct"]) + legend([["Combined", "#334bfa"], ["Thumbs-down", "#cf222e"], ["Regenerate", "#f49d1a"]]) + "</article>" +
           '<article class="tile"><h3>Bounce rate</h3>' + chart([{ name: "Bounce", color: "#ef6445", values: [28.4, 26.1, 25.4, 24.8, 23.9, 24.2, 23.1, 22.6] }], ["8 Sep", "27 Oct"]) + "</article>" +
           '<article class="tile"><h3>Resolution rate</h3>' + chart([{ name: "Resolved", color: "#299446", values: [81.0, 82.4, 83.1, 84.0, 84.6, 85.2, 85.8, 86.4] }], ["8 Sep", "27 Oct"]) + "</article></div></section>" +
-        '<section class="section" id="topics"><h2>Topics</h2><p class="note">Share of classified conversations. Coverage is 97.4%.</p><article class="tile"><h3>This period</h3>' + topics("share") + "</article></section>" +
-        '<section class="section" id="queries"><h2>Queries</h2><p class="note">What people asked Astra, and who asked it. These rows are sample questions from the period.</p>' +
-          '<article class="tile"><h3>Recent questions</h3><table class="plain queries"><thead><tr><th>User</th><th>Organization</th><th>Query</th><th>Topic</th></tr></thead><tbody>' +
-          QUERIES.map((row) => '<tr><td>' + row[0] + '</td><td class="muted">' + row[1] + '</td><td>' + row[2] + '</td><td class="muted">' + row[3] + '<div class="sub">' + row[4] + '</div></td></tr>').join("") +
-          '</tbody></table></article>' +
-          '<article class="tile"><h3>Who asks the most</h3><table class="plain"><thead><tr><th>User</th><th>Organization</th><th>Mostly asks</th><th class="num">Chats</th><th class="num">Messages</th></tr></thead><tbody>' +
-          ASKERS.map((row) => '<tr><td>' + row[0] + '</td><td class="muted">' + row[1] + '</td><td class="muted">' + row[4] + '</td><td class="num">' + row[2] + '</td><td class="num">' + row[3] + '</td></tr>').join("") +
-          "</tbody></table></article></section>";
-      const versionTwo =
-        '<div class="kpis four">' +
-          kpiCard("#sessions", "Sessions per user", "<strong>2.4</strong>", "1,190 active yesterday", "Average Astra chats per person in the latest week. An active session is a chat with at least one message in that day, week, or month.") +
-          kpiCard("#patterns", "Median length", "<strong>3</strong>", "Messages in a chat", "Half of chats have fewer user messages than this, and half have more.") +
-          kpiCard("#scope", "Scoped", "<strong>76%</strong>", "24% started with none", "Chats that had an organization, project, or shipment selected when the first message was sent. A fresh chat starts empty. Opening Astra from a project selects that organization and project.") +
-          kpiCard("#power", "Power users", "<strong>186</strong>", "2.5% of people", "People who clear all three bars this month: 8 or more sessions, 24 or more queries, and a message on 8 or more days. Sessions or questions alone do not qualify.") +
-        "</div>" +
-        '<section class="section" id="sessions"><h2>Sessions</h2><p class="note">An active session is a chat with at least one message in that day, week, or month. The same chat can count on more than one day. October has 16,800 sessions across 7,375 people, about 2.3 each. The latest week averages 2.4.</p><div class="tiles">' +
-          '<article class="tile"><h3>Daily</h3>' + chart([{ name: "Active sessions", color: "#334bfa", values: [980, 1040, 990, 860, 720, 1100, 1180, 1210, 1090, 970, 840, 1160, 1240, 1190] }], ["15 Oct", "28 Oct"]) + "</article>" +
-          '<article class="tile"><h3>Weekly</h3>' + chart([{ name: "Active sessions", color: "#334bfa", values: [3100, 3280, 3420, 3600, 3550, 3780, 3920, 4100] }], ["8 Sep", "27 Oct"]) + "</article>" +
-          '<article class="tile"><h3>Monthly</h3>' + chart([{ name: "Active sessions", color: "#334bfa", values: [9800, 11200, 12800, 14600, 16800] }], ["Jun", "Oct"]) + "</article>" +
-        '</div><article class="tile"><h3>By organization</h3><table class="plain"><thead><tr><th>Organization</th><th class="num">Sessions</th><th class="num">Users</th><th class="num">Per user</th></tr></thead><tbody>' +
-          SESSION_ORGS.map((row) => '<tr><td>' + row[0] + '</td><td class="num">' + row[1].toLocaleString("en-US") + '</td><td class="num">' + row[2].toLocaleString("en-US") + '</td><td class="num">' + row[3] + '</td></tr>').join("") +
-          '</tbody></table><p class="note">October. Per user is sessions divided by people who sent at least one message.</p></article>' +
-          '<article class="tile"><h3>How many sessions each person has</h3>' + shareBars([["1 session", 46.0], ["2–3 sessions", 32.0], ["4–6 sessions", 15.0], ["7 or more", 7.0]]) + '<p class="note">Share of people in October. Most people come back once or twice. A few run a session almost every workday.</p></article>' +
-          '<article class="tile"><h3>Sessions per user</h3>' + chart([{ name: "Sessions", color: "#334bfa", values: [1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.3, 2.4] }], ["8 Sep", "27 Oct"]) + "</article>" +
-          '<article class="tile"><h3>Most active users</h3><table class="plain"><thead><tr><th>User</th><th>Organization</th><th class="num">This week</th><th class="num">This month</th></tr></thead><tbody>' +
-          SESSION_USERS.map((row) => '<tr><td>' + row[0] + '</td><td class="muted">' + row[1] + '</td><td class="num">' + row[2] + '</td><td class="num">' + row[3] + '</td></tr>').join("") +
-          "</tbody></table></article></section>" +
-        '<section class="section" id="power"><h2>Power users</h2><p class="note">A power user clears all three bars in the month: 8 or more sessions, 24 or more queries, and a message on 8 or more days. Kenji Sato has 9 sessions, but only 18 queries and 7 active days, so he is not included.</p><div class="stats">' +
-          '<div class="stat"><span>People</span><strong>186</strong><em>2.5% of 7,375</em></div>' +
-          '<div class="stat"><span>Share of sessions</span><strong>28%</strong><em>4,700 of 16,800</em></div>' +
-          '<div class="stat"><span>Share of queries</span><strong>34%</strong><em>14,300 of 42,000</em></div>' +
-        '</div><div class="tiles two">' +
-          '<article class="tile"><h3>How many, by month</h3>' + chart([{ name: "Power users", color: "#334bfa", values: [96, 112, 134, 158, 186] }], ["Jun", "Oct"]) + "</article>" +
-          '<article class="tile"><h3>Where they work</h3>' + shareBars([["Meridian Home", 48], ["Other organizations", 44], ["Fellow Products", 31], ["Harbor & Co", 24], ["Northwind Trading", 18], ["Pacific Line", 12], ["Cedar Logistics", 9]], true) + '<p class="note">Count of power users in October.</p></article>' +
-        '</div><article class="tile"><h3>Who qualifies</h3><table class="plain"><thead><tr><th>User</th><th>Organization</th><th class="num">Sessions</th><th class="num">Queries</th><th class="num">Days active</th><th>Mostly asks</th></tr></thead><tbody>' +
-          POWER_USERS.map((row) => '<tr><td>' + row[0] + '</td><td class="muted">' + row[1] + '</td><td class="num">' + row[2] + '</td><td class="num">' + row[3] + '</td><td class="num">' + row[4] + '</td><td class="muted">' + row[5] + '</td></tr>').join("") +
-          '</tbody></table><p class="note">October. Days active are days with at least one message. These five are the sample; 181 others also qualify.</p></article></section>' +
-        '<section class="section" id="scope"><h2>Scope</h2><p class="note">A fresh chat starts with nothing selected. The user can add an organization, and a project or shipment. Opening Astra from a project selects that organization and project before the first message.</p><div class="tiles">' +
-          '<article class="tile"><h3>How the chat started</h3>' + shareBars([["From a project", 38.0], ["User added a scope", 38.0], ["Nothing selected", 24.0]]) + '<p class="note">From a project means the organization and project were already selected. The other two are fresh chats.</p></article>' +
-          '<article class="tile"><h3>What was selected</h3>' + shareBars([["Org and project", 56.0], ["No scope", 24.0], ["Org and shipment", 11.0], ["Org only", 9.0]]) + '<p class="note">Counted on the first message. Org and project includes chats opened from a project.</p></article>' +
-          '<article class="tile"><h3>Scoped chats</h3>' + chart([{ name: "Scoped", color: "#334bfa", values: [62, 64, 66, 68, 70, 72, 74, 76] }], ["8 Sep", "27 Oct"]) + "</article>" +
-        "</div></section>" +
         '<section class="section" id="patterns"><h2>Patterns</h2><p class="note">Where chats get long, where they stop, and when replies fail. Pale hours on the grid had little traffic.</p><div class="tiles two">' +
           '<article class="tile"><h3>Messages per conversation</h3>' + shareBars([["1 message", 22.6], ["2–3 messages", 41.0], ["4–6 messages", 24.0], ["7 or more", 12.4]]) + '<p class="note">Median is 3. A pile-up at one message is the bounce rate.</p></article>' +
           '<article class="tile"><h3>Where chats stop</h3>' + shareBars([["Sent a first message", 100], ["Sent a second message", 77.4], ["Sent a third message", 48.2], ["Kept going", 28.6]]) + '<p class="note">Each step is a share of conversations that started.</p></article>' +
