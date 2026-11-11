@@ -151,7 +151,18 @@
   .rules ol { margin: 0 0 0 18px; }
   .rules li { font: var(--type-content-small); color: var(--silq-navy); margin-top: 4px; }
   .rules li:first-child { margin-top: 0; }
-  .add-bar { padding: 12px 16px 0; }
+  .add-bar { padding: 12px 16px 0; display: flex; gap: 8px; flex-wrap: wrap; }
+  .group-row td {
+    background: var(--silq-grey-50); font-weight: 600; color: var(--silq-navy);
+  }
+  .product-indent { padding-left: 28px; }
+  .subhead {
+    font: var(--type-content-small-semi-bold); color: var(--silq-navy);
+    text-transform: uppercase; letter-spacing: var(--tracking-wide); margin: 4px 0;
+  }
+  .slot-row { display: flex; gap: 8px; align-items: center; }
+  .slot-row .input { flex: 1; }
+  .tray-note { font: var(--type-content-small); color: var(--text-secondary); margin-bottom: 4px; }
   .banner { margin: 16px 16px 0; padding: 12px; border-radius: var(--radius-sm); font: var(--type-content-small); }
   .banner strong { display: block; }
   .banner ul { margin: 8px 0 0 18px; }
@@ -264,7 +275,7 @@
   <div class="page">
     <div class="crumb">Inspections / Pricing</div>
     <h1>Inspections pricing</h1>
-    <p class="lede">Maintain the tables the quote will read. Uploaded on, uploaded by, and total sell are set by the system.</p>
+    <p class="lede">Maintain the tables the quote will read. Man day mapping and the pricing matrix stamp uploaded on, uploaded by, and total sell.</p>
 
     <div class="tabs" role="tablist" aria-label="Inspections pricing">
       <button class="tab" id="tabTables" type="button" role="tab" aria-selected="true" aria-controls="panelTables" data-main="tables">Product category &amp; pricing matrices</button>
@@ -291,21 +302,20 @@
         <div id="catResult" class="banner" hidden></div>
         <div class="rules">
           <ol>
-            <li>Product can either be for individual products under one category, or can be for all products in that category.</li>
-            <li>A newer upload for the same category and product replaces the older row. Uploaded on and uploaded by are set by the system.</li>
+            <li>This table is the list of categories, and the products under each category.</li>
+            <li>There is no ALL here. A product belongs to one category only.</li>
+            <li>A new category needs at least one product.</li>
           </ol>
         </div>
         <div class="add-bar">
-          <button class="btn btn-primary" type="button" id="catAdd">Add Row +</button>
+          <button class="btn btn-primary" type="button" id="catAddCategory">Add new category</button>
+          <button class="btn" type="button" id="catAddProduct">Add new Product</button>
         </div>
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
-                <th>Product category</th>
-                <th>Product<span class="hint">One product, or all products in the category</span></th>
-                <th>Uploaded on<span class="hint">Set by the system</span></th>
-                <th>Uploaded by<span class="hint">Set by the system</span></th>
+                <th>Product</th>
                 <th></th>
               </tr>
             </thead>
@@ -326,7 +336,8 @@
         <div id="t1Result" class="banner" hidden></div>
         <div class="rules">
           <ol>
-            <li>Product can either be for individual products under one category, or can be for all products in that category.</li>
+            <li>Product category and product come from Product Category mapping. Product can be one of those products, or ALL for every product in the category.</li>
+            <li>If a category uses ALL, it cannot also have a row for an individual product. If it has an individual product, it cannot use ALL.</li>
             <li>Units inspectable in 1 man day is a whole number greater than 0.</li>
             <li>A newer upload for the same category and product replaces the older row. Uploaded on and uploaded by are set by the system.</li>
           </ol>
@@ -339,7 +350,7 @@
             <thead>
               <tr>
                 <th>Product category</th>
-                <th>Product<span class="hint">One product, or all products in the category</span></th>
+                <th>Product<span class="hint">From the category list, or ALL</span></th>
                 <th class="num">Units inspectable in 1 man day<span class="hint">Whole number, greater than 0</span></th>
                 <th>Uploaded on<span class="hint">Set by the system</span></th>
                 <th>Uploaded by<span class="hint">Set by the system</span></th>
@@ -366,6 +377,7 @@
             <li>Service level is an inspection service offered today by Silq, or ALL for all the services.</li>
             <li>Total sell is calculated in the system after upload and need not be in the upload file.</li>
             <li>A newer upload for the same category, service level, and country replaces the older row. Uploaded on is the valid-from date.</li>
+            <li>Product category comes from Product Category mapping. Country and currency are chosen from the lists.</li>
           </ol>
         </div>
         <div class="add-bar">
@@ -433,18 +445,18 @@
 (function () {
   const SERVICES = ["Final", "Inline", "Pre production", "Factory", "TOP", "ALL"];
   const SESSION_USER = "Shivam";
-  const STORE_KEY = "silq-inspections-pricing-v2";
+  const STORE_KEY = "silq-inspections-pricing-v3";
+  const COUNTRIES = ["Bangladesh", "Cambodia", "China", "India", "Indonesia", "Malaysia", "Pakistan", "Sri Lanka", "Thailand", "Turkey", "Vietnam"];
+  const CURRENCIES = ["USD", "EUR", "GBP", "CNY", "INR", "VND", "BDT", "IDR", "THB", "MYR", "PKR", "LKR", "KHR", "TRY"];
 
   const SEED_CAT = [
-    { category: "Furniture", product: "Beds", uploadedOn: "2026-11-11", uploadedBy: "Shivam" },
-    { category: "Furniture", product: "Chairs", uploadedOn: "2026-11-11", uploadedBy: "Shivam" },
-    { category: "Apparel", product: "ALL", uploadedOn: "2026-11-11", uploadedBy: "Shivam" },
-    { category: "Apparel", product: "T shirts", uploadedOn: "2026-11-11", uploadedBy: "Shivam" }
+    { category: "Furniture", product: "Beds" },
+    { category: "Furniture", product: "Chairs" },
+    { category: "Apparel", product: "T shirts" }
   ];
   const SEED_T1 = [
     { category: "Furniture", product: "Beds", units: 15, uploadedOn: "2026-11-11", uploadedBy: "Shivam" },
     { category: "Furniture", product: "Chairs", units: 30, uploadedOn: "2026-11-11", uploadedBy: "Shivam" },
-    { category: "Apparel", product: "ALL", units: 500, uploadedOn: "2026-11-11", uploadedBy: "Shivam" },
     { category: "Apparel", product: "T shirts", units: 600, uploadedOn: "2026-11-11", uploadedBy: "Shivam" }
   ];
   const SEED_T2 = [
@@ -501,6 +513,61 @@
 
   function stamp(row) {
     return Object.assign({}, row, { uploadedOn: todayIso(), uploadedBy: SESSION_USER });
+  }
+
+  function findCategoryName(catalog, raw) {
+    const found = (catalog || []).find(function (row) { return normKey(row.category) === normKey(raw); });
+    return found ? found.category : null;
+  }
+
+  function catalogCategories(catalog) {
+    const list = [];
+    (catalog || []).forEach(function (row) {
+      if (!list.some(function (name) { return normKey(name) === normKey(row.category); })) list.push(row.category);
+    });
+    return list;
+  }
+
+  function productsFor(catalog, category) {
+    return (catalog || []).filter(function (row) {
+      return normKey(row.category) === normKey(category);
+    }).map(function (row) { return row.product; });
+  }
+
+  function findProductRow(catalog, productName, ignoreId) {
+    return (catalog || []).find(function (row) {
+      if (ignoreId != null && row.id === ignoreId) return false;
+      return normKey(row.product) === normKey(productName);
+    }) || null;
+  }
+
+  function matchList(list, raw) {
+    const found = list.find(function (item) { return normKey(item) === normKey(raw); });
+    return found || null;
+  }
+
+  function allExclusiveMessage(rows, candidate, ignoreId) {
+    const others = (rows || []).filter(function (row) {
+      if (ignoreId != null && row.id === ignoreId) return false;
+      return normKey(row.category) === normKey(candidate.category);
+    });
+    if (candidate.product === "ALL" && others.some(function (row) { return row.product !== "ALL"; })) {
+      return candidate.category + " already has an individual product, so it cannot use ALL.";
+    }
+    if (candidate.product !== "ALL" && others.some(function (row) { return row.product === "ALL"; })) {
+      return candidate.category + " already uses ALL, so it cannot also have an individual product.";
+    }
+    return "";
+  }
+
+  function normalizeMappedProduct(raw) {
+    const product = String(raw == null ? "" : raw).trim();
+    if (!product) return { ok: false, error: "Product is required." };
+    if (/^all$/i.test(product) || /^(any|all products|\*)$/i.test(product)) {
+      return { ok: false, error: "ALL is not used on Product Category mapping. Add the individual product." };
+    }
+    if (product.length > 80) return { ok: false, error: "Product must be 80 characters or fewer." };
+    return { ok: true, value: product };
   }
 
   function normalizeProduct(raw) {
@@ -564,12 +631,20 @@
     return { ok: true, value: s };
   }
 
-  function validateCat(input) {
+  function validateCat(input, catalog, ignoreId) {
     const errors = {};
     const category = parseCategory(input.category);
     if (!category.ok) errors.category = category.error;
-    const product = normalizeProduct(input.product);
+    const product = normalizeMappedProduct(input.product);
     if (!product.ok) errors.product = product.error;
+    else if (catalog) {
+      const owner = findProductRow(catalog, product.value, ignoreId);
+      if (owner && (!category.ok || normKey(owner.category) !== normKey(category.value))) {
+        errors.product = product.value + " already belongs to " + owner.category + ".";
+      } else if (owner && ignoreId) {
+        errors.product = product.value + " is already under " + owner.category + ".";
+      }
+    }
     const ok = Object.keys(errors).length === 0;
     return {
       ok: ok,
@@ -578,7 +653,8 @@
     };
   }
 
-  function validateT1(input) {
+  function validateT1(input, context) {
+    context = context || {};
     const errors = {};
     const category = parseCategory(input.category);
     if (!category.ok) errors.category = category.error;
@@ -586,27 +662,54 @@
     if (!product.ok) errors.product = product.error;
     const units = parseUnits(input.units);
     if (!units.ok) errors.units = units.error;
+    let categoryName = category.ok ? category.value : "";
+    let productName = product.ok ? product.value : "";
+    if (context.catalog && category.ok) {
+      const matched = findCategoryName(context.catalog, category.value);
+      if (!matched) errors.category = "Choose a category from Product Category mapping.";
+      else categoryName = matched;
+    }
+    if (context.catalog && product.ok && !errors.category) {
+      if (product.value !== "ALL") {
+        const match = productsFor(context.catalog, categoryName).find(function (name) {
+          return normKey(name) === normKey(product.value);
+        });
+        if (!match) errors.product = "Choose a product under this category, or ALL.";
+        else productName = match;
+      }
+    }
+    if (!errors.category && !errors.product && context.rows && product.ok) {
+      const message = allExclusiveMessage(context.rows, { category: categoryName, product: productName }, context.ignoreId);
+      if (message) errors.product = message;
+    }
     const ok = Object.keys(errors).length === 0;
     return {
       ok: ok,
       errors: errors,
-      row: ok ? { category: category.value, product: product.value, units: units.value } : null
+      row: ok ? { category: categoryName, product: productName, units: units.value } : null
     };
   }
 
-  function validateT2(input) {
+  function validateT2(input, catalog) {
     const errors = {};
     const category = parseCategory(input.category);
     if (!category.ok) errors.category = category.error;
+    let categoryName = category.ok ? category.value : "";
+    if (catalog && category.ok) {
+      const matched = findCategoryName(catalog, category.value);
+      if (!matched) errors.category = "Choose a category from Product Category mapping.";
+      else categoryName = matched;
+    }
     const service = normalizeService(input.service);
     if (!service.ok) errors.service = service.error;
     const countryRaw = String(input.country == null ? "" : input.country).trim();
+    const country = matchList(COUNTRIES, countryRaw);
     if (!countryRaw) errors.country = "Country is required.";
-    else if (/^all$/i.test(countryRaw)) errors.country = "Country is the inspection country. ALL is not a country on this table.";
-    else if (countryRaw.length > 60) errors.country = "Country must be 60 characters or fewer.";
+    else if (!country) errors.country = "Choose a country from the list.";
     const currencyRaw = String(input.currency == null ? "" : input.currency).trim();
+    const currency = matchList(CURRENCIES, currencyRaw);
     if (!currencyRaw) errors.currency = "Currency is required.";
-    else if (!/^[A-Za-z]{3}$/.test(currencyRaw)) errors.currency = "Currency must be a 3-letter code, such as USD.";
+    else if (!currency) errors.currency = "Choose a currency from the list.";
     const charge = parseMoney(input.charge);
     if (!charge.ok) {
       errors.charge = charge.empty
@@ -624,10 +727,10 @@
       ok: ok,
       errors: errors,
       row: ok ? {
-        category: category.value,
+        category: categoryName,
         service: service.value,
-        country: countryRaw,
-        currency: currencyRaw.toUpperCase(),
+        country: country,
+        currency: currency,
         charge: charge.value,
         margin: margin.value
       } : null
@@ -710,13 +813,8 @@
     return row[index[field]] == null ? "" : row[index[field]];
   }
 
-  function validateWhich(which, input) {
-    if (which === "cat") return validateCat(input);
-    if (which === "t1") return validateT1(input);
-    return validateT2(input);
-  }
-
-  function readUpload(text, which) {
+  function readUpload(text, which, context) {
+    context = context || {};
     const grid = parseCsv(text);
     if (!grid.length) return { ok: false, fileError: "The file is empty.", rows: [], rejected: [] };
     const index = mapHeaders(grid[0], HEADERS[which]);
@@ -731,14 +829,33 @@
     }
     const rows = [];
     const rejected = [];
+    const catalogWorking = (context.catalog || []).map(function (row) { return Object.assign({}, row); });
+    const rowWorking = (context.existing || []).map(function (row) { return Object.assign({}, row); });
     for (let i = 1; i < grid.length; i++) {
       const source = grid[i];
       const input = {};
       Object.keys(index).forEach(function (field) { input[field] = cell(source, index, field); });
-      const result = validateWhich(which, input);
+      let result;
+      if (which === "cat") result = validateCat(input, context.catalog ? catalogWorking : null);
+      else if (which === "t1") result = validateT1(input, context.catalog ? { catalog: context.catalog, rows: rowWorking } : {});
+      else result = validateT2(input, context.catalog);
       if (!result.ok) {
         rejected.push({ row: i + 1, messages: Object.keys(result.errors).map(function (k) { return result.errors[k]; }) });
-      } else rows.push(result.row);
+      } else {
+        rows.push(result.row);
+        if (which === "cat" && context.catalog) {
+          const owner = findProductRow(catalogWorking, result.row.product);
+          if (owner) {
+            owner.category = result.row.category;
+            owner.product = result.row.product;
+          } else catalogWorking.push(Object.assign({ id: "upload-cat-" + i }, result.row));
+        }
+        if (which === "t1") {
+          const idx = rowWorking.findIndex(function (row) { return keyCat(row) === keyCat(result.row); });
+          if (idx >= 0) rowWorking[idx] = Object.assign({}, rowWorking[idx], result.row);
+          else rowWorking.push(Object.assign({ id: "upload-t1-" + i }, result.row));
+        }
+      }
     }
     if (!rows.length && !rejected.length) {
       return { ok: false, fileError: "The file has a header and no data rows.", rows: [], rejected: [] };
@@ -792,6 +909,9 @@
     validateCat: validateCat,
     validateT1: validateT1,
     validateT2: validateT2,
+    allExclusiveMessage: allExclusiveMessage,
+    COUNTRIES: COUNTRIES,
+    CURRENCIES: CURRENCIES,
     readUpload: readUpload,
     applyRows: applyRows,
     toCsv: toCsv
@@ -865,19 +985,29 @@
 
   function renderCat() {
     const body = document.getElementById("catBody");
-    document.getElementById("catCount").textContent = countLabel(state.cat.length);
-    if (!state.cat.length) {
-      body.innerHTML = "<tr class=\"empty-row\"><td colspan=\"5\">No rows yet. Upload a CSV or add a row.</td></tr>";
+    const groups = [];
+    state.cat.forEach(function (row) {
+      let group = null;
+      groups.forEach(function (item) {
+        if (normKey(item.category) === normKey(row.category)) group = item;
+      });
+      if (!group) {
+        group = { category: row.category, products: [] };
+        groups.push(group);
+      }
+      group.products.push(row);
+    });
+    document.getElementById("catCount").textContent = groups.length + (groups.length === 1 ? " category" : " categories");
+    if (!groups.length) {
+      body.innerHTML = "<tr class=\"empty-row\"><td colspan=\"2\">No categories yet. Add a category and at least one product.</td></tr>";
       return;
     }
-    body.innerHTML = state.cat.map(function (row) {
-      return "<tr>" +
-        "<td>" + esc(row.category) + "</td>" +
-        "<td>" + productCell(row.product) + "</td>" +
-        "<td>" + esc(formatDate(row.uploadedOn)) + "</td>" +
-        "<td>" + esc(row.uploadedBy) + "</td>" +
-        actionCell("cat", row.id) +
-        "</tr>";
+    body.innerHTML = groups.map(function (group) {
+      const head = "<tr class=\"group-row\"><td colspan=\"2\">" + esc(group.category) + "</td></tr>";
+      const products = group.products.map(function (row) {
+        return "<tr><td class=\"product-indent\">" + esc(row.product) + "</td>" + actionCell("cat", row.id) + "</tr>";
+      }).join("");
+      return head + products;
     }).join("");
   }
 
@@ -1050,13 +1180,16 @@
   function onUpload(which, file) {
     const reader = new FileReader();
     reader.onload = function () {
-      const parsed = readUpload(String(reader.result || ""), which);
+      const parsed = readUpload(String(reader.result || ""), which, {
+        catalog: state.cat,
+        existing: state[which]
+      });
       if (!parsed.ok) {
         summarize(which, { added: 0, replaced: 0 }, [], parsed.fileError);
         return;
       }
       const stamped = parsed.rows.map(function (row) {
-        const copy = stamp(row);
+        const copy = which === "cat" ? Object.assign({}, row) : stamp(row);
         copy.id = which + "-" + (seq++);
         return copy;
       });
@@ -1098,6 +1231,36 @@
     return "<select class=\"input\" id=\"fService\">" + options.join("") + "</select>";
   }
 
+  function selectBox(id, options, selected, placeholder) {
+    const opts = ["<option value=\"\">" + esc(placeholder || "Select") + "</option>"].concat(options.map(function (opt) {
+      const selectedAttr = opt === selected ? " selected" : "";
+      return "<option value=\"" + esc(opt) + "\"" + selectedAttr + ">" + esc(opt) + "</option>";
+    }));
+    return "<select class=\"input\" id=\"" + id + "\">" + opts.join("") + "</select>";
+  }
+
+  function productOptions(category, selected) {
+    const products = productsFor(state.cat, category).concat(["ALL"]);
+    return selectBox("fProduct", products, selected, "Select");
+  }
+
+  function productSlot(value) {
+    return "<div class=\"product-slot\"><div class=\"fld\">" +
+      "<label>New product <span class=\"req\">*</span></label>" +
+      "<div class=\"slot-row\">" +
+      "<input class=\"input product-name\" value=\"" + esc(value || "") + "\" placeholder=\"Product name\" autocomplete=\"off\">" +
+      "<button type=\"button\" class=\"btn btn-ghost slot-remove\">Remove</button>" +
+      "</div><div class=\"field-err product-err\"></div></div></div>";
+  }
+
+  function syncSlotRemoves() {
+    const slots = document.querySelectorAll(".product-slot");
+    slots.forEach(function (slot) {
+      const button = slot.querySelector(".slot-remove");
+      if (button) button.hidden = slots.length === 1;
+    });
+  }
+
   function closeTray() {
     document.getElementById("tray").hidden = true;
     document.getElementById("trayBackdrop").hidden = true;
@@ -1119,27 +1282,47 @@
     });
   }
 
-  function openTray(which, row) {
-    trayMode = { which: which, id: row ? row.id : null };
-    document.getElementById("trayTitle").textContent = row ? "Edit row" : "Add row";
-    document.getElementById("traySave").textContent = row ? "Save" : "Save";
+  function openTray(kind, row) {
+    trayMode = { kind: kind, id: row ? row.id : null };
+    const titles = {
+      "new-category": "Add new category",
+      "new-product": "Add new Product",
+      "edit-product": "Edit product",
+      t1: row ? "Edit row" : "Add row",
+      t2: row ? "Edit row" : "Add row"
+    };
+    document.getElementById("trayTitle").textContent = titles[kind] || "Add row";
+    document.getElementById("traySave").textContent = "Save";
     const fields = document.getElementById("trayFields");
-    if (which === "t2") {
+    const categories = catalogCategories(state.cat);
+    const emptyNote = categories.length
+      ? ""
+      : "<p class=\"tray-note\">Add a category on Product Category mapping first.</p>";
+    if (kind === "new-category") {
       fields.innerHTML =
-        fieldWrap("fCategory", "Product category", textInput("fCategory", row && row.category)) +
+        "<p class=\"tray-note\">A category needs at least one product. That product cannot already belong to another category.</p>" +
+        fieldWrap("fCategory", "Product category", textInput("fCategory", "", "Furniture")) +
+        "<div class=\"subhead\">New product</div>" +
+        "<div id=\"productSlots\">" + productSlot("") + "</div>" +
+        "<button class=\"btn\" type=\"button\" id=\"addProductSlot\">Add another product</button>";
+      syncSlotRemoves();
+    } else if (kind === "new-product" || kind === "edit-product") {
+      fields.innerHTML = (kind === "new-product" ? emptyNote : "") +
+        fieldWrap("fCategory", "Product category", selectBox("fCategory", categories, row && row.category, "Select")) +
+        fieldWrap("fProduct", "Product", textInput("fProduct", row && row.product, "Product name"));
+    } else if (kind === "t2") {
+      fields.innerHTML = emptyNote +
+        fieldWrap("fCategory", "Product category", selectBox("fCategory", categories, row && row.category, "Select")) +
         fieldWrap("fService", "Service level", serviceSelect(row && row.service)) +
-        fieldWrap("fCountry", "Country", textInput("fCountry", row && row.country)) +
-        fieldWrap("fCurrency", "Currency", textInput("fCurrency", (row && row.currency) || "USD")) +
+        fieldWrap("fCountry", "Country", selectBox("fCountry", COUNTRIES, row && row.country, "Select")) +
+        fieldWrap("fCurrency", "Currency", selectBox("fCurrency", CURRENCIES, (row && row.currency) || "USD", "Select")) +
         fieldWrap("fCharge", "Charge per man day", textInput("fCharge", row ? String(row.charge) : "", "", "decimal")) +
         fieldWrap("fMargin", "Margin %", textInput("fMargin", row ? String(row.margin) : "", "10", "decimal"));
     } else {
-      let html =
-        fieldWrap("fCategory", "Product category", textInput("fCategory", row && row.category)) +
-        fieldWrap("fProduct", "Product", textInput("fProduct", row && row.product, "Beds, or ALL"));
-      if (which === "t1") {
-        html += fieldWrap("fUnits", "Units inspectable in 1 man day", textInput("fUnits", row ? String(row.units) : "", "", "numeric"));
-      }
-      fields.innerHTML = html;
+      fields.innerHTML = emptyNote +
+        fieldWrap("fCategory", "Product category", selectBox("fCategory", categories, row && row.category, "Select")) +
+        fieldWrap("fProduct", "Product", productOptions(row && row.category, row && row.product)) +
+        fieldWrap("fUnits", "Units inspectable in 1 man day", textInput("fUnits", row ? String(row.units) : "", "", "numeric"));
     }
     document.getElementById("tray").hidden = false;
     document.getElementById("trayBackdrop").hidden = false;
@@ -1147,29 +1330,105 @@
     if (first) first.focus();
   }
 
-  function readTray() {
-    const which = trayMode.which;
-    const value = function (id) {
-      const el = document.getElementById(id);
-      return el ? el.value : "";
-    };
-    if (which === "t2") {
-      return validateT2({
-        category: value("fCategory"),
-        service: value("fService"),
-        country: value("fCountry"),
-        currency: value("fCurrency"),
-        charge: value("fCharge"),
-        margin: value("fMargin")
-      });
-    }
-    const input = { category: value("fCategory"), product: value("fProduct") };
-    if (which === "t1") input.units = value("fUnits");
-    return which === "t1" ? validateT1(input) : validateCat(input);
+  function fieldValue(id) {
+    const el = document.getElementById(id);
+    return el ? el.value : "";
   }
 
-  function errorMap(which) {
-    if (which === "t2") {
+  function readNewCategory() {
+    const category = parseCategory(fieldValue("fCategory"));
+    const errors = {};
+    if (!category.ok) errors.category = category.error;
+    else if (findCategoryName(state.cat, category.value)) {
+      const existing = findCategoryName(state.cat, category.value);
+      errors.category = existing + " already exists. Use Add new Product to add a product under it.";
+    }
+    const inputs = document.querySelectorAll(".product-name");
+    const errEls = document.querySelectorAll(".product-err");
+    const products = [];
+    const seen = {};
+    let filled = 0;
+    inputs.forEach(function (input, index) {
+      const raw = input.value;
+      const errEl = errEls[index];
+      input.classList.remove("err");
+      if (errEl) errEl.textContent = "";
+      if (!String(raw).trim()) return;
+      filled += 1;
+      const parsed = normalizeMappedProduct(raw);
+      if (!parsed.ok) {
+        errors["p" + index] = parsed.error;
+        input.classList.add("err");
+        if (errEl) errEl.textContent = parsed.error;
+        return;
+      }
+      const key = normKey(parsed.value);
+      if (seen[key]) {
+        const message = parsed.value + " is listed twice.";
+        errors["p" + index] = message;
+        input.classList.add("err");
+        if (errEl) errEl.textContent = message;
+        return;
+      }
+      const owner = findProductRow(state.cat, parsed.value);
+      if (owner) {
+        const message = parsed.value + " already belongs to " + owner.category + ".";
+        errors["p" + index] = message;
+        input.classList.add("err");
+        if (errEl) errEl.textContent = message;
+        return;
+      }
+      seen[key] = true;
+      products.push(parsed.value);
+    });
+    if (!filled) {
+      errors.products = "Add at least one product.";
+      if (inputs[0]) inputs[0].classList.add("err");
+      if (errEls[0]) errEls[0].textContent = "Add at least one product.";
+    }
+    const ok = Object.keys(errors).length === 0 && products.length > 0;
+    return { ok: ok, errors: errors, category: category.ok ? category.value : "", products: products };
+  }
+
+  function readTray() {
+    const kind = trayMode.kind;
+    if (kind === "new-category") return readNewCategory();
+    if (kind === "t2") {
+      return validateT2({
+        category: fieldValue("fCategory"),
+        service: fieldValue("fService"),
+        country: fieldValue("fCountry"),
+        currency: fieldValue("fCurrency"),
+        charge: fieldValue("fCharge"),
+        margin: fieldValue("fMargin")
+      }, state.cat);
+    }
+    if (kind === "t1") {
+      return validateT1({
+        category: fieldValue("fCategory"),
+        product: fieldValue("fProduct"),
+        units: fieldValue("fUnits")
+      }, { catalog: state.cat, rows: state.t1, ignoreId: trayMode.id });
+    }
+    const result = validateCat({
+      category: fieldValue("fCategory"),
+      product: fieldValue("fProduct")
+    }, state.cat, kind === "edit-product" ? trayMode.id : null);
+    if (result.ok && kind === "new-product") {
+      const owner = findProductRow(state.cat, result.row.product);
+      if (owner) {
+        return {
+          ok: false,
+          errors: { product: result.row.product + " already belongs to " + owner.category + "." },
+          row: null
+        };
+      }
+    }
+    return result;
+  }
+
+  function errorMap(kind) {
+    if (kind === "t2") {
       return {
         category: "fCategory",
         service: "fService",
@@ -1179,20 +1438,50 @@
         margin: "fMargin"
       };
     }
-    const map = { category: "fCategory", product: "fProduct" };
-    if (which === "t1") map.units = "fUnits";
-    return map;
+    if (kind === "t1" || kind === "new-product" || kind === "edit-product") {
+      const map = { category: "fCategory", product: "fProduct" };
+      if (kind === "t1") map.units = "fUnits";
+      return map;
+    }
+    return { category: "fCategory" };
   }
 
   document.getElementById("trayForm").addEventListener("submit", function (event) {
     event.preventDefault();
-    const which = trayMode.which;
+    const kind = trayMode.kind;
     const result = readTray();
-    const map = errorMap(which);
+    const map = errorMap(kind);
     if (!result.ok) {
       showFieldErrors(result.errors, map);
       return;
     }
+    if (kind === "new-category") {
+      result.products.forEach(function (product) {
+        state.cat.push({ id: "cat-" + (seq++), category: result.category, product: product });
+      });
+      saveState();
+      renderCat();
+      closeTray();
+      toast("Added " + result.category + " with " + result.products.length + (result.products.length === 1 ? " product." : " products."));
+      return;
+    }
+    if (kind === "new-product" || kind === "edit-product") {
+      if (kind === "edit-product") {
+        state.cat = state.cat.map(function (current) {
+          if (current.id !== trayMode.id) return current;
+          return { id: current.id, category: result.row.category, product: result.row.product };
+        });
+        toast("Product updated.");
+      } else {
+        state.cat.push({ id: "cat-" + (seq++), category: result.row.category, product: result.row.product });
+        toast("Added " + result.row.product + " under " + result.row.category + ".");
+      }
+      saveState();
+      renderCat();
+      closeTray();
+      return;
+    }
+    const which = kind;
     const row = stamp(result.row);
     const keyFn = keyFor(which);
     if (trayMode.id) {
@@ -1235,10 +1524,40 @@
     if (event.key === "Escape") closeTray();
   });
 
-  ["cat", "t1", "t2"].forEach(function (which) {
-    document.getElementById(which + "Add").addEventListener("click", function () { openTray(which, null); });
-    bindUpload(which);
+  document.getElementById("trayFields").addEventListener("click", function (event) {
+    if (event.target.closest("#addProductSlot")) {
+      const slots = document.getElementById("productSlots");
+      if (slots) slots.insertAdjacentHTML("beforeend", productSlot(""));
+      syncSlotRemoves();
+      return;
+    }
+    const remove = event.target.closest(".slot-remove");
+    if (!remove) return;
+    const slot = remove.closest(".product-slot");
+    if (!slot) return;
+    if (document.querySelectorAll(".product-slot").length <= 1) return;
+    slot.remove();
+    syncSlotRemoves();
   });
+
+  document.getElementById("trayFields").addEventListener("change", function (event) {
+    if (event.target.id !== "fCategory" || trayMode.kind !== "t1") return;
+    const wrap = event.target.closest(".fld");
+    const productField = document.getElementById("fProduct");
+    if (!productField) return;
+    const holder = productField.parentNode;
+    const next = document.createElement("div");
+    next.innerHTML = productOptions(event.target.value, "");
+    holder.replaceChild(next.firstChild, productField);
+    if (wrap) wrap.classList.remove("err");
+  });
+
+  document.getElementById("catAddCategory").addEventListener("click", function () { openTray("new-category", null); });
+  document.getElementById("catAddProduct").addEventListener("click", function () { openTray("new-product", null); });
+  ["t1", "t2"].forEach(function (which) {
+    document.getElementById(which + "Add").addEventListener("click", function () { openTray(which, null); });
+  });
+  ["cat", "t1", "t2"].forEach(bindUpload);
 
   document.getElementById("catDownload").addEventListener("click", function () {
     download("product-category-mapping.csv", toCsv(
@@ -1273,17 +1592,24 @@
       const which = edit.getAttribute("data-edit");
       const id = edit.getAttribute("data-id");
       const row = state[which].find(function (item) { return item.id === id; });
-      if (row) openTray(which, row);
+      if (row) openTray(which === "cat" ? "edit-product" : which, row);
       return;
     }
     const button = event.target.closest("[data-remove]");
     if (!button) return;
     const which = button.getAttribute("data-remove");
     const id = button.getAttribute("data-id");
+    const removed = state[which].find(function (row) { return row.id === id; });
     state[which] = state[which].filter(function (row) { return row.id !== id; });
     saveState();
     render(which);
-    toast("Row removed.");
+    if (which === "cat" && removed && !state.cat.some(function (row) { return normKey(row.category) === normKey(removed.category); })) {
+      toast("Product removed. " + removed.category + " has no products left, so the category was removed.");
+    } else if (which === "cat") {
+      toast("Product removed.");
+    } else {
+      toast("Row removed.");
+    }
   });
 
   loadState();
