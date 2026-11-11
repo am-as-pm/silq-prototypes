@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>Silq: Inspections pricing</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --silq-white: #FFFFFF;
+    --silq-navy: #12343B;
+    --bg-brand: #FCE0DA;
+    --brand-cta: #EF6445;
+    --brand-hover: #F17458;
+    --brand-focus: #D75A3E;
+    --bg-error: #FAE9EA;
+    --error: #CF222E;
+    --error-text: #A61B25;
+    --bg-warning: #FEF5E8;
+    --warning: #F49D1A;
+    --warning-text: #996C00;
+    --bg-success: #EAF6ED;
+    --success: #299446;
+    --success-text: #1E7339;
+    --bg-info: #E7F5FF;
+    --info: #1976D3;
+    --silq-grey-50: #FBFBFB;
+    --silq-grey-100: #F8F8F8;
+    --silq-grey-150: #F2F2F2;
+    --silq-grey-200: #EBEBEB;
+    --silq-grey-250: #E0E0E0;
+    --silq-grey-400: #B1B1B1;
+    --silq-grey-500: #909090;
+    --silq-grey-600: #6C6C6C;
+    --silq-grey-700: #464646;
+    --silq-grey-800: #202020;
+    --space-4: 4px;
+    --space-8: 8px;
+    --space-12: 12px;
+    --space-16: 16px;
+    --space-20: 20px;
+    --space-24: 24px;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-pill: 999px;
+    --elevation-small: 0 1px 25px rgba(10, 10, 10, 0.10);
+    --elevation-ui: 0 1px 2px rgba(12, 12, 12, 0.08);
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --type-h5: 600 20px/28px var(--font-body);
+    --type-ui-normal-semi-bold: 600 14px/16px var(--font-body);
+    --type-ui-small: 400 12px/16px var(--font-body);
+    --type-content-small: 400 12px/1.3 var(--font-body);
+    --type-content-small-semi-bold: 600 12px/1.3 var(--font-body);
+    --type-content-normal: 400 14px/1.5 var(--font-body);
+    --type-micro-semi-bold: 600 10px/16px var(--font-body);
+    --tracking-heading: -0.005em;
+    --tracking-wide: 0.04em;
+    --text: var(--silq-navy);
+    --text-secondary: var(--silq-grey-600);
+    --border: var(--silq-grey-250);
+    --border-light: var(--silq-grey-150);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body {
+    font-family: var(--font-body);
+    background: var(--silq-grey-50);
+    color: var(--text);
+    display: flex;
+    min-height: 100vh;
+    letter-spacing: -0.003em;
+    -webkit-font-smoothing: antialiased;
+  }
+  .sidebar {
+    width: 220px;
+    background: var(--silq-navy);
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 50;
+    box-shadow: 4px 20px 25px rgba(0, 0, 0, 0.08);
+  }
+  .sidebar-logo { padding: 16px 12px 20px; display: flex; align-items: flex-end; min-height: 56px; }
+  .silq-wordmark { width: 80px; height: 32px; display: block; }
+  .sidebar-nav { padding: 0 12px; display: flex; flex-direction: column; gap: 2px; }
+  .nav-item {
+    display: flex; align-items: center; padding: 8px 12px; border-radius: 5px;
+    font: 500 12px/16px var(--font-body); color: rgba(255,255,255,0.72); text-decoration: none;
+    background: transparent; border: 0; text-align: left; cursor: pointer; width: 100%;
+  }
+  .nav-item:hover { background: rgba(255,255,255,0.08); color: var(--silq-white); }
+  .nav-item.active { background: rgba(239, 100, 69, 0.18); color: var(--silq-white); font-weight: 600; }
+  .main { margin-left: 220px; flex: 1; min-width: 0; }
+  .page { padding: 20px 28px 72px; max-width: 1180px; }
+  .crumb {
+    font: var(--type-content-small); color: var(--text-secondary);
+    letter-spacing: var(--tracking-wide); text-transform: uppercase; margin-bottom: 8px;
+  }
+  h1 { font: var(--type-h5); letter-spacing: var(--tracking-heading); color: var(--silq-navy); }
+  .lede { font: var(--type-content-normal); color: var(--text-secondary); margin-top: 4px; max-width: 720px; }
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-top: 20px; }
+  .tab {
+    background: transparent; border: 0; border-bottom: 2px solid transparent;
+    padding: 10px 12px; margin-bottom: -1px; cursor: pointer;
+    font: var(--type-ui-normal-semi-bold); color: var(--text-secondary);
+  }
+  .tab:hover { color: var(--silq-navy); }
+  .tab[aria-selected="true"] { color: var(--silq-navy); border-bottom-color: var(--brand-cta); }
+  .tab:focus-visible { outline: none; box-shadow: 0 0 0 2px rgba(18, 52, 59, 0.60); border-radius: 5px; }
+  .subtabs { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+  .subtab {
+    border: 1px solid var(--border); background: var(--silq-white); border-radius: 5px;
+    height: 32px; padding: 0 12px; cursor: pointer;
+    font: var(--type-ui-normal-semi-bold); color: var(--silq-navy);
+    box-shadow: var(--elevation-ui);
+  }
+  .subtab:hover { background: var(--silq-grey-100); }
+  .subtab[aria-selected="true"] { background: var(--silq-navy); color: var(--silq-white); border-color: var(--silq-navy); }
+  .subtab:focus-visible { outline: none; box-shadow: 0 0 0 2px rgba(18, 52, 59, 0.60); }
+  .card {
+    background: var(--silq-white); border: 1px solid var(--border);
+    border-radius: var(--radius-md); margin-top: 16px; box-shadow: var(--elevation-small);
+  }
+  .card-hd {
+    padding: 12px 16px; border-bottom: 1px solid var(--border-light);
+    display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+  }
+  .card-hd h2 {
+    font: var(--type-content-small-semi-bold); text-transform: uppercase;
+    letter-spacing: var(--tracking-wide); color: var(--silq-navy);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn {
+    border-radius: 5px; font: var(--type-ui-normal-semi-bold); height: 32px; padding: 0 12px;
+    cursor: pointer; border: 1px solid var(--border); background: var(--silq-white);
+    color: var(--silq-navy); box-shadow: var(--elevation-ui); display: inline-flex; align-items: center;
+  }
+  .btn:hover { background: var(--silq-grey-100); }
+  .btn:focus-visible { outline: none; box-shadow: 0 0 0 2px rgba(18, 52, 59, 0.60); }
+  .btn-primary { background: var(--brand-cta); color: var(--silq-white); border-color: var(--brand-cta); }
+  .btn-primary:hover { background: var(--brand-hover); }
+  .btn-ghost { box-shadow: none; border-color: transparent; background: transparent; color: var(--text-secondary); height: 28px; padding: 0 8px; font: var(--type-ui-small); }
+  .btn-ghost:hover { background: var(--bg-error); color: var(--error-text); }
+  .count {
+    font: var(--type-micro-semi-bold); letter-spacing: var(--tracking-wide);
+    background: var(--silq-grey-100); color: var(--silq-grey-700);
+    border-radius: var(--radius-pill); padding: 2px 8px;
+  }
+  .rules { margin: 16px 16px 0; background: var(--bg-info); border-radius: var(--radius-sm); padding: 12px 16px; }
+  .rules p { font: var(--type-content-small); color: var(--silq-navy); }
+  .rules ul { margin: 8px 0 0 18px; }
+  .rules li { font: var(--type-content-small); color: var(--silq-navy); margin-top: 4px; }
+  .banner { margin: 16px 16px 0; padding: 12px; border-radius: var(--radius-sm); font: var(--type-content-small); }
+  .banner strong { display: block; }
+  .banner ul { margin: 8px 0 0 18px; }
+  .banner.ok { background: var(--bg-success); color: var(--success-text); }
+  .banner.bad { background: var(--bg-error); color: var(--error-text); }
+  .banner.mix { background: var(--bg-warning); color: var(--warning-text); }
+  .table-wrap { overflow-x: auto; margin-top: 16px; }
+  table { width: 100%; border-collapse: collapse; font: var(--type-content-normal); }
+  th {
+    text-align: left; font: 600 12px/16px var(--font-body); color: var(--silq-grey-800);
+    padding: 12px; border-bottom: 1px solid var(--silq-grey-200); background: var(--silq-white);
+    white-space: nowrap;
+  }
+  th .hint {
+    display: block; margin-top: 2px; font: 400 11px/14px var(--font-body);
+    color: var(--text-secondary); letter-spacing: 0;
+  }
+  td { padding: 12px; border-bottom: 1px solid var(--silq-grey-200); vertical-align: middle; }
+  th.num, td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tr:last-child td { border-bottom: 0; }
+  .tag {
+    display: inline-flex; align-items: center;
+    font: 600 12px/16px var(--font-body); padding: 2px 8px; border-radius: var(--radius-pill);
+    background: var(--bg-info); color: var(--info);
+  }
+  .empty-row td { color: var(--text-secondary); font: var(--type-content-small); }
+  .add {
+    border-top: 1px solid var(--border-light); padding: 16px;
+  }
+  .add h3 {
+    font: var(--type-content-small-semi-bold); text-transform: uppercase;
+    letter-spacing: var(--tracking-wide); color: var(--silq-navy); margin-bottom: 12px;
+  }
+  .form-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px 16px; align-items: start; }
+  .fld label {
+    display: block; font: var(--type-micro-semi-bold); color: var(--text-secondary);
+    letter-spacing: var(--tracking-wide); text-transform: uppercase; margin-bottom: 6px;
+  }
+  .fld .req { color: var(--error); }
+  input.input, select.input {
+    font: 400 13px/16px var(--font-body);
+    border: 1px solid var(--border); border-radius: 5px; padding: 8px 12px;
+    background: var(--silq-white); min-height: 32px; width: 100%; color: var(--text);
+    box-shadow: var(--elevation-ui);
+  }
+  input.input.ro { background: var(--silq-grey-100); box-shadow: none; color: var(--text-secondary); }
+  select.input:focus, input.input:focus {
+    outline: none; border-color: var(--silq-navy); box-shadow: 0 0 0 2px rgba(18, 52, 59, 0.60);
+  }
+  input.input.err, select.input.err { border-color: var(--error); box-shadow: 0 0 0 2px rgba(207, 34, 46, 0.18); }
+  .field-err { min-height: 16px; margin-top: 4px; font: var(--type-content-small); color: var(--error-text); }
+  .form-actions { display: flex; justify-content: flex-end; margin-top: 8px; }
+  .empty-state { padding: 8px 8px 4px; max-width: 560px; }
+  .empty-state h2 { font: 600 16px/24px var(--font-body); color: var(--silq-navy); margin-bottom: 8px; text-transform: none; letter-spacing: 0; }
+  .empty-state p { font: var(--type-content-normal); color: var(--text-secondary); }
+  .empty-state .btn { margin-top: 16px; }
+  .toast {
+    position: fixed; bottom: 24px; right: 24px; z-index: 30;
+    background: var(--silq-navy); color: var(--silq-white);
+    padding: 12px 16px; border-radius: var(--radius-sm);
+    box-shadow: var(--elevation-small); max-width: 360px;
+    font: var(--type-content-small);
+  }
+  @media (max-width: 1100px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; }
+    .form-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 640px) {
+    .page { padding: 16px 16px 56px; }
+    .form-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="silq-logo" aria-label="Silq">
+      <svg class="silq-wordmark" width="80" height="32" viewBox="0 0 80 32" fill="none" xmlns="http://www.w3.org/2000/svg" role="img">
+        <title>Silq</title>
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M63.9041 4.79999L59.0019 6.29337V25.145H63.9041V4.79999ZM56.9494 11.7106H52.0129V25.145H56.9494V11.7106ZM44.3636 25.2516C43.3279 25.2427 42.2958 25.1304 41.2833 24.9164C40.3848 24.7796 39.5206 24.4787 38.7357 24.0295V20.7624C39.5276 21.2398 40.3856 21.6031 41.2833 21.8413C42.1789 22.1049 43.1077 22.2455 44.0428 22.2588C44.5818 22.2834 45.1212 22.2174 45.6374 22.0637C45.7921 22.0145 45.9255 21.916 46.0163 21.784C46.1072 21.652 46.1503 21.4941 46.1389 21.3353C46.1436 21.2105 46.1201 21.0863 46.07 20.9714C46.02 20.8566 45.9446 20.7539 45.8492 20.6709C45.5872 20.4512 45.2788 20.2909 44.946 20.2016C44.5567 20.0522 43.9027 19.842 42.9839 19.5646C42.1045 19.3103 41.2515 18.9756 40.4362 18.565C39.8723 18.2509 39.398 17.8034 39.0565 17.2636C38.7314 16.6478 38.5758 15.9598 38.6049 15.2673C38.6049 13.8837 39.1239 12.8495 40.1621 12.1648C41.2003 11.48 42.634 11.1285 44.4633 11.1102C45.3823 11.1151 46.2981 11.2173 47.1947 11.415C47.968 11.5364 48.7134 11.7902 49.3967 12.1648V15.3588C48.7811 14.9599 48.0992 14.6691 47.3816 14.4993C46.6045 14.2824 45.8008 14.1706 44.9927 14.1671C44.4183 14.1459 43.8444 14.2201 43.2953 14.3865C43.1174 14.4423 42.9634 14.5542 42.8574 14.7047C42.7514 14.8553 42.6995 15.036 42.7098 15.2186C42.711 15.3916 42.7646 15.5604 42.8638 15.7036C42.963 15.8469 43.1035 15.9581 43.2673 16.0232C43.9641 16.3084 44.6826 16.5397 45.4163 16.715L45.9489 16.8552C46.8615 17.0857 47.7368 17.4396 48.5495 17.9067C49.115 18.2183 49.5685 18.6929 49.8483 19.2659C50.1352 19.8821 50.2717 20.5551 50.2469 21.2317C50.2604 21.8054 50.1294 22.3735 49.8654 22.8859C49.6015 23.3983 49.2126 23.8392 48.7333 24.1697C47.7325 24.889 46.2759 25.2496 44.3636 25.2516ZM54.3612 5.51542C53.7492 5.51259 53.161 5.74781 52.7261 6.16934C52.2913 6.59086 52.0454 7.16416 52.0425 7.76311C52.0396 8.36207 52.28 8.93761 52.7107 9.36314C53.1415 9.78866 53.7274 10.0293 54.3394 10.0321H54.5793C54.8896 10.0446 55.1992 9.9958 55.4898 9.88855C55.7804 9.7813 56.0459 9.61784 56.2705 9.40793C56.4951 9.19802 56.6741 8.94597 56.7969 8.66684C56.9197 8.38771 56.9838 8.08722 56.9852 7.78332C56.9867 7.47942 56.9255 7.17835 56.8054 6.89809C56.6853 6.61784 56.5087 6.36415 56.2862 6.15217C56.0637 5.9402 55.7997 5.77429 55.5102 5.66437C55.2207 5.55444 54.9115 5.50275 54.6011 5.51237L54.3612 5.51542ZM75.294 24.3008C74.3232 24.947 73.1728 25.2854 71.9988 25.2699C68.6445 25.2699 65.5766 23.0634 65.5766 18.1931C65.5766 13.7252 68.6694 11.3053 71.9645 11.3053C73.2904 11.2887 74.5836 11.7084 75.6366 12.497L75.7269 11.5461H80V30H75.3282L75.294 24.3008ZM73.0764 14.7005C73.8955 14.654 74.7002 14.9256 75.3158 15.4563L75.294 21.1555C74.8392 21.5639 74.179 21.8809 73.0764 21.8809C71.351 21.8809 70.1893 20.357 70.1893 18.2785C70.1893 16.2761 71.3728 14.7005 73.0764 14.7005Z" fill="#FFFFFF"/>
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M38.0324 2.88643L32.9301 2.03122C31.1156 1.19502 6.59601 17.4345 6.59601 17.4345L6.19739 18.5937L34.7988 4.86291C25.9177 10.3489 0.996261 25.6603 0.996261 25.6603C0.776469 25.8058 0.587879 25.9931 0.441388 26.2114C0.24797 26.5744 0.103238 26.9609 0.0108843 27.3612C-0.00272716 27.4116 -0.00358552 27.4646 0.00838441 27.5154C0.0203543 27.5662 0.0447812 27.6133 0.0794948 27.6525C0.114208 27.6917 0.158132 27.7217 0.20736 27.74C0.256588 27.7582 0.309594 27.7641 0.361665 27.7571C2.60985 27.3802 11.8609 25.8155 15.2316 24.8241C23.5483 22.3788 26.8074 19.1702 28.7494 16.2023C30.9976 12.7625 37.1299 3.70362 37.9973 2.94344L38.042 2.89593L38.0324 2.88643ZM26.5778 13.3928C25.94 14.7231 24.91 16.82 22.4322 18.5209C19.8141 20.32 12.403 22.591 8.71983 23.3164L26.6703 13.1806C26.6354 13.2495 26.6045 13.3204 26.5778 13.3928Z" fill="#EF6445"/>
+      </svg>
+    </div>
+  </div>
+  <div class="sidebar-nav">
+    <button class="nav-item active" type="button" id="navTables" data-main="tables">Pricing tables</button>
+    <button class="nav-item" type="button" id="navEngine" data-main="engine">Quote engine</button>
+  </div>
+</nav>
+
+<div class="main">
+  <div class="page">
+    <div class="crumb">Inspections / Pricing</div>
+    <h1>Inspections pricing</h1>
+    <p class="lede">Two tables the quote will read later. Upload a CSV, or add a row. Download what is on screen. A row stays valid until a newer upload for the same key replaces it.</p>
+
+    <div class="tabs" role="tablist" aria-label="Inspections pricing">
+      <button class="tab" id="tabTables" type="button" role="tab" aria-selected="true" aria-controls="panelTables" data-main="tables">Product category &amp; pricing matrices</button>
+      <button class="tab" id="tabEngine" type="button" role="tab" aria-selected="false" aria-controls="panelEngine" data-main="engine">Quoting engine builder</button>
+    </div>
+
+    <section id="panelTables" role="tabpanel" aria-labelledby="tabTables">
+      <div class="subtabs" role="tablist" aria-label="Pricing tables">
+        <button class="subtab" id="tabT1" type="button" role="tab" aria-selected="true" aria-controls="panelT1" data-sub="t1">T1 · Product &amp; Category mapping</button>
+        <button class="subtab" id="tabT2" type="button" role="tab" aria-selected="false" aria-controls="panelT2" data-sub="t2">T2 · Pricing matrix</button>
+      </div>
+
+      <div class="card" id="panelT1" role="tabpanel" aria-labelledby="tabT1">
+        <div class="card-hd">
+          <h2>Product &amp; Category mapping <span class="count" id="t1Count">0</span></h2>
+          <div class="actions">
+            <button class="btn" type="button" id="t1Download">Download</button>
+            <button class="btn btn-primary" type="button" id="t1UploadBtn">Upload</button>
+            <input id="t1File" type="file" accept=".csv,text/csv" hidden>
+          </div>
+        </div>
+        <div id="t1Result" class="banner" hidden></div>
+        <div class="rules">
+          <p>Units one inspector can cover in a man day. These checks come from the column headers.</p>
+          <ul>
+            <li>Product is one product, or ALL for the whole category.</li>
+            <li>Units inspectable in a man day is a whole number greater than 0.</li>
+            <li>Valid from is the uploaded-on date. The row stays in force until a newer upload for the same category and product replaces it.</li>
+            <li>Uploaded by is required. Dates in a file are DD/MM/YYYY. A blank uploaded-on date is stamped with today.</li>
+          </ul>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Product category</th>
+                <th>Product<span class="hint">One product, or ALL</span></th>
+                <th class="num">Units per man day<span class="hint">Whole number, greater than 0</span></th>
+                <th>Uploaded on<span class="hint">Valid from</span></th>
+                <th>Uploaded by</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="t1Body"></tbody>
+          </table>
+        </div>
+        <form class="add" id="t1Form">
+          <h3>Add a row</h3>
+          <div class="form-grid">
+            <div class="fld">
+              <label for="t1Category">Product category <span class="req">*</span></label>
+              <input class="input" id="t1Category" name="category" autocomplete="off">
+              <div class="field-err" id="t1CategoryErr"></div>
+            </div>
+            <div class="fld">
+              <label for="t1Product">Product <span class="req">*</span></label>
+              <input class="input" id="t1Product" name="product" placeholder="Beds, or ALL" autocomplete="off">
+              <div class="field-err" id="t1ProductErr"></div>
+            </div>
+            <div class="fld">
+              <label for="t1Units">Units per man day <span class="req">*</span></label>
+              <input class="input" id="t1Units" name="units" inputmode="numeric" autocomplete="off">
+              <div class="field-err" id="t1UnitsErr"></div>
+            </div>
+            <div class="fld">
+              <label for="t1By">Uploaded by <span class="req">*</span></label>
+              <input class="input" id="t1By" name="uploadedBy" autocomplete="off">
+              <div class="field-err" id="t1ByErr"></div>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" type="submit">Add row</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card" id="panelT2" role="tabpanel" aria-labelledby="tabT2" hidden>
+        <div class="card-hd">
+          <h2>Pricing matrix <span class="count" id="t2Count">0</span></h2>
+          <div class="actions">
+            <button class="btn" type="button" id="t2Download">Download</button>
+            <button class="btn btn-primary" type="button" id="t2UploadBtn">Upload</button>
+            <input id="t2File" type="file" accept=".csv,text/csv" hidden>
+          </div>
+        </div>
+        <div id="t2Result" class="banner" hidden></div>
+        <div class="rules">
+          <p>Charge per man day and the margin already inside the sell. These checks come from the column headers.</p>
+          <ul>
+            <li>Service level is Final, Inline, Pre production, Factory, TOP, or ALL.</li>
+            <li>Charge per man day is greater than 0. Margin is a percent, 0 or higher. 10 and 10% both mean 10 percent.</li>
+            <li>Total sell is calculated: charge × (1 + margin). A file total that does not match is rejected.</li>
+            <li>A newer upload for the same category, service level, and country replaces the older row. Dates in a file are DD/MM/YYYY. Uploaded on is the valid-from date.</li>
+          </ul>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Product category</th>
+                <th>Service level<span class="hint">One service, or ALL</span></th>
+                <th>Country</th>
+                <th>Currency</th>
+                <th class="num">Charge per man day</th>
+                <th class="num">Margin</th>
+                <th class="num">Total sell<span class="hint">Charge × (1 + margin)</span></th>
+                <th>Uploaded on</th>
+                <th>Uploaded by</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="t2Body"></tbody>
+          </table>
+        </div>
+        <form class="add" id="t2Form">
+          <h3>Add a row</h3>
+          <div class="form-grid">
+            <div class="fld">
+              <label for="t2Category">Product category <span class="req">*</span></label>
+              <input class="input" id="t2Category" name="category" autocomplete="off">
+              <div class="field-err" id="t2CategoryErr"></div>
+            </div>
+            <div class="fld">
+              <label for="t2Service">Service level <span class="req">*</span></label>
+              <select class="input" id="t2Service" name="service">
+                <option value="">Select</option>
+                <option>Final</option>
+                <option>Inline</option>
+                <option>Pre production</option>
+                <option>Factory</option>
+                <option>TOP</option>
+                <option>ALL</option>
+              </select>
+              <div class="field-err" id="t2ServiceErr"></div>
+            </div>
+            <div class="fld">
+              <label for="t2Country">Country <span class="req">*</span></label>
+              <input class="input" id="t2Country" name="country" autocomplete="off">
+              <div class="field-err" id="t2CountryErr"></div>
+            </div>
+            <div class="fld">
+              <label for="t2Currency">Currency <span class="req">*</span></label>
+              <input class="input" id="t2Currency" name="currency" value="USD" maxlength="3" autocomplete="off">
+              <div class="field-err" id="t2CurrencyErr"></div>
+            </div>
+            <div class="fld">
+              <label for="t2Charge">Charge per man day <span class="req">*</span></label>
+              <input class="input" id="t2Charge" name="charge" inputmode="decimal" autocomplete="off">
+              <div class="field-err" id="t2ChargeErr"></div>
+            </div>
+            <div class="fld">
+              <label for="t2Margin">Margin % <span class="req">*</span></label>
+              <input class="input" id="t2Margin" name="margin" inputmode="decimal" placeholder="10" autocomplete="off">
+              <div class="field-err" id="t2MarginErr"></div>
+            </div>
+            <div class="fld">
+              <label for="t2Total">Total sell</label>
+              <input class="input ro" id="t2Total" readonly value="Calculated">
+              <div class="field-err" id="t2TotalErr"></div>
+            </div>
+            <div class="fld">
+              <label for="t2By">Uploaded by <span class="req">*</span></label>
+              <input class="input" id="t2By" name="uploadedBy" autocomplete="off">
+              <div class="field-err" id="t2ByErr"></div>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" type="submit">Add row</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section id="panelEngine" role="tabpanel" aria-labelledby="tabEngine" hidden>
+      <div class="card">
+        <div class="card-bd empty-state" style="padding: 24px;">
+          <h2>Quoting engine builder</h2>
+          <p>This builder will read the two pricing tables and price an inspection quote. The sell formula is not settled, so this prototype does not calculate a quote.</p>
+          <button class="btn" type="button" id="backToTables">Back to pricing tables</button>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+<div id="toast" class="toast" hidden></div>
+
+<script>
+(function () {
+  const SERVICES = ["Final", "Inline", "Pre production", "Factory", "TOP", "ALL"];
+  const STORE_KEY = "silq-inspections-pricing-v1";
+
+  const SEED_T1 = [
+    { category: "Furniture", product: "Beds", units: 15, uploadedOn: "2026-11-11", uploadedBy: "Shivam" },
+    { category: "Furniture", product: "Chairs", units: 30, uploadedOn: "2026-11-11", uploadedBy: "Shivam" },
+    { category: "Apparel", product: "ALL", units: 500, uploadedOn: "2026-11-11", uploadedBy: "Shivam" },
+    { category: "Apparel", product: "T shirts", units: 600, uploadedOn: "2026-11-11", uploadedBy: "Shivam" }
+  ];
+  const SEED_T2 = [
+    { category: "Furniture", service: "Inline", country: "China", currency: "USD", charge: 150, margin: 10, uploadedOn: "2026-11-11", uploadedBy: "Shivam" },
+    { category: "Apparel", service: "Final", country: "China", currency: "USD", charge: 100, margin: 5, uploadedOn: "2026-11-11", uploadedBy: "Shivam" },
+    { category: "Furniture", service: "Final", country: "China", currency: "USD", charge: 180, margin: 10, uploadedOn: "2026-11-11", uploadedBy: "Milli" }
+  ];
+
+  function todayIso() {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return y + "-" + m + "-" + day;
+  }
+
+  function formatDate(iso) {
+    const parts = String(iso || "").split("-");
+    if (parts.length !== 3) return iso || "";
+    return parts[2] + "/" + parts[1] + "/" + parts[0];
+  }
+
+  function round2(n) {
+    return Math.round((n + Number.EPSILON) * 100) / 100;
+  }
+
+  function totalSell(charge, marginPct) {
+    return round2(charge * (1 + marginPct / 100));
+  }
+
+  function formatMoney(n) {
+    return round2(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function formatMargin(n) {
+    return round2(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "%";
+  }
+
+  function normKey(value) {
+    return String(value || "").trim().toLowerCase();
+  }
+
+  function keyT1(row) {
+    return normKey(row.category) + "|" + normKey(row.product);
+  }
+
+  function keyT2(row) {
+    return normKey(row.category) + "|" + normKey(row.service) + "|" + normKey(row.country);
+  }
+
+  function parseDate(raw, defaultIso) {
+    const s = String(raw == null ? "" : raw).trim();
+    if (!s) return { ok: true, iso: defaultIso, defaulted: true };
+    let y;
+    let m;
+    let d;
+    const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    const dmy = s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);
+    if (iso) {
+      y = Number(iso[1]);
+      m = Number(iso[2]);
+      d = Number(iso[3]);
+    } else if (dmy) {
+      d = Number(dmy[1]);
+      m = Number(dmy[2]);
+      y = Number(dmy[3]);
+    } else {
+      return { ok: false };
+    }
+    const dt = new Date(Date.UTC(y, m - 1, d));
+    if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== m - 1 || dt.getUTCDate() !== d) return { ok: false };
+    return { ok: true, iso: y + "-" + String(m).padStart(2, "0") + "-" + String(d).padStart(2, "0"), defaulted: false };
+  }
+
+  function normalizeProduct(raw) {
+    const product = String(raw == null ? "" : raw).trim();
+    if (!product) return { ok: false, error: "Product is required. Enter a product, or ALL for the whole category." };
+    if (/^(any|all products|\*)$/i.test(product)) {
+      return { ok: false, error: "Use ALL for the whole category, not \"" + product + "\"." };
+    }
+    if (/^all$/i.test(product)) return { ok: true, value: "ALL" };
+    return { ok: true, value: product };
+  }
+
+  function normalizeService(raw) {
+    const s = String(raw == null ? "" : raw).trim();
+    if (!s) return { ok: false, error: "Service level is required. Use one service, or ALL." };
+    if (/^all$/i.test(s)) return { ok: true, value: "ALL" };
+    const key = s.toLowerCase().replace(/[\s\-]+/g, "");
+    const map = {
+      final: "Final",
+      inline: "Inline",
+      preproduction: "Pre production",
+      factory: "Factory",
+      top: "TOP"
+    };
+    if (!map[key]) {
+      return { ok: false, error: "Service level must be Final, Inline, Pre production, Factory, TOP, or ALL. Found \"" + s + "\"." };
+    }
+    return { ok: true, value: map[key] };
+  }
+
+  function parseUnits(raw) {
+    const s = String(raw == null ? "" : raw).trim();
+    if (!s) return { ok: false, error: "No. of units inspectable in a man day is required." };
+    if (!/^\d+$/.test(s) || Number(s) <= 0) {
+      return { ok: false, error: "No. of units inspectable in a man day must be a whole number greater than 0." };
+    }
+    return { ok: true, value: Number(s) };
+  }
+
+  function parseMoney(raw) {
+    const s = String(raw == null ? "" : raw).trim().replace(/[$€£,\s]/g, "");
+    if (!s) return { ok: false, empty: true };
+    if (!/^\d+(\.\d+)?$/.test(s)) return { ok: false };
+    const value = Number(s);
+    if (!(value > 0)) return { ok: false, nonPositive: true, value: value };
+    return { ok: true, value: value };
+  }
+
+  function parseMargin(raw) {
+    const s = String(raw == null ? "" : raw).trim().replace(/\s/g, "");
+    if (!s) return { ok: false, empty: true };
+    const body = s.endsWith("%") ? s.slice(0, -1) : s;
+    if (!/^\d+(\.\d+)?$/.test(body)) return { ok: false };
+    return { ok: true, value: Number(body) };
+  }
+
+  function parsePerson(raw) {
+    const s = String(raw == null ? "" : raw).trim();
+    if (!s) return { ok: false, error: "Uploaded by is required." };
+    if (s.length > 80) return { ok: false, error: "Uploaded by must be 80 characters or fewer." };
+    return { ok: true, value: s };
+  }
+
+  function parseCategory(raw) {
+    const s = String(raw == null ? "" : raw).trim();
+    if (!s) return { ok: false, error: "Product category is required." };
+    if (s.length > 80) return { ok: false, error: "Product category must be 80 characters or fewer." };
+    return { ok: true, value: s };
+  }
+
+  function validateT1(input, defaultDate) {
+    const errors = {};
+    const category = parseCategory(input.category);
+    if (!category.ok) errors.category = category.error;
+    const product = normalizeProduct(input.product);
+    if (!product.ok) errors.product = product.error;
+    const units = parseUnits(input.units);
+    if (!units.ok) errors.units = units.error;
+    const uploadedBy = parsePerson(input.uploadedBy);
+    if (!uploadedBy.ok) errors.uploadedBy = uploadedBy.error;
+    const uploadedOn = parseDate(input.uploadedOn, defaultDate);
+    if (!uploadedOn.ok) errors.uploadedOn = "Uploaded on must be a date, as DD/MM/YYYY.";
+    const ok = Object.keys(errors).length === 0;
+    return {
+      ok: ok,
+      errors: errors,
+      row: ok ? {
+        category: category.value,
+        product: product.value,
+        units: units.value,
+        uploadedOn: uploadedOn.iso,
+        uploadedBy: uploadedBy.value
+      } : null
+    };
+  }
+
+  function validateT2(input, defaultDate) {
+    const errors = {};
+    const category = parseCategory(input.category);
+    if (!category.ok) errors.category = category.error;
+    const service = normalizeService(input.service);
+    if (!service.ok) errors.service = service.error;
+    const countryRaw = String(input.country == null ? "" : input.country).trim();
+    if (!countryRaw) errors.country = "Country is required.";
+    else if (/^all$/i.test(countryRaw)) errors.country = "Country is the inspection country. ALL is not a country on this table.";
+    else if (countryRaw.length > 60) errors.country = "Country must be 60 characters or fewer.";
+    const currencyRaw = String(input.currency == null ? "" : input.currency).trim();
+    if (!currencyRaw) errors.currency = "Currency is required.";
+    else if (!/^[A-Za-z]{3}$/.test(currencyRaw)) errors.currency = "Currency must be a 3-letter code, such as USD.";
+    const charge = parseMoney(input.charge);
+    if (!charge.ok) {
+      errors.charge = charge.empty
+        ? "Charge per man day is required."
+        : "Charge per man day must be a number greater than 0.";
+    }
+    const margin = parseMargin(input.margin);
+    if (!margin.ok) {
+      errors.margin = margin.empty
+        ? "Margin is required. Use a percent, such as 10 or 10%."
+        : "Margin must be a percent, 0 or higher. 10 and 10% both mean 10 percent.";
+    }
+    const uploadedBy = parsePerson(input.uploadedBy);
+    if (!uploadedBy.ok) errors.uploadedBy = uploadedBy.error;
+    const uploadedOn = parseDate(input.uploadedOn, defaultDate);
+    if (!uploadedOn.ok) errors.uploadedOn = "Uploaded on must be a date, as DD/MM/YYYY.";
+
+    let sell = null;
+    if (charge.ok && margin.ok) {
+      sell = totalSell(charge.value, margin.value);
+      const provided = String(input.totalSell == null ? "" : input.totalSell).trim();
+      if (provided) {
+        const parsed = parseMoney(provided);
+        if (!parsed.ok) errors.totalSell = "Total sell must be a number, or left blank to calculate it.";
+        else if (Math.abs(parsed.value - sell) > 0.009) {
+          errors.totalSell = "Total sell is " + provided + ", but charge " + formatMoney(charge.value) + " at " + formatMargin(margin.value) + " margin calculates to " + formatMoney(sell) + ". Total sell must equal charge × (1 + margin).";
+        }
+      }
+    }
+
+    const ok = Object.keys(errors).length === 0;
+    return {
+      ok: ok,
+      errors: errors,
+      row: ok ? {
+        category: category.value,
+        service: service.value,
+        country: countryRaw,
+        currency: currencyRaw.toUpperCase(),
+        charge: charge.value,
+        margin: margin.value,
+        uploadedOn: uploadedOn.iso,
+        uploadedBy: uploadedBy.value
+      } : null,
+      totalSell: sell
+    };
+  }
+
+  function parseCsv(text) {
+    const src = String(text || "").replace(/^\uFEFF/, "").replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+    const rows = [];
+    let row = [];
+    let cell = "";
+    let inQuotes = false;
+    for (let i = 0; i < src.length; i++) {
+      const c = src[i];
+      if (inQuotes) {
+        if (c === "\"") {
+          if (src[i + 1] === "\"") { cell += "\""; i++; }
+          else inQuotes = false;
+        } else cell += c;
+      } else if (c === "\"") inQuotes = true;
+      else if (c === ",") { row.push(cell); cell = ""; }
+      else if (c === "\n") { row.push(cell); rows.push(row); row = []; cell = ""; }
+      else cell += c;
+    }
+    if (cell.length || row.length) { row.push(cell); rows.push(row); }
+    return rows.filter(function (r) { return r.some(function (c) { return String(c).trim() !== ""; }); });
+  }
+
+  function headerKey(value) {
+    return String(value || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  }
+
+  const T1_HEADERS = {
+    category: ["product category", "category"],
+    product: ["product"],
+    units: ["no of units inspectable in a man day", "units per man day", "units"],
+    uploadedOn: ["uploaded on", "valid from"],
+    uploadedBy: ["uploaded by"]
+  };
+  const T2_HEADERS = {
+    category: ["product category", "category"],
+    service: ["service level", "service"],
+    country: ["country"],
+    currency: ["currency"],
+    charge: ["charge per man day", "charge"],
+    margin: ["margin"],
+    totalSell: ["total sell", "total"],
+    uploadedOn: ["uploaded on", "valid from"],
+    uploadedBy: ["uploaded by"]
+  };
+
+  function mapHeaders(headerRow, spec) {
+    const index = {};
+    const keys = headerRow.map(headerKey);
+    Object.keys(spec).forEach(function (field) {
+      const aliases = spec[field];
+      const found = keys.findIndex(function (key) { return aliases.indexOf(key) !== -1; });
+      if (found !== -1) index[field] = found;
+    });
+    return index;
+  }
+
+  function cell(row, index, field) {
+    if (index[field] == null) return "";
+    return row[index[field]] == null ? "" : row[index[field]];
+  }
+
+  function readUpload(text, which, defaultDate) {
+    const grid = parseCsv(text);
+    if (!grid.length) return { ok: false, fileError: "The file is empty.", rows: [], rejected: [] };
+    const spec = which === "t1" ? T1_HEADERS : T2_HEADERS;
+    const required = which === "t1"
+      ? ["category", "product", "units", "uploadedBy"]
+      : ["category", "service", "country", "currency", "charge", "margin", "uploadedBy"];
+    const index = mapHeaders(grid[0], spec);
+    const missing = required.filter(function (field) { return index[field] == null; });
+    if (missing.length) {
+      const expected = which === "t1"
+        ? "Product Category, Product, No. of units inspectable in a man day, Uploaded on, Uploaded by"
+        : "Product Category, Service level, Country, Currency, Charge per man day, Margin, Total Sell, Uploaded on, Uploaded by";
+      return {
+        ok: false,
+        fileError: "This file does not match " + (which === "t1" ? "Product & Category mapping" : "the pricing matrix") + ". Expected columns: " + expected + ".",
+        rows: [],
+        rejected: []
+      };
+    }
+    const rows = [];
+    const rejected = [];
+    for (let i = 1; i < grid.length; i++) {
+      const source = grid[i];
+      const input = {};
+      Object.keys(index).forEach(function (field) { input[field] = cell(source, index, field); });
+      const result = which === "t1" ? validateT1(input, defaultDate) : validateT2(input, defaultDate);
+      if (!result.ok) {
+        rejected.push({ row: i + 1, messages: Object.keys(result.errors).map(function (k) { return result.errors[k]; }) });
+      } else rows.push(result.row);
+    }
+    if (!rows.length && !rejected.length) {
+      return { ok: false, fileError: "The file has a header and no data rows.", rows: [], rejected: [] };
+    }
+    return { ok: true, rows: rows, rejected: rejected };
+  }
+
+  function applyRows(existing, incoming, keyFn) {
+    const rows = existing.map(function (row) { return Object.assign({}, row); });
+    let added = 0;
+    let replaced = 0;
+    incoming.forEach(function (row) {
+      const key = keyFn(row);
+      const idx = rows.findIndex(function (current) { return keyFn(current) === key; });
+      if (idx >= 0) {
+        rows[idx] = Object.assign({}, row, { id: rows[idx].id });
+        replaced += 1;
+      } else {
+        rows.push(row);
+        added += 1;
+      }
+    });
+    return { rows: rows, added: added, replaced: replaced };
+  }
+
+  function csvEscape(value) {
+    const s = String(value == null ? "" : value);
+    if (/[",\n]/.test(s)) return "\"" + s.replace(/"/g, "\"\"") + "\"";
+    return s;
+  }
+
+  function toCsv(headers, records) {
+    const lines = [headers.map(csvEscape).join(",")];
+    records.forEach(function (record) {
+      lines.push(record.map(csvEscape).join(","));
+    });
+    return "\uFEFF" + lines.join("\r\n");
+  }
+
+  const api = {
+    SERVICES: SERVICES,
+    SEED_T1: SEED_T1,
+    SEED_T2: SEED_T2,
+    todayIso: todayIso,
+    formatDate: formatDate,
+    totalSell: totalSell,
+    keyT1: keyT1,
+    keyT2: keyT2,
+    validateT1: validateT1,
+    validateT2: validateT2,
+    parseCsv: parseCsv,
+    readUpload: readUpload,
+    applyRows: applyRows,
+    toCsv: toCsv,
+    normalizeService: normalizeService
+  };
+  const root = typeof globalThis !== "undefined" ? globalThis : window;
+  root.InspectionsPricing = api;
+
+  if (typeof document === "undefined") return;
+
+  let seq = 1;
+  function withIds(rows, prefix) {
+    return rows.map(function (row) {
+      const copy = Object.assign({}, row);
+      copy.id = prefix + "-" + (seq++);
+      return copy;
+    });
+  }
+
+  let state = {
+    main: "tables",
+    sub: "t1",
+    t1: withIds(SEED_T1, "t1"),
+    t2: withIds(SEED_T2, "t2")
+  };
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORE_KEY);
+      if (!raw) return;
+      const saved = JSON.parse(raw);
+      if (saved && Array.isArray(saved.t1) && Array.isArray(saved.t2)) {
+        seq = Number(saved.seq) || 1;
+        state.t1 = saved.t1;
+        state.t2 = saved.t2;
+      }
+    } catch (err) { /* keep the sample */ }
+  }
+
+  function saveState() {
+    try {
+      localStorage.setItem(STORE_KEY, JSON.stringify({ t1: state.t1, t2: state.t2, seq: seq }));
+    } catch (err) { /* private mode */ }
+  }
+
+  function esc(value) {
+    return String(value == null ? "" : value).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  function productCell(value) {
+    if (value === "ALL") return "<span class=\"tag\">ALL</span>";
+    return esc(value);
+  }
+
+  function renderT1() {
+    const body = document.getElementById("t1Body");
+    document.getElementById("t1Count").textContent = state.t1.length + (state.t1.length === 1 ? " row" : " rows");
+    if (!state.t1.length) {
+      body.innerHTML = "<tr class=\"empty-row\"><td colspan=\"6\">No rows yet. Upload a CSV or add a row.</td></tr>";
+      return;
+    }
+    body.innerHTML = state.t1.map(function (row) {
+      return "<tr data-id=\"" + esc(row.id) + "\">" +
+        "<td>" + esc(row.category) + "</td>" +
+        "<td>" + productCell(row.product) + "</td>" +
+        "<td class=\"num\">" + esc(row.units) + "</td>" +
+        "<td>" + esc(formatDate(row.uploadedOn)) + "</td>" +
+        "<td>" + esc(row.uploadedBy) + "</td>" +
+        "<td><button class=\"btn btn-ghost\" type=\"button\" data-remove=\"t1\" data-id=\"" + esc(row.id) + "\">Remove</button></td>" +
+        "</tr>";
+    }).join("");
+  }
+
+  function renderT2() {
+    const body = document.getElementById("t2Body");
+    document.getElementById("t2Count").textContent = state.t2.length + (state.t2.length === 1 ? " row" : " rows");
+    if (!state.t2.length) {
+      body.innerHTML = "<tr class=\"empty-row\"><td colspan=\"10\">No rows yet. Upload a CSV or add a row.</td></tr>";
+      return;
+    }
+    body.innerHTML = state.t2.map(function (row) {
+      const sell = totalSell(row.charge, row.margin);
+      return "<tr data-id=\"" + esc(row.id) + "\">" +
+        "<td>" + esc(row.category) + "</td>" +
+        "<td>" + productCell(row.service) + "</td>" +
+        "<td>" + esc(row.country) + "</td>" +
+        "<td>" + esc(row.currency) + "</td>" +
+        "<td class=\"num\">" + esc(formatMoney(row.charge)) + "</td>" +
+        "<td class=\"num\">" + esc(formatMargin(row.margin)) + "</td>" +
+        "<td class=\"num\">" + esc(formatMoney(sell)) + "</td>" +
+        "<td>" + esc(formatDate(row.uploadedOn)) + "</td>" +
+        "<td>" + esc(row.uploadedBy) + "</td>" +
+        "<td><button class=\"btn btn-ghost\" type=\"button\" data-remove=\"t2\" data-id=\"" + esc(row.id) + "\">Remove</button></td>" +
+        "</tr>";
+    }).join("");
+  }
+
+  function showResult(id, kind, title, lines) {
+    const el = document.getElementById(id);
+    el.hidden = false;
+    el.className = "banner " + kind;
+    el.replaceChildren();
+    const strong = document.createElement("strong");
+    strong.textContent = title;
+    el.appendChild(strong);
+    if (lines && lines.length) {
+      const ul = document.createElement("ul");
+      lines.forEach(function (line) {
+        const li = document.createElement("li");
+        li.textContent = line;
+        ul.appendChild(li);
+      });
+      el.appendChild(ul);
+    }
+  }
+
+  let toastTimer = null;
+  function toast(message) {
+    const el = document.getElementById("toast");
+    el.hidden = false;
+    el.textContent = message;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.hidden = true; }, 4000);
+  }
+
+  function setHash() {
+    const hash = state.main === "engine" ? "#engine" : (state.sub === "t2" ? "#matrix" : "#mapping");
+    if (location.hash !== hash) history.replaceState(null, "", hash);
+  }
+
+  function paintTabs() {
+    const onTables = state.main === "tables";
+    document.getElementById("tabTables").setAttribute("aria-selected", onTables ? "true" : "false");
+    document.getElementById("tabEngine").setAttribute("aria-selected", onTables ? "false" : "true");
+    document.getElementById("panelTables").hidden = !onTables;
+    document.getElementById("panelEngine").hidden = onTables;
+    document.getElementById("navTables").classList.toggle("active", onTables);
+    document.getElementById("navEngine").classList.toggle("active", !onTables);
+    const onT1 = state.sub === "t1";
+    document.getElementById("tabT1").setAttribute("aria-selected", onT1 ? "true" : "false");
+    document.getElementById("tabT2").setAttribute("aria-selected", onT1 ? "false" : "true");
+    document.getElementById("panelT1").hidden = !onT1;
+    document.getElementById("panelT2").hidden = onT1;
+    setHash();
+  }
+
+  function clearFieldErrors(ids) {
+    ids.forEach(function (id) {
+      const err = document.getElementById(id + "Err");
+      const input = document.getElementById(id);
+      if (err) err.textContent = "";
+      if (input) input.classList.remove("err");
+    });
+  }
+
+  function showFieldErrors(map) {
+    Object.keys(map).forEach(function (id) {
+      const err = document.getElementById(id + "Err");
+      const input = document.getElementById(id);
+      if (err) err.textContent = map[id];
+      if (input) input.classList.add("err");
+    });
+  }
+
+  function download(filename, csv) {
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function t1Csv() {
+    return toCsv(
+      ["Product Category", "Product", "No. of units inspectable in a man day", "Uploaded on", "Uploaded by"],
+      state.t1.map(function (row) {
+        return [row.category, row.product, row.units, formatDate(row.uploadedOn), row.uploadedBy];
+      })
+    );
+  }
+
+  function t2Csv() {
+    return toCsv(
+      ["Product Category", "Service level", "Country", "Currency", "Charge per man day", "Margin", "Total Sell", "Uploaded on", "Uploaded by"],
+      state.t2.map(function (row) {
+        return [row.category, row.service, row.country, row.currency, row.charge, row.margin + "%", formatMoney(totalSell(row.charge, row.margin)), formatDate(row.uploadedOn), row.uploadedBy];
+      })
+    );
+  }
+
+  function rejectionLines(rejected) {
+    return rejected.map(function (item) {
+      return "Row " + item.row + ": " + item.messages.join(" ");
+    });
+  }
+
+  function summarize(which, applied, rejected, fileError) {
+    const resultId = which === "t1" ? "t1Result" : "t2Result";
+    if (fileError) {
+      showResult(resultId, "bad", "No rows saved.", [fileError]);
+      return;
+    }
+    const lines = rejectionLines(rejected);
+    const saved = applied.added + applied.replaced;
+    if (!saved) {
+      showResult(resultId, "bad", "No rows saved.", lines);
+      return;
+    }
+    const parts = [];
+    if (applied.added) parts.push(applied.added + (applied.added === 1 ? " row added" : " rows added"));
+    if (applied.replaced) parts.push(applied.replaced + (applied.replaced === 1 ? " row replaced the previous one for that key" : " rows replaced the previous ones for those keys"));
+    const title = parts.join(". ") + ".";
+    if (rejected.length) showResult(resultId, "mix", title + " Rejected rows were left out.", lines);
+    else showResult(resultId, "ok", title, []);
+  }
+
+  function onUpload(which, file) {
+    const reader = new FileReader();
+    reader.onload = function () {
+      const parsed = readUpload(String(reader.result || ""), which, todayIso());
+      if (!parsed.ok) {
+        summarize(which, { added: 0, replaced: 0 }, [], parsed.fileError);
+        return;
+      }
+      const stamped = parsed.rows.map(function (row) {
+        const copy = Object.assign({}, row);
+        copy.id = which + "-" + (seq++);
+        return copy;
+      });
+      const keyFn = which === "t1" ? keyT1 : keyT2;
+      const applied = applyRows(state[which], stamped, keyFn);
+      state[which] = applied.rows;
+      saveState();
+      if (which === "t1") renderT1();
+      else renderT2();
+      summarize(which, applied, parsed.rejected, "");
+    };
+    reader.readAsText(file);
+  }
+
+  function bindUpload(which) {
+    const input = document.getElementById(which + "File");
+    document.getElementById(which + "UploadBtn").addEventListener("click", function () { input.click(); });
+    input.addEventListener("change", function () {
+      const file = input.files && input.files[0];
+      input.value = "";
+      if (file) onUpload(which, file);
+    });
+  }
+
+  function refreshTotalPreview() {
+    const charge = parseMoney(document.getElementById("t2Charge").value);
+    const margin = parseMargin(document.getElementById("t2Margin").value);
+    const box = document.getElementById("t2Total");
+    if (charge.ok && margin.ok) box.value = formatMoney(totalSell(charge.value, margin.value));
+    else box.value = "Calculated";
+  }
+
+  function fieldMapT1(errors) {
+    return {
+      t1Category: errors.category || "",
+      t1Product: errors.product || "",
+      t1Units: errors.units || "",
+      t1By: errors.uploadedBy || ""
+    };
+  }
+
+  function fieldMapT2(errors) {
+    return {
+      t2Category: errors.category || "",
+      t2Service: errors.service || "",
+      t2Country: errors.country || "",
+      t2Currency: errors.currency || "",
+      t2Charge: errors.charge || "",
+      t2Margin: errors.margin || "",
+      t2Total: errors.totalSell || "",
+      t2By: errors.uploadedBy || ""
+    };
+  }
+
+  function openMain(main) {
+    state.main = main === "engine" ? "engine" : "tables";
+    paintTabs();
+  }
+
+  function openSub(sub) {
+    state.main = "tables";
+    state.sub = sub === "t2" ? "t2" : "t1";
+    paintTabs();
+  }
+
+  function applyHash() {
+    const hash = (location.hash || "").replace("#", "");
+    if (hash === "engine") openMain("engine");
+    else if (hash === "matrix") openSub("t2");
+    else openSub("t1");
+  }
+
+  document.querySelectorAll("[data-main]").forEach(function (el) {
+    el.addEventListener("click", function () { openMain(el.getAttribute("data-main")); });
+  });
+  document.querySelectorAll("[data-sub]").forEach(function (el) {
+    el.addEventListener("click", function () { openSub(el.getAttribute("data-sub")); });
+  });
+  document.getElementById("backToTables").addEventListener("click", function () { openSub(state.sub); });
+
+  document.getElementById("t1Download").addEventListener("click", function () {
+    download("product-category-mapping.csv", t1Csv());
+  });
+  document.getElementById("t2Download").addEventListener("click", function () {
+    download("pricing-matrix.csv", t2Csv());
+  });
+  bindUpload("t1");
+  bindUpload("t2");
+
+  document.getElementById("t1Form").addEventListener("submit", function (event) {
+    event.preventDefault();
+    const ids = ["t1Category", "t1Product", "t1Units", "t1By"];
+    clearFieldErrors(ids);
+    const result = validateT1({
+      category: document.getElementById("t1Category").value,
+      product: document.getElementById("t1Product").value,
+      units: document.getElementById("t1Units").value,
+      uploadedBy: document.getElementById("t1By").value,
+      uploadedOn: todayIso()
+    }, todayIso());
+    if (!result.ok) {
+      const map = fieldMapT1(result.errors);
+      const shown = {};
+      Object.keys(map).forEach(function (id) { if (map[id]) shown[id] = map[id]; });
+      showFieldErrors(shown);
+      return;
+    }
+    result.row.id = "t1-" + (seq++);
+    const applied = applyRows(state.t1, [result.row], keyT1);
+    state.t1 = applied.rows;
+    saveState();
+    renderT1();
+    document.getElementById("t1Product").value = "";
+    document.getElementById("t1Units").value = "";
+    const label = result.row.category + " / " + result.row.product;
+    toast(applied.replaced ? "Replaced " + label + ". Valid from is " + formatDate(result.row.uploadedOn) + "." : "Added " + label + ".");
+  });
+
+  document.getElementById("t2Form").addEventListener("submit", function (event) {
+    event.preventDefault();
+    const ids = ["t2Category", "t2Service", "t2Country", "t2Currency", "t2Charge", "t2Margin", "t2Total", "t2By"];
+    clearFieldErrors(ids);
+    const result = validateT2({
+      category: document.getElementById("t2Category").value,
+      service: document.getElementById("t2Service").value,
+      country: document.getElementById("t2Country").value,
+      currency: document.getElementById("t2Currency").value,
+      charge: document.getElementById("t2Charge").value,
+      margin: document.getElementById("t2Margin").value,
+      uploadedBy: document.getElementById("t2By").value,
+      uploadedOn: todayIso()
+    }, todayIso());
+    if (!result.ok) {
+      const map = fieldMapT2(result.errors);
+      const shown = {};
+      Object.keys(map).forEach(function (id) { if (map[id]) shown[id] = map[id]; });
+      showFieldErrors(shown);
+      return;
+    }
+    result.row.id = "t2-" + (seq++);
+    const applied = applyRows(state.t2, [result.row], keyT2);
+    state.t2 = applied.rows;
+    saveState();
+    renderT2();
+    document.getElementById("t2Charge").value = "";
+    document.getElementById("t2Margin").value = "";
+    document.getElementById("t2Total").value = "Calculated";
+    const label = result.row.category + " / " + result.row.service + " / " + result.row.country;
+    toast(applied.replaced ? "Replaced " + label + ". Valid from is " + formatDate(result.row.uploadedOn) + "." : "Added " + label + ".");
+  });
+
+  ["t2Charge", "t2Margin"].forEach(function (id) {
+    document.getElementById(id).addEventListener("input", refreshTotalPreview);
+  });
+
+  document.body.addEventListener("click", function (event) {
+    const button = event.target.closest("[data-remove]");
+    if (!button) return;
+    const which = button.getAttribute("data-remove");
+    const id = button.getAttribute("data-id");
+    state[which] = state[which].filter(function (row) { return row.id !== id; });
+    saveState();
+    if (which === "t1") renderT1();
+    else renderT2();
+    toast("Row removed.");
+  });
+
+  loadState();
+  renderT1();
+  renderT2();
+  applyHash();
+  window.addEventListener("hashchange", applyHash);
+})();
+</script>
+</body>
+</html>
