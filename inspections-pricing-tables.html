@@ -148,9 +148,10 @@
     border-radius: var(--radius-pill); padding: 2px 8px;
   }
   .rules { margin: 16px 16px 0; background: var(--bg-info); border-radius: var(--radius-sm); padding: 12px 16px; }
-  .rules p { font: var(--type-content-small); color: var(--silq-navy); }
-  .rules ul { margin: 8px 0 0 18px; }
+  .rules ol { margin: 0 0 0 18px; }
   .rules li { font: var(--type-content-small); color: var(--silq-navy); margin-top: 4px; }
+  .rules li:first-child { margin-top: 0; }
+  .add-bar { padding: 12px 16px 0; }
   .banner { margin: 16px 16px 0; padding: 12px; border-radius: var(--radius-sm); font: var(--type-content-small); }
   .banner strong { display: block; }
   .banner ul { margin: 8px 0 0 18px; }
@@ -207,8 +208,24 @@
   .empty-state h2 { font: 600 16px/24px var(--font-body); color: var(--silq-navy); margin-bottom: 8px; text-transform: none; letter-spacing: 0; }
   .empty-state p { font: var(--type-content-normal); color: var(--text-secondary); }
   .empty-state .btn { margin-top: 16px; }
+  .acts { display: flex; gap: 4px; justify-content: flex-end; }
+  .btn-tiny { height: 28px; font: var(--type-ui-small); padding: 0 8px; }
+  .tray-backdrop { position: fixed; inset: 0; background: rgba(18, 52, 59, 0.35); z-index: 40; }
+  .tray {
+    position: fixed; top: 0; right: 0; bottom: 0; width: min(420px, 100%);
+    background: var(--silq-white); z-index: 41; display: flex; flex-direction: column;
+    box-shadow: -8px 0 24px rgba(10, 10, 10, 0.12);
+  }
+  .tray-hd {
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    padding: 16px; border-bottom: 1px solid var(--border-light);
+  }
+  .tray-hd h2 { font: 600 16px/24px var(--font-body); color: var(--silq-navy); text-transform: none; letter-spacing: 0; }
+  .tray-bd { padding: 16px; overflow: auto; display: flex; flex-direction: column; flex: 1; }
+  .tray-bd .form-actions { margin-top: auto; padding-top: 16px; }
+  .tray-fields { display: flex; flex-direction: column; gap: 12px; }
   .toast {
-    position: fixed; bottom: 24px; right: 24px; z-index: 30;
+    position: fixed; bottom: 24px; right: 24px; z-index: 60;
     background: var(--silq-navy); color: var(--silq-white);
     padding: 12px 16px; border-radius: var(--radius-sm);
     box-shadow: var(--elevation-small); max-width: 360px;
@@ -238,6 +255,7 @@
   </div>
   <div class="sidebar-nav">
     <button class="nav-item active" type="button" id="navTables" data-main="tables">Pricing tables</button>
+    <button class="nav-item" type="button" id="navQc" data-main="qc">QC database</button>
     <button class="nav-item" type="button" id="navEngine" data-main="engine">Quote engine</button>
   </div>
 </nav>
@@ -246,22 +264,59 @@
   <div class="page">
     <div class="crumb">Inspections / Pricing</div>
     <h1>Inspections pricing</h1>
-    <p class="lede">Two tables the quote will read later. Upload a CSV, or add a row. Download what is on screen. A row stays valid until a newer upload for the same key replaces it.</p>
+    <p class="lede">Maintain the tables the quote will read. Uploaded on, uploaded by, and total sell are set by the system.</p>
 
     <div class="tabs" role="tablist" aria-label="Inspections pricing">
       <button class="tab" id="tabTables" type="button" role="tab" aria-selected="true" aria-controls="panelTables" data-main="tables">Product category &amp; pricing matrices</button>
+      <button class="tab" id="tabQc" type="button" role="tab" aria-selected="false" aria-controls="panelQc" data-main="qc">QC database and matrix</button>
       <button class="tab" id="tabEngine" type="button" role="tab" aria-selected="false" aria-controls="panelEngine" data-main="engine">Quoting engine builder</button>
     </div>
 
     <section id="panelTables" role="tabpanel" aria-labelledby="tabTables">
       <div class="subtabs" role="tablist" aria-label="Pricing tables">
-        <button class="subtab" id="tabT1" type="button" role="tab" aria-selected="true" aria-controls="panelT1" data-sub="t1">T1 · Product &amp; Category mapping</button>
-        <button class="subtab" id="tabT2" type="button" role="tab" aria-selected="false" aria-controls="panelT2" data-sub="t2">T2 · Pricing matrix</button>
+        <button class="subtab" id="tabCat" type="button" role="tab" aria-selected="true" aria-controls="panelCat" data-sub="cat">Product Category mapping</button>
+        <button class="subtab" id="tabT1" type="button" role="tab" aria-selected="false" aria-controls="panelT1" data-sub="t1">Man day mapping</button>
+        <button class="subtab" id="tabT2" type="button" role="tab" aria-selected="false" aria-controls="panelT2" data-sub="t2">Pricing matrix</button>
       </div>
 
-      <div class="card" id="panelT1" role="tabpanel" aria-labelledby="tabT1">
+      <div class="card" id="panelCat" role="tabpanel" aria-labelledby="tabCat">
         <div class="card-hd">
-          <h2>Product &amp; Category mapping <span class="count" id="t1Count">0</span></h2>
+          <h2>Product Category mapping <span class="count" id="catCount">0</span></h2>
+          <div class="actions">
+            <button class="btn" type="button" id="catDownload">Download</button>
+            <button class="btn btn-primary" type="button" id="catUploadBtn">Upload</button>
+            <input id="catFile" type="file" accept=".csv,text/csv" hidden>
+          </div>
+        </div>
+        <div id="catResult" class="banner" hidden></div>
+        <div class="rules">
+          <ol>
+            <li>Product can either be for individual products under one category, or can be for all products in that category.</li>
+            <li>A newer upload for the same category and product replaces the older row. Uploaded on and uploaded by are set by the system.</li>
+          </ol>
+        </div>
+        <div class="add-bar">
+          <button class="btn btn-primary" type="button" id="catAdd">Add Row +</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Product category</th>
+                <th>Product<span class="hint">One product, or all products in the category</span></th>
+                <th>Uploaded on<span class="hint">Set by the system</span></th>
+                <th>Uploaded by<span class="hint">Set by the system</span></th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="catBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card" id="panelT1" role="tabpanel" aria-labelledby="tabT1" hidden>
+        <div class="card-hd">
+          <h2>Man day mapping <span class="count" id="t1Count">0</span></h2>
           <div class="actions">
             <button class="btn" type="button" id="t1Download">Download</button>
             <button class="btn btn-primary" type="button" id="t1UploadBtn">Upload</button>
@@ -270,57 +325,30 @@
         </div>
         <div id="t1Result" class="banner" hidden></div>
         <div class="rules">
-          <p>Units one inspector can cover in a man day. These checks come from the column headers.</p>
-          <ul>
-            <li>Product is one product, or ALL for the whole category.</li>
-            <li>Units inspectable in a man day is a whole number greater than 0.</li>
-            <li>Valid from is the uploaded-on date. The row stays in force until a newer upload for the same category and product replaces it.</li>
-            <li>Uploaded by is required. Dates in a file are DD/MM/YYYY. A blank uploaded-on date is stamped with today.</li>
-          </ul>
+          <ol>
+            <li>Product can either be for individual products under one category, or can be for all products in that category.</li>
+            <li>Units inspectable in 1 man day is a whole number greater than 0.</li>
+            <li>A newer upload for the same category and product replaces the older row. Uploaded on and uploaded by are set by the system.</li>
+          </ol>
+        </div>
+        <div class="add-bar">
+          <button class="btn btn-primary" type="button" id="t1Add">Add Row +</button>
         </div>
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
                 <th>Product category</th>
-                <th>Product<span class="hint">One product, or ALL</span></th>
-                <th class="num">Units per man day<span class="hint">Whole number, greater than 0</span></th>
-                <th>Uploaded on<span class="hint">Valid from</span></th>
-                <th>Uploaded by</th>
+                <th>Product<span class="hint">One product, or all products in the category</span></th>
+                <th class="num">Units inspectable in 1 man day<span class="hint">Whole number, greater than 0</span></th>
+                <th>Uploaded on<span class="hint">Set by the system</span></th>
+                <th>Uploaded by<span class="hint">Set by the system</span></th>
                 <th></th>
               </tr>
             </thead>
             <tbody id="t1Body"></tbody>
           </table>
         </div>
-        <form class="add" id="t1Form">
-          <h3>Add a row</h3>
-          <div class="form-grid">
-            <div class="fld">
-              <label for="t1Category">Product category <span class="req">*</span></label>
-              <input class="input" id="t1Category" name="category" autocomplete="off">
-              <div class="field-err" id="t1CategoryErr"></div>
-            </div>
-            <div class="fld">
-              <label for="t1Product">Product <span class="req">*</span></label>
-              <input class="input" id="t1Product" name="product" placeholder="Beds, or ALL" autocomplete="off">
-              <div class="field-err" id="t1ProductErr"></div>
-            </div>
-            <div class="fld">
-              <label for="t1Units">Units per man day <span class="req">*</span></label>
-              <input class="input" id="t1Units" name="units" inputmode="numeric" autocomplete="off">
-              <div class="field-err" id="t1UnitsErr"></div>
-            </div>
-            <div class="fld">
-              <label for="t1By">Uploaded by <span class="req">*</span></label>
-              <input class="input" id="t1By" name="uploadedBy" autocomplete="off">
-              <div class="field-err" id="t1ByErr"></div>
-            </div>
-          </div>
-          <div class="form-actions">
-            <button class="btn btn-primary" type="submit">Add row</button>
-          </div>
-        </form>
       </div>
 
       <div class="card" id="panelT2" role="tabpanel" aria-labelledby="tabT2" hidden>
@@ -334,89 +362,43 @@
         </div>
         <div id="t2Result" class="banner" hidden></div>
         <div class="rules">
-          <p>Charge per man day and the margin already inside the sell. These checks come from the column headers.</p>
-          <ul>
-            <li>Service level is Final, Inline, Pre production, Factory, TOP, or ALL.</li>
-            <li>Charge per man day is greater than 0. Margin is a percent, 0 or higher. 10 and 10% both mean 10 percent.</li>
-            <li>Total sell is calculated: charge × (1 + margin). A file total that does not match is rejected.</li>
-            <li>A newer upload for the same category, service level, and country replaces the older row. Dates in a file are DD/MM/YYYY. Uploaded on is the valid-from date.</li>
-          </ul>
+          <ol>
+            <li>Service level is an inspection service offered today by Silq, or ALL for all the services.</li>
+            <li>Total sell is calculated in the system after upload and need not be in the upload file.</li>
+            <li>A newer upload for the same category, service level, and country replaces the older row. Uploaded on is the valid-from date.</li>
+          </ol>
+        </div>
+        <div class="add-bar">
+          <button class="btn btn-primary" type="button" id="t2Add">Add Row +</button>
         </div>
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
                 <th>Product category</th>
-                <th>Service level<span class="hint">One service, or ALL</span></th>
+                <th>Service level<span class="hint">A Silq service, or ALL</span></th>
                 <th>Country</th>
                 <th>Currency</th>
                 <th class="num">Charge per man day</th>
                 <th class="num">Margin</th>
-                <th class="num">Total sell<span class="hint">Charge × (1 + margin)</span></th>
-                <th>Uploaded on</th>
-                <th>Uploaded by</th>
+                <th class="num">Total sell<span class="hint">Set by the system</span></th>
+                <th>Uploaded on<span class="hint">Set by the system</span></th>
+                <th>Uploaded by<span class="hint">Set by the system</span></th>
                 <th></th>
               </tr>
             </thead>
             <tbody id="t2Body"></tbody>
           </table>
         </div>
-        <form class="add" id="t2Form">
-          <h3>Add a row</h3>
-          <div class="form-grid">
-            <div class="fld">
-              <label for="t2Category">Product category <span class="req">*</span></label>
-              <input class="input" id="t2Category" name="category" autocomplete="off">
-              <div class="field-err" id="t2CategoryErr"></div>
-            </div>
-            <div class="fld">
-              <label for="t2Service">Service level <span class="req">*</span></label>
-              <select class="input" id="t2Service" name="service">
-                <option value="">Select</option>
-                <option>Final</option>
-                <option>Inline</option>
-                <option>Pre production</option>
-                <option>Factory</option>
-                <option>TOP</option>
-                <option>ALL</option>
-              </select>
-              <div class="field-err" id="t2ServiceErr"></div>
-            </div>
-            <div class="fld">
-              <label for="t2Country">Country <span class="req">*</span></label>
-              <input class="input" id="t2Country" name="country" autocomplete="off">
-              <div class="field-err" id="t2CountryErr"></div>
-            </div>
-            <div class="fld">
-              <label for="t2Currency">Currency <span class="req">*</span></label>
-              <input class="input" id="t2Currency" name="currency" value="USD" maxlength="3" autocomplete="off">
-              <div class="field-err" id="t2CurrencyErr"></div>
-            </div>
-            <div class="fld">
-              <label for="t2Charge">Charge per man day <span class="req">*</span></label>
-              <input class="input" id="t2Charge" name="charge" inputmode="decimal" autocomplete="off">
-              <div class="field-err" id="t2ChargeErr"></div>
-            </div>
-            <div class="fld">
-              <label for="t2Margin">Margin % <span class="req">*</span></label>
-              <input class="input" id="t2Margin" name="margin" inputmode="decimal" placeholder="10" autocomplete="off">
-              <div class="field-err" id="t2MarginErr"></div>
-            </div>
-            <div class="fld">
-              <label for="t2Total">Total sell</label>
-              <input class="input ro" id="t2Total" readonly value="Calculated">
-              <div class="field-err" id="t2TotalErr"></div>
-            </div>
-            <div class="fld">
-              <label for="t2By">Uploaded by <span class="req">*</span></label>
-              <input class="input" id="t2By" name="uploadedBy" autocomplete="off">
-              <div class="field-err" id="t2ByErr"></div>
-            </div>
-          </div>
-          <div class="form-actions">
-            <button class="btn btn-primary" type="submit">Add row</button>
-          </div>
-        </form>
+      </div>
+    </section>
+
+    <section id="panelQc" role="tabpanel" aria-labelledby="tabQc" hidden>
+      <div class="card">
+        <div class="empty-state" style="padding: 24px;">
+          <h2>QC database and matrix</h2>
+          <p>This section will hold the QC database and its matrix. No tables are in this prototype yet.</p>
+        </div>
       </div>
     </section>
 
@@ -424,7 +406,7 @@
       <div class="card">
         <div class="card-bd empty-state" style="padding: 24px;">
           <h2>Quoting engine builder</h2>
-          <p>This builder will read the two pricing tables and price an inspection quote. The sell formula is not settled, so this prototype does not calculate a quote.</p>
+          <p>This builder will read the pricing tables and price an inspection quote. The sell formula is not settled, so this prototype does not calculate a quote.</p>
           <button class="btn" type="button" id="backToTables">Back to pricing tables</button>
         </div>
       </div>
@@ -432,12 +414,33 @@
   </div>
 </div>
 <div id="toast" class="toast" hidden></div>
+<div id="trayBackdrop" class="tray-backdrop" hidden></div>
+<aside id="tray" class="tray" hidden role="dialog" aria-modal="true" aria-labelledby="trayTitle">
+  <div class="tray-hd">
+    <h2 id="trayTitle">Add row</h2>
+    <button class="btn btn-tiny" type="button" id="trayClose">Close</button>
+  </div>
+  <form id="trayForm" class="tray-bd">
+    <div class="tray-fields" id="trayFields"></div>
+    <div class="form-actions">
+      <button class="btn" type="button" id="trayCancel">Cancel</button>
+      <button class="btn btn-primary" type="submit" id="traySave">Save</button>
+    </div>
+  </form>
+</aside>
 
 <script>
 (function () {
   const SERVICES = ["Final", "Inline", "Pre production", "Factory", "TOP", "ALL"];
-  const STORE_KEY = "silq-inspections-pricing-v1";
+  const SESSION_USER = "Shivam";
+  const STORE_KEY = "silq-inspections-pricing-v2";
 
+  const SEED_CAT = [
+    { category: "Furniture", product: "Beds", uploadedOn: "2026-11-11", uploadedBy: "Shivam" },
+    { category: "Furniture", product: "Chairs", uploadedOn: "2026-11-11", uploadedBy: "Shivam" },
+    { category: "Apparel", product: "ALL", uploadedOn: "2026-11-11", uploadedBy: "Shivam" },
+    { category: "Apparel", product: "T shirts", uploadedOn: "2026-11-11", uploadedBy: "Shivam" }
+  ];
   const SEED_T1 = [
     { category: "Furniture", product: "Beds", units: 15, uploadedOn: "2026-11-11", uploadedBy: "Shivam" },
     { category: "Furniture", product: "Chairs", units: 30, uploadedOn: "2026-11-11", uploadedBy: "Shivam" },
@@ -484,7 +487,7 @@
     return String(value || "").trim().toLowerCase();
   }
 
-  function keyT1(row) {
+  function keyCat(row) {
     return normKey(row.category) + "|" + normKey(row.product);
   }
 
@@ -492,35 +495,19 @@
     return normKey(row.category) + "|" + normKey(row.service) + "|" + normKey(row.country);
   }
 
-  function parseDate(raw, defaultIso) {
-    const s = String(raw == null ? "" : raw).trim();
-    if (!s) return { ok: true, iso: defaultIso, defaulted: true };
-    let y;
-    let m;
-    let d;
-    const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    const dmy = s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);
-    if (iso) {
-      y = Number(iso[1]);
-      m = Number(iso[2]);
-      d = Number(iso[3]);
-    } else if (dmy) {
-      d = Number(dmy[1]);
-      m = Number(dmy[2]);
-      y = Number(dmy[3]);
-    } else {
-      return { ok: false };
-    }
-    const dt = new Date(Date.UTC(y, m - 1, d));
-    if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== m - 1 || dt.getUTCDate() !== d) return { ok: false };
-    return { ok: true, iso: y + "-" + String(m).padStart(2, "0") + "-" + String(d).padStart(2, "0"), defaulted: false };
+  function keyFor(which) {
+    return which === "t2" ? keyT2 : keyCat;
+  }
+
+  function stamp(row) {
+    return Object.assign({}, row, { uploadedOn: todayIso(), uploadedBy: SESSION_USER });
   }
 
   function normalizeProduct(raw) {
     const product = String(raw == null ? "" : raw).trim();
-    if (!product) return { ok: false, error: "Product is required. Enter a product, or ALL for the whole category." };
+    if (!product) return { ok: false, error: "Product is required. Enter a product, or ALL for every product in the category." };
     if (/^(any|all products|\*)$/i.test(product)) {
-      return { ok: false, error: "Use ALL for the whole category, not \"" + product + "\"." };
+      return { ok: false, error: "Use ALL for every product in the category, not \"" + product + "\"." };
     }
     if (/^all$/i.test(product)) return { ok: true, value: "ALL" };
     return { ok: true, value: product };
@@ -546,9 +533,9 @@
 
   function parseUnits(raw) {
     const s = String(raw == null ? "" : raw).trim();
-    if (!s) return { ok: false, error: "No. of units inspectable in a man day is required." };
+    if (!s) return { ok: false, error: "Units inspectable in 1 man day is required." };
     if (!/^\d+$/.test(s) || Number(s) <= 0) {
-      return { ok: false, error: "No. of units inspectable in a man day must be a whole number greater than 0." };
+      return { ok: false, error: "Units inspectable in 1 man day must be a whole number greater than 0." };
     }
     return { ok: true, value: Number(s) };
   }
@@ -570,13 +557,6 @@
     return { ok: true, value: Number(body) };
   }
 
-  function parsePerson(raw) {
-    const s = String(raw == null ? "" : raw).trim();
-    if (!s) return { ok: false, error: "Uploaded by is required." };
-    if (s.length > 80) return { ok: false, error: "Uploaded by must be 80 characters or fewer." };
-    return { ok: true, value: s };
-  }
-
   function parseCategory(raw) {
     const s = String(raw == null ? "" : raw).trim();
     if (!s) return { ok: false, error: "Product category is required." };
@@ -584,7 +564,21 @@
     return { ok: true, value: s };
   }
 
-  function validateT1(input, defaultDate) {
+  function validateCat(input) {
+    const errors = {};
+    const category = parseCategory(input.category);
+    if (!category.ok) errors.category = category.error;
+    const product = normalizeProduct(input.product);
+    if (!product.ok) errors.product = product.error;
+    const ok = Object.keys(errors).length === 0;
+    return {
+      ok: ok,
+      errors: errors,
+      row: ok ? { category: category.value, product: product.value } : null
+    };
+  }
+
+  function validateT1(input) {
     const errors = {};
     const category = parseCategory(input.category);
     if (!category.ok) errors.category = category.error;
@@ -592,25 +586,15 @@
     if (!product.ok) errors.product = product.error;
     const units = parseUnits(input.units);
     if (!units.ok) errors.units = units.error;
-    const uploadedBy = parsePerson(input.uploadedBy);
-    if (!uploadedBy.ok) errors.uploadedBy = uploadedBy.error;
-    const uploadedOn = parseDate(input.uploadedOn, defaultDate);
-    if (!uploadedOn.ok) errors.uploadedOn = "Uploaded on must be a date, as DD/MM/YYYY.";
     const ok = Object.keys(errors).length === 0;
     return {
       ok: ok,
       errors: errors,
-      row: ok ? {
-        category: category.value,
-        product: product.value,
-        units: units.value,
-        uploadedOn: uploadedOn.iso,
-        uploadedBy: uploadedBy.value
-      } : null
+      row: ok ? { category: category.value, product: product.value, units: units.value } : null
     };
   }
 
-  function validateT2(input, defaultDate) {
+  function validateT2(input) {
     const errors = {};
     const category = parseCategory(input.category);
     if (!category.ok) errors.category = category.error;
@@ -635,24 +619,6 @@
         ? "Margin is required. Use a percent, such as 10 or 10%."
         : "Margin must be a percent, 0 or higher. 10 and 10% both mean 10 percent.";
     }
-    const uploadedBy = parsePerson(input.uploadedBy);
-    if (!uploadedBy.ok) errors.uploadedBy = uploadedBy.error;
-    const uploadedOn = parseDate(input.uploadedOn, defaultDate);
-    if (!uploadedOn.ok) errors.uploadedOn = "Uploaded on must be a date, as DD/MM/YYYY.";
-
-    let sell = null;
-    if (charge.ok && margin.ok) {
-      sell = totalSell(charge.value, margin.value);
-      const provided = String(input.totalSell == null ? "" : input.totalSell).trim();
-      if (provided) {
-        const parsed = parseMoney(provided);
-        if (!parsed.ok) errors.totalSell = "Total sell must be a number, or left blank to calculate it.";
-        else if (Math.abs(parsed.value - sell) > 0.009) {
-          errors.totalSell = "Total sell is " + provided + ", but charge " + formatMoney(charge.value) + " at " + formatMargin(margin.value) + " margin calculates to " + formatMoney(sell) + ". Total sell must equal charge × (1 + margin).";
-        }
-      }
-    }
-
     const ok = Object.keys(errors).length === 0;
     return {
       ok: ok,
@@ -663,11 +629,8 @@
         country: countryRaw,
         currency: currencyRaw.toUpperCase(),
         charge: charge.value,
-        margin: margin.value,
-        uploadedOn: uploadedOn.iso,
-        uploadedBy: uploadedBy.value
-      } : null,
-      totalSell: sell
+        margin: margin.value
+      } : null
     };
   }
 
@@ -697,31 +660,46 @@
     return String(value || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
   }
 
-  const T1_HEADERS = {
-    category: ["product category", "category"],
-    product: ["product"],
-    units: ["no of units inspectable in a man day", "units per man day", "units"],
-    uploadedOn: ["uploaded on", "valid from"],
-    uploadedBy: ["uploaded by"]
+  const HEADERS = {
+    cat: {
+      category: ["product category", "category"],
+      product: ["product"]
+    },
+    t1: {
+      category: ["product category", "category"],
+      product: ["product"],
+      units: ["units inspectable in 1 man day", "no of units inspectable in a man day", "units per man day", "units"]
+    },
+    t2: {
+      category: ["product category", "category"],
+      service: ["service level", "service"],
+      country: ["country"],
+      currency: ["currency"],
+      charge: ["charge per man day", "charge"],
+      margin: ["margin"]
+    }
   };
-  const T2_HEADERS = {
-    category: ["product category", "category"],
-    service: ["service level", "service"],
-    country: ["country"],
-    currency: ["currency"],
-    charge: ["charge per man day", "charge"],
-    margin: ["margin"],
-    totalSell: ["total sell", "total"],
-    uploadedOn: ["uploaded on", "valid from"],
-    uploadedBy: ["uploaded by"]
+  const REQUIRED = {
+    cat: ["category", "product"],
+    t1: ["category", "product", "units"],
+    t2: ["category", "service", "country", "currency", "charge", "margin"]
+  };
+  const EXPECTED = {
+    cat: "Product Category, Product",
+    t1: "Product Category, Product, Units inspectable in 1 man day",
+    t2: "Product Category, Service level, Country, Currency, Charge per man day, Margin"
+  };
+  const TABLE_NAME = {
+    cat: "Product Category mapping",
+    t1: "Man day mapping",
+    t2: "the pricing matrix"
   };
 
   function mapHeaders(headerRow, spec) {
     const index = {};
     const keys = headerRow.map(headerKey);
     Object.keys(spec).forEach(function (field) {
-      const aliases = spec[field];
-      const found = keys.findIndex(function (key) { return aliases.indexOf(key) !== -1; });
+      const found = keys.findIndex(function (key) { return spec[field].indexOf(key) !== -1; });
       if (found !== -1) index[field] = found;
     });
     return index;
@@ -732,22 +710,21 @@
     return row[index[field]] == null ? "" : row[index[field]];
   }
 
-  function readUpload(text, which, defaultDate) {
+  function validateWhich(which, input) {
+    if (which === "cat") return validateCat(input);
+    if (which === "t1") return validateT1(input);
+    return validateT2(input);
+  }
+
+  function readUpload(text, which) {
     const grid = parseCsv(text);
     if (!grid.length) return { ok: false, fileError: "The file is empty.", rows: [], rejected: [] };
-    const spec = which === "t1" ? T1_HEADERS : T2_HEADERS;
-    const required = which === "t1"
-      ? ["category", "product", "units", "uploadedBy"]
-      : ["category", "service", "country", "currency", "charge", "margin", "uploadedBy"];
-    const index = mapHeaders(grid[0], spec);
-    const missing = required.filter(function (field) { return index[field] == null; });
+    const index = mapHeaders(grid[0], HEADERS[which]);
+    const missing = REQUIRED[which].filter(function (field) { return index[field] == null; });
     if (missing.length) {
-      const expected = which === "t1"
-        ? "Product Category, Product, No. of units inspectable in a man day, Uploaded on, Uploaded by"
-        : "Product Category, Service level, Country, Currency, Charge per man day, Margin, Total Sell, Uploaded on, Uploaded by";
       return {
         ok: false,
-        fileError: "This file does not match " + (which === "t1" ? "Product & Category mapping" : "the pricing matrix") + ". Expected columns: " + expected + ".",
+        fileError: "This file does not match " + TABLE_NAME[which] + ". Expected columns: " + EXPECTED[which] + ".",
         rows: [],
         rejected: []
       };
@@ -758,7 +735,7 @@
       const source = grid[i];
       const input = {};
       Object.keys(index).forEach(function (field) { input[field] = cell(source, index, field); });
-      const result = which === "t1" ? validateT1(input, defaultDate) : validateT2(input, defaultDate);
+      const result = validateWhich(which, input);
       if (!result.ok) {
         rejected.push({ row: i + 1, messages: Object.keys(result.errors).map(function (k) { return result.errors[k]; }) });
       } else rows.push(result.row);
@@ -803,20 +780,21 @@
 
   const api = {
     SERVICES: SERVICES,
+    SESSION_USER: SESSION_USER,
+    SEED_CAT: SEED_CAT,
     SEED_T1: SEED_T1,
     SEED_T2: SEED_T2,
     todayIso: todayIso,
-    formatDate: formatDate,
     totalSell: totalSell,
-    keyT1: keyT1,
+    keyCat: keyCat,
     keyT2: keyT2,
+    stamp: stamp,
+    validateCat: validateCat,
     validateT1: validateT1,
     validateT2: validateT2,
-    parseCsv: parseCsv,
     readUpload: readUpload,
     applyRows: applyRows,
-    toCsv: toCsv,
-    normalizeService: normalizeService
+    toCsv: toCsv
   };
   const root = typeof globalThis !== "undefined" ? globalThis : window;
   root.InspectionsPricing = api;
@@ -834,18 +812,21 @@
 
   let state = {
     main: "tables",
-    sub: "t1",
+    sub: "cat",
+    cat: withIds(SEED_CAT, "cat"),
     t1: withIds(SEED_T1, "t1"),
     t2: withIds(SEED_T2, "t2")
   };
+  let trayMode = { which: "cat", id: null };
 
   function loadState() {
     try {
       const raw = localStorage.getItem(STORE_KEY);
       if (!raw) return;
       const saved = JSON.parse(raw);
-      if (saved && Array.isArray(saved.t1) && Array.isArray(saved.t2)) {
+      if (saved && Array.isArray(saved.cat) && Array.isArray(saved.t1) && Array.isArray(saved.t2)) {
         seq = Number(saved.seq) || 1;
+        state.cat = saved.cat;
         state.t1 = saved.t1;
         state.t2 = saved.t2;
       }
@@ -854,7 +835,9 @@
 
   function saveState() {
     try {
-      localStorage.setItem(STORE_KEY, JSON.stringify({ t1: state.t1, t2: state.t2, seq: seq }));
+      localStorage.setItem(STORE_KEY, JSON.stringify({
+        cat: state.cat, t1: state.t1, t2: state.t2, seq: seq
+      }));
     } catch (err) { /* private mode */ }
   }
 
@@ -869,47 +852,81 @@
     return esc(value);
   }
 
+  function countLabel(n) {
+    return n + (n === 1 ? " row" : " rows");
+  }
+
+  function actionCell(which, id) {
+    return "<td><div class=\"acts\">" +
+      "<button class=\"btn btn-tiny\" type=\"button\" data-edit=\"" + which + "\" data-id=\"" + esc(id) + "\">Edit</button>" +
+      "<button class=\"btn btn-ghost\" type=\"button\" data-remove=\"" + which + "\" data-id=\"" + esc(id) + "\">Remove</button>" +
+      "</div></td>";
+  }
+
+  function renderCat() {
+    const body = document.getElementById("catBody");
+    document.getElementById("catCount").textContent = countLabel(state.cat.length);
+    if (!state.cat.length) {
+      body.innerHTML = "<tr class=\"empty-row\"><td colspan=\"5\">No rows yet. Upload a CSV or add a row.</td></tr>";
+      return;
+    }
+    body.innerHTML = state.cat.map(function (row) {
+      return "<tr>" +
+        "<td>" + esc(row.category) + "</td>" +
+        "<td>" + productCell(row.product) + "</td>" +
+        "<td>" + esc(formatDate(row.uploadedOn)) + "</td>" +
+        "<td>" + esc(row.uploadedBy) + "</td>" +
+        actionCell("cat", row.id) +
+        "</tr>";
+    }).join("");
+  }
+
   function renderT1() {
     const body = document.getElementById("t1Body");
-    document.getElementById("t1Count").textContent = state.t1.length + (state.t1.length === 1 ? " row" : " rows");
+    document.getElementById("t1Count").textContent = countLabel(state.t1.length);
     if (!state.t1.length) {
       body.innerHTML = "<tr class=\"empty-row\"><td colspan=\"6\">No rows yet. Upload a CSV or add a row.</td></tr>";
       return;
     }
     body.innerHTML = state.t1.map(function (row) {
-      return "<tr data-id=\"" + esc(row.id) + "\">" +
+      return "<tr>" +
         "<td>" + esc(row.category) + "</td>" +
         "<td>" + productCell(row.product) + "</td>" +
         "<td class=\"num\">" + esc(row.units) + "</td>" +
         "<td>" + esc(formatDate(row.uploadedOn)) + "</td>" +
         "<td>" + esc(row.uploadedBy) + "</td>" +
-        "<td><button class=\"btn btn-ghost\" type=\"button\" data-remove=\"t1\" data-id=\"" + esc(row.id) + "\">Remove</button></td>" +
+        actionCell("t1", row.id) +
         "</tr>";
     }).join("");
   }
 
   function renderT2() {
     const body = document.getElementById("t2Body");
-    document.getElementById("t2Count").textContent = state.t2.length + (state.t2.length === 1 ? " row" : " rows");
+    document.getElementById("t2Count").textContent = countLabel(state.t2.length);
     if (!state.t2.length) {
       body.innerHTML = "<tr class=\"empty-row\"><td colspan=\"10\">No rows yet. Upload a CSV or add a row.</td></tr>";
       return;
     }
     body.innerHTML = state.t2.map(function (row) {
-      const sell = totalSell(row.charge, row.margin);
-      return "<tr data-id=\"" + esc(row.id) + "\">" +
+      return "<tr>" +
         "<td>" + esc(row.category) + "</td>" +
         "<td>" + productCell(row.service) + "</td>" +
         "<td>" + esc(row.country) + "</td>" +
         "<td>" + esc(row.currency) + "</td>" +
         "<td class=\"num\">" + esc(formatMoney(row.charge)) + "</td>" +
         "<td class=\"num\">" + esc(formatMargin(row.margin)) + "</td>" +
-        "<td class=\"num\">" + esc(formatMoney(sell)) + "</td>" +
+        "<td class=\"num\">" + esc(formatMoney(totalSell(row.charge, row.margin))) + "</td>" +
         "<td>" + esc(formatDate(row.uploadedOn)) + "</td>" +
         "<td>" + esc(row.uploadedBy) + "</td>" +
-        "<td><button class=\"btn btn-ghost\" type=\"button\" data-remove=\"t2\" data-id=\"" + esc(row.id) + "\">Remove</button></td>" +
+        actionCell("t2", row.id) +
         "</tr>";
     }).join("");
+  }
+
+  function render(which) {
+    if (which === "cat") renderCat();
+    else if (which === "t1") renderT1();
+    else renderT2();
   }
 
   function showResult(id, kind, title, lines) {
@@ -941,42 +958,55 @@
   }
 
   function setHash() {
-    const hash = state.main === "engine" ? "#engine" : (state.sub === "t2" ? "#matrix" : "#mapping");
+    let hash = "#product-category";
+    if (state.main === "engine") hash = "#engine";
+    else if (state.main === "qc") hash = "#qc";
+    else if (state.sub === "t1") hash = "#man-day";
+    else if (state.sub === "t2") hash = "#matrix";
     if (location.hash !== hash) history.replaceState(null, "", hash);
   }
 
   function paintTabs() {
-    const onTables = state.main === "tables";
-    document.getElementById("tabTables").setAttribute("aria-selected", onTables ? "true" : "false");
-    document.getElementById("tabEngine").setAttribute("aria-selected", onTables ? "false" : "true");
-    document.getElementById("panelTables").hidden = !onTables;
-    document.getElementById("panelEngine").hidden = onTables;
-    document.getElementById("navTables").classList.toggle("active", onTables);
-    document.getElementById("navEngine").classList.toggle("active", !onTables);
-    const onT1 = state.sub === "t1";
-    document.getElementById("tabT1").setAttribute("aria-selected", onT1 ? "true" : "false");
-    document.getElementById("tabT2").setAttribute("aria-selected", onT1 ? "false" : "true");
-    document.getElementById("panelT1").hidden = !onT1;
-    document.getElementById("panelT2").hidden = onT1;
+    const main = state.main;
+    document.getElementById("tabTables").setAttribute("aria-selected", main === "tables" ? "true" : "false");
+    document.getElementById("tabQc").setAttribute("aria-selected", main === "qc" ? "true" : "false");
+    document.getElementById("tabEngine").setAttribute("aria-selected", main === "engine" ? "true" : "false");
+    document.getElementById("panelTables").hidden = main !== "tables";
+    document.getElementById("panelQc").hidden = main !== "qc";
+    document.getElementById("panelEngine").hidden = main !== "engine";
+    document.getElementById("navTables").classList.toggle("active", main === "tables");
+    document.getElementById("navQc").classList.toggle("active", main === "qc");
+    document.getElementById("navEngine").classList.toggle("active", main === "engine");
+    ["cat", "t1", "t2"].forEach(function (sub) {
+      const on = state.sub === sub;
+      const tabId = sub === "cat" ? "tabCat" : sub === "t1" ? "tabT1" : "tabT2";
+      const panelId = sub === "cat" ? "panelCat" : sub === "t1" ? "panelT1" : "panelT2";
+      document.getElementById(tabId).setAttribute("aria-selected", on ? "true" : "false");
+      document.getElementById(panelId).hidden = !on;
+    });
     setHash();
   }
 
-  function clearFieldErrors(ids) {
-    ids.forEach(function (id) {
-      const err = document.getElementById(id + "Err");
-      const input = document.getElementById(id);
-      if (err) err.textContent = "";
-      if (input) input.classList.remove("err");
-    });
+  function openMain(main) {
+    state.main = main === "qc" || main === "engine" ? main : "tables";
+    closeTray();
+    paintTabs();
   }
 
-  function showFieldErrors(map) {
-    Object.keys(map).forEach(function (id) {
-      const err = document.getElementById(id + "Err");
-      const input = document.getElementById(id);
-      if (err) err.textContent = map[id];
-      if (input) input.classList.add("err");
-    });
+  function openSub(sub) {
+    state.main = "tables";
+    state.sub = sub === "t1" || sub === "t2" ? sub : "cat";
+    closeTray();
+    paintTabs();
+  }
+
+  function applyHash() {
+    const hash = (location.hash || "").replace("#", "");
+    if (hash === "engine") openMain("engine");
+    else if (hash === "qc") openMain("qc");
+    else if (hash === "matrix") openSub("t2");
+    else if (hash === "man-day" || hash === "mapping") openSub("t1");
+    else openSub("cat");
   }
 
   function download(filename, csv) {
@@ -991,24 +1021,6 @@
     URL.revokeObjectURL(url);
   }
 
-  function t1Csv() {
-    return toCsv(
-      ["Product Category", "Product", "No. of units inspectable in a man day", "Uploaded on", "Uploaded by"],
-      state.t1.map(function (row) {
-        return [row.category, row.product, row.units, formatDate(row.uploadedOn), row.uploadedBy];
-      })
-    );
-  }
-
-  function t2Csv() {
-    return toCsv(
-      ["Product Category", "Service level", "Country", "Currency", "Charge per man day", "Margin", "Total Sell", "Uploaded on", "Uploaded by"],
-      state.t2.map(function (row) {
-        return [row.category, row.service, row.country, row.currency, row.charge, row.margin + "%", formatMoney(totalSell(row.charge, row.margin)), formatDate(row.uploadedOn), row.uploadedBy];
-      })
-    );
-  }
-
   function rejectionLines(rejected) {
     return rejected.map(function (item) {
       return "Row " + item.row + ": " + item.messages.join(" ");
@@ -1016,7 +1028,7 @@
   }
 
   function summarize(which, applied, rejected, fileError) {
-    const resultId = which === "t1" ? "t1Result" : "t2Result";
+    const resultId = which + "Result";
     if (fileError) {
       showResult(resultId, "bad", "No rows saved.", [fileError]);
       return;
@@ -1038,22 +1050,20 @@
   function onUpload(which, file) {
     const reader = new FileReader();
     reader.onload = function () {
-      const parsed = readUpload(String(reader.result || ""), which, todayIso());
+      const parsed = readUpload(String(reader.result || ""), which);
       if (!parsed.ok) {
         summarize(which, { added: 0, replaced: 0 }, [], parsed.fileError);
         return;
       }
       const stamped = parsed.rows.map(function (row) {
-        const copy = Object.assign({}, row);
+        const copy = stamp(row);
         copy.id = which + "-" + (seq++);
         return copy;
       });
-      const keyFn = which === "t1" ? keyT1 : keyT2;
-      const applied = applyRows(state[which], stamped, keyFn);
+      const applied = applyRows(state[which], stamped, keyFor(which));
       state[which] = applied.rows;
       saveState();
-      if (which === "t1") renderT1();
-      else renderT2();
+      render(which);
       summarize(which, applied, parsed.rejected, "");
     };
     reader.readAsText(file);
@@ -1069,53 +1079,185 @@
     });
   }
 
-  function refreshTotalPreview() {
-    const charge = parseMoney(document.getElementById("t2Charge").value);
-    const margin = parseMargin(document.getElementById("t2Margin").value);
-    const box = document.getElementById("t2Total");
-    if (charge.ok && margin.ok) box.value = formatMoney(totalSell(charge.value, margin.value));
-    else box.value = "Calculated";
+  function fieldWrap(id, label, control) {
+    return "<div class=\"fld\"><label for=\"" + id + "\">" + label + " <span class=\"req\">*</span></label>" +
+      control + "<div class=\"field-err\" id=\"" + id + "Err\"></div></div>";
   }
 
-  function fieldMapT1(errors) {
-    return {
-      t1Category: errors.category || "",
-      t1Product: errors.product || "",
-      t1Units: errors.units || "",
-      t1By: errors.uploadedBy || ""
+  function textInput(id, value, placeholder, mode) {
+    return "<input class=\"input\" id=\"" + id + "\" value=\"" + esc(value || "") + "\"" +
+      (placeholder ? " placeholder=\"" + esc(placeholder) + "\"" : "") +
+      (mode ? " inputmode=\"" + mode + "\"" : "") + " autocomplete=\"off\">";
+  }
+
+  function serviceSelect(value) {
+    const options = ["<option value=\"\">Select</option>"].concat(SERVICES.map(function (service) {
+      const selected = service === value ? " selected" : "";
+      return "<option" + selected + ">" + service + "</option>";
+    }));
+    return "<select class=\"input\" id=\"fService\">" + options.join("") + "</select>";
+  }
+
+  function closeTray() {
+    document.getElementById("tray").hidden = true;
+    document.getElementById("trayBackdrop").hidden = true;
+  }
+
+  function showFieldErrors(errors, map) {
+    Object.keys(map).forEach(function (key) {
+      const id = map[key];
+      const err = document.getElementById(id + "Err");
+      const input = document.getElementById(id);
+      if (!err || !input) return;
+      if (errors[key]) {
+        err.textContent = errors[key];
+        input.classList.add("err");
+      } else {
+        err.textContent = "";
+        input.classList.remove("err");
+      }
+    });
+  }
+
+  function openTray(which, row) {
+    trayMode = { which: which, id: row ? row.id : null };
+    document.getElementById("trayTitle").textContent = row ? "Edit row" : "Add row";
+    document.getElementById("traySave").textContent = row ? "Save" : "Save";
+    const fields = document.getElementById("trayFields");
+    if (which === "t2") {
+      fields.innerHTML =
+        fieldWrap("fCategory", "Product category", textInput("fCategory", row && row.category)) +
+        fieldWrap("fService", "Service level", serviceSelect(row && row.service)) +
+        fieldWrap("fCountry", "Country", textInput("fCountry", row && row.country)) +
+        fieldWrap("fCurrency", "Currency", textInput("fCurrency", (row && row.currency) || "USD")) +
+        fieldWrap("fCharge", "Charge per man day", textInput("fCharge", row ? String(row.charge) : "", "", "decimal")) +
+        fieldWrap("fMargin", "Margin %", textInput("fMargin", row ? String(row.margin) : "", "10", "decimal"));
+    } else {
+      let html =
+        fieldWrap("fCategory", "Product category", textInput("fCategory", row && row.category)) +
+        fieldWrap("fProduct", "Product", textInput("fProduct", row && row.product, "Beds, or ALL"));
+      if (which === "t1") {
+        html += fieldWrap("fUnits", "Units inspectable in 1 man day", textInput("fUnits", row ? String(row.units) : "", "", "numeric"));
+      }
+      fields.innerHTML = html;
+    }
+    document.getElementById("tray").hidden = false;
+    document.getElementById("trayBackdrop").hidden = false;
+    const first = document.getElementById("fCategory");
+    if (first) first.focus();
+  }
+
+  function readTray() {
+    const which = trayMode.which;
+    const value = function (id) {
+      const el = document.getElementById(id);
+      return el ? el.value : "";
     };
+    if (which === "t2") {
+      return validateT2({
+        category: value("fCategory"),
+        service: value("fService"),
+        country: value("fCountry"),
+        currency: value("fCurrency"),
+        charge: value("fCharge"),
+        margin: value("fMargin")
+      });
+    }
+    const input = { category: value("fCategory"), product: value("fProduct") };
+    if (which === "t1") input.units = value("fUnits");
+    return which === "t1" ? validateT1(input) : validateCat(input);
   }
 
-  function fieldMapT2(errors) {
-    return {
-      t2Category: errors.category || "",
-      t2Service: errors.service || "",
-      t2Country: errors.country || "",
-      t2Currency: errors.currency || "",
-      t2Charge: errors.charge || "",
-      t2Margin: errors.margin || "",
-      t2Total: errors.totalSell || "",
-      t2By: errors.uploadedBy || ""
-    };
+  function errorMap(which) {
+    if (which === "t2") {
+      return {
+        category: "fCategory",
+        service: "fService",
+        country: "fCountry",
+        currency: "fCurrency",
+        charge: "fCharge",
+        margin: "fMargin"
+      };
+    }
+    const map = { category: "fCategory", product: "fProduct" };
+    if (which === "t1") map.units = "fUnits";
+    return map;
   }
 
-  function openMain(main) {
-    state.main = main === "engine" ? "engine" : "tables";
-    paintTabs();
-  }
+  document.getElementById("trayForm").addEventListener("submit", function (event) {
+    event.preventDefault();
+    const which = trayMode.which;
+    const result = readTray();
+    const map = errorMap(which);
+    if (!result.ok) {
+      showFieldErrors(result.errors, map);
+      return;
+    }
+    const row = stamp(result.row);
+    const keyFn = keyFor(which);
+    if (trayMode.id) {
+      const clash = state[which].some(function (current) {
+        return current.id !== trayMode.id && keyFn(current) === keyFn(row);
+      });
+      if (clash) {
+        const message = which === "t2"
+          ? "A row for this category, service, and country already exists."
+          : "A row for this category and product already exists.";
+        showFieldErrors({ category: message }, map);
+        return;
+      }
+      state[which] = state[which].map(function (current) {
+        if (current.id !== trayMode.id) return current;
+        return Object.assign({}, row, { id: current.id });
+      });
+      saveState();
+      render(which);
+      closeTray();
+      toast("Row updated. Uploaded on is " + formatDate(row.uploadedOn) + ".");
+      return;
+    }
+    row.id = which + "-" + (seq++);
+    const applied = applyRows(state[which], [row], keyFn);
+    state[which] = applied.rows;
+    saveState();
+    render(which);
+    closeTray();
+    const label = which === "t2"
+      ? row.category + " / " + row.service + " / " + row.country
+      : row.category + " / " + row.product;
+    toast(applied.replaced ? "Replaced " + label + "." : "Added " + label + ".");
+  });
 
-  function openSub(sub) {
-    state.main = "tables";
-    state.sub = sub === "t2" ? "t2" : "t1";
-    paintTabs();
-  }
+  document.getElementById("trayClose").addEventListener("click", closeTray);
+  document.getElementById("trayCancel").addEventListener("click", closeTray);
+  document.getElementById("trayBackdrop").addEventListener("click", closeTray);
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") closeTray();
+  });
 
-  function applyHash() {
-    const hash = (location.hash || "").replace("#", "");
-    if (hash === "engine") openMain("engine");
-    else if (hash === "matrix") openSub("t2");
-    else openSub("t1");
-  }
+  ["cat", "t1", "t2"].forEach(function (which) {
+    document.getElementById(which + "Add").addEventListener("click", function () { openTray(which, null); });
+    bindUpload(which);
+  });
+
+  document.getElementById("catDownload").addEventListener("click", function () {
+    download("product-category-mapping.csv", toCsv(
+      ["Product Category", "Product"],
+      state.cat.map(function (row) { return [row.category, row.product]; })
+    ));
+  });
+  document.getElementById("t1Download").addEventListener("click", function () {
+    download("man-day-mapping.csv", toCsv(
+      ["Product Category", "Product", "Units inspectable in 1 man day"],
+      state.t1.map(function (row) { return [row.category, row.product, row.units]; })
+    ));
+  });
+  document.getElementById("t2Download").addEventListener("click", function () {
+    download("pricing-matrix.csv", toCsv(
+      ["Product Category", "Service level", "Country", "Currency", "Charge per man day", "Margin"],
+      state.t2.map(function (row) { return [row.category, row.service, row.country, row.currency, row.charge, row.margin + "%"]; })
+    ));
+  });
 
   document.querySelectorAll("[data-main]").forEach(function (el) {
     el.addEventListener("click", function () { openMain(el.getAttribute("data-main")); });
@@ -1123,96 +1265,29 @@
   document.querySelectorAll("[data-sub]").forEach(function (el) {
     el.addEventListener("click", function () { openSub(el.getAttribute("data-sub")); });
   });
-  document.getElementById("backToTables").addEventListener("click", function () { openSub(state.sub); });
-
-  document.getElementById("t1Download").addEventListener("click", function () {
-    download("product-category-mapping.csv", t1Csv());
-  });
-  document.getElementById("t2Download").addEventListener("click", function () {
-    download("pricing-matrix.csv", t2Csv());
-  });
-  bindUpload("t1");
-  bindUpload("t2");
-
-  document.getElementById("t1Form").addEventListener("submit", function (event) {
-    event.preventDefault();
-    const ids = ["t1Category", "t1Product", "t1Units", "t1By"];
-    clearFieldErrors(ids);
-    const result = validateT1({
-      category: document.getElementById("t1Category").value,
-      product: document.getElementById("t1Product").value,
-      units: document.getElementById("t1Units").value,
-      uploadedBy: document.getElementById("t1By").value,
-      uploadedOn: todayIso()
-    }, todayIso());
-    if (!result.ok) {
-      const map = fieldMapT1(result.errors);
-      const shown = {};
-      Object.keys(map).forEach(function (id) { if (map[id]) shown[id] = map[id]; });
-      showFieldErrors(shown);
-      return;
-    }
-    result.row.id = "t1-" + (seq++);
-    const applied = applyRows(state.t1, [result.row], keyT1);
-    state.t1 = applied.rows;
-    saveState();
-    renderT1();
-    document.getElementById("t1Product").value = "";
-    document.getElementById("t1Units").value = "";
-    const label = result.row.category + " / " + result.row.product;
-    toast(applied.replaced ? "Replaced " + label + ". Valid from is " + formatDate(result.row.uploadedOn) + "." : "Added " + label + ".");
-  });
-
-  document.getElementById("t2Form").addEventListener("submit", function (event) {
-    event.preventDefault();
-    const ids = ["t2Category", "t2Service", "t2Country", "t2Currency", "t2Charge", "t2Margin", "t2Total", "t2By"];
-    clearFieldErrors(ids);
-    const result = validateT2({
-      category: document.getElementById("t2Category").value,
-      service: document.getElementById("t2Service").value,
-      country: document.getElementById("t2Country").value,
-      currency: document.getElementById("t2Currency").value,
-      charge: document.getElementById("t2Charge").value,
-      margin: document.getElementById("t2Margin").value,
-      uploadedBy: document.getElementById("t2By").value,
-      uploadedOn: todayIso()
-    }, todayIso());
-    if (!result.ok) {
-      const map = fieldMapT2(result.errors);
-      const shown = {};
-      Object.keys(map).forEach(function (id) { if (map[id]) shown[id] = map[id]; });
-      showFieldErrors(shown);
-      return;
-    }
-    result.row.id = "t2-" + (seq++);
-    const applied = applyRows(state.t2, [result.row], keyT2);
-    state.t2 = applied.rows;
-    saveState();
-    renderT2();
-    document.getElementById("t2Charge").value = "";
-    document.getElementById("t2Margin").value = "";
-    document.getElementById("t2Total").value = "Calculated";
-    const label = result.row.category + " / " + result.row.service + " / " + result.row.country;
-    toast(applied.replaced ? "Replaced " + label + ". Valid from is " + formatDate(result.row.uploadedOn) + "." : "Added " + label + ".");
-  });
-
-  ["t2Charge", "t2Margin"].forEach(function (id) {
-    document.getElementById(id).addEventListener("input", refreshTotalPreview);
-  });
+  document.getElementById("backToTables").addEventListener("click", function () { openMain("tables"); });
 
   document.body.addEventListener("click", function (event) {
+    const edit = event.target.closest("[data-edit]");
+    if (edit) {
+      const which = edit.getAttribute("data-edit");
+      const id = edit.getAttribute("data-id");
+      const row = state[which].find(function (item) { return item.id === id; });
+      if (row) openTray(which, row);
+      return;
+    }
     const button = event.target.closest("[data-remove]");
     if (!button) return;
     const which = button.getAttribute("data-remove");
     const id = button.getAttribute("data-id");
     state[which] = state[which].filter(function (row) { return row.id !== id; });
     saveState();
-    if (which === "t1") renderT1();
-    else renderT2();
+    render(which);
     toast("Row removed.");
   });
 
   loadState();
+  renderCat();
   renderT1();
   renderT2();
   applyHash();
