@@ -27,6 +27,7 @@ Interactive HTML prototypes for Silq product features. Hosted via GitHub Pages.
 | `comments-audit-log/` | Comment Versioning & Audit Trail (roles + tracked changes) | AM |
 | `product-metadata-ops-review.html` | Product Information — Ops Review (catalog layers, sources, gaps, feedback) | AM |
 | `container-utilization.html` | Container Utilization (FCL/FTL volume on the list, overall on the shipment) | AM |
+| `route-history.html` | Route history side panel (stops, dates, carrier, and actions since project creation) | AM |
 
 ## Adding a new prototype
 
