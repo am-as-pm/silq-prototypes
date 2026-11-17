@@ -184,6 +184,8 @@
     outline: none; border-color: var(--silq-navy); box-shadow: 0 0 0 2px rgba(18, 52, 59, 0.60);
   }
   .facts { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px 16px; }
+  .facts .facts-warn { grid-column: 1 / -1; margin-bottom: 0; }
+  .fld-warn .v.ro { background: var(--bg-warning); border-color: #FCD1A7; color: var(--warning-text); }
   .kpi { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
   .kpi div { background: var(--silq-grey-50); border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 12px; }
   .kpi span { display: block; font: var(--type-micro-semi-bold); color: var(--text-secondary); text-transform: uppercase; letter-spacing: var(--tracking-wide); }
@@ -926,7 +928,7 @@ function enrich(l, s, q) {
 const QUOTES = [
   {
     id: 'apex', quoteId: 'SILQ-482910Q1', client: 'Apex Outdoor', mode: 'FCL',
-    quoteValidTill: '2026-09-15', cargoReady: '2026-08-18',
+    quoteValidTill: '2026-08-15', cargoReady: '2026-08-18',
     projectId: 'PRJ-482910', projectName: 'Apex Yantian to Los Angeles',
     shipments: [
       {
@@ -1865,11 +1867,29 @@ function qcOptions(current) {
 function fileNoun(s) {
   return s && s.mode === 'Inspections' ? 'quote' : 'shipment';
 }
-function factCell(k, v, tipId) {
+function factCell(k, v, tipId, warn) {
   const label = tipId
     ? `<label class="lbl-with-tip">${k}<button type="button" class="silq-icon-btn silq-icon-btn--xs" data-tip="${tipId}" aria-label="${k}" aria-describedby="${tipId}">${ICON_INFO}</button></label>`
     : `<label>${k}</label>`;
-  return `<div class="fld">${label}<div class="v ro">${v}</div></div>`;
+  return `<div class="fld${warn ? ' fld-warn' : ''}">${label}<div class="v ro">${v}</div></div>`;
+}
+function crdAfterValidity(q, s) {
+  const till = (q && q.quoteValidTill) || '';
+  return {
+    latest: !!(till && q.cargoReady && till < q.cargoReady),
+    actual: !!(till && s.actualCrd && till < s.actualCrd)
+  };
+}
+function validityBanner(q, s, flags) {
+  if (!flags.latest && !flags.actual) return '';
+  const till = fmtDate(q.quoteValidTill);
+  let which = 'the actual cargo ready date (' + fmtDate(s.actualCrd) + ')';
+  if (flags.latest && flags.actual) {
+    which = 'the cargo ready date on the latest quote (' + fmtDate(q.cargoReady) + ') and the actual cargo ready date (' + fmtDate(s.actualCrd) + ')';
+  } else if (flags.latest) {
+    which = 'the cargo ready date on the latest quote (' + fmtDate(q.cargoReady) + ')';
+  }
+  return `<div class="warn facts-warn">Quote valid till (${till}) ends before ${which}.</div>`;
 }
 function renderFacts() {
   const q = quote();
@@ -1914,13 +1934,19 @@ function renderFacts() {
       rows.push(['HBL quantity', qtyFacts(s, false)]);
     }
   }
-  const cell = ([k, v, tip]) => factCell(k, v, tip);
+  const cell = ([k, v, tip, warn]) => factCell(k, v, tip, warn);
   const qc = `<div class="fld"><label for="qcName">QC Name</label><select class="input" id="qcName">${qcOptions(s.qcName || '')}</select></div>`;
   let html;
   if (s.mode === 'Inspections') {
     html = rows.slice(0, 7).map(cell).join('') + qc + rows.slice(7).map(cell).join('');
   } else {
-    html = rows.map(cell).join('');
+    const flags = crdAfterValidity(q, s);
+    rows.forEach(row => {
+      if (row[0] === 'Quote valid till') row[3] = flags.latest || flags.actual;
+      if (row[0] === 'Cargo ready date (latest quote)') row[3] = flags.latest;
+      if (row[0] === 'Actual cargo ready date') row[3] = flags.actual;
+    });
+    html = validityBanner(q, s, flags) + rows.map(cell).join('');
   }
   document.getElementById('facts').innerHTML = html;
 }
