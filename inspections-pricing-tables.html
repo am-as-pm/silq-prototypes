@@ -445,23 +445,97 @@
 (function () {
   const SERVICES = ["Final", "Inline", "Pre production", "Factory", "TOP", "ALL"];
   const SESSION_USER = "Shivam";
-  const STORE_KEY = "silq-inspections-pricing-v3";
+  const STORE_KEY = "silq-inspections-pricing-v4";
   const COUNTRIES = ["Bangladesh", "Cambodia", "China", "India", "Indonesia", "Malaysia", "Pakistan", "Sri Lanka", "Thailand", "Turkey", "Vietnam"];
   const CURRENCIES = ["USD", "EUR", "GBP", "CNY", "INR", "VND", "BDT", "IDR", "THB", "MYR", "PKR", "LKR", "KHR", "TRY"];
 
   const SEED_CAT = [
-    { category: "Furniture", product: "Beds" },
-    { category: "Furniture", product: "Chairs" },
-    { category: "Apparel", product: "T shirts" }
+  { category: "Apparel & Garments", product: "T-shirts" },
+  { category: "Apparel & Garments", product: "polo shirts" },
+  { category: "Apparel & Garments", product: "hoodies and zip-up hoodies" },
+  { category: "Apparel & Garments", product: "jackets and denim jackets" },
+  { category: "Apparel & Garments", product: "trousers and denim jeans" },
+  { category: "Apparel & Garments", product: "shorts" },
+  { category: "Apparel & Garments", product: "leggings" },
+  { category: "Apparel & Garments", product: "lingerie and loungewear" },
+  { category: "Apparel & Garments", product: "maternity wear" },
+  { category: "Apparel & Garments", product: "infant wear" },
+  { category: "Apparel & Garments", product: "kidswear" },
+  { category: "Apparel & Garments", product: "caps" },
+  { category: "Baby & Nursery Products", product: "Wooden bassinets" },
+  { category: "Baby & Nursery Products", product: "smart bassinets" },
+  { category: "Baby & Nursery Products", product: "cribs" },
+  { category: "Baby & Nursery Products", product: "travel cribs" },
+  { category: "Baby & Nursery Products", product: "baby rockers" },
+  { category: "Footwear", product: "Sports shoes" },
+  { category: "Footwear", product: "casual shoes" },
+  { category: "Footwear", product: "boots" },
+  { category: "Footwear", product: "rain boots" },
+  { category: "Footwear", product: "sandals" },
+  { category: "Bags, Leather Goods & Accessories", product: "Handbags" },
+  { category: "Bags, Leather Goods & Accessories", product: "tote bags" },
+  { category: "Bags, Leather Goods & Accessories", product: "backpacks" },
+  { category: "Bags, Leather Goods & Accessories", product: "travel bags" },
+  { category: "Bags, Leather Goods & Accessories", product: "train cases" },
+  { category: "Bags, Leather Goods & Accessories", product: "toiletry bags" },
+  { category: "Bags, Leather Goods & Accessories", product: "zipper pouches" },
+  { category: "Bags, Leather Goods & Accessories", product: "laptop sleeves" },
+  { category: "Bags, Leather Goods & Accessories", product: "wallets" },
+  { category: "Bags, Leather Goods & Accessories", product: "card holders" },
+  { category: "Bags, Leather Goods & Accessories", product: "wrist straps" },
+  { category: "Home Textiles", product: "Fitted sheets" },
+  { category: "Home Textiles", product: "pillow covers" },
+  { category: "Home Textiles", product: "mattress covers" },
+  { category: "Home Textiles", product: "comforters" },
+  { category: "Home Textiles", product: "blankets" },
+  { category: "Home Textiles", product: "tablecloths" },
+  { category: "Home Textiles", product: "kitchen towels" },
+  { category: "Home Textiles", product: "hand towels" },
+  { category: "Furniture", product: "Chests of drawers" },
+  { category: "Furniture", product: "sofas" },
+  { category: "Furniture", product: "beds" },
+  { category: "Furniture", product: "chairs" },
+  { category: "Furniture", product: "dining" },
+  { category: "Kitchenware & Household", product: "Food storage containers" },
+  { category: "Kitchenware & Household", product: "fridge storage containers" },
+  { category: "Kitchenware & Household", product: "glass containers" },
+  { category: "Kitchenware & Household", product: "storage tins" },
+  { category: "Kitchenware & Household", product: "plastic baskets" },
+  { category: "Kitchenware & Household", product: "kitchen trays" },
+  { category: "Home Décor", product: "Table décor" },
+  { category: "Home Décor", product: "night lamps" },
+  { category: "Home Décor", product: "scented candles" },
+  { category: "Electrical & Electronics", product: "Smart locks" },
+  { category: "Electrical & Electronics", product: "gas alarms" },
+  { category: "Electrical & Electronics", product: "lighting" },
+  { category: "Toys & Games", product: "Plastic toys" },
+  { category: "Toys & Games", product: "chess boards" },
+  { category: "Toys & Games", product: "skee-ball games" },
+  { category: "Pet Products", product: "Steel pet gates and fences" },
+  { category: "Pet Products", product: "dog bags and carriers" },
+  { category: "Packaging", product: "Corrugated cardboard boxes" },
+  { category: "Packaging", product: "gift boxes" },
+  { category: "Packaging", product: "jewellery boxes" },
+  { category: "Packaging", product: "cookie boxes" },
+  { category: "Packaging", product: "envelopes" },
+  { category: "Packaging", product: "glass bottles" },
+  { category: "Paper Products & Disposables", product: "Paper cups" },
+  { category: "Paper Products & Disposables", product: "paper straws" },
+  { category: "Paper Products & Disposables", product: "toilet paper" },
+  { category: "Paper Products & Disposables", product: "vinyl paper" },
+  { category: "Industrial Valves & Fittings", product: "Gate valves" },
+  { category: "Industrial Valves & Fittings", product: "globe check valves" },
+  { category: "Industrial Valves & Fittings", product: "swing check valves" },
+  { category: "Industrial Valves & Fittings", product: "Y-strainers" },
+  { category: "Industrial Valves & Fittings", product: "stainless steel nipples" },
+  { category: "Industrial Valves & Fittings", product: "dielectric nipples" },
+  { category: "Industrial Valves & Fittings", product: "steel manifolds" },
+  { category: "Automotive & Electric Vehicles", product: "EV trucks" }
   ];
-  const SEED_T1 = [
-    { category: "Furniture", product: "Beds", units: 15, uploadedOn: "2026-11-11", uploadedBy: "Shivam" },
-    { category: "Furniture", product: "Chairs", units: 30, uploadedOn: "2026-11-11", uploadedBy: "Shivam" },
-    { category: "Apparel", product: "T shirts", units: 600, uploadedOn: "2026-11-11", uploadedBy: "Shivam" }
-  ];
+const SEED_T1 = [];
   const SEED_T2 = [
     { category: "Furniture", service: "Inline", country: "China", currency: "USD", charge: 150, margin: 10, uploadedOn: "2026-11-11", uploadedBy: "Shivam" },
-    { category: "Apparel", service: "Final", country: "China", currency: "USD", charge: 100, margin: 5, uploadedOn: "2026-11-11", uploadedBy: "Shivam" },
+    { category: "Apparel & Garments", service: "Final", country: "China", currency: "USD", charge: 100, margin: 5, uploadedOn: "2026-11-11", uploadedBy: "Shivam" },
     { category: "Furniture", service: "Final", country: "China", currency: "USD", charge: 180, margin: 10, uploadedOn: "2026-11-11", uploadedBy: "Milli" }
   ];
 
