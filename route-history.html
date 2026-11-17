@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Route history · Silq</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gray-0: #fff;
+      --gray-100: #f8f8f8;
+      --gray-150: #f2f2f2;
+      --gray-200: #ebebeb;
+      --gray-300: #d5d5d5;
+      --gray-400: #b1b1b1;
+      --gray-500: #909090;
+      --gray-600: #6c6c6c;
+      --gray-700: #464646;
+      --gray-800: #202020;
+      --gray-900: #111;
+      --accent: #334bfa;
+      --accent-100: #ebedff;
+      --info-100: #e7f5ff;
+      --info-900: #0d47a4;
+      --success-100: #eaf6ed;
+      --success-700: #1e7339;
+      --danger-100: #fdecec;
+      --danger-700: #b42318;
+      --warning-100: #fef5e8;
+      --warning-700: #9a6700;
+      --app-bg: #f5f6f7;
+      --shadow-ui: 0 1px 2px 0 #00000014;
+      --shadow-nav: 2px 2px 0 0 rgba(0, 0, 0, 0.15), 1px 1px 2px 0 rgba(0, 0, 0, 0.08);
+      --shadow-panel: 0 2px 1px 0 rgba(0, 0, 0, 0.13), -2px 0 12px 0 rgba(0, 0, 0, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      font-family: Inter, system-ui, sans-serif;
+      background: var(--app-bg);
+      color: var(--gray-800);
+      font-size: 14px;
+      letter-spacing: -0.002em;
+    }
+    button { font-family: inherit; cursor: pointer; }
+    .app {
+      display: grid;
+      grid-template-columns: 208px minmax(0, 1fr);
+      height: 100%;
+      min-height: 0;
+    }
+    .app.is-collapsed { grid-template-columns: 88px minmax(0, 1fr); }
+    .sidebar {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      min-height: 0;
+      padding: 24px 0 20px;
+    }
+    .org {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 8px;
+      margin: 0 20px;
+    }
+    .org-name {
+      font-family: "Bebas Neue", sans-serif;
+      font-size: 18px;
+      line-height: 18px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #171717;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .collapse-btn, .org-mark {
+      display: grid;
+      place-items: center;
+      width: 20px;
+      height: 20px;
+      padding: 0;
+      border: 0;
+      border-radius: 5px;
+      background: transparent;
+      color: var(--gray-500);
+    }
+    .collapse-btn:hover { background: white; color: var(--gray-800); }
+    .org-mark { display: none; width: 40px; height: 40px; border-radius: 8px; background: var(--gray-800); color: white; font-weight: 600; }
+    .nav-scroll {
+      overflow: auto;
+      margin: 24px 0;
+      padding: 0 20px;
+      display: grid;
+      align-content: start;
+      grid-template-rows: auto 1fr;
+      gap: 24px;
+    }
+    .nav-group { display: grid; gap: 8px; align-content: start; }
+    .nav-link {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: center;
+      gap: 4px;
+      height: 30px;
+      padding: 0 4px;
+      border: 1px solid transparent;
+      border-radius: 5px;
+      background: transparent;
+      color: var(--gray-800);
+      font-size: 14px;
+      text-align: left;
+    }
+    .nav-link.is-selected {
+      background: white;
+      border-color: #042868;
+      box-shadow: var(--shadow-nav);
+    }
+    .nav-link:hover:not(.is-selected) { background: rgba(0, 0, 0, 0.05); }
+    .nav-ico { display: grid; place-items: center; width: 24px; color: #1c1f21; }
+    .nav-link.is-selected .nav-ico { color: #ef6445; }
+    .nav-block { display: grid; border-radius: 5px; }
+    .nav-block.is-open, .nav-block:hover { background: rgba(0, 0, 0, 0.05); }
+    .group-head {
+      display: grid;
+      grid-template-columns: 16px minmax(0, 1fr) auto;
+      gap: 4px;
+      align-items: center;
+      height: 30px;
+      padding: 0 6px;
+      border: 0;
+      border-radius: 5px;
+      background: transparent;
+      color: var(--gray-800);
+      font-size: 14px;
+      text-align: left;
+    }
+    .group-head span { text-transform: capitalize; }
+    .chevron { opacity: 0; transition: opacity 0.2s; }
+    .nav-block:hover .chevron, .nav-block.is-open .chevron { opacity: 1; }
+    .nav-block.is-open .chevron { transform: rotate(180deg); }
+    .nav-sub { display: none; padding: 0 8px 6px 28px; gap: 2px; }
+    .nav-block.is-open .nav-sub { display: grid; }
+    .nav-sub .nav-link {
+      grid-template-columns: 1fr;
+      height: 30px;
+      padding: 0 10px;
+      font-size: 14px;
+    }
+    .app.is-collapsed .org-name,
+    .app.is-collapsed .nav-link span,
+    .app.is-collapsed .group-head span,
+    .app.is-collapsed .chevron,
+    .app.is-collapsed .nav-sub,
+    .app.is-collapsed .powered span,
+    .app.is-collapsed .powered .wordmark { display: none; }
+    .app.is-collapsed .org { grid-template-columns: 1fr; justify-items: center; margin: 0; }
+    .app.is-collapsed .collapse-btn { display: none; }
+    .app.is-collapsed .org-mark { display: grid; }
+    .app.is-collapsed .nav-link, .app.is-collapsed .group-head { justify-content: center; grid-template-columns: auto; }
+    .app.is-collapsed .powered { justify-content: center; }
+    .app.is-collapsed .powered .bird { display: block; }
+    .powered .bird { display: none; }
+    .powered {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 20px;
+      color: var(--gray-500);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+    .canvas-wrap { padding: 12px 12px 0 0; min-width: 0; min-height: 0; }
+    .canvas {
+      position: relative;
+      height: 100%;
+      background: white;
+      border-radius: 12px 12px 0 0;
+      box-shadow: var(--shadow-panel);
+      display: grid;
+      grid-template-rows: 56px minmax(0, 1fr);
+      overflow: hidden;
+    }
+    .topnav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      height: 56px;
+      padding: 0 20px;
+      border-bottom: 1px solid var(--gray-200);
+      z-index: 2;
+    }
+    .page-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      font-size: 16px;
+      font-weight: 600;
+    }
+    .page-title .sep { color: var(--gray-400); font-weight: 400; }
+    .page-title .sub { font-size: 13px; font-weight: 400; color: var(--gray-700); }
+    .top-actions { display: flex; align-items: center; gap: 8px; }
+    .view-switch {
+      display: flex;
+      padding: 2px;
+      border: 1px solid var(--gray-300);
+      border-radius: 8px;
+      background: var(--gray-100);
+    }
+    .view-switch button {
+      height: 28px;
+      padding: 0 10px;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--gray-600);
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .view-switch button.is-on { background: white; color: var(--gray-900); box-shadow: var(--shadow-ui); }
+    .icon-btn {
+      width: 32px;
+      height: 32px;
+      border: 0;
+      border-radius: 5px;
+      background: var(--gray-100);
+      color: var(--gray-800);
+      display: grid;
+      place-items: center;
+    }
+    .avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #17324d;
+      color: white;
+      display: grid;
+      place-items: center;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    #view { overflow: auto; min-height: 0; }
+    .screen { min-width: 0; padding: 20px 28px 48px; display: grid; gap: 16px; align-content: start; }
+    .screen[hidden] { display: none; }
+    .kicker { margin: 0; color: var(--gray-600); font-size: 13px; }
+    .ship-line { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .sid { font-size: 20px; font-weight: 600; letter-spacing: -0.02em; }
+    .badge, .pill, .action-chip, .place-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      height: 22px;
+      padding: 0 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .badge { border: 1px solid var(--gray-300); background: white; color: var(--gray-700); box-shadow: var(--shadow-ui); }
+    .badge.ok { background: var(--success-100); border-color: transparent; color: var(--success-700); }
+    .pill { border-radius: 6px; background: var(--info-100); color: var(--info-900); height: 24px; }
+    .history-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 32px;
+      padding: 0 10px 0 12px;
+      white-space: nowrap;
+      border: 1px solid var(--gray-400);
+      border-radius: 5px;
+      background: white;
+      color: var(--gray-900);
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: var(--shadow-ui);
+    }
+    .history-btn:hover { background: var(--gray-100); }
+    .history-btn.is-on { background: var(--accent-100); border-color: var(--accent); color: #1e2a8a; }
+    .count {
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      border-radius: 999px;
+      background: var(--accent);
+      color: white;
+      font-size: 11px;
+      line-height: 18px;
+      text-align: center;
+    }
+    .history-btn.is-on .count { background: #1e2a8a; }
+    .banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: var(--success-100);
+      color: var(--success-700);
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .banner.warn { background: #fde8e8; color: #9b1c1c; }
+    .route-note {
+      margin: 0;
+      padding: 8px 12px;
+      border-radius: 8px;
+      background: var(--accent-100);
+      color: #1e2a8a;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .route-note[hidden] { display: none; }
+    .card {
+      border: 1px solid var(--gray-200);
+      border-radius: 12px;
+      background: white;
+    }
+    .card-h {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--gray-200);
+    }
+    .card-h h2 { margin: 0; font-size: 15px; font-weight: 600; }
+    .card-h p { margin: 2px 0 0; color: var(--gray-600); font-size: 12px; }
+    .meta-row { display: flex; flex-wrap: wrap; gap: 8px 16px; color: var(--gray-600); font-size: 12px; }
+    .meta-row strong { color: var(--gray-800); font-weight: 600; }
+    .hroute {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      padding: 22px 16px 18px;
+    }
+    .hroute.has-ghost { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    .hnode { position: relative; display: grid; gap: 2px; padding: 8px 8px 8px 0; border-radius: 8px; }
+    .hnode::before {
+      content: "";
+      position: absolute;
+      top: 14px;
+      left: 18px;
+      right: -8px;
+      height: 2px;
+      background: var(--gray-300);
+      z-index: 0;
+    }
+    .hnode:last-child::before { display: none; }
+    .hdot {
+      position: relative;
+      z-index: 1;
+      width: 12px;
+      height: 12px;
+      margin: 2px 0 6px;
+      border: 2px solid white;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent);
+    }
+    .hnode.is-later .hdot { background: var(--gray-400); box-shadow: 0 0 0 2px var(--gray-300); }
+    .hname { font-size: 13px; font-weight: 600; }
+    .hmeta, .hdate { color: var(--gray-600); font-size: 12px; }
+    .hnode.is-hit { background: var(--accent-100); box-shadow: inset 3px 0 0 var(--accent); }
+    .hnode.is-later { box-shadow: inset 0 0 0 1px var(--gray-300); }
+    .ghost-oak[hidden] { display: none !important; }
+    .not-yet, .removed-tag {
+      display: none;
+      height: 18px;
+      padding: 0 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+    .is-later .not-yet { display: inline-flex; align-items: center; background: var(--gray-150); color: var(--gray-600); }
+    .is-removed .removed-tag { display: inline-flex; align-items: center; background: var(--danger-100); color: var(--danger-700); }
+    .is-removed .hname, .is-removed .place-name { text-decoration: line-through; }
+    .steps { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+    .step { display: grid; gap: 4px; }
+    .step .bar { height: 4px; border-radius: 99px; background: var(--success-700); }
+    .step.wait .bar { background: var(--gray-300); }
+    .step b { font-size: 12px; }
+    .step span { color: var(--gray-500); font-size: 12px; }
+    .rtable { display: grid; }
+    .rhead { display: none; }
+    .rrow {
+      display: grid;
+      grid-template-columns: 16px minmax(0, 1fr);
+      gap: 4px 10px;
+      align-items: start;
+      padding: 12px 16px;
+    }
+    .rrow > :not(.rail) { grid-column: 2; }
+    .rrow .rail { grid-row: 1 / span 2; margin-top: 4px; }
+    .rrow { position: relative; border-bottom: 1px solid var(--gray-200); border-radius: 0; }
+    .rrow:last-child { border-bottom: 0; }
+    .rrow:not(:last-child)::before {
+      content: "";
+      position: absolute;
+      left: 20px;
+      top: 26px;
+      bottom: 0;
+      width: 2px;
+      background: var(--gray-300);
+    }
+    .rrow.is-hit { background: var(--accent-100); box-shadow: inset 3px 0 0 var(--accent); }
+    .rrow.is-later { background: var(--gray-100); }
+    .rail {
+      position: relative;
+      z-index: 1;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: white;
+      border: 2px solid var(--accent);
+    }
+    .place-name { font-weight: 600; font-size: 14px; }
+    .place-sub { color: var(--gray-600); font-size: 12px; margin-top: 2px; }
+    .when { display: flex; flex-wrap: wrap; gap: 2px 10px; align-items: baseline; font-size: 12px; }
+    .when b { font-weight: 600; color: var(--gray-800); }
+    .when span { color: var(--gray-500); }
+    .rrow.is-later .place-sub { color: var(--gray-500); }
+    .chips { display: flex; flex-wrap: wrap; gap: 4px; }
+    .action-chip { height: 22px; border-radius: 6px; border: 1px solid var(--gray-300); background: white; color: var(--gray-700); font-weight: 500; }
+    .split {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 300px;
+      gap: 20px;
+      align-items: start;
+    }
+    .fields {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px 24px;
+      padding: 4px 0 8px;
+    }
+    .field .lab { color: var(--gray-500); font-size: 12px; }
+    .field .val { margin-top: 2px; font-size: 14px; font-weight: 500; }
+    .tabs { display: flex; gap: 18px; border-bottom: 1px solid var(--gray-200); }
+    .tabs button {
+      height: 36px;
+      padding: 0;
+      border: 0;
+      border-bottom: 2px solid transparent;
+      background: none;
+      color: var(--gray-500);
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .tabs button.is-on { color: var(--gray-900); border-bottom-color: var(--gray-900); }
+    .overview { display: grid; gap: 12px; padding: 12px; border-radius: 12px; background: var(--accent-100); }
+    .ov-card { padding: 12px; border-radius: 10px; background: white; display: grid; gap: 8px; }
+    .ov-card h3 { margin: 0; font-size: 13px; font-weight: 600; }
+    .stat { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; }
+    .stat span { color: var(--gray-600); }
+    .vtime { display: grid; gap: 0; padding: 4px 2px 2px; }
+    .vnode { display: grid; grid-template-columns: 16px 1fr; gap: 8px; }
+    .vnode .tick { display: flex; flex-direction: column; align-items: center; }
+    .vnode .tick i { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+    .vnode .tick b { width: 2px; flex: 1; min-height: 22px; background: var(--gray-300); }
+    .vnode:last-child .tick b { display: none; }
+    .vnode.is-hit .nm { background: white; border-radius: 6px; }
+    .nm { padding: 0 4px 12px; }
+    .nm strong { display: block; font-size: 13px; }
+    .nm span { color: var(--gray-600); font-size: 12px; }
+    .canvas.panel-open #view { padding-right: 400px; }
+    .panel {
+      position: absolute;
+      top: 56px;
+      right: 0;
+      bottom: 0;
+      width: 400px;
+      display: flex;
+      flex-direction: column;
+      background: white;
+      border-left: 1px solid var(--gray-200);
+      box-shadow: -10px 0 30px rgba(0, 0, 0, 0.08);
+      transform: translateX(104%);
+      transition: transform 280ms ease;
+      z-index: 4;
+    }
+    .panel.is-open { transform: translateX(0); }
+    .panel-h {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 20px 20px 8px;
+    }
+    .panel-h h2 { margin: 0; font-size: 20px; font-weight: 600; letter-spacing: -0.02em; }
+    .x {
+      width: 28px;
+      height: 28px;
+      border: 0;
+      border-radius: 5px;
+      background: transparent;
+      color: var(--gray-800);
+      display: grid;
+      place-items: center;
+    }
+    .x:hover { background: var(--gray-100); }
+    .context {
+      margin: 8px 20px 0;
+      padding: 12px;
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      display: grid;
+      gap: 8px;
+    }
+    .context .route-now { font-size: 13px; font-weight: 600; }
+    .context .since { color: var(--gray-600); font-size: 12px; line-height: 1.4; }
+    .filters { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 20px 0; }
+    .filters button {
+      height: 26px;
+      padding: 0 8px;
+      border: 1px solid var(--gray-300);
+      border-radius: 999px;
+      background: white;
+      color: var(--gray-700);
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .filters button.is-on { background: var(--gray-900); border-color: var(--gray-900); color: white; }
+    .hint { margin: 10px 20px 0; color: var(--gray-500); font-size: 12px; }
+    .log { position: relative; overflow: auto; padding: 8px 20px 24px; }
+    .link-btn {
+      justify-self: start;
+      height: 32px;
+      padding: 0 12px;
+      border: 1px solid var(--gray-400);
+      border-radius: 5px;
+      background: white;
+      color: var(--gray-900);
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: var(--shadow-ui);
+    }
+    .link-btn:hover { background: var(--gray-100); }
+    .month {
+      margin: 12px 0 8px;
+      color: var(--gray-500);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .event {
+      display: grid;
+      grid-template-columns: 16px minmax(0, 1fr);
+      gap: 10px;
+      width: 100%;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      text-align: left;
+      color: inherit;
+    }
+    .spine { display: flex; flex-direction: column; align-items: center; }
+    .dot {
+      width: 12px;
+      height: 12px;
+      margin-top: 2px;
+      border-radius: 50%;
+      background: #6c6c6c;
+      box-shadow: 0 0 0 4px #ebebeb;
+    }
+    .event.is-latest .dot, .event.is-selected .dot { background: var(--accent); box-shadow: 0 0 0 4px var(--accent-100); }
+    .stem { width: 1px; flex: 1; min-height: 12px; background: var(--gray-300); }
+    .event-body { padding-bottom: 18px; border-radius: 8px; }
+    .event.is-selected .event-body { background: #f7f8ff; margin-right: -8px; padding-right: 8px; }
+    .stamp { color: var(--gray-500); font-size: 11px; font-weight: 700; letter-spacing: 0.04em; }
+    .who { display: flex; gap: 8px; align-items: flex-start; margin-top: 6px; }
+    .who p { margin: 0; font-size: 13px; line-height: 1.45; color: var(--gray-800); }
+    .face {
+      width: 22px;
+      height: 22px;
+      flex: none;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 9px;
+      font-weight: 700;
+      border: 1.5px solid white;
+      box-shadow: var(--shadow-ui);
+    }
+    .face.person { background: var(--info-100); color: var(--info-900); }
+    .face.system { background: #fff1ee; color: #ef6445; }
+    .diffs { display: grid; gap: 6px; margin: 8px 0 0 30px; }
+    .diff {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+    }
+    .diff-k { color: var(--gray-500); min-width: 0; }
+    .from { color: var(--gray-500); text-decoration: line-through; }
+    .to { font-weight: 650; color: var(--gray-900); }
+    .arrow { color: var(--gray-400); }
+    .place-chip.add { background: var(--success-100); color: var(--success-700); }
+    .place-chip.cut { background: var(--danger-100); color: var(--danger-700); text-decoration: line-through; }
+    .chain { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+    .chain i { color: var(--gray-400); font-style: normal; }
+    .empty { padding: 24px 0; color: var(--gray-500); font-size: 13px; }
+    @media (max-width: 1100px) {
+      .split { grid-template-columns: 1fr; }
+      .screen { padding: 16px 16px 40px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app" id="app">
+    <aside class="sidebar">
+      <div class="org">
+        <div class="org-name">Pan Mar</div>
+        <button class="org-mark" type="button" data-action="collapse" aria-label="Expand navigation">P</button>
+        <button class="collapse-btn" type="button" data-action="collapse" aria-label="Collapse navigation">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18 3a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3h12ZM6 5a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h4V5H6Zm6 7 5 5V7l-5 5Z"/></svg>
+        </button>
+      </div>
+      <div class="nav-scroll">
+        <div class="nav-group">
+          <button class="nav-link is-selected" type="button" data-action="screen" data-screen="project" data-nav="projects">
+            <span class="nav-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M9.9 15.8H6.6v2.1h3.3v-2.1Zm8.1-2.7h-3.8V18h3.8v-4.9Zm-8.1-6.6H6.6v4.9h3.3V6.5Zm8.1 0h-3.8v2.2h3.8V6.5Z"/></svg></span>
+            <span>Projects</span>
+          </button>
+          <button class="nav-link" type="button" data-action="screen" data-screen="shipment" data-nav="shipments">
+            <span class="nav-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19.25 7A.75.75 0 0 1 20 7.75.75.75 0 0 1 19.25 8.5h-.87v8h.87a.75.75 0 0 1 0 1.5H5.75a.75.75 0 0 1 0-1.5h.87v-8h-.87a.75.75 0 0 1 0-1.5h13.5ZM8.12 16.5h8.76v-8H8.12v8Z"/></svg></span>
+            <span>Shipments</span>
+          </button>
+          <button class="nav-link" type="button">
+            <span class="nav-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="m9.2 14.8 4.2-4.2-1.1-1.1-3.1 3.1-1.4-1.4-1.1 1.1 2.5 2.5Zm-4.2 2.3V15.3a.75.75 0 0 1 1.5 0v1.8c0 .2.2.4.4.4h2.6a.75.75 0 0 1 0 1.5H6.9a1.9 1.9 0 0 1-1.9-1.9Z"/></svg></span>
+            <span>Inspections</span>
+          </button>
+        </div>
+        <div class="nav-group">
+          <div class="nav-block" data-group="quoting">
+            <button class="group-head" type="button" data-action="toggle">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 4h8l4 4v12H7a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M15 4v4h4M9 13h5"/></svg>
+              <span>Quoting</span>
+              <svg class="chevron" width="12" height="12" viewBox="0 0 12 12"><path d="M3 4.5 6 7.5 9 4.5" fill="none" stroke="currentColor" stroke-linecap="round"/></svg>
+            </button>
+            <div class="nav-sub">
+              <button class="nav-link" type="button"><span>Quotes</span></button>
+              <button class="nav-link" type="button"><span>Bookings</span></button>
+            </div>
+          </div>
+          <div class="nav-block" data-group="insights">
+            <button class="group-head" type="button" data-action="toggle">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>
+              <span>Insights</span>
+              <svg class="chevron" width="12" height="12" viewBox="0 0 12 12"><path d="M3 4.5 6 7.5 9 4.5" fill="none" stroke="currentColor" stroke-linecap="round"/></svg>
+            </button>
+            <div class="nav-sub">
+              <button class="nav-link" type="button"><span>Reports</span></button>
+              <button class="nav-link" type="button"><span>Analytics</span></button>
+            </div>
+          </div>
+          <div class="nav-block" data-group="my-business">
+            <button class="group-head" type="button" data-action="toggle">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 20h16M6 20V6h12v14M9 9h.01M12 9h.01M15 9h.01M9 12h.01M12 12h.01M15 12h.01"/></svg>
+              <span>My business</span>
+              <svg class="chevron" width="12" height="12" viewBox="0 0 12 12"><path d="M3 4.5 6 7.5 9 4.5" fill="none" stroke="currentColor" stroke-linecap="round"/></svg>
+            </button>
+            <div class="nav-sub">
+              <button class="nav-link" type="button"><span>Documents</span></button>
+              <button class="nav-link" type="button"><span>Network</span></button>
+            </div>
+          </div>
+          <div class="nav-block" data-group="tasks">
+            <button class="group-head" type="button" data-action="toggle">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg>
+              <span>Tasks</span>
+              <svg class="chevron" width="12" height="12" viewBox="0 0 12 12"><path d="M3 4.5 6 7.5 9 4.5" fill="none" stroke="currentColor" stroke-linecap="round"/></svg>
+            </button>
+            <div class="nav-sub">
+              <button class="nav-link" type="button"><span>Assigned to me</span></button>
+              <button class="nav-link" type="button"><span>Followed by me</span></button>
+              <button class="nav-link" type="button"><span>Active</span></button>
+            </div>
+          </div>
+          <div class="nav-block">
+            <button class="group-head" type="button">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 3h9l3 3v15H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M8 12h8M8 16h5"/></svg>
+              <span>Invoices</span>
+              <svg class="chevron" width="12" height="12" viewBox="0 0 12 12"><path d="M4.5 3 7.5 6 4.5 9" fill="none" stroke="currentColor" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="powered">
+        <span>POWERED BY</span>
+        <svg class="wordmark" width="55" height="22" viewBox="0 0 80 32" fill="none" aria-label="Silq">
+          <path fill="#052868" d="M63.9 4.8 59 6.3v18.8h4.9V4.8ZM56.9 11.7h-4.9v13.4h4.9V11.7ZM44.4 25.3c-1-.1-2.1-.1-3.1-.3-1.4-.3-2.5-.8-3.5-1.4v-3.3c.8.5 1.6.8 2.5 1.1 1.8.5 3.6.4 5.1-.4.3-.2.5-.6.5-1 0-.8-.7-1.3-2.2-1.8-1.6-.5-3.4-1.1-4.4-2.3-.4-.8-.5-1.7-.2-2.6.6-1.4 2.1-2.1 4.3-2.1 1.8 0 3.5.3 4.9 1v3.2c-1.3-.7-2.8-1-4.4-.9-.8 0-1.4.2-1.7.7-.1.4.1.8.6 1.1.8.4 1.7.6 2.6.9 2.1.6 3.6 1.6 4.1 3.2.3 1.1 0 2.2-.8 3-1 .8-2.5 1.2-4.2 1.2ZM54.4 5.5a2.3 2.3 0 1 0 .2 4.5 2.3 2.3 0 0 0-.2-4.5ZM75.3 24.3a6 6 0 0 1-3.3 1c-3.4 0-6.4-2.2-6.4-7.1 0-4.5 3.1-6.9 6.4-6.9 1.3 0 2.6.4 3.7 1.2l.1-1H80V30h-4.7v-5.7Zm-2.2-9.6c.8 0 1.6.3 2.2.8v5.7c-.5.4-1.1.7-2.2.7-1.7 0-2.9-1.5-2.9-3.6s1.2-3.6 2.9-3.6Z"/>
+          <path fill="#EF6445" d="M38 2.9 32.9 2C31.1 1.2 6.6 17.4 6.6 17.4l-.4 1.2L34.8 4.9C25.9 10.3 1 25.7 1 25.7c-.4.5-.5 1.2-.4 1.8.1.2.3.3.5.3 2.2-.4 11.5-1.9 14.8-2.9 8.3-2.4 11.6-5.6 13.5-8.6C32 12.8 38.1 3.7 38 2.9Zm-11.4 10.5c-.6 1.3-1.7 3.4-4.1 5.1-2.6 1.8-10 4.1-13.7 4.8l17.9-10.1c0 .1-.1.1-.1.2Z"/>
+        </svg>
+        <svg class="bird" width="40" height="32" viewBox="0 0 40 32" aria-hidden="true"><path fill="#EF6445" d="M38 3 33 2C31 1 7 17 7 17l-.4 1.2L35 5C26 10 1 26 1 26c-.2.1-.4.3-.5.5-.2.4-.3.8-.4 1.2 0 .1 0 .2.1.3l.1.1c.1.1.2.1.3.1 2.2-.4 11.5-1.9 14.8-2.9 8.3-2.4 11.6-5.6 13.5-8.6 2.2-3.4 8.4-12.5 9.2-13.3l.1-.1-.1-.1Z"/></svg>
+      </div>
+    </aside>
+
+    <div class="canvas-wrap">
+      <div class="canvas">
+        <header class="topnav">
+          <div class="page-title" id="page-title">
+            <span>Projects</span>
+            <span class="sep">/</span>
+            <span class="sub">SLQ-58681T6</span>
+          </div>
+          <div class="top-actions">
+            <div class="view-switch" role="tablist" aria-label="Screen">
+              <button type="button" data-action="screen" data-screen="project" role="tab">Project</button>
+              <button type="button" data-action="screen" data-screen="route" role="tab">Route</button>
+              <button type="button" data-action="screen" data-screen="shipment" role="tab">Shipment</button>
+            </div>
+            <button class="history-btn" type="button" data-action="history" aria-expanded="false">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2"/></svg>
+              Route history
+              <span class="count">12</span>
+            </button>
+            <span class="avatar" aria-hidden="true">AM</span>
+          </div>
+        </header>
+
+        <main id="view">
+          <section class="screen" id="screen-project" hidden>
+            <div>
+              <div class="ship-line">
+                <div class="sid">Pan Mar Konig FOB Port Klang to Dallas</div>
+                <span class="badge ok">Delivered</span>
+              </div>
+              <p class="kicker">Via LA/LB rail · SLQ-58681T6 · S1 · MEDU7044321 · 40'HC</p>
+            </div>
+            <div class="steps">
+              <div class="step"><div class="bar"></div><b>Quoting</b><span>15 Sep</span></div>
+              <div class="step"><div class="bar"></div><b>Origin</b><span>30 Oct</span></div>
+              <div class="step"><div class="bar"></div><b>Transit</b><span>12 Nov</span></div>
+              <div class="step"><div class="bar"></div><b>Destination</b><span>13 Nov</span></div>
+              <div class="step wait"><div class="bar"></div><b>Customer invoicing</b><span>Open</span></div>
+            </div>
+            <div class="banner warn">Shipment handover dates, Singapore routing, and last free time need checking.</div>
+            <p class="route-note" data-route-note hidden></p>
+            <article class="card">
+              <div class="card-h">
+                <div>
+                  <h2>Route</h2>
+                  <p>Port Klang to TX Warehouse, Grand Prairie. History runs from the day this project was created.</p>
+                </div>
+                <button class="history-btn" type="button" data-action="history">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2"/></svg>
+                  Route history
+                  <span class="count">12</span>
+                </button>
+              </div>
+              <div class="hroute" data-hroute>
+                <div class="hnode" data-node="mypkg"><div class="hdot"></div><div class="hname">Port Klang</div><div class="hmeta">MYPKG · Ocean</div><div class="hdate">Dep 23 Sep</div></div>
+                <div class="hnode ghost-oak" data-node="usoak" hidden><div class="hdot"></div><div class="hname">Oakland</div><div class="hmeta">USOAK</div><span class="removed-tag">Removed</span></div>
+                <div class="hnode" data-node="uslgb"><div class="hdot"></div><div class="hname">Long Beach</div><div class="hmeta">USLGB · 7 day dwell</div><div class="hdate">26 Oct – 02 Nov</div></div>
+                <div class="hnode" data-node="usdal"><div class="hdot"></div><div class="hname">Dallas</div><div class="hmeta">USDAL · Rail</div><div class="hdate">07 Nov – 10 Nov</div><span class="not-yet">Added later</span></div>
+                <div class="hnode" data-node="txwh"><div class="hdot"></div><div class="hname">TX Warehouse</div><div class="hmeta">Grand Prairie</div><div class="hdate">Arr 13 Nov</div></div>
+              </div>
+            </article>
+            <button class="link-btn" type="button" data-action="screen" data-screen="route">Open route editor</button>
+          </section>
+
+          <section class="screen" id="screen-route">
+            <div class="ship-line">
+              <div>
+                <div class="sid" style="font-size:18px">Route management</div>
+                <p class="kicker">Planning for SLQ-58681T6 · 1 shipment · S1</p>
+              </div>
+            </div>
+            <div class="card" style="padding:12px 14px">
+              <div class="ship-line">
+                <span class="pill">S1 · SLQ-58681T6</span>
+                <span class="kicker">MYPKG → USDAL · Cargo ready 04 Sep 2025</span>
+              </div>
+            </div>
+            <p class="route-note" data-route-note hidden></p>
+            <article class="card">
+              <div class="card-h">
+                <div class="meta-row">
+                  <span>Mode <strong>Ocean, then rail</strong></span>
+                  <span>Estimated CRD <strong>09/04/25</strong></span>
+                  <span>Actual CRD <strong>09/04/25</strong></span>
+                </div>
+                <button class="history-btn" type="button" data-action="history">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2"/></svg>
+                  Route history
+                  <span class="count">12</span>
+                </button>
+              </div>
+              <div class="rtable">
+                <div class="rhead"><div></div><div>Place</div><div>Arrival</div><div>Dwell</div><div>Departure</div><div>Actions</div></div>
+                <div class="rrow" data-node="mypkg">
+                  <div class="rail"></div>
+                  <div><div class="place-name">Port Klang</div><div class="place-sub">MYPKG · Ocean · MSC AMSTERDAM</div></div>
+                  <div class="when"><span>No arrival. First stop.</span></div>
+                  <div class="when"><span>Dwell </span><b>0 days</b></div>
+                  <div class="when"><div><span>ETA </span><b>09/23/25</b></div><div><span>ATD </span><b>09/23/25</b></div></div>
+                  <div class="chips"><span class="action-chip">Loading</span><span class="action-chip">Receipt</span></div>
+                </div>
+                <div class="rrow ghost-oak" data-node="usoak" hidden>
+                  <div class="rail"></div>
+                  <div><div class="place-name">Oakland</div><div class="place-sub">USOAK · Was a transship</div><span class="removed-tag">Removed</span></div>
+                  <div class="when"><div><span>ETA </span><b>10/12/25</b></div></div>
+                  <div class="when"><span>Dwell </span><b>2 days</b></div>
+                  <div class="when"><div><span>ETD </span><b>10/14/25</b></div></div>
+                  <div class="chips"><span class="action-chip">Transship</span></div>
+                </div>
+                <div class="rrow" data-node="uslgb">
+                  <div class="rail"></div>
+                  <div><div class="place-name">Long Beach</div><div class="place-sub">USLGB · Ocean discharge</div></div>
+                  <div class="when"><div><span>ETA </span><b>10/26/25</b></div><div><span>ATA </span><b>10/26/25</b></div></div>
+                  <div class="when"><span>Dwell </span><b>7 days</b></div>
+                  <div class="when"><div><span>ETD </span><b>11/02/25</b></div><div><span>ATD </span><b>11/02/25</b></div></div>
+                  <div class="chips"><span class="action-chip">Unloading</span></div>
+                </div>
+                <div class="rrow" data-node="usdal">
+                  <div class="rail"></div>
+                  <div>
+                    <div class="place-name">Dallas</div>
+                    <div class="place-sub">USDAL · Rail</div>
+                    <span class="not-yet">Added later</span>
+                  </div>
+                  <div class="when"><div><span>ETA </span><b>11/07/25</b></div><div><span>ATA </span><b>11/07/25</b></div></div>
+                  <div class="when"><span>Dwell </span><b>3 days</b></div>
+                  <div class="when"><div><span>ETD </span><b>11/10/25</b></div><div><span>ATD </span><b>11/10/25</b></div></div>
+                  <div class="chips"><span class="action-chip">Delivery</span><span class="action-chip">Destination</span></div>
+                </div>
+                <div class="rrow" data-node="txwh">
+                  <div class="rail"></div>
+                  <div><div class="place-name">TX Warehouse</div><div class="place-sub">Grand Prairie, TX</div></div>
+                  <div class="when"><div><span>ETA </span><b>11/13/25</b></div><div><span>ATA </span><b>11/13/25</b></div></div>
+                  <div class="when"><span>Dwell </span><b>0 days</b></div>
+                  <div class="when"><span>Final stop</span></div>
+                  <div class="chips"><span class="action-chip">Delivery Northeast</span></div>
+                </div>
+              </div>
+            </article>
+          </section>
+
+          <section class="screen" id="screen-shipment" hidden>
+            <div class="ship-line">
+              <div class="sid">SLQ-58681T6</div>
+              <span class="badge">S1</span>
+              <span class="badge ok">Delivered</span>
+              <span class="badge">Reusable</span>
+            </div>
+            <p class="kicker">Pan Mar Konig FOB Port Klang to Dallas (via LA/LB rail) · SLQ-58681T6@panmar.example</p>
+            <div class="banner">Delivered to TX Warehouse in Grand Prairie on November 13, 2025.</div>
+            <div class="tabs">
+              <button class="is-on" type="button">Details</button>
+              <button type="button">Milestones</button>
+              <button type="button">Documents</button>
+              <button type="button">Products</button>
+              <button type="button">Cargo images</button>
+            </div>
+            <div class="split">
+              <div>
+                <div class="fields">
+                  <div class="field"><div class="lab">Cargo ready</div><div class="val">04 Sep 2025</div></div>
+                  <div class="field"><div class="lab">Booking no.</div><div class="val">10987654321003</div></div>
+                  <div class="field"><div class="lab">Carrier</div><div class="val">MSC</div></div>
+                  <div class="field"><div class="lab">Shipper (B/L)</div><div class="val">SILQ MARITIME</div></div>
+                  <div class="field"><div class="lab">Freight forwarder</div><div class="val">MSC</div></div>
+                  <div class="field"><div class="lab">AWB / BL</div><div class="val">EGLV7044321001EF</div></div>
+                  <div class="field"><div class="lab">Vessel</div><div class="val">MSC AMSTERDAM</div></div>
+                  <div class="field"><div class="lab">Freight booking confirmed</div><div class="val">27 Aug 2025</div></div>
+                  <div class="field"><div class="lab">SLAC count</div><div class="val">547</div></div>
+                  <div class="field"><div class="lab">Cargo handover confirmed</div><div class="val">26 Aug 2025</div></div>
+                </div>
+                <p class="route-note" data-route-note hidden></p>
+                <article class="card">
+                  <div class="card-h">
+                    <div>
+                      <h2>Route</h2>
+                      <p>Same route as the project. Open history to see every change since 26 Aug.</p>
+                    </div>
+                    <button class="history-btn" type="button" data-action="history">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2"/></svg>
+                      Route history
+                      <span class="count">12</span>
+                    </button>
+                  </div>
+                  <div class="hroute" data-hroute>
+                    <div class="hnode" data-node="mypkg"><div class="hdot"></div><div class="hname">Port Klang</div><div class="hmeta">MYPKG</div><div class="hdate">23 Sep</div></div>
+                    <div class="hnode ghost-oak" data-node="usoak" hidden><div class="hdot"></div><div class="hname">Oakland</div><div class="hmeta">USOAK</div><span class="removed-tag">Removed</span></div>
+                    <div class="hnode" data-node="uslgb"><div class="hdot"></div><div class="hname">Long Beach</div><div class="hmeta">USLGB</div><div class="hdate">26 Oct</div></div>
+                    <div class="hnode" data-node="usdal"><div class="hdot"></div><div class="hname">Dallas</div><div class="hmeta">USDAL · Rail</div><div class="hdate">07 Nov</div><span class="not-yet">Added later</span></div>
+                    <div class="hnode" data-node="txwh"><div class="hdot"></div><div class="hname">TX Warehouse</div><div class="hmeta">Grand Prairie</div><div class="hdate">13 Nov</div></div>
+                  </div>
+                </article>
+              </div>
+              <aside class="overview">
+                <div class="ov-card">
+                  <h3>Overview</h3>
+                  <div class="stat"><span>Weight</span><b>19,326.82 kg</b></div>
+                  <div class="stat"><span>Volume</span><b>54.74 cbm</b></div>
+                  <div class="stat"><span>Container</span><b>MEDU7044321</b></div>
+                  <div class="stat"><span>Size</span><b>40'HC</b></div>
+                </div>
+                <div class="ov-card">
+                  <h3>At destination</h3>
+                  <div class="stat"><span>Arrived</span><b>13 Nov 2025</b></div>
+                  <div class="stat"><span>Place</span><b>Grand Prairie, TX</b></div>
+                </div>
+                <div class="ov-card">
+                  <h3>Timeline</h3>
+                  <div class="vtime">
+                    <div class="vnode" data-node="mypkg"><div class="tick"><i></i><b></b></div><div class="nm"><strong>Port Klang</strong><span>MYPKG · 23 Sep</span></div></div>
+                    <div class="vnode ghost-oak" data-node="usoak" hidden><div class="tick"><i></i><b></b></div><div class="nm"><strong>Oakland</strong><span>USOAK</span><span class="removed-tag">Removed</span></div></div>
+                    <div class="vnode" data-node="uslgb"><div class="tick"><i></i><b></b></div><div class="nm"><strong>Long Beach</strong><span>USLGB · 7 days</span></div></div>
+                    <div class="vnode" data-node="usdal"><div class="tick"><i></i><b></b></div><div class="nm"><strong>Dallas</strong><span>USDAL · 3 days</span><span class="not-yet">Added later</span></div></div>
+                    <div class="vnode" data-node="txwh"><div class="tick"><i></i><b></b></div><div class="nm"><strong>Grand Prairie</strong><span>TX Warehouse · 13 Nov</span></div></div>
+                  </div>
+                </div>
+              </aside>
+            </div>
+          </section>
+        </main>
+
+        <aside class="panel" id="panel" aria-hidden="true" aria-label="Route history">
+          <div class="panel-h">
+            <h2>Route history</h2>
+            <button class="x" type="button" data-action="close" aria-label="Close">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#111" stroke-width="1.6"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+            </button>
+          </div>
+          <div class="context">
+            <span class="pill">Ocean · SLQ-58681T6 · S1</span>
+            <div class="route-now">Port Klang → Long Beach → Dallas → TX Warehouse</div>
+            <div class="since">12 changes since the project was created on 26 Aug 2025. Sample log for this shipment, newest first. Select a line to mark it on the route.</div>
+          </div>
+          <div class="filters" role="tablist" aria-label="Filter history">
+            <button type="button" data-action="filter" data-filter="all" class="is-on">All</button>
+            <button type="button" data-action="filter" data-filter="node">Nodes</button>
+            <button type="button" data-action="filter" data-filter="date">Dates</button>
+            <button type="button" data-action="filter" data-filter="detail">Details</button>
+          </div>
+          <p class="hint" id="filter-hint"></p>
+          <div class="log" id="log"></div>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SHAPE_FULL = ["mypkg", "uslgb", "usdal", "txwh"];
+    const SHAPE_MID = ["mypkg", "uslgb", "txwh"];
+    const SHAPE_EARLY = ["mypkg", "usoak", "uslgb", "txwh"];
+
+    const EVENTS = [
+      {
+        id: "ata-tx", month: "November 2025", stamp: "13 NOV AT 2:37 AM",
+        who: "Silq", system: true,
+        text: "Recorded the actual arrival at TX Warehouse. The shipment is delivered.",
+        focus: ["txwh"], shape: SHAPE_FULL,
+        note: "Looking at 13 Nov 2025. The actual arrival was written on TX Warehouse.",
+        diffs: [{ cat: "date", label: "TX Warehouse ATA", from: "—", to: "13 Nov 2025" }]
+      },
+      {
+        id: "eta-tx", month: "November 2025", stamp: "12 NOV AT 4:15 PM",
+        who: "Debbie Cruz",
+        text: "Moved the TX Warehouse estimate out by a day and added Delivery Northeast.",
+        focus: ["txwh"], shape: SHAPE_FULL,
+        note: "Looking at 12 Nov 2025. The estimate and the delivery action changed on TX Warehouse.",
+        diffs: [
+          { cat: "date", label: "TX Warehouse ETA", from: "12 Nov 2025", to: "13 Nov 2025" },
+          { cat: "detail", label: "Action added", chip: "Delivery Northeast", tone: "add" }
+        ]
+      },
+      {
+        id: "atd-dal", month: "November 2025", stamp: "10 NOV AT 11:02 AM",
+        who: "Debbie Cruz",
+        text: "Recorded the actual departure from Dallas.",
+        focus: ["usdal"], shape: SHAPE_FULL,
+        note: "Looking at 10 Nov 2025. Dallas departure was filled in.",
+        diffs: [{ cat: "date", label: "Dallas ATD", from: "—", to: "10 Nov 2025" }]
+      },
+      {
+        id: "ata-dal", month: "November 2025", stamp: "07 NOV AT 3:40 PM",
+        who: "Debbie Cruz",
+        text: "Recorded the actual arrival at Dallas. The rail dwell stays 3 days.",
+        focus: ["usdal"], shape: SHAPE_FULL,
+        note: "Looking at 7 Nov 2025. Dallas arrival was filled in.",
+        diffs: [{ cat: "date", label: "Dallas ATA", from: "—", to: "07 Nov 2025" }]
+      },
+      {
+        id: "atd-lb", month: "November 2025", stamp: "02 NOV AT 8:20 AM",
+        who: "Silq", system: true,
+        text: "Recorded the actual departure from Long Beach.",
+        focus: ["uslgb"], shape: SHAPE_FULL,
+        note: "Looking at 2 Nov 2025. Long Beach departure was filled in.",
+        diffs: [{ cat: "date", label: "Long Beach ATD", from: "—", to: "02 Nov 2025" }]
+      },
+      {
+        id: "ata-lb", month: "October 2025", stamp: "26 OCT AT 6:05 PM",
+        who: "Silq", system: true,
+        text: "Recorded the vessel arrival at Long Beach, set a 7 day dwell, and marked unloading done.",
+        focus: ["uslgb"], shape: SHAPE_FULL,
+        note: "Looking at 26 Oct 2025. Arrival, dwell, and unloading changed at Long Beach.",
+        diffs: [
+          { cat: "date", label: "Long Beach ATA", from: "—", to: "26 Oct 2025" },
+          { cat: "detail", label: "Dwell", from: "—", to: "7 days" },
+          { cat: "date", label: "Long Beach ETD", from: "—", to: "02 Nov 2025" },
+          { cat: "detail", label: "Action done", chip: "Unloading", tone: "add" }
+        ]
+      },
+      {
+        id: "add-dal", month: "October 2025", stamp: "18 OCT AT 10:12 AM",
+        who: "Debbie Cruz",
+        text: "Added Dallas between Long Beach and TX Warehouse, and switched the inland leg to rail.",
+        focus: ["usdal"], shape: SHAPE_FULL,
+        note: "Looking at 18 Oct 2025, the day Dallas joined the route. Earlier stops stay. TX Warehouse moves out to leave room for the rail dwell.",
+        diffs: [
+          { cat: "node", label: "Added", chip: "Dallas · USDAL", tone: "add" },
+          { cat: "detail", label: "Inland mode", from: "Truck", to: "Rail" },
+          { cat: "detail", label: "Dallas dwell", from: "—", to: "3 days" },
+          { cat: "detail", label: "Actions added", chip: "Delivery, Destination", tone: "add" },
+          { cat: "date", label: "Dallas ETA", from: "—", to: "07 Nov 2025" },
+          { cat: "date", label: "Dallas ETD", from: "—", to: "10 Nov 2025" },
+          { cat: "date", label: "TX Warehouse ETA", from: "28 Oct 2025", to: "12 Nov 2025" },
+          { cat: "node", label: "Route", chain: ["Port Klang", "Long Beach", "Dallas", "TX Warehouse"] }
+        ]
+      },
+      {
+        id: "rm-oak", month: "October 2025", stamp: "04 OCT AT 1:16 PM",
+        who: "Debbie Cruz",
+        text: "Removed Oakland. The ocean leg now runs from Port Klang straight to Long Beach.",
+        focus: ["usoak", "uslgb"], shape: SHAPE_MID,
+        note: "Oakland was removed on this change. It had sat between Port Klang and Long Beach. Dallas was added later.",
+        diffs: [
+          { cat: "node", label: "Removed", chip: "Oakland · USOAK", tone: "cut" },
+          { cat: "date", label: "Long Beach ETA", from: "18 Oct 2025", to: "26 Oct 2025" },
+          { cat: "node", label: "Route", chain: ["Port Klang", "Long Beach", "TX Warehouse"] }
+        ]
+      },
+      {
+        id: "atd-pkg", month: "September 2025", stamp: "23 SEP AT 9:04 AM",
+        who: "Silq", system: true,
+        text: "Recorded the actual departure from Port Klang. It matches the estimate.",
+        focus: ["mypkg"], shape: SHAPE_EARLY,
+        note: "Looking at 23 Sep 2025. The route still calls at Oakland, and Dallas is not on it yet.",
+        diffs: [{ cat: "date", label: "Port Klang ATD", from: "—", to: "23 Sep 2025" }]
+      },
+      {
+        id: "crd", month: "September 2025", stamp: "04 SEP AT 11:18 AM",
+        who: "Debbie Cruz",
+        text: "Set cargo ready to 4 Sep and added loading and receipt at Port Klang.",
+        focus: ["mypkg"], shape: SHAPE_EARLY,
+        note: "Looking at 4 Sep 2025. Cargo ready and the load actions were set at Port Klang.",
+        diffs: [
+          { cat: "date", label: "Estimated CRD", from: "—", to: "04 Sep 2025" },
+          { cat: "date", label: "Actual CRD", from: "—", to: "04 Sep 2025" },
+          { cat: "detail", label: "Actions added", chip: "Loading, Receipt", tone: "add" }
+        ]
+      },
+      {
+        id: "book", month: "August 2025", stamp: "27 AUG AT 2:41 PM",
+        who: "Debbie Cruz",
+        text: "Confirmed the freight booking on MSC Amsterdam.",
+        focus: ["mypkg"], shape: SHAPE_EARLY,
+        note: "Looking at 27 Aug 2025, the day after the project was created. Carrier, vessel, and bill details were saved on the ocean leg.",
+        diffs: [
+          { cat: "detail", label: "Carrier", from: "—", to: "MSC" },
+          { cat: "detail", label: "Vessel", from: "—", to: "MSC AMSTERDAM" },
+          { cat: "detail", label: "Booking no.", from: "—", to: "10987654321003" },
+          { cat: "detail", label: "Shipper", from: "—", to: "SILQ MARITIME" },
+          { cat: "detail", label: "AWB / BL", from: "—", to: "EGLV7044321001EF" },
+          { cat: "detail", label: "Voyage", from: "—", to: "Not handled by Silq" }
+        ]
+      },
+      {
+        id: "created", month: "August 2025", stamp: "26 AUG AT 9:00 AM",
+        who: "Debbie Cruz",
+        text: "Created the route when the project was planned. Cargo handover was confirmed the same day.",
+        focus: ["mypkg", "usoak", "uslgb", "txwh"], shape: SHAPE_EARLY,
+        note: "This is the route on 26 Aug 2025, the day the project was created. Four stops, estimates taken from the quote. Dallas comes later.",
+        diffs: [
+          { cat: "node", label: "Route", chain: ["Port Klang", "Oakland", "Long Beach", "TX Warehouse"] },
+          { cat: "date", label: "Port Klang ETD", from: "—", to: "23 Sep 2025" },
+          { cat: "date", label: "Oakland ETA", from: "—", to: "12 Oct 2025" },
+          { cat: "date", label: "Long Beach ETA", from: "—", to: "18 Oct 2025" },
+          { cat: "date", label: "TX Warehouse ETA", from: "—", to: "28 Oct 2025" }
+        ]
+      }
+    ];
+
+    const state = { screen: "route", open: true, filter: "all", selected: null };
+
+    const titles = {
+      project: ["Projects", "SLQ-58681T6"],
+      route: ["Projects", "Route"],
+      shipment: ["Shipments", "SLQ-58681T6"]
+    };
+
+    function esc(value) {
+      return String(value).replace(/[&<>"']/g, (ch) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      })[ch]);
+    }
+
+    function matches(event) {
+      if (state.filter === "all") return true;
+      return event.diffs.some((diff) => diff.cat === state.filter);
+    }
+
+    function diffHtml(diff) {
+      if (diff.chain) {
+        const chain = diff.chain.map((stop) => `<b>${esc(stop)}</b>`).join('<i>→</i>');
+        return `<div class="diff"><span class="diff-k">${esc(diff.label)}</span><span class="chain">${chain}</span></div>`;
+      }
+      if (diff.chip) {
+        const tone = diff.tone === "cut" ? "cut" : "add";
+        return `<div class="diff"><span class="diff-k">${esc(diff.label)}</span><span class="place-chip ${tone}">${esc(diff.chip)}</span></div>`;
+      }
+      return `<div class="diff"><span class="diff-k">${esc(diff.label)}</span><span class="from">${esc(diff.from)}</span><span class="arrow">→</span><span class="to">${esc(diff.to)}</span></div>`;
+    }
+
+    function renderLog() {
+      const log = document.getElementById("log");
+      const shown = EVENTS.filter(matches);
+      const counts = {
+        all: EVENTS.length,
+        node: EVENTS.filter((event) => event.diffs.some((diff) => diff.cat === "node")).length,
+        date: EVENTS.filter((event) => event.diffs.some((diff) => diff.cat === "date")).length,
+        detail: EVENTS.filter((event) => event.diffs.some((diff) => diff.cat === "detail")).length
+      };
+      document.querySelectorAll("[data-filter]").forEach((button) => {
+        const key = button.dataset.filter;
+        const label = key === "all" ? "All" : key === "node" ? "Nodes" : key === "date" ? "Dates" : "Details";
+        button.textContent = `${label} ${counts[key]}`;
+        button.classList.toggle("is-on", state.filter === key);
+      });
+      const hint = document.getElementById("filter-hint");
+      hint.textContent = shown.length === EVENTS.length
+        ? "Newest first. The first line is the latest change. The last line is project creation."
+        : `Showing ${shown.length} of ${EVENTS.length}. A change can sit in more than one filter when it updated a stop and a date together.`;
+
+      if (!shown.length) {
+        log.innerHTML = '<div class="empty">No changes in this filter.</div>';
+        return;
+      }
+      let month = "";
+      log.innerHTML = shown.map((event, index) => {
+        const head = event.month !== month ? `<div class="month">${esc(event.month)}</div>` : "";
+        month = event.month;
+        const selected = state.selected === event.id;
+        const latest = !state.selected && index === 0 && state.filter === "all";
+        const face = event.system ? "system" : "person";
+        const initials = event.system ? "S" : "DC";
+        return `${head}<button class="event${latest ? " is-latest" : ""}${selected ? " is-selected" : ""}" type="button" data-action="select" data-id="${event.id}">
+          <span class="spine"><span class="dot"></span><span class="stem"></span></span>
+          <span class="event-body">
+            <span class="stamp">${esc(event.stamp)}</span>
+            <span class="who"><span class="face ${face}">${initials}</span><p><b>${esc(event.who)}</b> ${esc(event.text)}</p></span>
+            <span class="diffs">${event.diffs.map(diffHtml).join("")}</span>
+          </span>
+        </button>`;
+      }).join("");
+    }
+
+    function paint() {
+      const event = EVENTS.find((item) => item.id === state.selected);
+      const showOak = !!event && (event.shape.includes("usoak") || event.focus.includes("usoak"));
+      document.querySelectorAll("[data-node]").forEach((node) => {
+        const id = node.dataset.node;
+        const inShape = !event || event.shape.includes(id);
+        const focused = !!event && event.focus.includes(id);
+        node.classList.toggle("is-hit", focused);
+        node.classList.toggle("is-later", !!event && !inShape && id !== "usoak");
+        if (id === "usoak") {
+          node.hidden = !showOak;
+          node.classList.toggle("is-removed", !!event && event.id === "rm-oak");
+        }
+      });
+      document.querySelectorAll("[data-hroute]").forEach((row) => {
+        row.classList.toggle("has-ghost", showOak);
+      });
+      document.querySelectorAll("[data-route-note]").forEach((note) => {
+        note.hidden = !event;
+        note.textContent = event ? event.note : "";
+      });
+    }
+
+    function paintChrome() {
+      document.querySelectorAll(".screen").forEach((screen) => {
+        screen.hidden = screen.id !== `screen-${state.screen}`;
+      });
+      document.querySelectorAll(".view-switch [data-screen]").forEach((button) => {
+        button.classList.toggle("is-on", button.dataset.screen === state.screen);
+        button.setAttribute("aria-selected", String(button.dataset.screen === state.screen));
+      });
+      document.querySelectorAll(".nav-link[data-nav]").forEach((link) => {
+        const on = (state.screen === "shipment" && link.dataset.nav === "shipments")
+          || (state.screen !== "shipment" && link.dataset.nav === "projects");
+        link.classList.toggle("is-selected", on);
+      });
+      const title = document.getElementById("page-title");
+      const [parent, child] = titles[state.screen];
+      title.innerHTML = `<span>${parent}</span><span class="sep">/</span><span class="sub">${child}</span>`;
+      document.querySelector(".canvas").classList.toggle("panel-open", state.open);
+      const panel = document.getElementById("panel");
+      panel.classList.toggle("is-open", state.open);
+      panel.setAttribute("aria-hidden", String(!state.open));
+      document.querySelectorAll("[data-action='history']").forEach((button) => {
+        button.classList.toggle("is-on", state.open);
+        button.setAttribute("aria-expanded", String(state.open));
+      });
+      const selectedEl = document.querySelector("#log .event.is-selected");
+      const log = document.getElementById("log");
+      if (selectedEl && log) log.scrollTop = Math.max(0, selectedEl.offsetTop - 12);
+    }
+
+    function render() {
+      renderLog();
+      paint();
+      paintChrome();
+    }
+
+    window.addEventListener("click", (event) => {
+      const target = event.target.closest("[data-action]");
+      if (!target) return;
+      const action = target.dataset.action;
+      if (action === "collapse") {
+        document.getElementById("app").classList.toggle("is-collapsed");
+      } else if (action === "toggle") {
+        target.closest(".nav-block").classList.toggle("is-open");
+      } else if (action === "screen") {
+        state.screen = target.dataset.screen;
+        render();
+      } else if (action === "history") {
+        state.open = !state.open;
+        render();
+      } else if (action === "close") {
+        state.open = false;
+        render();
+      } else if (action === "filter") {
+        state.filter = target.dataset.filter;
+        render();
+      } else if (action === "select") {
+        state.selected = state.selected === target.dataset.id ? null : target.dataset.id;
+        state.open = true;
+        render();
+      }
+    }, true);
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && state.open) {
+        state.open = false;
+        render();
+      }
+    });
+
+    render();
+  </script>
+</body>
+</html>
