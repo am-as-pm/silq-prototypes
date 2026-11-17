@@ -472,13 +472,16 @@
     .nm { padding: 0 4px 12px; }
     .nm strong { display: block; font-size: 13px; }
     .nm span { color: var(--gray-600); font-size: 12px; }
-    .canvas.panel-open #view { padding-right: 400px; }
+    .canvas { --panel-w: 400px; }
+    .canvas[data-look="cards"] { --panel-w: 460px; }
+    .canvas[data-look="stops"] { --panel-w: 420px; }
+    .canvas.panel-open #view { padding-right: var(--panel-w); }
     .panel {
       position: absolute;
       top: 56px;
       right: 0;
       bottom: 0;
-      width: 400px;
+      width: var(--panel-w);
       display: flex;
       flex-direction: column;
       background: white;
@@ -611,6 +614,190 @@
     .chain { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
     .chain i { color: var(--gray-400); font-style: normal; }
     .empty { padding: 24px 0; color: var(--gray-500); font-size: 13px; }
+    .looks {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+      margin: 0 20px;
+      padding: 3px;
+      border-radius: 8px;
+      background: var(--gray-100);
+    }
+    .looks button {
+      height: 28px;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--gray-600);
+      font-size: 12px;
+      font-weight: 650;
+    }
+    .looks button.is-on { background: white; color: var(--gray-900); box-shadow: var(--shadow-ui); }
+    .look-note { margin: 8px 20px 0; color: var(--gray-500); font-size: 12px; line-height: 1.4; }
+    .log.look-cards { background: #f6f6f6; padding-top: 12px; }
+    .log.look-cards .event,
+    .log.look-stops .event,
+    .log.look-plain .event {
+      display: block;
+      width: 100%;
+      margin: 0 0 10px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      text-align: left;
+      color: inherit;
+    }
+    .vcard {
+      display: grid;
+      gap: 8px;
+      padding: 12px;
+      border: 1px solid var(--gray-200);
+      border-radius: 10px;
+      background: white;
+    }
+    .event.is-selected .vcard { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-100); }
+    .vcard-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .kind {
+      display: inline-flex;
+      align-items: center;
+      height: 20px;
+      padding: 0 7px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .kind.add { background: var(--success-100); color: var(--success-700); }
+    .kind.cut { background: var(--danger-100); color: var(--danger-700); }
+    .kind.date { background: var(--accent-100); color: #2436b8; }
+    .kind.detail, .kind.mix { background: var(--gray-150); color: var(--gray-700); }
+    .kind.create { background: #111; color: white; }
+    .vwhen { color: var(--gray-500); font-size: 12px; }
+    .vcard p { margin: 0; font-size: 14px; line-height: 1.4; font-weight: 600; }
+    .wasnow { display: grid; gap: 0; border: 1px solid var(--gray-200); border-radius: 8px; overflow: hidden; }
+    .wn-h, .wn-r {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr) minmax(0, 0.9fr);
+      gap: 8px;
+      padding: 6px 8px;
+      font-size: 12px;
+    }
+    .wn-h { background: var(--gray-100); color: var(--gray-500); font-weight: 650; }
+    .wn-r + .wn-r { border-top: 1px solid var(--gray-200); }
+    .wn-r span:first-child { color: var(--gray-600); }
+    .was { color: var(--gray-400); text-decoration: line-through; }
+    .now { font-weight: 700; }
+    .now.add { color: var(--success-700); text-decoration: none; }
+    .now.cut { color: var(--danger-700); text-decoration: line-through; }
+    .vroute { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; color: var(--gray-500); font-size: 12px; }
+    .vroute b { color: var(--gray-800); font-weight: 650; }
+    .log.look-stops .event { margin: 0; padding: 0 0 14px; }
+    .stop-head { display: flex; gap: 8px; margin-bottom: 8px; color: var(--gray-500); font-size: 12px; }
+    .stop-head b { color: var(--gray-800); }
+    .stop-list { display: grid; }
+    .stop-item { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: 8px; }
+    .stop-item .mark { display: flex; flex-direction: column; align-items: center; }
+    .stop-item .mark i {
+      width: 8px; height: 8px; margin-top: 4px; border-radius: 50%;
+      background: white; border: 2px solid var(--gray-300);
+    }
+    .stop-item .mark s { width: 2px; flex: 1; min-height: 12px; background: var(--gray-300); text-decoration: none; }
+    .stop-item:last-child .mark s { display: none; }
+    .stop-item .nm { padding-bottom: 8px; color: var(--gray-500); font-size: 13px; }
+    .stop-item.is-focus .mark i { background: var(--accent); border-color: var(--accent); }
+    .stop-item.is-focus .nm { color: var(--gray-900); font-weight: 700; }
+    .stop-item.is-cut .mark i { background: var(--danger-700); border-color: var(--danger-700); }
+    .stop-item.is-cut .nm { color: var(--danger-700); text-decoration: line-through; font-weight: 700; }
+    .stop-item .extra { display: block; margin-top: 2px; color: var(--gray-600); font-size: 12px; font-weight: 500; text-decoration: none; }
+    .event.is-selected .stop-list { background: var(--accent-100); border-radius: 8px; padding: 8px; }
+    .log.look-plain .event { padding: 12px 0; margin: 0; border-bottom: 1px solid var(--gray-200); }
+    .log.look-plain .event.is-selected { box-shadow: inset 3px 0 0 var(--accent); padding-left: 10px; }
+    .plain-meta { color: var(--gray-500); font-size: 12px; }
+    .plain-meta b { color: var(--gray-800); }
+    .log.look-plain p { margin: 4px 0 0; font-size: 15px; line-height: 1.45; font-weight: 600; }
+    .plain-lines { display: grid; gap: 2px; margin-top: 6px; }
+    .plain-lines span { color: var(--gray-600); font-size: 13px; }
+    .rm { display: grid; gap: 14px; align-content: start; }
+    .rm-title { margin: 0; font-size: 20px; font-weight: 600; letter-spacing: -0.02em; }
+    .rm-sub { margin: 4px 0 0; color: var(--gray-600); font-size: 13px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+    .rel-pill { display: inline-flex; align-items: center; height: 18px; padding: 0 6px; border-radius: 4px; background: #fff1ee; color: #c2410c; font-size: 11px; font-weight: 700; }
+    .picks { display: flex; gap: 10px; flex-wrap: wrap; }
+    .pick {
+      display: grid;
+      gap: 2px;
+      min-width: 220px;
+      padding: 10px 12px;
+      border: 1px solid var(--gray-300);
+      border-radius: 8px;
+      background: white;
+      text-align: left;
+      color: inherit;
+    }
+    .pick.is-on { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+    .pick .sn { font-size: 11px; font-weight: 700; color: var(--gray-500); }
+    .pick strong { font-size: 13px; font-weight: 650; }
+    .pick span { font-size: 12px; color: var(--gray-600); }
+    .rm-block { border: 1px solid var(--gray-200); border-radius: 10px; background: white; overflow: hidden; }
+    .rm-block[hidden] { display: none; }
+    .rm-top { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; padding: 14px 16px 10px; }
+    .rm-id { font-size: 14px; font-weight: 700; }
+    .rm-id-sub { margin-top: 2px; color: var(--gray-500); font-size: 12px; }
+    .crd { display: flex; gap: 18px; flex-wrap: wrap; }
+    .crd div { display: grid; gap: 2px; }
+    .crd span { font-size: 10px; font-weight: 700; letter-spacing: 0.05em; color: var(--gray-500); }
+    .crd b { font-size: 13px; font-weight: 600; }
+    .rm-scroll { overflow-x: auto; }
+    .rm-grid { min-width: 1040px; }
+    .rm-h, .leg {
+      display: grid;
+      grid-template-columns: 28px minmax(300px, 1.7fr) 168px 80px 168px minmax(160px, 1fr) 64px;
+      gap: 8px;
+      align-items: start;
+      padding: 10px 12px;
+    }
+    .rm-h {
+      align-items: center;
+      color: var(--gray-500);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      background: #fafafa;
+      border-top: 1px solid var(--gray-200);
+      border-bottom: 1px solid var(--gray-200);
+    }
+    .leg { border-bottom: 1px solid var(--gray-200); }
+    .leg:last-child { border-bottom: 0; }
+    .leg.is-hit { background: var(--accent-100); }
+    .leg.is-later { background: var(--gray-100); }
+    .chev {
+      width: 22px; height: 22px; margin-top: 1px; padding: 0;
+      border: 0; border-radius: 4px; background: transparent; color: var(--gray-500);
+    }
+    .place-name { font-size: 13px; font-weight: 650; }
+    .place-code { margin-top: 1px; color: var(--gray-500); font-size: 12px; }
+    .leg-fields { display: grid; grid-template-columns: 1fr 1fr 1.15fr; gap: 8px; margin-top: 8px; }
+    .mini-lab { display: block; margin-bottom: 3px; color: var(--gray-500); font-size: 10px; font-weight: 600; }
+    .fake, .voyage {
+      display: flex; align-items: center; justify-content: space-between; gap: 6px;
+      height: 28px; padding: 0 8px;
+      border: 1px solid var(--gray-300); border-radius: 6px;
+      background: white; color: var(--gray-600); font-size: 12px;
+    }
+    .voyage { color: var(--gray-500); }
+    .date-stack { display: grid; gap: 4px; padding-top: 2px; }
+    .date-line { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+    .date-line em { width: 26px; font-style: normal; color: var(--gray-500); }
+    .date-line b { font-weight: 600; }
+    .xmini { width: 14px; height: 14px; padding: 0; border: 0; background: transparent; color: var(--gray-400); font-size: 12px; line-height: 1; }
+    .dwell { padding-top: 4px; font-size: 13px; }
+    .tag-row { display: flex; flex-wrap: wrap; gap: 4px; padding-top: 2px; }
+    .tagx {
+      display: inline-flex; align-items: center; gap: 4px;
+      height: 22px; padding: 0 6px; border-radius: 6px;
+      background: #f3f0ff; color: #5b3cc4; font-size: 12px; font-weight: 600;
+    }
+    .tagx button { border: 0; background: transparent; color: inherit; padding: 0; font-size: 12px; }
+    .node-col { display: flex; align-items: center; gap: 4px; padding-top: 4px; color: var(--gray-500); font-size: 12px; }
     @media (max-width: 1100px) {
       .split { grid-template-columns: 1fr; }
       .screen { padding: 16px 16px 40px; }
@@ -772,80 +959,231 @@
           </section>
 
           <section class="screen" id="screen-route">
-            <div class="ship-line">
+            <div class="rm">
               <div>
-                <div class="sid" style="font-size:18px">Route management</div>
-                <p class="kicker">Planning for SLQ-58681T6 · 1 shipment · S1</p>
+                <h1 class="rm-title">Route Management</h1>
+                <p class="rm-sub">Planning for SLQ-755299T5 · 2 Shipments · <span class="rel-pill">1 REL</span></p>
               </div>
-            </div>
-            <div class="card" style="padding:12px 14px">
-              <div class="ship-line">
-                <span class="pill">S1 · SLQ-58681T6</span>
-                <span class="kicker">MYPKG → USDAL · Cargo ready 04 Sep 2025</span>
-              </div>
-            </div>
-            <p class="route-note" data-route-note hidden></p>
-            <article class="card">
-              <div class="card-h">
-                <div class="meta-row">
-                  <span>Mode <strong>Ocean, then rail</strong></span>
-                  <span>Estimated CRD <strong>09/04/25</strong></span>
-                  <span>Actual CRD <strong>09/04/25</strong></span>
-                </div>
-                <button class="history-btn" type="button" data-action="history">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2"/></svg>
-                  Route history
-                  <span class="count">12</span>
+              <div class="picks">
+                <button class="pick is-on" type="button" data-action="ship" data-ship="s1">
+                  <span class="sn">S1</span>
+                  <strong>SLQ-755299T5 · 10 Nov, 2026</strong>
+                  <span>CNSHA → USLGB</span>
+                </button>
+                <button class="pick" type="button" data-action="ship" data-ship="s2">
+                  <span class="sn">S2</span>
+                  <strong>13 Nov, 2026</strong>
+                  <span>USLAX → Destination</span>
                 </button>
               </div>
-              <div class="rtable">
-                <div class="rhead"><div></div><div>Place</div><div>Arrival</div><div>Dwell</div><div>Departure</div><div>Actions</div></div>
-                <div class="rrow" data-node="mypkg">
-                  <div class="rail"></div>
-                  <div><div class="place-name">Port Klang</div><div class="place-sub">MYPKG · Ocean · MSC AMSTERDAM</div></div>
-                  <div class="when"><span>No arrival. First stop.</span></div>
-                  <div class="when"><span>Dwell </span><b>0 days</b></div>
-                  <div class="when"><div><span>ETA </span><b>09/23/25</b></div><div><span>ATD </span><b>09/23/25</b></div></div>
-                  <div class="chips"><span class="action-chip">Loading</span><span class="action-chip">Receipt</span></div>
-                </div>
-                <div class="rrow ghost-oak" data-node="usoak" hidden>
-                  <div class="rail"></div>
-                  <div><div class="place-name">Oakland</div><div class="place-sub">USOAK · Was a transship</div><span class="removed-tag">Removed</span></div>
-                  <div class="when"><div><span>ETA </span><b>10/12/25</b></div></div>
-                  <div class="when"><span>Dwell </span><b>2 days</b></div>
-                  <div class="when"><div><span>ETD </span><b>10/14/25</b></div></div>
-                  <div class="chips"><span class="action-chip">Transship</span></div>
-                </div>
-                <div class="rrow" data-node="uslgb">
-                  <div class="rail"></div>
-                  <div><div class="place-name">Long Beach</div><div class="place-sub">USLGB · Ocean discharge</div></div>
-                  <div class="when"><div><span>ETA </span><b>10/26/25</b></div><div><span>ATA </span><b>10/26/25</b></div></div>
-                  <div class="when"><span>Dwell </span><b>7 days</b></div>
-                  <div class="when"><div><span>ETD </span><b>11/02/25</b></div><div><span>ATD </span><b>11/02/25</b></div></div>
-                  <div class="chips"><span class="action-chip">Unloading</span></div>
-                </div>
-                <div class="rrow" data-node="usdal">
-                  <div class="rail"></div>
+              <p class="route-note" data-route-note hidden></p>
+              <article class="rm-block" data-ship-panel="s1">
+                <div class="rm-top">
                   <div>
-                    <div class="place-name">Dallas</div>
-                    <div class="place-sub">USDAL · Rail</div>
-                    <span class="not-yet">Added later</span>
+                    <div class="rm-id">SLQ-7552991S1</div>
+                    <div class="rm-id-sub">1 REL · FCL · 6 nodes</div>
                   </div>
-                  <div class="when"><div><span>ETA </span><b>11/07/25</b></div><div><span>ATA </span><b>11/07/25</b></div></div>
-                  <div class="when"><span>Dwell </span><b>3 days</b></div>
-                  <div class="when"><div><span>ETD </span><b>11/10/25</b></div><div><span>ATD </span><b>11/10/25</b></div></div>
-                  <div class="chips"><span class="action-chip">Delivery</span><span class="action-chip">Destination</span></div>
+                  <div class="crd">
+                    <div><span>MODE</span><b>Ocean</b></div>
+                    <div><span>ESTIMATED CRD</span><b>10/05/26</b></div>
+                    <div><span>ACTUAL CRD</span><b>10/05/26</b></div>
+                  </div>
                 </div>
-                <div class="rrow" data-node="txwh">
-                  <div class="rail"></div>
-                  <div><div class="place-name">TX Warehouse</div><div class="place-sub">Grand Prairie, TX</div></div>
-                  <div class="when"><div><span>ETA </span><b>11/13/25</b></div><div><span>ATA </span><b>11/13/25</b></div></div>
-                  <div class="when"><span>Dwell </span><b>0 days</b></div>
-                  <div class="when"><span>Final stop</span></div>
-                  <div class="chips"><span class="action-chip">Delivery Northeast</span></div>
+                <div class="rm-scroll">
+                  <div class="rm-grid">
+                    <div class="rm-h"><div></div><div>PLACE</div><div>ARRIVAL</div><div>DWELL TIME</div><div>DEPARTURE</div><div>TAGS</div><div></div></div>
+                    <div class="leg" data-node="suzhou">
+                      <button class="chev" type="button" aria-label="Expand">⌄</button>
+                      <div>
+                        <div class="place-name">Value Management Systems (Suzhou)</div>
+                        <div class="place-code">Shipper</div>
+                        <div class="leg-fields">
+                          <label><span class="mini-lab">Carrier</span><span class="fake">Select <span>⌄</span></span></label>
+                          <label><span class="mini-lab">Vessel</span><span class="fake">Select <span>⌄</span></span></label>
+                          <label><span class="mini-lab">Voyage</span><span class="voyage">Not handled by Silq</span></label>
+                        </div>
+                      </div>
+                      <div class="date-stack"><div class="date-line"><em></em><span>—</span></div></div>
+                      <div class="dwell">0 Days</div>
+                      <div class="date-stack">
+                        <div class="date-line"><em>ETD</em><b>10/08/26</b><button class="xmini" type="button" aria-label="Clear">×</button></div>
+                        <div class="date-line"><em>ATD</em><b>10/08/26</b><button class="xmini" type="button" aria-label="Clear">×</button></div>
+                      </div>
+                      <div class="tag-row"></div>
+                      <div class="node-col">Node <button class="xmini" type="button" aria-label="Remove node">×</button></div>
+                    </div>
+                    <div class="leg" data-node="sha-cfs">
+                      <button class="chev" type="button" aria-label="Expand">⌄</button>
+                      <div>
+                        <div class="place-name">Shanghai CFS</div>
+                        <div class="place-code">CNSHA</div>
+                        <div class="leg-fields">
+                          <label><span class="mini-lab">Carrier</span><span class="fake">Select <span>⌄</span></span></label>
+                          <label><span class="mini-lab">Vessel</span><span class="fake">Select <span>⌄</span></span></label>
+                          <label><span class="mini-lab">Voyage</span><span class="voyage">Not handled by Silq</span></label>
+                        </div>
+                      </div>
+                      <div class="date-stack">
+                        <div class="date-line"><em>ETA</em><b>10/15/26</b><button class="xmini" type="button">×</button></div>
+                        <div class="date-line"><em>ATA</em><b>10/15/26</b><button class="xmini" type="button">×</button></div>
+                      </div>
+                      <div class="dwell">3 Days</div>
+                      <div class="date-stack">
+                        <div class="date-line"><em>ETD</em><b>10/18/26</b><button class="xmini" type="button">×</button></div>
+                        <div class="date-line"><em>ATD</em><b>10/18/26</b><button class="xmini" type="button">×</button></div>
+                      </div>
+                      <div class="tag-row"><span class="tagx">Origin CFS <button type="button">×</button></span></div>
+                      <div class="node-col">Node <button class="xmini" type="button">×</button></div>
+                    </div>
+                    <div class="leg" data-node="cnsha">
+                      <button class="chev" type="button" aria-label="Expand">⌄</button>
+                      <div>
+                        <div class="place-name">Shanghai</div>
+                        <div class="place-code">CNSHA</div>
+                        <div class="leg-fields">
+                          <label><span class="mini-lab">Carrier</span><span class="fake">Select <span>⌄</span></span></label>
+                          <label><span class="mini-lab">Vessel</span><span class="fake">MATSON <span>⌄</span></span></label>
+                          <label><span class="mini-lab">Voyage</span><span class="voyage">Not handled by Silq</span></label>
+                        </div>
+                      </div>
+                      <div class="date-stack">
+                        <div class="date-line"><em>ETA</em><b>10/18/26</b><button class="xmini" type="button">×</button></div>
+                        <div class="date-line"><em>ATA</em><b>10/18/26</b><button class="xmini" type="button">×</button></div>
+                      </div>
+                      <div class="dwell">2 Days</div>
+                      <div class="date-stack">
+                        <div class="date-line"><em>ETD</em><b>10/20/26</b><button class="xmini" type="button">×</button></div>
+                        <div class="date-line"><em>ATD</em><b>10/20/26</b><button class="xmini" type="button">×</button></div>
+                      </div>
+                      <div class="tag-row"><span class="tagx">Loading <button type="button">×</button></span><span class="tagx">Receipt <button type="button">×</button></span></div>
+                      <div class="node-col">Node <button class="xmini" type="button">×</button></div>
+                    </div>
+                    <div class="leg" data-node="uslgb">
+                      <button class="chev" type="button" aria-label="Expand">⌄</button>
+                      <div>
+                        <div class="place-name">Long Beach</div>
+                        <div class="place-code">USLGB</div>
+                        <div class="leg-fields">
+                          <label><span class="mini-lab">Carrier</span><span class="fake">Select <span>⌄</span></span></label>
+                          <label><span class="mini-lab">Vessel</span><span class="fake">Select <span>⌄</span></span></label>
+                          <label><span class="mini-lab">Voyage</span><span class="voyage">Not handled by Silq</span></label>
+                        </div>
+                      </div>
+                      <div class="date-stack">
+                        <div class="date-line"><em>ETA</em><b>11/08/26</b><button class="xmini" type="button">×</button></div>
+                        <div class="date-line"><em>ATA</em><b>11/08/26</b><button class="xmini" type="button">×</button></div>
+                      </div>
+                      <div class="dwell">5 Days</div>
+                      <div class="date-stack">
+                        <div class="date-line"><em>ETD</em><b>11/13/26</b><button class="xmini" type="button">×</button></div>
+                        <div class="date-line"><em>ATD</em><b>11/13/26</b><button class="xmini" type="button">×</button></div>
+                      </div>
+                      <div class="tag-row"><span class="tagx">Unloading <button type="button">×</button></span><span class="tagx">Delivery <button type="button">×</button></span></div>
+                      <div class="node-col">Node <button class="xmini" type="button">×</button></div>
+                    </div>
+                    <div class="leg" data-node="compton">
+                      <button class="chev" type="button" aria-label="Expand">⌄</button>
+                      <div>
+                        <div class="place-name">Pipeline Trucking</div>
+                        <div class="place-code">Compton</div>
+                        <div class="leg-fields">
+                          <label><span class="mini-lab">Carrier</span><span class="fake">Select <span>⌄</span></span></label>
+                          <label><span class="mini-lab">Vessel</span><span class="fake">Select <span>⌄</span></span></label>
+                          <label><span class="mini-lab">Voyage</span><span class="voyage">Not handled by Silq</span></label>
+                        </div>
+                      </div>
+                      <div class="date-stack">
+                        <div class="date-line"><em>ETA</em><b>11/13/26</b><button class="xmini" type="button">×</button></div>
+                        <div class="date-line"><em>ATA</em><b>11/13/26</b><button class="xmini" type="button">×</button></div>
+                      </div>
+                      <div class="dwell">1 Day</div>
+                      <div class="date-stack">
+                        <div class="date-line"><em>ETD</em><b>11/14/26</b><button class="xmini" type="button">×</button></div>
+                        <div class="date-line"><em>ATD</em><b>11/14/26</b><button class="xmini" type="button">×</button></div>
+                      </div>
+                      <div class="tag-row"></div>
+                      <div class="node-col">Node <button class="xmini" type="button">×</button></div>
+                    </div>
+                    <div class="leg" data-node="broker">
+                      <button class="chev" type="button" aria-label="Expand">⌄</button>
+                      <div>
+                        <div class="place-name">Cargo Air and Ocean Brokerage</div>
+                        <div class="place-code">Delivery warehouse</div>
+                        <div class="leg-fields">
+                          <label><span class="mini-lab">Carrier</span><span class="fake">Select <span>⌄</span></span></label>
+                          <label><span class="mini-lab">Vessel</span><span class="fake">Select <span>⌄</span></span></label>
+                          <label><span class="mini-lab">Voyage</span><span class="voyage">Not handled by Silq</span></label>
+                        </div>
+                      </div>
+                      <div class="date-stack">
+                        <div class="date-line"><em>ETA</em><b>11/14/26</b><button class="xmini" type="button">×</button></div>
+                        <div class="date-line"><em>ATA</em><b>11/14/26</b><button class="xmini" type="button">×</button></div>
+                      </div>
+                      <div class="dwell">0 Days</div>
+                      <div class="date-stack"><div class="date-line"><em></em><span>—</span></div></div>
+                      <div class="tag-row"><span class="tagx">Delivery warehouse <button type="button">×</button></span></div>
+                      <div class="node-col">Node <button class="xmini" type="button">×</button></div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </article>
+              </article>
+              <article class="rm-block" data-ship-panel="s2" hidden>
+                <div class="rm-top">
+                  <div>
+                    <div class="rm-id">S2</div>
+                    <div class="rm-id-sub">Ocean · 2 nodes</div>
+                  </div>
+                  <div class="crd">
+                    <div><span>MODE</span><b>Ocean</b></div>
+                    <div><span>ESTIMATED CRD</span><b>10/20/26</b></div>
+                    <div><span>ACTUAL CRD</span><b>—</b></div>
+                  </div>
+                </div>
+                <div class="rm-scroll">
+                  <div class="rm-grid">
+                    <div class="rm-h"><div></div><div>PLACE</div><div>ARRIVAL</div><div>DWELL TIME</div><div>DEPARTURE</div><div>TAGS</div><div></div></div>
+                    <div class="leg" data-node="uslax">
+                      <button class="chev" type="button" aria-label="Expand">⌄</button>
+                      <div>
+                        <div class="place-name">Los Angeles</div>
+                        <div class="place-code">USLAX</div>
+                        <div class="leg-fields">
+                          <label><span class="mini-lab">Carrier</span><span class="fake">Select <span>⌄</span></span></label>
+                          <label><span class="mini-lab">Vessel</span><span class="fake">Select <span>⌄</span></span></label>
+                          <label><span class="mini-lab">Voyage</span><span class="voyage">Not handled by Silq</span></label>
+                        </div>
+                      </div>
+                      <div class="date-stack">
+                        <div class="date-line"><em>ETA</em><b>11/13/26</b><button class="xmini" type="button">×</button></div>
+                        <div class="date-line"><em>ATA</em><span>—</span></div>
+                      </div>
+                      <div class="dwell">2 Days</div>
+                      <div class="date-stack">
+                        <div class="date-line"><em>ETD</em><b>11/15/26</b><button class="xmini" type="button">×</button></div>
+                        <div class="date-line"><em>ATD</em><span>—</span></div>
+                      </div>
+                      <div class="tag-row"><span class="tagx">Unloading <button type="button">×</button></span></div>
+                      <div class="node-col">Node <button class="xmini" type="button">×</button></div>
+                    </div>
+                    <div class="leg" data-node="dest">
+                      <button class="chev" type="button" aria-label="Expand">⌄</button>
+                      <div>
+                        <div class="place-name">Destination</div>
+                        <div class="place-code">Final delivery</div>
+                      </div>
+                      <div class="date-stack">
+                        <div class="date-line"><em>ETA</em><b>11/16/26</b><button class="xmini" type="button">×</button></div>
+                        <div class="date-line"><em>ATA</em><span>—</span></div>
+                      </div>
+                      <div class="dwell">0 Days</div>
+                      <div class="date-stack"><div class="date-line"><span>—</span></div></div>
+                      <div class="tag-row"><span class="tagx">Delivery <button type="button">×</button></span></div>
+                      <div class="node-col">Node <button class="xmini" type="button">×</button></div>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            </div>
           </section>
 
           <section class="screen" id="screen-shipment" hidden>
@@ -935,10 +1273,17 @@
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#111" stroke-width="1.6"><path d="M4 4l8 8M12 4l-8 8"/></svg>
             </button>
           </div>
+          <div class="looks" role="tablist" aria-label="How to show history">
+            <button type="button" data-action="look" data-look="timeline">Timeline</button>
+            <button type="button" data-action="look" data-look="cards">Cards</button>
+            <button type="button" data-action="look" data-look="stops">Stops</button>
+            <button type="button" data-action="look" data-look="plain">Plain</button>
+          </div>
+          <p class="look-note" id="look-note"></p>
           <div class="context">
             <span class="pill">Ocean · SLQ-58681T6 · S1</span>
             <div class="route-now">Port Klang → Long Beach → Dallas → TX Warehouse</div>
-            <div class="since">12 changes since the project was created on 26 Aug 2025. Sample log for this shipment, newest first. Select a line to mark it on the route.</div>
+            <div class="since">12 changes since 26 Aug 2025. Select a change to mark it on the route.</div>
           </div>
           <div class="filters" role="tablist" aria-label="Filter history">
             <button type="button" data-action="filter" data-filter="all" class="is-on">All</button>
@@ -1095,7 +1440,14 @@
       }
     ];
 
-    const state = { screen: "route", open: true, filter: "all", selected: null };
+    const STOPS = { mypkg: "Port Klang", usoak: "Oakland", uslgb: "Long Beach", usdal: "Dallas", txwh: "TX Warehouse" };
+    const LOOK_NOTES = {
+      timeline: "A running log. Newest change first, same shape as the date changelog.",
+      cards: "Each save is a card. The table is what it was, then what it became.",
+      stops: "The route at that moment. The stop that changed is filled in.",
+      plain: "A sentence, then the values that moved. Nothing else on the line."
+    };
+    const state = { screen: "route", open: false, filter: "all", selected: null, look: "cards" };
 
     const titles = {
       project: ["Projects", "SLQ-58681T6"],
@@ -1126,6 +1478,102 @@
       return `<div class="diff"><span class="diff-k">${esc(diff.label)}</span><span class="from">${esc(diff.from)}</span><span class="arrow">→</span><span class="to">${esc(diff.to)}</span></div>`;
     }
 
+    function whenParts(event) {
+      const [date, time] = event.stamp.split(" AT ");
+      const [day, mon] = date.split(" ");
+      const month = `${mon[0]}${mon.slice(1).toLowerCase()}`;
+      const clock = time.replace("AM", "am").replace("PM", "pm");
+      return { day, month, clock, label: `${Number(day)} ${month}` };
+    }
+
+    function kindOf(event) {
+      if (event.id === "created") return ["create", "Created"];
+      if (event.id === "add-dal") return ["add", "Stop added"];
+      if (event.id === "rm-oak") return ["cut", "Stop removed"];
+      const cats = event.diffs.map((diff) => diff.cat);
+      if (cats.includes("date") && cats.includes("detail")) return ["mix", "Date and details"];
+      if (cats.includes("date")) return ["date", "Date"];
+      return ["detail", "Details"];
+    }
+
+    function valueRows(event) {
+      return event.diffs.filter((diff) => !diff.chain).map((diff) => {
+        if (diff.chip) return { label: diff.label, from: "—", to: diff.chip, tone: diff.tone || "" };
+        return { label: diff.label, from: diff.from, to: diff.to, tone: "" };
+      });
+    }
+
+    function routeLine(event) {
+      const chain = event.diffs.find((diff) => diff.chain);
+      if (!chain) return "";
+      return `<div class="vroute">${chain.chain.map((stop) => `<b>${esc(stop)}</b>`).join("<span>→</span>")}</div>`;
+    }
+
+    function cardHtml(event, selected) {
+      const when = whenParts(event);
+      const [key, label] = kindOf(event);
+      const rows = valueRows(event).map((row) => `<div class="wn-r"><span>${esc(row.label)}</span><span class="was">${esc(row.from)}</span><span class="now ${row.tone}">${esc(row.to)}</span></div>`).join("");
+      return `<button class="event${selected ? " is-selected" : ""}" type="button" data-action="select" data-id="${event.id}">
+        <span class="vcard">
+          <span class="vcard-top"><span class="kind ${key}">${label}</span><span class="vwhen">${esc(when.label)} · ${esc(when.clock)} · ${esc(event.who)}</span></span>
+          <p>${esc(event.text)}</p>
+          ${routeLine(event)}
+          <span class="wasnow"><span class="wn-h"><span>Field</span><span>Was</span><span>Now</span></span>${rows}</span>
+        </span>
+      </button>`;
+    }
+
+    function stopIds(event) {
+      const ids = event.shape.slice();
+      if (event.focus.includes("usoak") && !ids.includes("usoak")) ids.splice(ids.indexOf("mypkg") + 1, 0, "usoak");
+      return ids;
+    }
+
+    function stopsHtml(event, selected) {
+      const when = whenParts(event);
+      const extras = valueRows(event).slice(0, 3).map((row) => `${row.label}: ${row.to}`).join(" · ");
+      const items = stopIds(event).map((id) => {
+        const focus = event.focus.includes(id);
+        const cut = id === "usoak" && event.id === "rm-oak";
+        return `<div class="stop-item${focus ? " is-focus" : ""}${cut ? " is-cut" : ""}">
+          <span class="mark"><i></i><s></s></span>
+          <span class="nm">${esc(STOPS[id])}${focus && extras ? `<span class="extra">${esc(extras)}</span>` : ""}</span>
+        </div>`;
+      }).join("");
+      return `<button class="event${selected ? " is-selected" : ""}" type="button" data-action="select" data-id="${event.id}">
+        <span class="stop-head"><span>${esc(when.label)} · ${esc(when.clock)}</span><b>${esc(event.who)}</b></span>
+        <span class="stop-list">${items}</span>
+      </button>`;
+    }
+
+    function plainHtml(event, selected) {
+      const when = whenParts(event);
+      const lines = valueRows(event).map((row) => {
+        const change = row.from === "—" ? esc(row.to) : `${esc(row.from)} → ${esc(row.to)}`;
+        return `<span>${esc(row.label)} · ${change}</span>`;
+      }).join("");
+      const chain = event.diffs.find((diff) => diff.chain);
+      const route = chain ? `<span>${esc(chain.chain.join(" → "))}</span>` : "";
+      return `<button class="event${selected ? " is-selected" : ""}" type="button" data-action="select" data-id="${event.id}">
+        <span class="plain-meta">${esc(when.label)} · ${esc(when.clock)} · <b>${esc(event.who)}</b></span>
+        <p>${esc(event.text)}</p>
+        <span class="plain-lines">${route}${lines}</span>
+      </button>`;
+    }
+
+    function timelineHtml(event, selected, latest) {
+      const face = event.system ? "system" : "person";
+      const initials = event.system ? "S" : "DC";
+      return `<button class="event${latest ? " is-latest" : ""}${selected ? " is-selected" : ""}" type="button" data-action="select" data-id="${event.id}">
+        <span class="spine"><span class="dot"></span><span class="stem"></span></span>
+        <span class="event-body">
+          <span class="stamp">${esc(event.stamp)}</span>
+          <span class="who"><span class="face ${face}">${initials}</span><p><b>${esc(event.who)}</b> ${esc(event.text)}</p></span>
+          <span class="diffs">${event.diffs.map(diffHtml).join("")}</span>
+        </span>
+      </button>`;
+    }
+
     function renderLog() {
       const log = document.getElementById("log");
       const shown = EVENTS.filter(matches);
@@ -1141,31 +1589,29 @@
         button.textContent = `${label} ${counts[key]}`;
         button.classList.toggle("is-on", state.filter === key);
       });
+      document.querySelectorAll(".looks [data-look]").forEach((button) => {
+        button.classList.toggle("is-on", button.dataset.look === state.look);
+      });
+      document.getElementById("look-note").textContent = LOOK_NOTES[state.look];
       const hint = document.getElementById("filter-hint");
       hint.textContent = shown.length === EVENTS.length
-        ? "Newest first. The first line is the latest change. The last line is project creation."
-        : `Showing ${shown.length} of ${EVENTS.length}. A change can sit in more than one filter when it updated a stop and a date together.`;
-
+        ? "Newest first. The last line is the day the project was created."
+        : `Showing ${shown.length} of ${EVENTS.length}.`;
+      log.className = `log look-${state.look}`;
       if (!shown.length) {
         log.innerHTML = '<div class="empty">No changes in this filter.</div>';
         return;
       }
       let month = "";
       log.innerHTML = shown.map((event, index) => {
+        const selected = state.selected === event.id;
+        if (state.look === "cards") return cardHtml(event, selected);
+        if (state.look === "stops") return stopsHtml(event, selected);
+        if (state.look === "plain") return plainHtml(event, selected);
         const head = event.month !== month ? `<div class="month">${esc(event.month)}</div>` : "";
         month = event.month;
-        const selected = state.selected === event.id;
         const latest = !state.selected && index === 0 && state.filter === "all";
-        const face = event.system ? "system" : "person";
-        const initials = event.system ? "S" : "DC";
-        return `${head}<button class="event${latest ? " is-latest" : ""}${selected ? " is-selected" : ""}" type="button" data-action="select" data-id="${event.id}">
-          <span class="spine"><span class="dot"></span><span class="stem"></span></span>
-          <span class="event-body">
-            <span class="stamp">${esc(event.stamp)}</span>
-            <span class="who"><span class="face ${face}">${initials}</span><p><b>${esc(event.who)}</b> ${esc(event.text)}</p></span>
-            <span class="diffs">${event.diffs.map(diffHtml).join("")}</span>
-          </span>
-        </button>`;
+        return head + timelineHtml(event, selected, latest);
       }).join("");
     }
 
@@ -1208,7 +1654,9 @@
       const title = document.getElementById("page-title");
       const [parent, child] = titles[state.screen];
       title.innerHTML = `<span>${parent}</span><span class="sep">/</span><span class="sub">${child}</span>`;
-      document.querySelector(".canvas").classList.toggle("panel-open", state.open);
+      const canvas = document.querySelector(".canvas");
+      canvas.classList.toggle("panel-open", state.open);
+      canvas.dataset.look = state.look;
       const panel = document.getElementById("panel");
       panel.classList.toggle("is-open", state.open);
       panel.setAttribute("aria-hidden", String(!state.open));
@@ -1246,6 +1694,17 @@
         render();
       } else if (action === "filter") {
         state.filter = target.dataset.filter;
+        render();
+      } else if (action === "ship") {
+        document.querySelectorAll("[data-action='ship']").forEach((button) => {
+          button.classList.toggle("is-on", button.dataset.ship === target.dataset.ship);
+        });
+        document.querySelectorAll("[data-ship-panel]").forEach((panel) => {
+          panel.hidden = panel.dataset.shipPanel !== target.dataset.ship;
+        });
+        return;
+      } else if (action === "look") {
+        state.look = target.dataset.look;
         render();
       } else if (action === "select") {
         state.selected = state.selected === target.dataset.id ? null : target.dataset.id;
