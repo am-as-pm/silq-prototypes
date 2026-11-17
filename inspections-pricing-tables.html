@@ -1168,6 +1168,7 @@
       service: "Inline",
       country: "China",
       units: 450,
+      skus: 5,
       qcs: 1,
       transport: 100
     },
@@ -1194,6 +1195,7 @@
             service: saved.quote.service || "Inline",
             country: saved.quote.country || "China",
             units: saved.quote.units,
+            skus: saved.quote.skus == null ? 5 : saved.quote.skus,
             qcs: saved.quote.qcs || 1,
             transport: saved.quote.transport,
             manDays: saved.quote.manDays,
@@ -1394,6 +1396,7 @@
     const rows = [
       ["Category", "<select class=\"input\" data-quote=\"category\">" + quoteChoices(catalogCategories(state.cat), state.quote.category) + "</select>", "From the RFQ form. Product category on the inspection request."],
       ["Product (under " + categoryName + ")", "<select class=\"input\" data-quote=\"product\">" + quoteChoices(products, state.quote.product) + "</select>", "From the RFQ form. Product under that category."],
+      ["No. of unique SKUs", quoteInput("skus", state.quote.skus, "numeric"), "From the RFQ form. Number of unique SKUs on the inspection request. Does not change the man day calculation."],
       ["No. of units of " + productName, quoteInput("units", state.quote.units, "numeric"), "From the RFQ form. Total order quantity."],
       ["No. of man days required to inspect this", quoteInput("manDays", state.quote.manDays), dayNote],
       ["Price per man day Per QC", quoteInput("price", state.quote.price), "From the pricing matrix. Price to inspect any " + categoryName + " category per man day for ONE qc."],
