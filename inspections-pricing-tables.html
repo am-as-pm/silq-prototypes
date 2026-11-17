@@ -155,7 +155,29 @@
   .group-row td {
     background: var(--silq-grey-50); font-weight: 600; color: var(--silq-navy);
   }
+  .group-toggle {
+    display: flex; align-items: center; gap: 8px; width: 100%;
+    background: none; border: 0; padding: 0; cursor: pointer;
+    font: inherit; color: inherit; text-align: left;
+  }
+  .chevron {
+    width: 0; height: 0; flex: none;
+    border-top: 4px solid transparent; border-bottom: 4px solid transparent;
+    border-left: 6px solid var(--silq-navy);
+  }
+  .group-toggle[aria-expanded="true"] .chevron { transform: rotate(90deg); }
+  .group-count { margin-left: auto; }
   .product-indent { padding-left: 28px; }
+  .quote-foot {
+    display: grid; gap: 10px; padding: 16px; margin-left: auto; max-width: 460px;
+    border-top: 1px solid var(--silq-grey-200);
+  }
+  .quote-foot-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .quote-foot-row label, .quote-foot-row span { font: var(--type-content-small); color: var(--text-secondary); }
+  .quote-foot-row strong { font: var(--type-content-normal); color: var(--silq-navy); }
+  .quote-foot .input { width: 160px; }
+  .line-err { display: block; color: var(--error-text); font: var(--type-content-small); margin-top: 4px; }
+  .line-note { display: block; color: var(--text-secondary); font: var(--type-content-small); margin-top: 4px; }
   .subhead {
     font: var(--type-content-small-semi-bold); color: var(--silq-navy);
     text-transform: uppercase; letter-spacing: var(--tracking-wide); margin: 4px 0;
@@ -416,10 +438,52 @@
 
     <section id="panelEngine" role="tabpanel" aria-labelledby="tabEngine" hidden>
       <div class="card">
-        <div class="card-bd empty-state" style="padding: 24px;">
+        <div class="card-hd">
           <h2>Quoting engine builder</h2>
-          <p>This builder will read the pricing tables and price an inspection quote. The sell formula is not settled, so this prototype does not calculate a quote.</p>
-          <button class="btn" type="button" id="backToTables">Back to pricing tables</button>
+          <div class="actions">
+            <button class="btn" type="button" id="quoteAddCharge">Add charge</button>
+            <button class="btn btn-primary" type="button" id="quoteAdd">Add inspection line</button>
+          </div>
+        </div>
+        <div class="rules">
+          <ol>
+            <li>Man days = units divided by the units inspectable in 1 man day. A matching product is used when Man day mapping has one. ALL is used when that category is set to ALL.</li>
+            <li>Price per man day is the total sell from the pricing matrix for that category, service, and country.</li>
+            <li>Labor = price per man day times man days. More QCs split the days on site and do not change the labor.</li>
+            <li>QC charges, such as transportation and boarding, are added as their own line.</li>
+          </ol>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Line</th>
+                <th class="num">Units</th>
+                <th class="num">Man days</th>
+                <th class="num">QCs</th>
+                <th class="num">Days on site</th>
+                <th class="num">Price per man day</th>
+                <th class="num">Amount</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="quoteBody"></tbody>
+          </table>
+        </div>
+        <div class="quote-foot">
+          <div class="quote-foot-row"><span>Total</span><strong id="quoteSum">0.00</strong></div>
+          <div class="quote-foot-row">
+            <label for="quoteCurrency">Currency</label>
+            <select class="input" id="quoteCurrency"></select>
+          </div>
+          <div class="quote-foot-row">
+            <label for="quoteUsdRate">USD per 1 unit of currency</label>
+            <input class="input" id="quoteUsdRate" inputmode="decimal" autocomplete="off" value="1">
+          </div>
+          <div class="quote-foot-row">
+            <label for="quoteUsd">Converted to USD</label>
+            <input class="input" id="quoteUsd" readonly>
+          </div>
         </div>
       </div>
     </section>
@@ -445,7 +509,7 @@
 (function () {
   const SERVICES = ["Final", "Inline", "Pre production", "Factory", "TOP", "ALL"];
   const SESSION_USER = "Shivam";
-  const STORE_KEY = "silq-inspections-pricing-v4";
+  const STORE_KEY = "silq-inspections-pricing-v5";
   const COUNTRIES = ["Bangladesh", "Cambodia", "China", "India", "Indonesia", "Malaysia", "Pakistan", "Sri Lanka", "Thailand", "Turkey", "Vietnam"];
   const CURRENCIES = ["USD", "EUR", "GBP", "CNY", "INR", "VND", "BDT", "IDR", "THB", "MYR", "PKR", "LKR", "KHR", "TRY"];
 
@@ -532,7 +596,12 @@
   { category: "Industrial Valves & Fittings", product: "steel manifolds" },
   { category: "Automotive & Electric Vehicles", product: "EV trucks" }
   ];
-const SEED_T1 = [];
+  const SEED_T1 = [
+    { category: "Furniture", product: "beds", units: 15, uploadedOn: "2026-11-11", uploadedBy: "Shivam" },
+    { category: "Furniture", product: "chairs", units: 30, uploadedOn: "2026-11-11", uploadedBy: "Shivam" },
+    { category: "Apparel & Garments", product: "T-shirts", units: 600, uploadedOn: "2026-11-11", uploadedBy: "Shivam" },
+    { category: "Footwear", product: "ALL", units: 200, uploadedOn: "2026-11-11", uploadedBy: "Shivam" }
+  ];
   const SEED_T2 = [
     { category: "Furniture", service: "Inline", country: "China", currency: "USD", charge: 150, margin: 10, uploadedOn: "2026-11-11", uploadedBy: "Shivam" },
     { category: "Apparel & Garments", service: "Final", country: "China", currency: "USD", charge: 100, margin: 5, uploadedOn: "2026-11-11", uploadedBy: "Shivam" },
@@ -969,6 +1038,55 @@ const SEED_T1 = [];
     return "\uFEFF" + lines.join("\r\n");
   }
 
+  function findManDay(rows, category, product) {
+    const exact = (rows || []).find(function (row) {
+      return normKey(row.category) === normKey(category) && normKey(row.product) === normKey(product);
+    });
+    if (exact) return exact;
+    return (rows || []).find(function (row) {
+      return normKey(row.category) === normKey(category) && row.product === "ALL";
+    }) || null;
+  }
+
+  function findPrice(rows, category, service, country) {
+    const list = (rows || []).filter(function (row) {
+      return normKey(row.category) === normKey(category) && normKey(row.country) === normKey(country);
+    });
+    return list.find(function (row) { return normKey(row.service) === normKey(service); })
+      || list.find(function (row) { return row.service === "ALL"; })
+      || null;
+  }
+
+  function quoteInspection(input, tables) {
+    tables = tables || {};
+    const errors = [];
+    const units = parseUnits(input.units);
+    if (!units.ok) errors.push(units.error);
+    const qcsRaw = String(input.qcs == null ? "" : input.qcs).trim();
+    let qcs = 0;
+    if (!/^\d+$/.test(qcsRaw) || Number(qcsRaw) < 1) errors.push("Number of QCs must be a whole number, at least 1.");
+    else qcs = Number(qcsRaw);
+    const day = findManDay(tables.t1, input.category, input.product);
+    if (!day) errors.push("No man day row for this category and product.");
+    const price = findPrice(tables.t2, input.category, input.service, input.country);
+    if (!price) errors.push("No pricing row for this category, service, and country.");
+    if (errors.length) return { ok: false, errors: errors };
+    const manDays = units.value / day.units;
+    const rate = totalSell(price.charge, price.margin);
+    return {
+      ok: true,
+      errors: [],
+      units: units.value,
+      qcs: qcs,
+      manDays: manDays,
+      daysOnSite: manDays / qcs,
+      rate: rate,
+      amount: round2(rate * manDays),
+      unitsPerDay: day.units,
+      usedProduct: day.product
+    };
+  }
+
   const api = {
     SERVICES: SERVICES,
     SESSION_USER: SESSION_USER,
@@ -987,6 +1105,7 @@ const SEED_T1 = [];
     COUNTRIES: COUNTRIES,
     CURRENCIES: CURRENCIES,
     readUpload: readUpload,
+    quoteInspection: quoteInspection,
     applyRows: applyRows,
     toCsv: toCsv
   };
@@ -1009,7 +1128,16 @@ const SEED_T1 = [];
     sub: "cat",
     cat: withIds(SEED_CAT, "cat"),
     t1: withIds(SEED_T1, "t1"),
-    t2: withIds(SEED_T2, "t2")
+    t2: withIds(SEED_T2, "t2"),
+    quote: {
+      currency: "USD",
+      usdRate: 1,
+      lines: withIds([
+        { kind: "inspection", category: "Furniture", product: "beds", service: "Inline", country: "China", units: 450, qcs: 1 },
+        { kind: "manual", label: "QC related charges - Transportation & boarding", amount: 100 }
+      ], "q")
+    },
+    collapsed: {}
   };
   let trayMode = { which: "cat", id: null };
 
@@ -1023,6 +1151,13 @@ const SEED_T1 = [];
         state.cat = saved.cat;
         state.t1 = saved.t1;
         state.t2 = saved.t2;
+        if (saved.quote && Array.isArray(saved.quote.lines)) {
+          state.quote = {
+            currency: saved.quote.currency || "USD",
+            usdRate: Number(saved.quote.usdRate) > 0 ? Number(saved.quote.usdRate) : 1,
+            lines: saved.quote.lines
+          };
+        }
       }
     } catch (err) { /* keep the sample */ }
   }
@@ -1030,7 +1165,7 @@ const SEED_T1 = [];
   function saveState() {
     try {
       localStorage.setItem(STORE_KEY, JSON.stringify({
-        cat: state.cat, t1: state.t1, t2: state.t2, seq: seq
+        cat: state.cat, t1: state.t1, t2: state.t2, quote: state.quote, seq: seq
       }));
     } catch (err) { /* private mode */ }
   }
@@ -1077,9 +1212,13 @@ const SEED_T1 = [];
       return;
     }
     body.innerHTML = groups.map(function (group) {
-      const head = "<tr class=\"group-row\"><td colspan=\"2\">" + esc(group.category) + "</td></tr>";
+      const key = normKey(group.category);
+      const open = state.collapsed[key] === false;
+      const productCount = group.products.length;
+      const productLabel = productCount + (productCount === 1 ? " product" : " products");
+      const head = "<tr class=\"group-row\"><td colspan=\"2\"><button type=\"button\" class=\"group-toggle\" data-toggle-cat=\"" + esc(key) + "\" aria-expanded=\"" + (open ? "true" : "false") + "\"><span class=\"chevron\" aria-hidden=\"true\"></span><span>" + esc(group.category) + "</span><span class=\"count group-count\">" + productLabel + "</span></button></td></tr>";
       const products = group.products.map(function (row) {
-        return "<tr><td class=\"product-indent\">" + esc(row.product) + "</td>" + actionCell("cat", row.id) + "</tr>";
+        return "<tr" + (open ? "" : " hidden") + "><td class=\"product-indent\">" + esc(row.product) + "</td>" + actionCell("cat", row.id) + "</tr>";
       }).join("");
       return head + products;
     }).join("");
@@ -1129,8 +1268,65 @@ const SEED_T1 = [];
 
   function render(which) {
     if (which === "cat") renderCat();
-    else if (which === "t1") renderT1();
-    else renderT2();
+    else if (which === "t1") {
+      renderT1();
+      renderQuote();
+    } else {
+      renderT2();
+      renderQuote();
+    }
+  }
+
+  function formatQty(n) {
+    if (!isFinite(n)) return "";
+    const rounded = Math.round((n + Number.EPSILON) * 100) / 100;
+    if (Math.abs(rounded - Math.round(rounded)) < 1e-9) return String(Math.round(rounded));
+    return rounded.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function lineAmount(line) {
+    if (line.kind === "manual") {
+      const amount = Number(line.amount);
+      if (!(amount > 0)) return { ok: false, errors: ["Amount must be greater than 0."] };
+      return { ok: true, amount: round2(amount) };
+    }
+    return quoteInspection(line, { t1: state.t1, t2: state.t2 });
+  }
+
+  function renderQuote() {
+    const body = document.getElementById("quoteBody");
+    let total = 0;
+    if (!state.quote.lines.length) {
+      body.innerHTML = "<tr class=\"empty-row\"><td colspan=\"8\">No lines yet. Add an inspection line.</td></tr>";
+    } else {
+      body.innerHTML = state.quote.lines.map(function (line) {
+        const priced = lineAmount(line);
+        if (priced.ok) total += priced.amount;
+        if (line.kind === "manual") {
+          const err = priced.ok ? "" : "<span class=\"line-err\">" + esc(priced.errors[0]) + "</span>";
+          return "<tr><td>" + esc(line.label) + err + "</td><td></td><td></td><td></td><td></td><td></td><td class=\"num\">" + (priced.ok ? esc(formatMoney(priced.amount)) : "") + "</td>" + actionCell("quote", line.id) + "</tr>";
+        }
+        const title = esc(line.category) + " / " + esc(line.product) + " / " + esc(line.service) + " / " + esc(line.country);
+        const note = priced.ok && priced.usedProduct === "ALL" ? "<span class=\"line-note\">Man day rate: ALL</span>" : "";
+        const err = priced.ok ? "" : "<span class=\"line-err\">" + esc(priced.errors.join(" ")) + "</span>";
+        return "<tr><td>" + title + note + err + "</td>" +
+          "<td class=\"num\">" + esc(line.units) + "</td>" +
+          "<td class=\"num\">" + (priced.ok ? esc(formatQty(priced.manDays)) : "") + "</td>" +
+          "<td class=\"num\">" + esc(line.qcs) + "</td>" +
+          "<td class=\"num\">" + (priced.ok ? esc(formatQty(priced.daysOnSite)) : "") + "</td>" +
+          "<td class=\"num\">" + (priced.ok ? esc(formatMoney(priced.rate)) : "") + "</td>" +
+          "<td class=\"num\">" + (priced.ok ? esc(formatMoney(priced.amount)) : "") + "</td>" +
+          actionCell("quote", line.id) + "</tr>";
+      }).join("");
+    }
+    const currency = state.quote.currency || "USD";
+    document.getElementById("quoteSum").textContent = formatMoney(total) + " " + currency;
+    const rate = Number(state.quote.usdRate) > 0 ? Number(state.quote.usdRate) : 1;
+    document.getElementById("quoteUsd").value = formatMoney(round2(total * rate));
+    const rateInput = document.getElementById("quoteUsdRate");
+    if (document.activeElement !== rateInput) rateInput.value = String(rate);
+    const currencySelect = document.getElementById("quoteCurrency");
+    if (currencySelect && currencySelect.value !== currency) currencySelect.value = currency;
   }
 
   function showResult(id, kind, title, lines) {
@@ -1363,7 +1559,9 @@ const SEED_T1 = [];
       "new-product": "Add new Product",
       "edit-product": "Edit product",
       t1: row ? "Edit row" : "Add row",
-      t2: row ? "Edit row" : "Add row"
+      t2: row ? "Edit row" : "Add row",
+      "quote-inspection": row ? "Edit inspection line" : "Add inspection line",
+      "quote-charge": row ? "Edit charge" : "Add charge"
     };
     document.getElementById("trayTitle").textContent = titles[kind] || "Add row";
     document.getElementById("traySave").textContent = "Save";
@@ -1392,6 +1590,18 @@ const SEED_T1 = [];
         fieldWrap("fCurrency", "Currency", selectBox("fCurrency", CURRENCIES, (row && row.currency) || "USD", "Select")) +
         fieldWrap("fCharge", "Charge per man day", textInput("fCharge", row ? String(row.charge) : "", "", "decimal")) +
         fieldWrap("fMargin", "Margin %", textInput("fMargin", row ? String(row.margin) : "", "10", "decimal"));
+    } else if (kind === "quote-inspection") {
+      fields.innerHTML = emptyNote +
+        fieldWrap("fCategory", "Product category", selectBox("fCategory", categories, row && row.category, "Select")) +
+        fieldWrap("fProduct", "Product", selectBox("fProduct", productsFor(state.cat, row && row.category), row && row.product, "Select")) +
+        fieldWrap("fService", "Inspection service", serviceSelect(row && row.service)) +
+        fieldWrap("fCountry", "Country", selectBox("fCountry", COUNTRIES, (row && row.country) || "China", "Select")) +
+        fieldWrap("fUnits", "Number of units", textInput("fUnits", row ? String(row.units) : "", "450", "numeric")) +
+        fieldWrap("fQcs", "Number of QCs", textInput("fQcs", row ? String(row.qcs) : "1", "1", "numeric"));
+    } else if (kind === "quote-charge") {
+      fields.innerHTML =
+        fieldWrap("fLabel", "Description", textInput("fLabel", row && row.label, "Transportation and boarding")) +
+        fieldWrap("fAmount", "Amount", textInput("fAmount", row ? String(row.amount) : "", "100", "decimal"));
     } else {
       fields.innerHTML = emptyNote +
         fieldWrap("fCategory", "Product category", selectBox("fCategory", categories, row && row.category, "Select")) +
@@ -1467,6 +1677,49 @@ const SEED_T1 = [];
   function readTray() {
     const kind = trayMode.kind;
     if (kind === "new-category") return readNewCategory();
+    if (kind === "quote-charge") {
+      const label = fieldValue("fLabel").trim();
+      const amount = parseMoney(fieldValue("fAmount"));
+      const errors = {};
+      if (!label) errors.label = "Description is required.";
+      if (!amount.ok) errors.amount = amount.empty ? "Amount is required." : "Amount must be a number greater than 0.";
+      return {
+        ok: Object.keys(errors).length === 0,
+        errors: errors,
+        row: Object.keys(errors).length ? null : { kind: "manual", label: label, amount: amount.value }
+      };
+    }
+    if (kind === "quote-inspection") {
+      const categoryName = findCategoryName(state.cat, fieldValue("fCategory"));
+      const errors = {};
+      if (!categoryName) errors.category = "Choose a category from Product Category mapping.";
+      const productName = productsFor(state.cat, categoryName || "").find(function (name) {
+        return normKey(name) === normKey(fieldValue("fProduct"));
+      });
+      if (!productName) errors.product = "Choose a product under this category.";
+      const service = normalizeService(fieldValue("fService"));
+      if (!service.ok) errors.service = service.error;
+      const country = matchList(COUNTRIES, fieldValue("fCountry"));
+      if (!country) errors.country = "Choose a country from the list.";
+      const units = parseUnits(fieldValue("fUnits"));
+      if (!units.ok) errors.units = units.error;
+      const qcsRaw = fieldValue("fQcs").trim();
+      if (!/^\d+$/.test(qcsRaw) || Number(qcsRaw) < 1) errors.qcs = "Number of QCs must be a whole number, at least 1.";
+      const ok = Object.keys(errors).length === 0;
+      return {
+        ok: ok,
+        errors: errors,
+        row: ok ? {
+          kind: "inspection",
+          category: categoryName,
+          product: productName,
+          service: service.value,
+          country: country,
+          units: units.value,
+          qcs: Number(qcsRaw)
+        } : null
+      };
+    }
     if (kind === "t2") {
       return validateT2({
         category: fieldValue("fCategory"),
@@ -1502,6 +1755,10 @@ const SEED_T1 = [];
   }
 
   function errorMap(kind) {
+    if (kind === "quote-inspection") {
+      return { category: "fCategory", product: "fProduct", service: "fService", country: "fCountry", units: "fUnits", qcs: "fQcs" };
+    }
+    if (kind === "quote-charge") return { label: "fLabel", amount: "fAmount" };
     if (kind === "t2") {
       return {
         category: "fCategory",
@@ -1529,10 +1786,27 @@ const SEED_T1 = [];
       showFieldErrors(result.errors, map);
       return;
     }
+    if (kind === "quote-inspection" || kind === "quote-charge") {
+      if (trayMode.id) {
+        state.quote.lines = state.quote.lines.map(function (line) {
+          if (line.id !== trayMode.id) return line;
+          return Object.assign({ id: line.id }, result.row);
+        });
+        toast("Line updated.");
+      } else {
+        state.quote.lines.push(Object.assign({ id: "q-" + (seq++) }, result.row));
+        toast("Line added.");
+      }
+      saveState();
+      renderQuote();
+      closeTray();
+      return;
+    }
     if (kind === "new-category") {
       result.products.forEach(function (product) {
         state.cat.push({ id: "cat-" + (seq++), category: result.category, product: product });
       });
+      state.collapsed[normKey(result.category)] = false;
       saveState();
       renderCat();
       closeTray();
@@ -1548,6 +1822,7 @@ const SEED_T1 = [];
         toast("Product updated.");
       } else {
         state.cat.push({ id: "cat-" + (seq++), category: result.row.category, product: result.row.product });
+        state.collapsed[normKey(result.row.category)] = false;
         toast("Added " + result.row.product + " under " + result.row.category + ".");
       }
       saveState();
@@ -1615,15 +1890,16 @@ const SEED_T1 = [];
   });
 
   document.getElementById("trayFields").addEventListener("change", function (event) {
-    if (event.target.id !== "fCategory" || trayMode.kind !== "t1") return;
-    const wrap = event.target.closest(".fld");
+    if (event.target.id !== "fCategory") return;
+    if (trayMode.kind !== "t1" && trayMode.kind !== "quote-inspection") return;
     const productField = document.getElementById("fProduct");
     if (!productField) return;
     const holder = productField.parentNode;
     const next = document.createElement("div");
-    next.innerHTML = productOptions(event.target.value, "");
+    next.innerHTML = trayMode.kind === "t1"
+      ? productOptions(event.target.value, "")
+      : selectBox("fProduct", productsFor(state.cat, event.target.value), "", "Select");
     holder.replaceChild(next.firstChild, productField);
-    if (wrap) wrap.classList.remove("err");
   });
 
   document.getElementById("catAddCategory").addEventListener("click", function () { openTray("new-category", null); });
@@ -1658,13 +1934,45 @@ const SEED_T1 = [];
   document.querySelectorAll("[data-sub]").forEach(function (el) {
     el.addEventListener("click", function () { openSub(el.getAttribute("data-sub")); });
   });
-  document.getElementById("backToTables").addEventListener("click", function () { openMain("tables"); });
+  document.getElementById("quoteAdd").addEventListener("click", function () { openTray("quote-inspection", null); });
+  document.getElementById("quoteAddCharge").addEventListener("click", function () { openTray("quote-charge", null); });
+  document.getElementById("quoteCurrency").innerHTML = CURRENCIES.map(function (code) {
+    return "<option value=\"" + esc(code) + "\">" + esc(code) + "</option>";
+  }).join("");
+  document.getElementById("quoteCurrency").addEventListener("change", function (event) {
+    state.quote.currency = event.target.value;
+    if (event.target.value === "USD") state.quote.usdRate = 1;
+    saveState();
+    renderQuote();
+  });
+  document.getElementById("quoteUsdRate").addEventListener("input", function (event) {
+    const rate = Number(String(event.target.value).trim());
+    if (rate > 0) {
+      state.quote.usdRate = rate;
+      saveState();
+      const totalText = document.getElementById("quoteSum").textContent;
+      const total = Number(totalText.replace(/[^0-9.]/g, ""));
+      document.getElementById("quoteUsd").value = formatMoney(round2(total * rate));
+    }
+  });
 
   document.body.addEventListener("click", function (event) {
+    const toggle = event.target.closest("[data-toggle-cat]");
+    if (toggle) {
+      const key = toggle.getAttribute("data-toggle-cat");
+      state.collapsed[key] = state.collapsed[key] === false;
+      renderCat();
+      return;
+    }
     const edit = event.target.closest("[data-edit]");
     if (edit) {
       const which = edit.getAttribute("data-edit");
       const id = edit.getAttribute("data-id");
+      if (which === "quote") {
+        const row = state.quote.lines.find(function (item) { return item.id === id; });
+        if (row) openTray(row.kind === "manual" ? "quote-charge" : "quote-inspection", row);
+        return;
+      }
       const row = state[which].find(function (item) { return item.id === id; });
       if (row) openTray(which === "cat" ? "edit-product" : which, row);
       return;
@@ -1673,6 +1981,13 @@ const SEED_T1 = [];
     if (!button) return;
     const which = button.getAttribute("data-remove");
     const id = button.getAttribute("data-id");
+    if (which === "quote") {
+      state.quote.lines = state.quote.lines.filter(function (line) { return line.id !== id; });
+      saveState();
+      renderQuote();
+      toast("Line removed.");
+      return;
+    }
     const removed = state[which].find(function (row) { return row.id === id; });
     state[which] = state[which].filter(function (row) { return row.id !== id; });
     saveState();
@@ -1690,6 +2005,7 @@ const SEED_T1 = [];
   renderCat();
   renderT1();
   renderT2();
+  renderQuote();
   applyHash();
   window.addEventListener("hashchange", applyHash);
 })();
