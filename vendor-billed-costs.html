@@ -751,7 +751,11 @@
   <svg width="11" height="5.5" viewBox="0 0 11 5.5" aria-hidden="true"><path d="M 0 0 L 11 0 L 5.5 5.5 Z" fill="#202020"></path></svg>
 </div>
 <div id="crdTip" class="silq-tip" role="tooltip">
-  <div class="silq-tip-base">Open: this shows the cargo ready date on the latest quote this shipment sits on. The other option is an actual CRD. An actual CRD may not exist yet at booking.</div>
+  <div class="silq-tip-base">Cargo ready date on the latest quote this shipment sits on.</div>
+  <svg width="11" height="5.5" viewBox="0 0 11 5.5" aria-hidden="true"><path d="M 0 0 L 11 0 L 5.5 5.5 Z" fill="#202020"></path></svg>
+</div>
+<div id="actualCrdTip" class="silq-tip" role="tooltip">
+  <div class="silq-tip-base">Recorded on the shipment. Empty when cargo is not ready yet, including at booking.</div>
   <svg width="11" height="5.5" viewBox="0 0 11 5.5" aria-hidden="true"><path d="M 0 0 L 11 0 L 5.5 5.5 Z" fill="#202020"></path></svg>
 </div>
 <input type="file" id="billFile" accept=".pdf,image/*,.png,.jpg,.jpeg" multiple hidden>
@@ -932,7 +936,7 @@ const QUOTES = [
         cbm: 62, quoteCbm: 58, kg: 8450, quoteKg: 8200,
         detDays: 3, quoteDetDays: 2, demDays: 0, quoteDemDays: 0,
         executionStatus: 'IN_PROGRESS', status: 'AT_DESTINATION_PORT',
-        gatedIn: '2026-08-12', originPickup: '2026-08-16', etd: '2026-08-20', eta: '2026-09-12',
+        gatedIn: '2026-08-12', originPickup: '2026-08-16', actualCrd: '2026-08-17', etd: '2026-08-20', eta: '2026-09-12',
         lines: APEX_IDS.map(fromCatalog), originEntered: true,
         docs: [{ id: 'd-apex-1', name: 'Yantian-origin-invoice.pdf', size: 184320, when: '2026-08-13', raised: '2026-08-13', kind: 'Vendor bill' }],
         history: [
@@ -952,7 +956,7 @@ const QUOTES = [
         cbm: 61, quoteCbm: 61, kg: 7900, quoteKg: 7900,
         detDays: 0, quoteDetDays: 0, demDays: 0, quoteDemDays: 0,
         executionStatus: 'IN_PROGRESS', status: 'IN_TRANSIT_TO_DESTINATION_PORT',
-        gatedIn: '2026-08-18', originPickup: '2026-08-24', etd: '2026-08-27', eta: '2026-09-18',
+        gatedIn: '2026-08-18', originPickup: '2026-08-24', actualCrd: '2026-08-23', etd: '2026-08-27', eta: '2026-09-18',
         lines: APEX_IDS.map(fromCatalog),
         history: [
           { at: '2026-08-18T08:40:00', by: 'System', team: 'Tasks', text: 'Gated in recorded' },
@@ -979,7 +983,7 @@ const QUOTES = [
         cbm: 50, quoteCbm: 50, kg: 6400, quoteKg: 6400,
         detDays: 0, quoteDetDays: 0, demDays: 0, quoteDemDays: 0,
         executionStatus: 'ARCHIVED', status: 'AT_CONSIGNEE_LOCATION',
-        gatedIn: '2026-07-02', originPickup: '2026-07-04', etd: '2026-07-08', eta: '2026-07-30',
+        gatedIn: '2026-07-02', originPickup: '2026-07-04', actualCrd: '2026-07-03', etd: '2026-07-08', eta: '2026-07-30',
         lines: APEX_IDS.map(fromCatalog),
         history: [
           { at: '2026-08-01T09:00:00', by: 'System', team: 'Tasks', text: 'Shipment archived.' }
@@ -998,7 +1002,7 @@ const QUOTES = [
       cbm: 54, quoteCbm: 54, kg: 7600, quoteKg: 7600,
       detDays: 0, quoteDetDays: 0, demDays: 0, quoteDemDays: 0,
         executionStatus: 'DONE', status: 'AT_CONSIGNEE_LOCATION',
-        gatedIn: '2026-05-08', originPickup: '2026-05-11', etd: '2026-05-14', eta: '2026-06-04',
+        gatedIn: '2026-05-08', originPickup: '2026-05-11', actualCrd: '2026-05-13', etd: '2026-05-14', eta: '2026-06-04',
         history: [
           { at: '2026-05-08T10:00:00', by: 'System', team: 'Tasks', text: 'Gated in recorded' }
         ],
@@ -1020,7 +1024,7 @@ const QUOTES = [
       cbm: 12.4, quoteCbm: 12, kg: 3180, quoteKg: 2900,
       detDays: 0, quoteDetDays: 0, demDays: 0, quoteDemDays: 0,
       executionStatus: 'IN_PROGRESS', status: 'AT_DESTINATION_PORT',
-      gatedIn: '2026-07-22', originPickup: '2026-07-24', etd: '2026-07-28', eta: '2026-08-18',
+      gatedIn: '2026-07-22', originPickup: '2026-07-24', actualCrd: '2026-07-26', etd: '2026-07-28', eta: '2026-08-18',
       history: [
         { at: '2026-07-23T14:10:00', by: 'Priya Shah', team: 'FinOps', text: 'Query on Origin Terminal Handling: billed $240 vs buy on quote CBM' },
         { at: '2026-07-23T14:05:00', by: 'Priya Shah', team: 'FinOps', text: 'Ocean Freight and Origin CFS billed on HBL CBM' },
@@ -1040,7 +1044,7 @@ const QUOTES = [
       cbm: 2.1, quoteCbm: 1.9, kg: 448, quoteKg: 420,
       detDays: 0, quoteDetDays: 0, demDays: 0, quoteDemDays: 0,
       executionStatus: 'IN_PROGRESS', status: 'AT_CONSIGNEE_LOCATION',
-      gatedIn: '2026-09-04', originPickup: '2026-09-04', etd: '2026-09-05', eta: '2026-09-06',
+      gatedIn: '2026-09-04', originPickup: '2026-09-04', actualCrd: '2026-09-04', etd: '2026-09-05', eta: '2026-09-06',
       history: [
         { at: '2026-09-05T16:40:00', by: 'Priya Shah', team: 'FinOps', text: 'Query on Airway Bill (AWB): billed $80 vs buy $45' },
         { at: '2026-09-05T16:35:00', by: 'Priya Shah', team: 'FinOps', text: 'Air Freight billed on HBL kg' },
@@ -1893,7 +1897,8 @@ function renderFacts() {
       ['Route', s.origin + ' → ' + s.dest],
       ['Incoterm', s.incoterm + ' · ' + s.coverage],
       ['Quote valid till', fmtDate(q.quoteValidTill), 'quoteTillTip'],
-      ['Cargo ready date', fmtDate(q.cargoReady), 'crdTip'],
+      ['Cargo ready date (latest quote)', fmtDate(q.cargoReady), 'crdTip'],
+      ['Actual cargo ready date', fmtDate(s.actualCrd), 'actualCrdTip'],
       ['Origin pickup date', fmtDate(s.originPickup)],
       ['Mode', modeLabel(s)],
       ['Status', execLabel(s) + (locLabel(s) ? ' · ' + locLabel(s) : '')],
@@ -2979,6 +2984,7 @@ function hideAllTips() {
   hideTip('procTip');
   hideTip('quoteTillTip');
   hideTip('crdTip');
+  hideTip('actualCrdTip');
 }
 function showTipEl(btn, tipId) {
   const tip = document.getElementById(tipId);
