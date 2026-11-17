@@ -176,11 +176,31 @@
   .quote-foot-row label, .quote-foot-row span { font: var(--type-content-small); color: var(--text-secondary); }
   .quote-foot-row strong { font: var(--type-content-normal); color: var(--silq-navy); }
   .quote-foot .input { width: 160px; }
-  .sheet-note { color: var(--text-secondary); font: var(--type-content-small); }
+  .sheet-note { color: var(--text-secondary); font: var(--type-content-small); white-space: normal; }
   .sheet-total td { font-weight: 600; background: var(--silq-grey-50); }
-  .quote-context { display: flex; gap: 16px; flex-wrap: wrap; padding: 12px 16px 0; }
-  .quote-context label { display: flex; flex-direction: column; gap: 4px; font: var(--type-content-small); color: var(--text-secondary); }
-  .quote-context .input { min-width: 180px; }
+  .quote-meta {
+    display: flex; flex-direction: column; gap: 16px;
+    padding: 16px; border-bottom: 1px solid var(--border-light);
+  }
+  .quote-identity { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .quote-id { font: 500 14px/20px var(--font-body); color: var(--silq-grey-600); }
+  .quote-title { font: 600 18px/24px var(--font-body); color: var(--silq-grey-800); }
+  .quote-client { font: 500 13px/16px var(--font-body); color: var(--silq-grey-800); }
+  .quote-when {
+    margin-left: auto; display: flex; align-items: center; gap: 12px;
+    font: var(--type-content-small); color: var(--text-secondary);
+  }
+  .quote-when strong { font-weight: 500; color: var(--silq-grey-700); }
+  .meta-rule { width: 1px; height: 16px; background: var(--silq-grey-250); flex: none; }
+  .quote-facts { display: flex; gap: 16px; flex-wrap: wrap; align-items: end; }
+  .quote-fact {
+    display: flex; flex-direction: column; gap: 4px; min-width: 140px;
+    font: var(--type-content-small); color: var(--text-secondary);
+  }
+  .quote-fact strong { font: 500 14px/20px var(--font-body); color: var(--silq-navy); }
+  .quote-fact .input { min-width: 180px; }
+  .quote-table td:first-child { width: 32%; font-weight: 500; }
+  .quote-table td:nth-child(2), .quote-table th:nth-child(2) { width: 220px; }
   .line-err { display: block; color: var(--error-text); font: var(--type-content-small); margin-top: 4px; }
   .line-note { display: block; color: var(--text-secondary); font: var(--type-content-small); margin-top: 4px; }
   .subhead {
@@ -446,21 +466,37 @@
         <div class="card-hd">
           <h2>Quoting engine builder</h2>
         </div>
-        <div class="quote-context">
-          <label>Inspection service
-            <select class="input" id="quoteService"></select>
-          </label>
-          <label>Country
-            <select class="input" id="quoteCountry"></select>
-          </label>
+        <div class="quote-meta">
+          <div class="quote-identity">
+            <span class="tag">Quoting</span>
+            <span class="quote-id">P-18420</span>
+            <span class="meta-rule"></span>
+            <span class="quote-title">Inline inspection, beds</span>
+            <span class="meta-rule"></span>
+            <span class="quote-client">Harbor &amp; Home</span>
+            <span class="quote-when">Created <strong>10 Nov 2026</strong><span class="meta-rule"></span><strong>Shivam</strong></span>
+          </div>
+          <div class="quote-facts">
+            <label class="quote-fact">Inspection service
+              <span>From the RFQ form</span>
+              <select class="input" id="quoteService"></select>
+            </label>
+            <label class="quote-fact">Factory country
+              <span>From the RFQ form</span>
+              <select class="input" id="quoteCountry"></select>
+            </label>
+            <div class="quote-fact">Order stage<strong>Production in progress</strong></div>
+            <div class="quote-fact">Production complete<strong>28 Nov 2026</strong></div>
+            <div class="quote-fact">Factory<strong>Shenzhen Woodworks</strong></div>
+          </div>
         </div>
         <div class="table-wrap">
-          <table>
+          <table class="quote-table">
             <thead>
               <tr>
-                <th></th>
+                <th>Line</th>
                 <th>Value</th>
-                <th></th>
+                <th>Description</th>
               </tr>
             </thead>
             <tbody id="quoteBody"></tbody>
@@ -1353,20 +1389,19 @@
     const dayNote = state.quote.calcError
       ? state.quote.calcError
       : (qcs > 1
-        ? "(total no. of units / no. of units inspectable in a man day) / number of Qcs"
-        : "(total no. of units / no. of units inspectable in a man day)");
-    const priceNote = "Price to inspect any " + categoryName + " category per man day from above for ONE qc";
+        ? "Calc: (total no. of units / no. of units inspectable in a man day) / number of Qcs"
+        : "Calc: (total no. of units / no. of units inspectable in a man day)");
     const rows = [
-      ["Category", "<select class=\"input\" data-quote=\"category\">" + quoteChoices(catalogCategories(state.cat), state.quote.category) + "</select>", ""],
-      ["Product (under " + categoryName + ")", "<select class=\"input\" data-quote=\"product\">" + quoteChoices(products, state.quote.product) + "</select>", ""],
-      ["No. of units of " + productName, quoteInput("units", state.quote.units, "numeric"), ""],
+      ["Category", "<select class=\"input\" data-quote=\"category\">" + quoteChoices(catalogCategories(state.cat), state.quote.category) + "</select>", "From the RFQ form. Product category on the inspection request."],
+      ["Product (under " + categoryName + ")", "<select class=\"input\" data-quote=\"product\">" + quoteChoices(products, state.quote.product) + "</select>", "From the RFQ form. Product under that category."],
+      ["No. of units of " + productName, quoteInput("units", state.quote.units, "numeric"), "From the RFQ form. Total order quantity."],
       ["No. of man days required to inspect this", quoteInput("manDays", state.quote.manDays), dayNote],
-      ["Price per man day Per QC", quoteInput("price", state.quote.price), priceNote],
-      ["No. of QCs on the project", quoteInput("qcs", state.quote.qcs, "numeric"), ""],
-      ["Total QC x Price per man day", quoteInput("qcPrice", state.quote.qcPrice), ""],
-      ["Total quote price (excl. QC related charges)", quoteInput("labor", state.quote.labor), "price per man day x no. of man days required"],
-      ["QC related charges - Transportation & boarding", quoteInput("transport", state.quote.transport), "(Manually added for first version)"],
-      ["Total Quote price", quoteInput("total", state.quote.total), ""]
+      ["Price per man day Per QC", quoteInput("price", state.quote.price), "From the pricing matrix. Price to inspect any " + categoryName + " category per man day for ONE qc."],
+      ["No. of QCs on the project", quoteInput("qcs", state.quote.qcs, "numeric"), "Entered on the quote. Number of QCs assigned to this project."],
+      ["Total QC x Price per man day", quoteInput("qcPrice", state.quote.qcPrice), "Calc: price per man day x number of QCs."],
+      ["Total quote price (excl. QC related charges)", quoteInput("labor", state.quote.labor), "Calc: price per man day x no. of man days required."],
+      ["QC related charges - Transportation & boarding", quoteInput("transport", state.quote.transport), "Entered on the quote. (Manually added for first version)"],
+      ["Total Quote price", quoteInput("total", state.quote.total), "Calc: quote price excluding QC charges + transportation and boarding."]
     ];
     document.getElementById("quoteBody").innerHTML = rows.map(function (row, index) {
       const totalClass = index === rows.length - 1 ? " class=\"sheet-total\"" : "";
