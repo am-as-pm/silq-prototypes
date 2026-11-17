@@ -176,6 +176,11 @@
   .quote-foot-row label, .quote-foot-row span { font: var(--type-content-small); color: var(--text-secondary); }
   .quote-foot-row strong { font: var(--type-content-normal); color: var(--silq-navy); }
   .quote-foot .input { width: 160px; }
+  .sheet-note { color: var(--text-secondary); font: var(--type-content-small); }
+  .sheet-total td { font-weight: 600; background: var(--silq-grey-50); }
+  .quote-context { display: flex; gap: 16px; flex-wrap: wrap; padding: 12px 16px 0; }
+  .quote-context label { display: flex; flex-direction: column; gap: 4px; font: var(--type-content-small); color: var(--text-secondary); }
+  .quote-context .input { min-width: 180px; }
   .line-err { display: block; color: var(--error-text); font: var(--type-content-small); margin-top: 4px; }
   .line-note { display: block; color: var(--text-secondary); font: var(--type-content-small); margin-top: 4px; }
   .subhead {
@@ -440,30 +445,23 @@
       <div class="card">
         <div class="card-hd">
           <h2>Quoting engine builder</h2>
-          <div class="actions">
-            <button class="btn" type="button" id="quoteAddCharge">Add charge</button>
-            <button class="btn btn-primary" type="button" id="quoteAdd">Add inspection line</button>
-          </div>
         </div>
-        <div class="rules">
-          <ol>
-            <li>Man days = units divided by the units inspectable in 1 man day. A matching product is used when Man day mapping has one. ALL is used when that category is set to ALL.</li>
-            <li>Price per man day is the total sell from the pricing matrix for that category, service, and country.</li>
-            <li>Labor = price per man day times man days. More QCs split the days on site and do not change the labor.</li>
-            <li>QC charges, such as transportation and boarding, are added as their own line.</li>
-          </ol>
+        <div class="quote-context">
+          <label>Inspection service
+            <select class="input" id="quoteService"></select>
+          </label>
+          <label>Country
+            <select class="input" id="quoteCountry"></select>
+          </label>
         </div>
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
-                <th>Line</th>
-                <th class="num">Units</th>
-                <th class="num">Man days</th>
-                <th class="num">QCs</th>
-                <th class="num">Days on site</th>
-                <th class="num">Price per man day</th>
-                <th class="num">Amount</th>
+                <th></th>
+                <th>1 QC</th>
+                <th></th>
+                <th>2 QCs</th>
                 <th></th>
               </tr>
             </thead>
@@ -471,7 +469,6 @@
           </table>
         </div>
         <div class="quote-foot">
-          <div class="quote-foot-row"><span>Total</span><strong id="quoteSum">0.00</strong></div>
           <div class="quote-foot-row">
             <label for="quoteCurrency">Currency</label>
             <select class="input" id="quoteCurrency"></select>
@@ -509,7 +506,7 @@
 (function () {
   const SERVICES = ["Final", "Inline", "Pre production", "Factory", "TOP", "ALL"];
   const SESSION_USER = "Shivam";
-  const STORE_KEY = "silq-inspections-pricing-v5";
+  const STORE_KEY = "silq-inspections-pricing-v6";
   const COUNTRIES = ["Bangladesh", "Cambodia", "China", "India", "Indonesia", "Malaysia", "Pakistan", "Sri Lanka", "Thailand", "Turkey", "Vietnam"];
   const CURRENCIES = ["USD", "EUR", "GBP", "CNY", "INR", "VND", "BDT", "IDR", "THB", "MYR", "PKR", "LKR", "KHR", "TRY"];
 
@@ -1132,10 +1129,12 @@
     quote: {
       currency: "USD",
       usdRate: 1,
-      lines: withIds([
-        { kind: "inspection", category: "Furniture", product: "beds", service: "Inline", country: "China", units: 450, qcs: 1 },
-        { kind: "manual", label: "QC related charges - Transportation & boarding", amount: 100 }
-      ], "q")
+      category: "Furniture",
+      product: "beds",
+      service: "Inline",
+      country: "China",
+      units: 450,
+      transport: 100
     },
     collapsed: {}
   };
@@ -1151,11 +1150,16 @@
         state.cat = saved.cat;
         state.t1 = saved.t1;
         state.t2 = saved.t2;
-        if (saved.quote && Array.isArray(saved.quote.lines)) {
+        if (saved.quote && saved.quote.category) {
           state.quote = {
             currency: saved.quote.currency || "USD",
             usdRate: Number(saved.quote.usdRate) > 0 ? Number(saved.quote.usdRate) : 1,
-            lines: saved.quote.lines
+            category: saved.quote.category,
+            product: saved.quote.product,
+            service: saved.quote.service || "Inline",
+            country: saved.quote.country || "China",
+            units: saved.quote.units,
+            transport: saved.quote.transport
           };
         }
       }
@@ -1284,49 +1288,93 @@
     return rounded.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
-  function lineAmount(line) {
-    if (line.kind === "manual") {
-      const amount = Number(line.amount);
-      if (!(amount > 0)) return { ok: false, errors: ["Amount must be greater than 0."] };
-      return { ok: true, amount: round2(amount) };
-    }
-    return quoteInspection(line, { t1: state.t1, t2: state.t2 });
+  function sheetNumber(n) {
+    if (!isFinite(n)) return "";
+    const rounded = Math.round((n + Number.EPSILON) * 100) / 100;
+    if (Math.abs(rounded - Math.round(rounded)) < 1e-9) return String(Math.round(rounded));
+    return String(rounded);
+  }
+
+  function quoteSide(qcs) {
+    return quoteInspection({
+      category: state.quote.category,
+      product: state.quote.product,
+      service: state.quote.service,
+      country: state.quote.country,
+      units: state.quote.units,
+      qcs: String(qcs)
+    }, { t1: state.t1, t2: state.t2 });
+  }
+
+  function quoteChoices(list, selected) {
+    return ["<option value=\"\">Select</option>"].concat(list.map(function (item) {
+      const on = item === selected ? " selected" : "";
+      return "<option value=\"" + esc(item) + "\"" + on + ">" + esc(item) + "</option>";
+    })).join("");
   }
 
   function renderQuote() {
-    const body = document.getElementById("quoteBody");
-    let total = 0;
-    if (!state.quote.lines.length) {
-      body.innerHTML = "<tr class=\"empty-row\"><td colspan=\"8\">No lines yet. Add an inspection line.</td></tr>";
-    } else {
-      body.innerHTML = state.quote.lines.map(function (line) {
-        const priced = lineAmount(line);
-        if (priced.ok) total += priced.amount;
-        if (line.kind === "manual") {
-          const err = priced.ok ? "" : "<span class=\"line-err\">" + esc(priced.errors[0]) + "</span>";
-          return "<tr><td>" + esc(line.label) + err + "</td><td></td><td></td><td></td><td></td><td></td><td class=\"num\">" + (priced.ok ? esc(formatMoney(priced.amount)) : "") + "</td>" + actionCell("quote", line.id) + "</tr>";
-        }
-        const title = esc(line.category) + " / " + esc(line.product) + " / " + esc(line.service) + " / " + esc(line.country);
-        const note = priced.ok && priced.usedProduct === "ALL" ? "<span class=\"line-note\">Man day rate: ALL</span>" : "";
-        const err = priced.ok ? "" : "<span class=\"line-err\">" + esc(priced.errors.join(" ")) + "</span>";
-        return "<tr><td>" + title + note + err + "</td>" +
-          "<td class=\"num\">" + esc(line.units) + "</td>" +
-          "<td class=\"num\">" + (priced.ok ? esc(formatQty(priced.manDays)) : "") + "</td>" +
-          "<td class=\"num\">" + esc(line.qcs) + "</td>" +
-          "<td class=\"num\">" + (priced.ok ? esc(formatQty(priced.daysOnSite)) : "") + "</td>" +
-          "<td class=\"num\">" + (priced.ok ? esc(formatMoney(priced.rate)) : "") + "</td>" +
-          "<td class=\"num\">" + (priced.ok ? esc(formatMoney(priced.amount)) : "") + "</td>" +
-          actionCell("quote", line.id) + "</tr>";
-      }).join("");
+    const one = quoteSide(1);
+    const two = quoteSide(2);
+    const transport = Number(state.quote.transport);
+    const transportOk = String(state.quote.transport).trim() !== "" && isFinite(transport) && transport >= 0;
+    function pack(priced, qcs) {
+      if (!priced.ok) return { days: "", rate: "", qcPrice: "", labor: "", total: "", error: priced.errors.join(" ") };
+      const days = qcs === 1 ? priced.manDays : priced.daysOnSite;
+      const labor = priced.amount;
+      const charge = transportOk ? transport : 0;
+      return {
+        days: sheetNumber(days),
+        rate: sheetNumber(priced.rate),
+        qcPrice: sheetNumber(round2(priced.rate * qcs)),
+        labor: sheetNumber(labor),
+        total: sheetNumber(round2(labor + charge)),
+        error: ""
+      };
     }
-    const currency = state.quote.currency || "USD";
-    document.getElementById("quoteSum").textContent = formatMoney(total) + " " + currency;
+    const left = pack(one, 1);
+    const right = pack(two, 2);
+    const categoryName = state.quote.category || "category";
+    const productName = state.quote.product || "product";
+    const products = productsFor(state.cat, state.quote.category);
+    const dayNoteLeft = left.error || "(total no. of units / no. of units inspectable in a man day)";
+    const dayNoteRight = right.error || "(total no. of units / no. of units inspectable in a man day) / number of Qcs";
+    const priceNote = "Price to inspect any " + categoryName + " category per man day from above for ONE qc";
+    const laborNote = "price per man day x no. of man days required";
+    const manualNote = "(Manually added for first version)";
+    const rows = [
+      ["Category", "<select class=\"input\" data-quote=\"category\">" + quoteChoices(catalogCategories(state.cat), state.quote.category) + "</select>", "", state.quote.category, ""],
+      ["Product (under " + categoryName + ")", "<select class=\"input\" data-quote=\"product\">" + quoteChoices(products, state.quote.product) + "</select>", "", state.quote.product, ""],
+      ["No. of units of " + productName, "<input class=\"input\" data-quote=\"units\" inputmode=\"numeric\" value=\"" + esc(state.quote.units) + "\">", "", String(state.quote.units == null ? "" : state.quote.units), ""],
+      ["No. of man days required to inspect this", left.days, dayNoteLeft, right.days, dayNoteRight],
+      ["Price per man day Per QC", left.rate, priceNote, right.rate, priceNote],
+      ["No. of QCs on the project", "1", "", "2", ""],
+      ["Total QC x Price per man day", left.qcPrice, "", right.qcPrice, ""],
+      ["Total quote price (excl. QC related charges)", left.labor, laborNote, right.labor, laborNote],
+      ["QC related charges - Transportation & boarding", "<input class=\"input\" data-quote=\"transport\" inputmode=\"decimal\" value=\"" + esc(state.quote.transport) + "\">", manualNote, transportOk ? sheetNumber(transport) : "", manualNote],
+      ["Total Quote price", left.total, "", right.total, ""]
+    ];
+    document.getElementById("quoteBody").innerHTML = rows.map(function (row, index) {
+      const totalClass = index === rows.length - 1 ? " class=\"sheet-total\"" : "";
+      return "<tr" + totalClass + ">" +
+        "<td>" + esc(row[0]) + "</td>" +
+        "<td>" + row[1] + "</td>" +
+        "<td class=\"sheet-note\">" + esc(row[2]) + "</td>" +
+        "<td class=\"num\">" + esc(row[3]) + "</td>" +
+        "<td class=\"sheet-note\">" + esc(row[4]) + "</td>" +
+        "</tr>";
+    }).join("");
+    const quoteTotal = left.total === "" ? 0 : Number(left.total);
     const rate = Number(state.quote.usdRate) > 0 ? Number(state.quote.usdRate) : 1;
-    document.getElementById("quoteUsd").value = formatMoney(round2(total * rate));
+    document.getElementById("quoteUsd").value = formatMoney(round2(quoteTotal * rate));
     const rateInput = document.getElementById("quoteUsdRate");
     if (document.activeElement !== rateInput) rateInput.value = String(rate);
     const currencySelect = document.getElementById("quoteCurrency");
-    if (currencySelect && currencySelect.value !== currency) currencySelect.value = currency;
+    if (currencySelect && currencySelect.value !== state.quote.currency) currencySelect.value = state.quote.currency || "USD";
+    const serviceSelectEl = document.getElementById("quoteService");
+    if (serviceSelectEl && document.activeElement !== serviceSelectEl && serviceSelectEl.value !== state.quote.service) serviceSelectEl.value = state.quote.service;
+    const countrySelectEl = document.getElementById("quoteCountry");
+    if (countrySelectEl && document.activeElement !== countrySelectEl && countrySelectEl.value !== state.quote.country) countrySelectEl.value = state.quote.country;
   }
 
   function showResult(id, kind, title, lines) {
@@ -1934,8 +1982,35 @@
   document.querySelectorAll("[data-sub]").forEach(function (el) {
     el.addEventListener("click", function () { openSub(el.getAttribute("data-sub")); });
   });
-  document.getElementById("quoteAdd").addEventListener("click", function () { openTray("quote-inspection", null); });
-  document.getElementById("quoteAddCharge").addEventListener("click", function () { openTray("quote-charge", null); });
+  document.getElementById("quoteService").innerHTML = SERVICES.map(function (service) {
+    return "<option value=\"" + esc(service) + "\">" + esc(service) + "</option>";
+  }).join("");
+  document.getElementById("quoteCountry").innerHTML = COUNTRIES.map(function (country) {
+    return "<option value=\"" + esc(country) + "\">" + esc(country) + "</option>";
+  }).join("");
+  document.getElementById("quoteService").addEventListener("change", function (event) {
+    state.quote.service = event.target.value;
+    saveState();
+    renderQuote();
+  });
+  document.getElementById("quoteCountry").addEventListener("change", function (event) {
+    state.quote.country = event.target.value;
+    saveState();
+    renderQuote();
+  });
+  document.getElementById("quoteBody").addEventListener("change", function (event) {
+    const field = event.target.getAttribute("data-quote");
+    if (!field) return;
+    if (field === "category") {
+      state.quote.category = event.target.value;
+      const products = productsFor(state.cat, state.quote.category);
+      if (!products.some(function (name) { return name === state.quote.product; })) state.quote.product = products[0] || "";
+    } else if (field === "product") state.quote.product = event.target.value;
+    else if (field === "units") state.quote.units = event.target.value;
+    else if (field === "transport") state.quote.transport = event.target.value;
+    saveState();
+    renderQuote();
+  });
   document.getElementById("quoteCurrency").innerHTML = CURRENCIES.map(function (code) {
     return "<option value=\"" + esc(code) + "\">" + esc(code) + "</option>";
   }).join("");
@@ -1950,9 +2025,7 @@
     if (rate > 0) {
       state.quote.usdRate = rate;
       saveState();
-      const totalText = document.getElementById("quoteSum").textContent;
-      const total = Number(totalText.replace(/[^0-9.]/g, ""));
-      document.getElementById("quoteUsd").value = formatMoney(round2(total * rate));
+      renderQuote();
     }
   });
 
