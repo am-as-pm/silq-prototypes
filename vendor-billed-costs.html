@@ -147,6 +147,7 @@
     display: inline-flex; align-items: center; margin-top: 8px; padding: 4px 8px;
     border: 1px solid transparent; border-radius: 5px; background: transparent;
     font: var(--type-content-small); cursor: pointer; text-align: left;
+    white-space: normal; max-width: 200px;
   }
   .fx-date-chip.missing {
     color: var(--error-text); background: var(--bg-error); border-color: var(--error);
@@ -588,7 +589,7 @@
               <th class="num" id="qtyHead">Qty (quote)</th>
               <th class="num">Actual sell</th>
               <th class="num">Quoted buy<div class="sub">Quoted sell - markup</div></th>
-              <th class="num"><span class="th-var">Buy rate<button type="button" class="silq-icon-btn silq-icon-btn--xs" id="procTipBtn" aria-label="How buy rate USD is calculated" aria-describedby="procTip"></button></span><div class="sub">UOM · qty · rate</div></th>
+              <th class="num"><span class="th-var">Booked rate<button type="button" class="silq-icon-btn silq-icon-btn--xs" id="procTipBtn" aria-label="How Booked rate is calculated" aria-describedby="procTip"></button></span><div class="sub">UOM · qty · rate</div></th>
               <th class="num">Actuals</th>
               <th class="num"><span class="th-var">Variance<button type="button" class="silq-icon-btn silq-icon-btn--xs" id="varTipBtn" aria-label="How variance is calculated" aria-describedby="varTip"></button></span></th>
               <th class="num"><span class="th-var">Gross profit<button type="button" class="silq-icon-btn silq-icon-btn--xs" id="gpTipBtn" aria-label="How gross profit is calculated" aria-describedby="gpTip"></button></span></th>
@@ -682,16 +683,22 @@
 </div>
 <div class="modal-back" id="fxDateModal">
   <div class="modal">
-    <h2>Bill raised date (for FX)</h2>
-    <p class="hint" id="fxDateHint">Used when actuals are in a currency other than USD. On Save it must match the vendor Bill Raised Date.</p>
-    <div class="fld">
-      <label for="fxDateInput">Bill raised date (for FX)</label>
+    <h2 id="fxDateTitle">Forex on this line</h2>
+    <p class="hint" id="fxDateHint">This line is not in USD. Tie it to a vendor bill on this shipment.</p>
+    <div class="warn" id="fxRaisedNote">The date the bill was raised is used for Forex conversion.</div>
+    <div class="fld" id="fxBillBlock">
+      <label for="fxBillSelect">Which bill is this tied to</label>
+      <select class="input" id="fxBillSelect"></select>
+    </div>
+    <div class="fld hidden" id="fxDateBlock">
+      <label for="fxDateInput">Date Bill received (used for Forex)</label>
       <input class="input" id="fxDateInput" type="date">
     </div>
+    <p class="hint" id="fxRaisedWhen"></p>
     <div class="save-err" id="fxDateErr" hidden></div>
     <div class="modal-actions">
       <button class="btn" type="button" id="fxDateCancel">Cancel</button>
-      <button class="btn btn-primary" type="button" id="fxDateConfirm">Save date</button>
+      <button class="btn btn-primary" type="button" id="fxDateConfirm">Save</button>
     </div>
   </div>
 </div>
@@ -713,7 +720,7 @@
 <div class="modal-back" id="copyModal">
   <div class="modal">
     <h2>Other shipments within this quote</h2>
-    <p class="hint" id="copyHint">Copies buy rate UOM, qty, rate, and currency to the files you pick. Cancelled and archived files are not listed.</p>
+    <p class="hint" id="copyHint">Copies Booked rate UOM, qty, rate, and currency to the files you pick. Cancelled and archived files are not listed.</p>
     <div class="copy-list" id="copyBody"></div>
     <div class="modal-actions">
       <button class="btn" type="button" id="copyCancel">Cancel</button>
@@ -724,11 +731,11 @@
 <div class="toast" id="toast"></div>
 <div id="rowMenu" class="silq-dd" role="menu" aria-hidden="true"></div>
 <div id="varTip" class="silq-tip" role="tooltip">
-  <div class="silq-tip-base">Buy rate - Quoted buy if no actuals, Actuals - Buy rate once actuals added. Compared in USD using Bill raised date (for FX) on actuals.</div>
+  <div class="silq-tip-base">Booked rate - Quoted buy if no actuals, Actuals - Booked rate once actuals added. Compared in USD using the date the tied bill was raised.</div>
   <svg width="11" height="5.5" viewBox="0 0 11 5.5" aria-hidden="true"><path d="M 0 0 L 11 0 L 5.5 5.5 Z" fill="#202020"></path></svg>
 </div>
 <div id="gpTip" class="silq-tip" role="tooltip">
-  <div class="silq-tip-base">Sell - Buy rate if no actuals, Sell - Actuals once actuals added. Non-USD actuals convert at the Bill raised date (for FX) on the actuals cell.</div>
+  <div class="silq-tip-base">Sell - Booked rate if no actuals, Sell - Actuals once actuals added. Non-USD amounts convert on the date the tied bill was raised.</div>
   <svg width="11" height="5.5" viewBox="0 0 11 5.5" aria-hidden="true"><path d="M 0 0 L 11 0 L 5.5 5.5 Z" fill="#202020"></path></svg>
 </div>
 <div id="billTip" class="silq-tip" role="tooltip">
@@ -736,7 +743,15 @@
   <svg width="11" height="5.5" viewBox="0 0 11 5.5" aria-hidden="true"><path d="M 0 0 L 11 0 L 5.5 5.5 Z" fill="#202020"></path></svg>
 </div>
 <div id="procTip" class="silq-tip" role="tooltip">
-  <div class="silq-tip-base">Enter UOM, qty, rate, and currency here. If currency is not USD, set Bill raised date (for FX) when entering actuals.</div>
+  <div class="silq-tip-base">Enter UOM, qty, rate, and currency here. Changing currency away from USD asks which uploaded bill this line is tied to. If no bill is on the shipment, enter Date Bill received (used for Forex). The date the bill was raised is used for Forex conversion.</div>
+  <svg width="11" height="5.5" viewBox="0 0 11 5.5" aria-hidden="true"><path d="M 0 0 L 11 0 L 5.5 5.5 Z" fill="#202020"></path></svg>
+</div>
+<div id="quoteTillTip" class="silq-tip" role="tooltip">
+  <div class="silq-tip-base">This date is from the latest quote this shipment sits on.</div>
+  <svg width="11" height="5.5" viewBox="0 0 11 5.5" aria-hidden="true"><path d="M 0 0 L 11 0 L 5.5 5.5 Z" fill="#202020"></path></svg>
+</div>
+<div id="crdTip" class="silq-tip" role="tooltip">
+  <div class="silq-tip-base">Open: this shows the cargo ready date on the latest quote this shipment sits on. The other option is an actual CRD. An actual CRD may not exist yet at booking.</div>
   <svg width="11" height="5.5" viewBox="0 0 11 5.5" aria-hidden="true"><path d="M 0 0 L 11 0 L 5.5 5.5 Z" fill="#202020"></path></svg>
 </div>
 <input type="file" id="billFile" accept=".pdf,image/*,.png,.jpg,.jpeg" multiple hidden>
@@ -907,6 +922,7 @@ function enrich(l, s, q) {
 const QUOTES = [
   {
     id: 'apex', quoteId: 'SILQ-482910Q1', client: 'Apex Outdoor', mode: 'FCL',
+    quoteValidTill: '2026-09-15', cargoReady: '2026-08-18',
     projectId: 'PRJ-482910', projectName: 'Apex Yantian to Los Angeles',
     shipments: [
       {
@@ -916,9 +932,9 @@ const QUOTES = [
         cbm: 62, quoteCbm: 58, kg: 8450, quoteKg: 8200,
         detDays: 3, quoteDetDays: 2, demDays: 0, quoteDemDays: 0,
         executionStatus: 'IN_PROGRESS', status: 'AT_DESTINATION_PORT',
-        gatedIn: '2026-08-12', etd: '2026-08-20', eta: '2026-09-12',
+        gatedIn: '2026-08-12', originPickup: '2026-08-16', etd: '2026-08-20', eta: '2026-09-12',
         lines: APEX_IDS.map(fromCatalog), originEntered: true,
-        docs: [{ id: 'd-apex-1', name: 'Yantian-origin-invoice.pdf', size: 184320, when: '2026-08-13', kind: 'Vendor bill' }],
+        docs: [{ id: 'd-apex-1', name: 'Yantian-origin-invoice.pdf', size: 184320, when: '2026-08-13', raised: '2026-08-13', kind: 'Vendor bill' }],
         history: [
           { at: '2026-08-13T11:32:00', by: 'Priya Shah', team: 'FinOps', text: 'Detention marked applicable on this shipment. Billed $390 vs buy $250 on 2 quote days.' },
           { at: '2026-08-13T11:30:00', by: 'Priya Shah', team: 'FinOps', text: 'Uploaded vendor bill Yantian-origin-invoice.pdf' },
@@ -936,7 +952,7 @@ const QUOTES = [
         cbm: 61, quoteCbm: 61, kg: 7900, quoteKg: 7900,
         detDays: 0, quoteDetDays: 0, demDays: 0, quoteDemDays: 0,
         executionStatus: 'IN_PROGRESS', status: 'IN_TRANSIT_TO_DESTINATION_PORT',
-        gatedIn: '2026-08-18', etd: '2026-08-27', eta: '2026-09-18',
+        gatedIn: '2026-08-18', originPickup: '2026-08-24', etd: '2026-08-27', eta: '2026-09-18',
         lines: APEX_IDS.map(fromCatalog),
         history: [
           { at: '2026-08-18T08:40:00', by: 'System', team: 'Tasks', text: 'Gated in recorded' },
@@ -950,7 +966,7 @@ const QUOTES = [
         cbm: 55, quoteCbm: 55, kg: 7100, quoteKg: 7100,
         detDays: 0, quoteDetDays: 0, demDays: 0, quoteDemDays: 0,
         executionStatus: 'CANCELLED', status: 'AT_ORIGIN_PORT',
-        gatedIn: '2026-08-10', etd: '2026-08-19', eta: '2026-09-10',
+        gatedIn: '2026-08-10', originPickup: '2026-08-16', etd: '2026-08-19', eta: '2026-09-10',
         lines: APEX_IDS.map(fromCatalog),
         history: [
           { at: '2026-08-11T16:00:00', by: 'System', team: 'Tasks', text: 'Shipment cancelled. Vendor billed capture is locked.' }
@@ -963,7 +979,7 @@ const QUOTES = [
         cbm: 50, quoteCbm: 50, kg: 6400, quoteKg: 6400,
         detDays: 0, quoteDetDays: 0, demDays: 0, quoteDemDays: 0,
         executionStatus: 'ARCHIVED', status: 'AT_CONSIGNEE_LOCATION',
-        gatedIn: '2026-07-02', etd: '2026-07-08', eta: '2026-07-30',
+        gatedIn: '2026-07-02', originPickup: '2026-07-04', etd: '2026-07-08', eta: '2026-07-30',
         lines: APEX_IDS.map(fromCatalog),
         history: [
           { at: '2026-08-01T09:00:00', by: 'System', team: 'Tasks', text: 'Shipment archived.' }
@@ -973,6 +989,7 @@ const QUOTES = [
   },
   {
     id: 'vandelay', quoteId: 'SILQ-4228268Q1', client: 'Vandelay Industries', mode: 'FCL',
+    quoteValidTill: '2026-05-30', cargoReady: '2026-05-12',
     projectId: 'PRJ-4228268', projectName: 'Vandelay Yantian to Los Angeles',
     shipments: [{
       id: 'shp-v1', shipId: 'SHP-4228268-01', mode: 'FCL', incoterm: 'FOB', coverage: 'Port to door',
@@ -981,7 +998,7 @@ const QUOTES = [
       cbm: 54, quoteCbm: 54, kg: 7600, quoteKg: 7600,
       detDays: 0, quoteDetDays: 0, demDays: 0, quoteDemDays: 0,
         executionStatus: 'DONE', status: 'AT_CONSIGNEE_LOCATION',
-        gatedIn: '2026-05-08', etd: '2026-05-14', eta: '2026-06-04',
+        gatedIn: '2026-05-08', originPickup: '2026-05-11', etd: '2026-05-14', eta: '2026-06-04',
         history: [
           { at: '2026-05-08T10:00:00', by: 'System', team: 'Tasks', text: 'Gated in recorded' }
         ],
@@ -994,6 +1011,7 @@ const QUOTES = [
   },
   {
     id: 'northwind', quoteId: 'SILQ-3910044Q1', client: 'Northwind Traders', mode: 'LCL',
+    quoteValidTill: '2026-08-10', cargoReady: '2026-07-25',
     projectId: 'PRJ-3910044', projectName: 'Northwind Shanghai to Los Angeles',
     shipments: [{
       id: 'shp-lcl', shipId: 'SHP-3910044-01', mode: 'LCL', incoterm: 'EXW', coverage: 'D2D',
@@ -1002,7 +1020,7 @@ const QUOTES = [
       cbm: 12.4, quoteCbm: 12, kg: 3180, quoteKg: 2900,
       detDays: 0, quoteDetDays: 0, demDays: 0, quoteDemDays: 0,
       executionStatus: 'IN_PROGRESS', status: 'AT_DESTINATION_PORT',
-      gatedIn: '2026-07-22', etd: '2026-07-28', eta: '2026-08-18',
+      gatedIn: '2026-07-22', originPickup: '2026-07-24', etd: '2026-07-28', eta: '2026-08-18',
       history: [
         { at: '2026-07-23T14:10:00', by: 'Priya Shah', team: 'FinOps', text: 'Query on Origin Terminal Handling: billed $240 vs buy on quote CBM' },
         { at: '2026-07-23T14:05:00', by: 'Priya Shah', team: 'FinOps', text: 'Ocean Freight and Origin CFS billed on HBL CBM' },
@@ -1013,6 +1031,7 @@ const QUOTES = [
   },
   {
     id: 'initech', quoteId: 'SILQ-5102201Q1', client: 'Initech', mode: 'Air',
+    quoteValidTill: '2026-09-12', cargoReady: '2026-09-04',
     projectId: 'PRJ-5102201', projectName: 'Initech PVG to Los Angeles',
     shipments: [{
       id: 'shp-air', shipId: 'SHP-5102201-01', mode: 'Air', incoterm: 'EXW', coverage: 'Airport to door',
@@ -1021,7 +1040,7 @@ const QUOTES = [
       cbm: 2.1, quoteCbm: 1.9, kg: 448, quoteKg: 420,
       detDays: 0, quoteDetDays: 0, demDays: 0, quoteDemDays: 0,
       executionStatus: 'IN_PROGRESS', status: 'AT_CONSIGNEE_LOCATION',
-      gatedIn: '2026-09-04', etd: '2026-09-05', eta: '2026-09-06',
+      gatedIn: '2026-09-04', originPickup: '2026-09-04', etd: '2026-09-05', eta: '2026-09-06',
       history: [
         { at: '2026-09-05T16:40:00', by: 'Priya Shah', team: 'FinOps', text: 'Query on Airway Bill (AWB): billed $80 vs buy $45' },
         { at: '2026-09-05T16:35:00', by: 'Priya Shah', team: 'FinOps', text: 'Air Freight billed on HBL kg' },
@@ -1032,6 +1051,7 @@ const QUOTES = [
   },
   {
     id: 'pinnacle', quoteId: 'SILQ-6041182Q1', client: 'Pinnacle Apparel', mode: 'Inspections',
+    quoteValidTill: '2026-10-01',
     projectId: 'PRJ-6041182', projectName: 'Pinnacle factory QC',
     shipments: [{
       id: 'shp-insp', shipId: 'INSP-6041182-01', mode: 'Inspections', incoterm: 'Factory QC', coverage: 'Inspections only',
@@ -1051,7 +1071,7 @@ const QUOTES = [
         { at: '2026-09-18T14:50:00', by: 'Wei Chen', team: 'Origin Ops', text: 'Uploaded vendor bill Pune-QC-invoice.pdf' },
         { at: '2026-09-18T09:00:00', by: 'System', team: 'Tasks', text: 'Inspection completed at factory' }
       ],
-      docs: [{ id: 'd-insp-1', name: 'Pune-QC-invoice.pdf', size: 96256, when: '2026-09-18', kind: 'Vendor bill' }],
+      docs: [{ id: 'd-insp-1', name: 'Pune-QC-invoice.pdf', size: 96256, when: '2026-09-18', raised: '2026-09-18', kind: 'Vendor bill' }],
       lines: INSPECT_IDS.map(fromCatalog), originEntered: true
     }]
   }
@@ -1089,7 +1109,25 @@ function fxRate(code, date) {
   if (!snap || snap.rates[c] == null) return null;
   return snap.rates[c];
 }
+function vendorBills(s) {
+  return ((s && s.docs) || []).filter(d => !d.kind || d.kind === 'Vendor bill');
+}
+function billRaisedOf(doc, s) {
+  if (!doc) return '';
+  if (doc.raised) return doc.raised;
+  return billDateOf(s);
+}
 function lineFxDate(l) { return (l && l.fxDate) || ''; }
+function syncTiedFx(s) {
+  if (!s) return;
+  (s.lines || []).forEach(l => {
+    if (!l.fxBillId) return;
+    const doc = (s.docs || []).find(d => d.id === l.fxBillId);
+    if (!doc) { l.fxBillId = null; return; }
+    const raised = billRaisedOf(doc, s);
+    if (raised) l.fxDate = raised;
+  });
+}
 function needsFxDate(l) { return lineCur(l) !== 'USD'; }
 function needsFxOnActuals(l) { return needsFxDate(l) && actualsOf(l) != null; }
 function toUsd(n, code, l) {
@@ -1110,31 +1148,37 @@ function usdEqHtml(native, code, l) {
 }
 function fxDateChip(l, locked) {
   if (!needsFxDate(l)) return '';
-  const missing = !l.fxDate;
-  const label = missing ? 'Add Bill raised date (for FX)' : fmtDate(l.fxDate);
+  const s = ship();
+  const bills = vendorBills(s);
+  const doc = l.fxBillId && s && (s.docs || []).find(d => d.id === l.fxBillId);
   const dis = locked ? 'disabled' : '';
-  return `<button type="button" class="fx-date-chip${missing ? ' missing' : ''}" data-open-fx="${l.id}" ${dis} aria-label="${missing ? label : 'Bill raised date (for FX) ' + label}">${label}</button>`;
+  let label;
+  let missing = false;
+  if (doc) {
+    const raised = billRaisedOf(doc, s);
+    missing = !raised;
+    label = raised
+      ? 'Tied to ' + doc.name + '. Raised ' + fmtDate(raised) + ' used for Forex.'
+      : 'Tied to ' + doc.name + '. Set Bill Raised Date. It is used for Forex.';
+  } else if (!bills.length && l.fxDate) {
+    label = 'Bill received ' + fmtDate(l.fxDate) + '. Raised date is used for Forex.';
+  } else {
+    missing = true;
+    label = bills.length ? 'Which bill is this tied to' : 'Date Bill received (used for Forex)';
+  }
+  return `<button type="button" class="fx-date-chip${missing ? ' missing' : ''}" data-open-fx="${l.id}" ${dis} aria-label="${label}">${label}</button>`;
 }
 function fxSaveErrors(s) {
-  const bill = billDateOf(s);
-  const lines = (s.lines || []).filter(needsFxOnActuals);
   const msgs = [];
-  const uniq = [];
-  lines.forEach(l => {
-    if (!l.fxDate) {
-      msgs.push(l.charge + ': add Bill raised date (for FX).');
-      return;
-    }
-    if (uniq.indexOf(l.fxDate) < 0) uniq.push(l.fxDate);
-    if (!bill) {
-      msgs.push(l.charge + ': vendor Bill Raised Date is missing. It must match Bill raised date (for FX).');
-    } else if (l.fxDate !== bill) {
-      msgs.push(l.charge + ': Bill raised date (for FX) (' + fmtDate(l.fxDate) + ') does not match vendor Bill Raised Date (' + fmtDate(bill) + ').');
+  const bills = vendorBills(s);
+  (s.lines || []).filter(l => needsFxDate(l) && (procuredOf(l) != null || actualsOf(l) != null)).forEach(l => {
+    if (bills.length) {
+      if (!l.fxBillId) msgs.push(l.charge + ': select which bill this line is tied to.');
+      else if (!lineFxDate(l)) msgs.push(l.charge + ': set Bill Raised Date. That date is used for Forex conversion.');
+    } else if (!l.fxDate) {
+      msgs.push(l.charge + ': add Date Bill received (used for Forex).');
     }
   });
-  if (uniq.length > 1) {
-    msgs.push('Bill raised dates (for FX) differ across lines. They must all match the vendor Bill Raised Date.');
-  }
   return msgs;
 }
 function showSaveErr(msgs) {
@@ -1146,7 +1190,7 @@ function showSaveErr(msgs) {
     return;
   }
   el.hidden = false;
-    el.innerHTML = '<strong>Cannot save.</strong> Non-USD actuals need a Bill raised date (for FX) that matches the vendor Bill Raised Date.<ul>' + msgs.map(m => '<li>' + m + '</li>').join('') + '</ul>';
+    el.innerHTML = '<strong>Cannot save.</strong> Non-USD lines need a bill tie, or Date Bill received (used for Forex) when no bill is uploaded. The date the bill was raised is used for Forex conversion.<ul>' + msgs.map(m => '<li>' + m + '</li>').join('') + '</ul>';
 }
 function curKeys(map) {
   const order = CURRENCIES.map(c => c.code);
@@ -1239,6 +1283,7 @@ let lineGroup = '';
 let menuLineId = null;
 let copyLineId = null;
 let fxLineId = null;
+let fxRevert = null;
 let remarkLineId = null;
 const collapsedGroups = {};
 const collapsedProjects = {};
@@ -1420,6 +1465,7 @@ function ensure(s) {
     if (l.actQty === undefined) l.actQty = null;
     if (l.actRate === undefined) l.actRate = null;
     if (l.fxDate === undefined) l.fxDate = null;
+    if (l.fxBillId === undefined) l.fxBillId = null;
     if (!l.remarks) l.remarks = [];
   });
   if (!s.executionStatus) s.executionStatus = 'IN_PROGRESS';
@@ -1438,6 +1484,7 @@ function ensure(s) {
       othc.source = 'sheet';
       setActuals(othc, 1, 1180);
       othc.fxDate = '2026-08-13';
+      othc.fxBillId = 'd-apex-1';
       othc.remarks = [{ at: '2026-08-13T11:24:00', by: 'Priya Shah', team: 'FinOps', text: 'Origin THC billed in CNY. FX locked to the bill date.' }];
       othc.queries = [
         qEntry('query', 'Please confirm origin THC. Bill came in at ¥1,220.', 'origin', '2026-08-12T16:40:00'),
@@ -1814,6 +1861,12 @@ function qcOptions(current) {
 function fileNoun(s) {
   return s && s.mode === 'Inspections' ? 'quote' : 'shipment';
 }
+function factCell(k, v, tipId) {
+  const label = tipId
+    ? `<label class="lbl-with-tip">${k}<button type="button" class="silq-icon-btn silq-icon-btn--xs" data-tip="${tipId}" aria-label="${k}" aria-describedby="${tipId}">${ICON_INFO}</button></label>`
+    : `<label>${k}</label>`;
+  return `<div class="fld">${label}<div class="v ro">${v}</div></div>`;
+}
 function renderFacts() {
   const q = quote();
   const s = ship();
@@ -1828,6 +1881,7 @@ function renderFacts() {
       ['Status', execLabel(s) + (locLabel(s) ? ' · ' + locLabel(s) : '')],
       ['Inspection types', s.inspTypes || '-'],
       ['Inspection date', fmtDate(s.gatedIn)],
+      ['Quote valid till', fmtDate(q.quoteValidTill), 'quoteTillTip'],
       ['Vendor (from app)', s.appVendor || 'QC'],
       ['Quote qty', qtyFacts(s, true)],
       ['Inspected qty', qtyFacts(s, false)]
@@ -1838,6 +1892,9 @@ function renderFacts() {
       [s.blLabel || 'MBL', s.mbl],
       ['Route', s.origin + ' → ' + s.dest],
       ['Incoterm', s.incoterm + ' · ' + s.coverage],
+      ['Quote valid till', fmtDate(q.quoteValidTill), 'quoteTillTip'],
+      ['Cargo ready date', fmtDate(q.cargoReady), 'crdTip'],
+      ['Origin pickup date', fmtDate(s.originPickup)],
       ['Mode', modeLabel(s)],
       ['Status', execLabel(s) + (locLabel(s) ? ' · ' + locLabel(s) : '')],
       ['Container number', s.containerNo || '-'],
@@ -1852,7 +1909,7 @@ function renderFacts() {
       rows.push(['HBL quantity', qtyFacts(s, false)]);
     }
   }
-  const cell = ([k, v]) => `<div class="fld"><label>${k}</label><div class="v ro">${v}</div></div>`;
+  const cell = ([k, v, tip]) => factCell(k, v, tip);
   const qc = `<div class="fld"><label for="qcName">QC Name</label><select class="input" id="qcName">${qcOptions(s.qcName || '')}</select></div>`;
   let html;
   if (s.mode === 'Inspections') {
@@ -1872,7 +1929,7 @@ function renderKpis() {
     <div><span>${insp ? 'Quoted' : 'Quoted (all shipments)'}</span><b>${money(t.qSell, quoteCur())}</b>${insp ? '' : '<span>' + t.shipments + ' shipments · sell</span>'}</div>
     <div><span>${insp ? 'Actual sell' : 'Actual sell (this shipment)'}</span><b>${money(t.actualSell, quoteCur())}</b></div>
     <div><span>Quoted buy</span><b>${money(t.buy, quoteCur())}</b><span>Quoted sell - markup</span></div>
-    <div><span>Buy rate</span><b>${t.billedN ? money(t.billedUsd, 'USD') : '-'}</b><span>${t.billedN}/${t.n} lines · USD</span></div>
+    <div><span>Booked rate</span><b>${t.billedN ? money(t.billedUsd, 'USD') : '-'}</b><span>${t.billedN}/${t.n} lines · USD</span></div>
     <div class="${!t.varN ? '' : (t.varUsd > 0 ? 'over' : 'ok')}"><span>Variance</span><b>${t.varN ? varHtml(t.varUsd, 'USD') : '-'}</b></div>
     <div class="${t.gpN && t.gpUsd < t.actualSell - t.buy - 0.5 ? 'over' : 'ok'}"><span>Gross profit</span><b>${t.gpN ? money(t.gpUsd, 'USD') : '-'}</b></div>
   </div>`;
@@ -1945,44 +2002,129 @@ function copyLineToSiblings(line, s, q, ids) {
   });
   return n;
 }
-function openFxModal(line) {
+function fxErr(msg, el) {
+  const err = document.getElementById('fxDateErr');
+  if (el) el.classList.add('err');
+  err.hidden = false;
+  err.innerHTML = msg;
+}
+function refreshFxRaisedNote() {
+  const s = ship();
+  const when = document.getElementById('fxRaisedWhen');
+  const bills = vendorBills(s);
+  if (!bills.length) {
+    when.textContent = 'No vendor bill is uploaded on this shipment yet. Enter the date the bill was received. The date the bill was raised is used for Forex conversion once a bill is tied.';
+    return;
+  }
+  const id = document.getElementById('fxBillSelect').value;
+  const doc = bills.find(d => d.id === id);
+  if (!doc) {
+    when.textContent = 'Pick the bill uploaded on this shipment. Forex uses the date that bill was raised.';
+    return;
+  }
+  const raised = billRaisedOf(doc, s);
+  when.textContent = raised
+    ? 'Forex on this line uses ' + fmtDate(raised) + ', the date this bill was raised.'
+    : 'Set Bill Raised Date on Vendor details. That date is used for Forex conversion.';
+}
+function openFxModal(line, revert) {
   if (!line || line.complete) return;
   fxLineId = line.id;
-  const input = document.getElementById('fxDateInput');
+  fxRevert = revert || null;
+  const s = ship();
+  const bills = vendorBills(s);
   const err = document.getElementById('fxDateErr');
-  document.getElementById('fxDateHint').textContent = line.charge + ': Bill raised date (for FX) on actuals. On Save it must match the vendor Bill Raised Date.';
-  input.value = line.fxDate || '';
-  input.classList.remove('err');
+  const input = document.getElementById('fxDateInput');
+  const billBlock = document.getElementById('fxBillBlock');
+  const dateBlock = document.getElementById('fxDateBlock');
+  document.getElementById('fxDateTitle').textContent = 'Forex · ' + line.charge;
+  document.getElementById('fxDateHint').textContent = line.currency + ' on this line. The date the bill was raised is used for Forex conversion.';
   err.hidden = true;
   err.innerHTML = '';
+  input.classList.remove('err');
+  if (bills.length) {
+    billBlock.classList.remove('hidden');
+    dateBlock.classList.add('hidden');
+    const sel = document.getElementById('fxBillSelect');
+    sel.classList.remove('err');
+    sel.innerHTML = '<option value="">Select a bill</option>' + bills.map(d => {
+      const raised = billRaisedOf(d, s);
+      const meta = raised ? ' · raised ' + fmtDate(raised) : '';
+      return `<option value="${d.id}" ${line.fxBillId === d.id ? 'selected' : ''}>${d.name}${meta}</option>`;
+    }).join('');
+  } else {
+    billBlock.classList.add('hidden');
+    dateBlock.classList.remove('hidden');
+    input.value = line.fxBillId ? '' : (line.fxDate || '');
+  }
+  refreshFxRaisedNote();
   document.getElementById('fxDateModal').classList.add('open');
-  setTimeout(() => input.focus(), 0);
+  setTimeout(() => {
+    const focusEl = bills.length ? document.getElementById('fxBillSelect') : input;
+    if (focusEl) focusEl.focus();
+  }, 0);
 }
-function closeFxModal() {
+function closeFxModal(revert) {
+  if (revert && fxRevert && fxLineId) {
+    const s = ship();
+    const line = s && s.lines.find(l => l.id === fxLineId);
+    if (line) {
+      line.currency = fxRevert.currency;
+      line.fxDate = fxRevert.fxDate;
+      line.fxBillId = fxRevert.fxBillId;
+    }
+  }
   const el = document.getElementById('fxDateModal');
   if (el) el.classList.remove('open');
   const input = document.getElementById('fxDateInput');
   if (input) input.classList.remove('err');
+  const didRevert = !!(revert && fxRevert);
   fxLineId = null;
+  fxRevert = null;
+  if (didRevert) render();
 }
 function confirmFxModal() {
   const s = ship();
   const line = s && s.lines.find(l => l.id === fxLineId);
   const input = document.getElementById('fxDateInput');
   const err = document.getElementById('fxDateErr');
-  if (!line || !input) { closeFxModal(); return; }
-  const val = input.value || '';
-  if (!val) {
-    input.classList.add('err');
-    err.hidden = false;
-    err.innerHTML = 'Add a Bill raised date (for FX) before saving.';
+  if (!line) { closeFxModal(false); return; }
+  err.hidden = true;
+  const bills = vendorBills(s);
+  if (bills.length) {
+    const sel = document.getElementById('fxBillSelect');
+    const doc = bills.find(d => d.id === sel.value);
+    if (!doc) {
+      fxErr('Select which bill this line is tied to.', sel);
+      return;
+    }
+    const raised = billRaisedOf(doc, s);
+    if (!raised) {
+      fxErr('Set Bill Raised Date on Vendor details. That date is used for Forex conversion.', sel);
+      return;
+    }
+    line.fxBillId = doc.id;
+    line.fxDate = raised;
+    persistInvoice();
+    pushHistory(s, line.charge + ' tied to ' + doc.name + '. Forex uses the bill raised date ' + fmtDate(raised) + '.');
+    fxRevert = null;
+    closeFxModal(false);
+    toast(line.charge + ' tied to ' + doc.name + '. Raised ' + fmtDate(raised) + ' is used for Forex.');
+    render();
     return;
   }
+  const val = input.value || '';
+  if (!val) {
+    fxErr('Add Date Bill received (used for Forex).', input);
+    return;
+  }
+  line.fxBillId = null;
   line.fxDate = val;
   persistInvoice();
-  pushHistory(s, line.charge + ' Bill raised date (for FX) set to ' + fmtDate(val) + '.');
-  closeFxModal();
-  toast('Bill raised date (for FX) set on ' + line.charge + '.');
+  pushHistory(s, line.charge + ' Date Bill received (used for Forex) set to ' + fmtDate(val) + '. The date the bill was raised is used for Forex conversion.');
+  fxRevert = null;
+  closeFxModal(false);
+  toast('Date Bill received set on ' + line.charge + '. The date the bill was raised is used for Forex.');
   render();
 }
 function remarkList(l) {
@@ -2095,9 +2237,10 @@ function openRowMenu(lineId, btn) {
     menuOpt('absorb', l.id, l.absorbed ? 'Remove absorbed' : 'Absorbed by Silq', !!l.absorbed),
     menuOpt('complete', l.id, l.complete ? 'Undo complete' : 'Mark as complete', !!l.complete)
   ];
-  if (needsFxOnActuals(l) && !l.complete) {
+  if (needsFxDate(l) && !l.complete) {
     items.push('<div class="silq-dd-sep"></div>');
-    items.push(menuOpt('fxdate', l.id, 'Bill raised date (for FX)', false));
+    const bills = vendorBills(s);
+    items.push(menuOpt('fxdate', l.id, bills.length ? 'Which bill is this tied to' : 'Date Bill received (used for Forex)', false));
   }
   if (canCopyAll(l, s, q)) {
     items.push('<div class="silq-dd-sep"></div>');
@@ -2130,7 +2273,7 @@ function procCell(l, s, q, elseShip, elseLn, off) {
   const dis = locked ? 'disabled' : '';
   const val = procuredOf(l);
   return `<div class="proc">
-      <select class="silq-sb-mini" data-uom="${l.id}" ${dis} aria-label="Buy rate UOM">${uomOptions(procUomOf(l))}</select>
+      <select class="silq-sb-mini" data-uom="${l.id}" ${dis} aria-label="Booked rate UOM">${uomOptions(procUomOf(l))}</select>
       <input class="mini" data-proc-qty="${l.id}" value="${l.procQty == null ? '' : l.procQty}" placeholder="Qty" ${dis}>
       <input class="mini" data-proc-rate="${l.id}" value="${l.procRate == null ? '' : l.procRate}" placeholder="Rate" ${dis}>
     </div>
@@ -2138,7 +2281,8 @@ function procCell(l, s, q, elseShip, elseLn, off) {
     <div class="proc-tools">
       <select class="cur-sel" data-currency="${l.id}" ${dis} aria-label="Currency">${currencyOptions(code)}</select>
     </div>
-    ${off ? '<div class="sub">Check applies to enter buy rate</div>' : (l.complete ? '<div class="sub">Complete, locked</div>' : '')}`;
+    ${needsFxDate(l) ? fxDateChip(l, locked) : ''}
+    ${off ? '<div class="sub">Check applies to enter Booked rate</div>' : (l.complete ? '<div class="sub">Complete, locked</div>' : '')}`;
 }
 function actCell(l, elseShip, off, s) {
   if (elseShip) return '<span class="empty">-</span>';
@@ -2152,7 +2296,6 @@ function actCell(l, elseShip, off, s) {
     </div>
     <div class="proc-val">${val == null ? '<span class="empty">-</span>' : money(val, code)}</div>
     ${usdEqHtml(val, code, l)}
-    ${needsFxDate(l) && val != null ? fxDateChip(l, locked) : ''}
     ${off ? '<div class="sub">Check applies to enter actuals</div>' : (l.complete ? '<div class="sub">Complete, locked</div>' : '')}`;
 }
 
@@ -2265,7 +2408,7 @@ function renderFoot() {
   const s = ship();
   const t = totals(s, q);
   document.getElementById('tfoot').innerHTML = `<tr>
-    <td>Total (this quote)<div class="sub">${s.mode === 'Inspections' ? 'Inspection charges only. No shipping lines on this quote.' : 'If applicable only when checked. Once-per-quote billed elsewhere excluded.'}</div><div class="fx-note">* Non-USD actuals convert to USD at the Bill raised date (for FX) on that line. Save requires those dates to match the vendor Bill Raised Date.</div></td>
+    <td>Total (this quote)<div class="sub">${s.mode === 'Inspections' ? 'Inspection charges only. No shipping lines on this quote.' : 'If applicable only when checked. Once-per-quote billed elsewhere excluded.'}</div><div class="fx-note">* Non-USD lines convert to USD on the date the bill was raised. If no bill is uploaded yet, Date Bill received (used for Forex) is used until a bill is tied.</div></td>
     <td class="num">${money(t.qSell, quoteCur())}</td>
     <td class="num"><span class="empty">-</span></td>
     <td class="num">${money(t.actualSell, quoteCur())}</td>
@@ -2293,7 +2436,7 @@ function renderDocs() {
   document.getElementById('docs').innerHTML = s.docs.map(d =>
     `<div class="doc-row">
       <div class="doc-ico">PDF</div>
-      <div><div class="charge">${d.name}</div><div class="sub">${d.kind} · ${fmtSize(d.size)} · ${fmtDate(d.when)}</div></div>
+      <div><div class="charge">${d.name}</div><div class="sub">${d.kind} · ${fmtSize(d.size)} · uploaded ${fmtDate(d.when)}${d.raised ? ' · raised ' + fmtDate(d.raised) : ''}</div></div>
       <span class="tag tag-ok">On ${fileNoun(s)}</span>
       <button type="button" class="btn btn-tiny" data-doc-rm="${d.id}">Remove</button>
     </div>`
@@ -2326,6 +2469,7 @@ function persistInvoice() {
   s.invoice.vendor = document.getElementById('vendor').value;
   s.invoice.invoiceNo = document.getElementById('invoiceNo').value;
   s.invoice.invoiceDate = document.getElementById('invoiceDate').value;
+  syncTiedFx(s);
 }
 
 function render() {
@@ -2335,6 +2479,7 @@ function render() {
   document.getElementById('after').classList.toggle('hidden', !s);
   if (!s) return;
   quote().shipments.forEach(ensure);
+  syncTiedFx(s);
   if (s.mode === 'Inspections' && shippingLeakOn(s).length) {
     s.lines = s.lines.filter(l => l.group === 'inspections');
   }
@@ -2475,12 +2620,16 @@ document.getElementById('tbody').addEventListener('change', e => {
     return;
   }
   if (cur) {
+    const prev = { currency: line.currency || 'USD', fxDate: line.fxDate || null, fxBillId: line.fxBillId || null };
     line.currency = cur.value;
-    if (!needsFxDate(line)) line.fxDate = null;
+    if (!needsFxDate(line)) {
+      line.fxDate = null;
+      line.fxBillId = null;
+    }
     persistInvoice();
     pushHistory(ship(), line.charge + ' currency set to ' + line.currency);
     render();
-    if (needsFxOnActuals(line) && !line.fxDate) openFxModal(line);
+    if (needsFxDate(line)) openFxModal(line, prev);
     return;
   }
   if (qty || rate) {
@@ -2514,7 +2663,7 @@ document.getElementById('tbody').addEventListener('change', e => {
   const beforeA = prevA == null ? 'empty' : money(prevA, line.currency);
   pushHistory(ship(), line.charge + ' actuals ' + beforeA + ' to ' + afterA);
   render();
-  if (needsFxOnActuals(line) && !line.fxDate) openFxModal(line);
+  if (needsFxDate(line) && !line.fxDate && !line.fxBillId) openFxModal(line);
 });
 document.getElementById('tbody').addEventListener('click', e => {
   const kebab = e.target.closest('[data-kebab]');
@@ -2615,10 +2764,16 @@ document.getElementById('copyBody').addEventListener('change', e => {
   }
   if (e.target.closest('[data-copy-ship]')) syncCopySelAll();
 });
-document.getElementById('fxDateCancel').addEventListener('click', closeFxModal);
+document.getElementById('fxDateCancel').addEventListener('click', () => closeFxModal(true));
 document.getElementById('fxDateConfirm').addEventListener('click', confirmFxModal);
+document.getElementById('fxBillSelect').addEventListener('change', () => {
+  document.getElementById('fxBillSelect').classList.remove('err');
+  const err = document.getElementById('fxDateErr');
+  err.hidden = true;
+  refreshFxRaisedNote();
+});
 document.getElementById('fxDateModal').addEventListener('click', e => {
-  if (e.target.id === 'fxDateModal') closeFxModal();
+  if (e.target.id === 'fxDateModal') closeFxModal(true);
 });
 document.getElementById('fxDateInput').addEventListener('input', () => {
   document.getElementById('fxDateInput').classList.remove('err');
@@ -2659,7 +2814,7 @@ document.addEventListener('click', e => {
 document.addEventListener('keydown', e => {
   if (e.key !== 'Escape') return;
   if (document.getElementById('fxDateModal').classList.contains('open')) {
-    closeFxModal();
+    closeFxModal(true);
     return;
   }
   if (document.getElementById('remarkModal').classList.contains('open')) {
@@ -2678,6 +2833,30 @@ document.getElementById('facts').addEventListener('change', e => {
   const s = ship();
   if (!s) return;
   s.qcName = sel.value;
+});
+let factTipTimer = null;
+document.getElementById('facts').addEventListener('mouseover', e => {
+  const btn = e.target.closest('[data-tip]');
+  if (!btn) return;
+  clearTimeout(factTipTimer);
+  factTipTimer = setTimeout(() => showTipEl(btn, btn.dataset.tip), 200);
+});
+document.getElementById('facts').addEventListener('mouseout', e => {
+  const btn = e.target.closest('[data-tip]');
+  if (!btn) return;
+  if (e.relatedTarget && btn.contains(e.relatedTarget)) return;
+  clearTimeout(factTipTimer);
+  hideTip(btn.dataset.tip);
+});
+document.getElementById('facts').addEventListener('focusin', e => {
+  const btn = e.target.closest('[data-tip]');
+  if (!btn) return;
+  showTipEl(btn, btn.dataset.tip);
+});
+document.getElementById('facts').addEventListener('focusout', e => {
+  const btn = e.target.closest('[data-tip]');
+  if (!btn) return;
+  hideTip(btn.dataset.tip);
 });
 ['vendor', 'invoiceNo'].forEach(id => {
   document.getElementById(id).addEventListener('change', persistInvoice);
@@ -2711,6 +2890,12 @@ document.getElementById('docs').addEventListener('click', e => {
   const s = ship();
   const doc = s.docs.find(d => d.id === rm.dataset.docRm);
   s.docs = s.docs.filter(d => d.id !== rm.dataset.docRm);
+  (s.lines || []).forEach(l => {
+    if (l.fxBillId === rm.dataset.docRm) {
+      l.fxBillId = null;
+      l.fxDate = null;
+    }
+  });
   if (doc) pushHistory(s, 'Removed vendor bill ' + doc.name);
   render();
 });
@@ -2757,7 +2942,7 @@ function openFlag(lineId) {
   document.getElementById('flagMeta').innerHTML = `
     <div class="fld"><label>Charge</label><div class="v ro">${line.charge}</div></div>
     <div class="fld"><label>Quoted buy</label><div class="v ro">${onQuote(line) ? money(line.quoted) : '-'}</div></div>
-    <div class="fld"><label>Buy rate</label><div class="v ro">${money(procuredOf(line), line.currency)}</div></div>`;
+    <div class="fld"><label>Booked rate</label><div class="v ro">${money(procuredOf(line), line.currency)}</div></div>`;
   document.getElementById('flagType').value = 'query';
   document.getElementById('flagNote').value = '';
   renderFlagLog(line);
@@ -2792,9 +2977,10 @@ function hideAllTips() {
   hideTip('gpTip');
   hideTip('billTip');
   hideTip('procTip');
+  hideTip('quoteTillTip');
+  hideTip('crdTip');
 }
-function showTip(btnId, tipId) {
-  const btn = document.getElementById(btnId);
+function showTipEl(btn, tipId) {
   const tip = document.getElementById(tipId);
   if (!btn || !tip) return;
   hideAllTips();
@@ -2809,6 +2995,9 @@ function showTip(btnId, tipId) {
   if (top < 8) top = r.bottom + 4;
   tip.style.left = left + 'px';
   tip.style.top = top + 'px';
+}
+function showTip(btnId, tipId) {
+  showTipEl(document.getElementById(btnId), tipId);
 }
 function wireTip(btnId, tipId) {
   const btn = document.getElementById(btnId);
