@@ -18,7 +18,7 @@ Interactive HTML prototypes for Silq product features. Hosted via GitHub Pages.
 
 | File | Feature | Owner |
 |---|---|---|
-| `vendor-billed-costs.html` | Vendor Billed Costs (Booked rate, quote dates, Forex bill tie, consolidated view) | VP |
+| `vendor-billed-costs.html` | Vendor Quoted (Booked rate, SMM / Co-loader, Forex tie, consolidated view) | VP |
 | `inspections-pricing-tables.html` | Inspections pricing tables (T1 product mapping, T2 pricing matrix, quote tab held) | VP |
 | `pod-priority-board.html` | Pod Priority Board (Kanban + Pod Health + Breadboard view) | — |
 | `neap-quoting-action-breadboard.html` | Quoting Action breadboard (Shape Up logic flow, opened from Pod Board Breadboard) | — |

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<title>Silq: Vendor billed costs</title>
+<title>Silq: Vendor Quoted</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -476,6 +476,7 @@
     background: var(--bg-warning); border: 1px solid #FCD1A7; border-radius: var(--radius-sm);
     padding: 12px; margin-bottom: 12px; font: var(--type-content-small); color: var(--brand-text);
   }
+  .total-warn { margin: 8px 0 0; }
   .hidden { display: none !important; }
   .page-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
   .page-head .lede { max-width: 720px; }
@@ -515,7 +516,7 @@
     </div>
   </div>
   <div class="sidebar-nav">
-    <a class="nav-item" href="#capture" id="navCapture">Vendor billed</a>
+    <a class="nav-item" href="#capture" id="navCapture">Vendor Quoted</a>
     <a class="nav-item" href="#consolidated" id="navConsol">Consolidated view</a>
     <a class="nav-item" href="#">Invoices</a>
     <a class="nav-item" href="#">Rates</a>
@@ -524,8 +525,8 @@
 
 <div class="main">
   <div class="page" id="pageCapture">
-    <div class="crumb">Shipments / Vendor billed costs</div>
-    <h1>Vendor billed costs</h1>
+    <div class="crumb">Shipments / Vendor Quoted</div>
+    <h1>Vendor Quoted</h1>
     <p class="lede">Select a shipment or an inspection job. The quote fills in from that file. Cancelled and archived files stay listed but cannot be opened.</p>
 
     <div class="card">
@@ -566,7 +567,7 @@
               <label class="lbl-with-tip" for="invoiceDate">Bill Raised Date<button type="button" class="silq-icon-btn silq-icon-btn--xs" id="billTipBtn" aria-label="What Bill Raised Date means" aria-describedby="billTip"></button></label>
               <input class="input" id="invoiceDate" type="date">
             </div>
-            <button class="btn" type="button" id="uploadBtn">Upload vendor bill</button>
+            <button class="btn" type="button" id="uploadBtn">Upload Vendor Quoted</button>
           </div>
         </div>
       </div>
@@ -625,7 +626,7 @@
       <div>
         <div class="crumb">Finance / Consolidated view</div>
         <h1>Consolidated view</h1>
-        <p class="lede">One row per project. Open a shipping project to see files. Open an inspections project to see the quote. Totals come from vendor billed capture on each file.</p>
+        <p class="lede">One row per project. Open a shipping project to see files. Open an inspections project to see the quote. Totals come from Vendor Quoted on each file.</p>
       </div>
       <button class="btn" type="button" id="exportXls">Export to Excel</button>
     </div>
@@ -686,14 +687,14 @@
 <div class="modal-back" id="fxDateModal">
   <div class="modal">
     <h2 id="fxDateTitle">Forex on this line</h2>
-    <p class="hint" id="fxDateHint">This line is not in USD. Tie it to a vendor bill on this shipment.</p>
-    <div class="warn" id="fxRaisedNote">The date the bill was raised is used for Forex conversion.</div>
+    <p class="hint" id="fxDateHint">This line is not in USD. Tie it to a Vendor Quoted on this shipment.</p>
+    <div class="warn" id="fxRaisedNote">The date the Vendor Quoted was raised is used for Forex conversion.</div>
     <div class="fld" id="fxBillBlock">
-      <label for="fxBillSelect">Which bill is this tied to</label>
+      <label for="fxBillSelect">Which Vendor Quoted is this tied to</label>
       <select class="input" id="fxBillSelect"></select>
     </div>
     <div class="fld hidden" id="fxDateBlock">
-      <label for="fxDateInput">Date Bill received (used for Forex)</label>
+      <label for="fxDateInput">Date Vendor Quoted received (used for Forex)</label>
       <input class="input" id="fxDateInput" type="date">
     </div>
     <p class="hint" id="fxRaisedWhen"></p>
@@ -733,19 +734,19 @@
 <div class="toast" id="toast"></div>
 <div id="rowMenu" class="silq-dd" role="menu" aria-hidden="true"></div>
 <div id="varTip" class="silq-tip" role="tooltip">
-  <div class="silq-tip-base">Booked rate - Quoted buy if no actuals, Actuals - Booked rate once actuals added. Compared in USD using the date the tied bill was raised.</div>
+  <div class="silq-tip-base">Booked rate - Quoted buy if no actuals, Actuals - Booked rate once actuals added. Compared in USD using the date the tied Vendor Quoted was raised.</div>
   <svg width="11" height="5.5" viewBox="0 0 11 5.5" aria-hidden="true"><path d="M 0 0 L 11 0 L 5.5 5.5 Z" fill="#202020"></path></svg>
 </div>
 <div id="gpTip" class="silq-tip" role="tooltip">
-  <div class="silq-tip-base">Sell - Booked rate if no actuals, Sell - Actuals once actuals added. Non-USD amounts convert on the date the tied bill was raised.</div>
+  <div class="silq-tip-base">Sell - Booked rate if no actuals, Sell - Actuals once actuals added. Non-USD amounts convert on the date the tied Vendor Quoted was raised.</div>
   <svg width="11" height="5.5" viewBox="0 0 11 5.5" aria-hidden="true"><path d="M 0 0 L 11 0 L 5.5 5.5 Z" fill="#202020"></path></svg>
 </div>
 <div id="billTip" class="silq-tip" role="tooltip">
-  <div class="silq-tip-base">This is the date the bill was raised, not the day it is being added to the system.</div>
+  <div class="silq-tip-base">This is the date the Vendor Quoted was raised, not the day it is being added to the system.</div>
   <svg width="11" height="5.5" viewBox="0 0 11 5.5" aria-hidden="true"><path d="M 0 0 L 11 0 L 5.5 5.5 Z" fill="#202020"></path></svg>
 </div>
 <div id="procTip" class="silq-tip" role="tooltip">
-  <div class="silq-tip-base">Enter UOM, qty, rate, and currency here. Changing currency away from USD asks which uploaded bill this line is tied to. If no bill is on the shipment, enter Date Bill received (used for Forex). The date the bill was raised is used for Forex conversion.</div>
+  <div class="silq-tip-base">Enter UOM, qty, rate, and currency here. Changing currency away from USD asks which uploaded Vendor Quoted this line is tied to. If none is on the shipment, enter Date Vendor Quoted received (used for Forex). The date the Vendor Quoted was raised is used for Forex conversion.</div>
   <svg width="11" height="5.5" viewBox="0 0 11 5.5" aria-hidden="true"><path d="M 0 0 L 11 0 L 5.5 5.5 Z" fill="#202020"></path></svg>
 </div>
 <div id="quoteTillTip" class="silq-tip" role="tooltip">
@@ -771,7 +772,7 @@ const PEOPLE = {
 const GROUPS = [
   { id: 'freight', label: 'Freight' },
   { id: 'origin', label: 'Origin' },
-  { id: 'destination', label: 'Destination' },
+  { id: 'destination', label: 'Destination Delivery' },
   { id: 'customs', label: 'Customs' },
   { id: 'inspections', label: 'Inspections' },
   { id: 'ifapp', label: 'If applicable' }
@@ -940,14 +941,14 @@ const QUOTES = [
         executionStatus: 'IN_PROGRESS', status: 'AT_DESTINATION_PORT',
         gatedIn: '2026-08-12', originPickup: '2026-08-16', actualCrd: '2026-08-17', etd: '2026-08-20', eta: '2026-09-12',
         lines: APEX_IDS.map(fromCatalog), originEntered: true,
-        docs: [{ id: 'd-apex-1', name: 'Yantian-origin-invoice.pdf', size: 184320, when: '2026-08-13', raised: '2026-08-13', kind: 'Vendor bill' }],
+        docs: [{ id: 'd-apex-1', name: 'Yantian-origin-invoice.pdf', size: 184320, when: '2026-08-13', raised: '2026-08-13', kind: 'Vendor Quoted' }],
         history: [
-          { at: '2026-08-13T11:32:00', by: 'Priya Shah', team: 'FinOps', text: 'Detention marked applicable on this shipment. Billed $390 vs buy $250 on 2 quote days.' },
-          { at: '2026-08-13T11:30:00', by: 'Priya Shah', team: 'FinOps', text: 'Uploaded vendor bill Yantian-origin-invoice.pdf' },
-          { at: '2026-08-13T11:26:00', by: 'Priya Shah', team: 'FinOps', text: 'Cargo Protection billed $20. Once per quote, not to be billed again on SHP-482910-02' },
-          { at: '2026-08-13T11:22:00', by: 'Priya Shah', team: 'FinOps', text: 'Query on Origin Terminal Handling: billed $170 vs buy $155' },
-          { at: '2026-08-13T11:20:00', by: 'Priya Shah', team: 'FinOps', text: 'Origin Terminal Handling billed set to $170' },
-          { at: '2026-08-13T11:18:00', by: 'Priya Shah', team: 'FinOps', text: 'Origin cartage and Documentation billed from sheet' },
+          { at: '2026-08-13T11:32:00', by: 'Priya Shah', team: 'FinOps', text: 'Detention marked applicable on this shipment. Booked rate $390 vs quoted rate $250 on 2 quote days.' },
+          { at: '2026-08-13T11:30:00', by: 'Priya Shah', team: 'FinOps', text: 'Uploaded Vendor Quoted Yantian-origin-invoice.pdf' },
+          { at: '2026-08-13T11:26:00', by: 'Priya Shah', team: 'FinOps', text: 'Cargo Protection Booked rate $20. Once per quote, do not enter Booked rate again on SHP-482910-02' },
+          { at: '2026-08-13T11:22:00', by: 'Priya Shah', team: 'FinOps', text: 'Query on Origin Terminal Handling: Booked rate $170 vs quoted rate $155' },
+          { at: '2026-08-13T11:20:00', by: 'Priya Shah', team: 'FinOps', text: 'Origin Terminal Handling Booked rate set to $170' },
+          { at: '2026-08-13T11:18:00', by: 'Priya Shah', team: 'FinOps', text: 'Origin cartage and Documentation Booked rate from sheet' },
           { at: '2026-08-12T09:10:00', by: 'System', team: 'Tasks', text: 'Gated in recorded' }
         ]
       },
@@ -962,7 +963,7 @@ const QUOTES = [
         lines: APEX_IDS.map(fromCatalog),
         history: [
           { at: '2026-08-18T08:40:00', by: 'System', team: 'Tasks', text: 'Gated in recorded' },
-          { at: '2026-08-13T11:26:00', by: 'Priya Shah', team: 'FinOps', text: 'Cargo Protection already billed on SHP-482910-01. Do not capture again on this shipment.' }
+          { at: '2026-08-13T11:26:00', by: 'Priya Shah', team: 'FinOps', text: 'Cargo Protection Booked rate already on SHP-482910-01. Do not capture again on this shipment.' }
         ]
       },
       {
@@ -975,7 +976,7 @@ const QUOTES = [
         gatedIn: '2026-08-10', originPickup: '2026-08-16', etd: '2026-08-19', eta: '2026-09-10',
         lines: APEX_IDS.map(fromCatalog),
         history: [
-          { at: '2026-08-11T16:00:00', by: 'System', team: 'Tasks', text: 'Shipment cancelled. Vendor billed capture is locked.' }
+          { at: '2026-08-11T16:00:00', by: 'System', team: 'Tasks', text: 'Shipment cancelled. Vendor Quoted is locked.' }
         ]
       },
       {
@@ -1028,8 +1029,8 @@ const QUOTES = [
       executionStatus: 'IN_PROGRESS', status: 'AT_DESTINATION_PORT',
       gatedIn: '2026-07-22', originPickup: '2026-07-24', actualCrd: '2026-07-26', etd: '2026-07-28', eta: '2026-08-18',
       history: [
-        { at: '2026-07-23T14:10:00', by: 'Priya Shah', team: 'FinOps', text: 'Query on Origin Terminal Handling: billed $240 vs buy on quote CBM' },
-        { at: '2026-07-23T14:05:00', by: 'Priya Shah', team: 'FinOps', text: 'Ocean Freight and Origin CFS billed on HBL CBM' },
+        { at: '2026-07-23T14:10:00', by: 'Priya Shah', team: 'FinOps', text: 'Query on Origin Terminal Handling: Booked rate $240 vs quoted rate on quote CBM' },
+        { at: '2026-07-23T14:05:00', by: 'Priya Shah', team: 'FinOps', text: 'Ocean Freight and Origin CFS Booked rate on HBL CBM' },
         { at: '2026-07-22T09:00:00', by: 'System', team: 'Tasks', text: 'Gated in recorded' }
       ],
       lines: LCL_IDS.map(fromCatalog), originEntered: true
@@ -1048,8 +1049,8 @@ const QUOTES = [
       executionStatus: 'IN_PROGRESS', status: 'AT_CONSIGNEE_LOCATION',
       gatedIn: '2026-09-04', originPickup: '2026-09-04', actualCrd: '2026-09-04', etd: '2026-09-05', eta: '2026-09-06',
       history: [
-        { at: '2026-09-05T16:40:00', by: 'Priya Shah', team: 'FinOps', text: 'Query on Airway Bill (AWB): billed $80 vs buy $45' },
-        { at: '2026-09-05T16:35:00', by: 'Priya Shah', team: 'FinOps', text: 'Air Freight billed on HBL kg' },
+        { at: '2026-09-05T16:40:00', by: 'Priya Shah', team: 'FinOps', text: 'Query on Airway Bill (AWB): Booked rate $80 vs quoted rate $45' },
+        { at: '2026-09-05T16:35:00', by: 'Priya Shah', team: 'FinOps', text: 'Air Freight Booked rate on HAWB kg' },
         { at: '2026-09-04T07:15:00', by: 'System', team: 'Tasks', text: 'Gated in recorded' }
       ],
       lines: AIR_IDS.map(fromCatalog), originEntered: true
@@ -1072,12 +1073,12 @@ const QUOTES = [
       executionStatus: 'DONE', status: 'SELLER_LOCATION',
       gatedIn: '2026-09-18', etd: '2026-09-18', eta: '2026-09-18',
       history: [
-        { at: '2026-09-18T15:20:00', by: 'Priya Shah', team: 'FinOps', text: 'Query on Final Inspection: billed $95 vs buy $90 on 1 Man Day.' },
-        { at: '2026-09-18T15:12:00', by: 'Priya Shah', team: 'FinOps', text: 'In-line Inspection procured $75 and marked complete.' },
-        { at: '2026-09-18T14:50:00', by: 'Wei Chen', team: 'Origin Ops', text: 'Uploaded vendor bill Pune-QC-invoice.pdf' },
+        { at: '2026-09-18T15:20:00', by: 'Priya Shah', team: 'FinOps', text: 'Query on Final Inspection: Booked rate $95 vs quoted rate $90 on 1 Man Day.' },
+        { at: '2026-09-18T15:12:00', by: 'Priya Shah', team: 'FinOps', text: 'In-line Inspection Booked rate $75 and marked complete.' },
+        { at: '2026-09-18T14:50:00', by: 'Wei Chen', team: 'Origin Ops', text: 'Uploaded Vendor Quoted Pune-QC-invoice.pdf' },
         { at: '2026-09-18T09:00:00', by: 'System', team: 'Tasks', text: 'Inspection completed at factory' }
       ],
-      docs: [{ id: 'd-insp-1', name: 'Pune-QC-invoice.pdf', size: 96256, when: '2026-09-18', raised: '2026-09-18', kind: 'Vendor bill' }],
+      docs: [{ id: 'd-insp-1', name: 'Pune-QC-invoice.pdf', size: 96256, when: '2026-09-18', raised: '2026-09-18', kind: 'Vendor Quoted' }],
       lines: INSPECT_IDS.map(fromCatalog), originEntered: true
     }]
   }
@@ -1116,7 +1117,7 @@ function fxRate(code, date) {
   return snap.rates[c];
 }
 function vendorBills(s) {
-  return ((s && s.docs) || []).filter(d => !d.kind || d.kind === 'Vendor bill');
+  return ((s && s.docs) || []).filter(d => !d.kind || d.kind === 'Vendor Quoted' || d.kind === 'Vendor bill');
 }
 function billRaisedOf(doc, s) {
   if (!doc) return '';
@@ -1167,10 +1168,10 @@ function fxDateChip(l, locked) {
       ? 'Tied to ' + doc.name + '. Raised ' + fmtDate(raised) + ' used for Forex.'
       : 'Tied to ' + doc.name + '. Set Bill Raised Date. It is used for Forex.';
   } else if (!bills.length && l.fxDate) {
-    label = 'Bill received ' + fmtDate(l.fxDate) + '. Raised date is used for Forex.';
+    label = 'Vendor Quoted received ' + fmtDate(l.fxDate) + '. Raised date is used for Forex.';
   } else {
     missing = true;
-    label = bills.length ? 'Which bill is this tied to' : 'Date Bill received (used for Forex)';
+    label = bills.length ? 'Which Vendor Quoted is this tied to' : 'Date Vendor Quoted received (used for Forex)';
   }
   return `<button type="button" class="fx-date-chip${missing ? ' missing' : ''}" data-open-fx="${l.id}" ${dis} aria-label="${label}">${label}</button>`;
 }
@@ -1179,10 +1180,10 @@ function fxSaveErrors(s) {
   const bills = vendorBills(s);
   (s.lines || []).filter(l => needsFxDate(l) && (procuredOf(l) != null || actualsOf(l) != null)).forEach(l => {
     if (bills.length) {
-      if (!l.fxBillId) msgs.push(l.charge + ': select which bill this line is tied to.');
+      if (!l.fxBillId) msgs.push(l.charge + ': select which Vendor Quoted this line is tied to.');
       else if (!lineFxDate(l)) msgs.push(l.charge + ': set Bill Raised Date. That date is used for Forex conversion.');
     } else if (!l.fxDate) {
-      msgs.push(l.charge + ': add Date Bill received (used for Forex).');
+      msgs.push(l.charge + ': add Date Vendor Quoted received (used for Forex).');
     }
   });
   return msgs;
@@ -1196,7 +1197,7 @@ function showSaveErr(msgs) {
     return;
   }
   el.hidden = false;
-    el.innerHTML = '<strong>Cannot save.</strong> Non-USD lines need a bill tie, or Date Bill received (used for Forex) when no bill is uploaded. The date the bill was raised is used for Forex conversion.<ul>' + msgs.map(m => '<li>' + m + '</li>').join('') + '</ul>';
+    el.innerHTML = '<strong>Cannot save.</strong> Non-USD lines need a Vendor Quoted tie, or Date Vendor Quoted received (used for Forex) when none is uploaded. The date the Vendor Quoted was raised is used for Forex conversion.<ul>' + msgs.map(m => '<li>' + m + '</li>').join('') + '</ul>';
 }
 function curKeys(map) {
   const order = CURRENCIES.map(c => c.code);
@@ -1491,10 +1492,10 @@ function ensure(s) {
       setActuals(othc, 1, 1180);
       othc.fxDate = '2026-08-13';
       othc.fxBillId = 'd-apex-1';
-      othc.remarks = [{ at: '2026-08-13T11:24:00', by: 'Priya Shah', team: 'FinOps', text: 'Origin THC billed in CNY. FX locked to the bill date.' }];
+      othc.remarks = [{ at: '2026-08-13T11:24:00', by: 'Priya Shah', team: 'FinOps', text: 'Origin THC Booked rate in CNY. FX locked to the Vendor Quoted date.' }];
       othc.queries = [
-        qEntry('query', 'Please confirm origin THC. Bill came in at ¥1,220.', 'origin', '2026-08-12T16:40:00'),
-        qEntry('query', 'Billed ¥1,220. USD on Bill Raised Date is about $170.', 'finops', '2026-08-13T11:22:00')
+        qEntry('query', 'Please confirm origin THC. Vendor Quoted came in at ¥1,220.', 'origin', '2026-08-12T16:40:00'),
+        qEntry('query', 'Booked rate ¥1,220. USD on Bill Raised Date is about $170.', 'finops', '2026-08-13T11:22:00')
       ];
     }
     const of40 = s.lines.find(l => l.id === 'of40');
@@ -1525,7 +1526,7 @@ function ensure(s) {
     if (othc) {
       setProcured(othc, 1, 240); othc.source = 'sheet';
       othc.queries = [
-        qEntry('query', 'Billed $240 vs buy rate on quote CBM.', 'finops', '2026-07-23T14:10:00')
+        qEntry('query', 'Booked rate $240 vs quoted rate on quote CBM.', 'finops', '2026-07-23T14:10:00')
       ];
     }
     s.invoice.vendor = 'Shanghai CFS agent';
@@ -1541,8 +1542,8 @@ function ensure(s) {
     if (awb) {
       setProcured(awb, 1, 80); awb.source = 'sheet';
       awb.queries = [
-        qEntry('query', 'AWB billed $80 vs buy rate $45.', 'finops', '2026-09-05T16:40:00'),
-        qEntry('resolve', 'Confirmed extra AWB fee on this HAWB. Leave billed at $80.', 'dest', '2026-09-05T17:05:00')
+        qEntry('query', 'AWB Booked rate $80 vs quoted rate $45.', 'finops', '2026-09-05T16:40:00'),
+        qEntry('resolve', 'Confirmed extra AWB fee on this HAWB. Leave Booked rate at $80.', 'dest', '2026-09-05T17:05:00')
       ];
     }
     s.invoice.vendor = 'PVG GHA';
@@ -1561,7 +1562,7 @@ function ensure(s) {
       setProcured(fin, 1, 95);
       fin.source = 'sheet';
       fin.queries = [
-        qEntry('query', 'Final Inspection billed $95 vs buy rate $90 on 1 Man Day.', 'finops', '2026-09-18T15:20:00')
+        qEntry('query', 'Final Inspection Booked rate $95 vs quoted rate $90 on 1 Man Day.', 'finops', '2026-09-18T15:20:00')
       ];
     }
     s.invoice.vendor = 'West India QC partner';
@@ -1615,6 +1616,13 @@ function totals(s, q) {
   actualsUsd = Math.round(actualsUsd * 100) / 100;
   varUsd = Math.round(varUsd * 100) / 100;
   gpUsd = Math.round(gpUsd * 100) / 100;
+  let quotedOnBooked = 0;
+  withP.forEach(l => {
+    if (!onQuote(l)) return;
+    quotedOnBooked += Number(l.quoted || 0);
+  });
+  quotedOnBooked = Math.round(quotedOnBooked * 100) / 100;
+  const bookedOver = withP.length > 0 && billedUsd > quotedOnBooked + 0.5;
   const qSell = quoted.reduce((n, l) => n + (quoteAllSell(l, q) || 0), 0);
   const costCodes = {};
   withP.concat(withAct).forEach(l => { costCodes[lineCur(l)] = true; });
@@ -1624,6 +1632,7 @@ function totals(s, q) {
     billedBy, billedN: withP.length, n: lines.length,
     actualsBy, actualsN: withAct.length,
     billedUsd, actualsUsd, varUsd, gpUsd, varN, gpN, fxUsed,
+    quotedOnBooked, bookedOver,
     mixed,
     qSell, shipments: q.shipments.length
   };
@@ -1693,8 +1702,8 @@ function renderConsolidated() {
     const insp = isInspectionQuote(q);
     const kids = q.shipments || [];
     const childHead = insp
-      ? '<tr><th>Quote ID</th><th>Services</th><th class="num">Total procured</th><th class="num">Total actuals</th><th class="num">Total variance</th><th class="num">Gross profit / Loss</th></tr>'
-      : '<tr><th>Shipment ID</th><th>Mode</th><th class="num">Total procured</th><th class="num">Total actuals</th><th class="num">Total variance</th><th class="num">Gross profit / Loss</th></tr>';
+      ? '<tr><th>Quote ID</th><th>Services</th><th class="num">Total Booked rate</th><th class="num">Total actuals</th><th class="num">Total variance</th><th class="num">Gross profit / Loss</th></tr>'
+      : '<tr><th>Shipment ID</th><th>Mode</th><th class="num">Total Booked rate</th><th class="num">Total actuals</th><th class="num">Total variance</th><th class="num">Gross profit / Loss</th></tr>';
     let childRows = '';
     if (insp) {
       const s = kids[0];
@@ -1751,8 +1760,8 @@ function xlsRow(cells) {
 }
 function exportConsolidated() {
   seedAll();
-  const projRows = [xlsRow(['Project ID', 'Project name', 'Client', 'Kind', 'Gross profit', 'Procured', 'Actuals', 'Variance'])];
-  const detRows = [xlsRow(['Project ID', 'Project name', 'Client', 'Row type', 'ID', 'Mode / Services', 'Procured', 'Actuals', 'Variance', 'Gross profit / Loss'])];
+  const projRows = [xlsRow(['Project ID', 'Project name', 'Client', 'Kind', 'Gross profit', 'Booked rate', 'Actuals', 'Variance'])];
+  const detRows = [xlsRow(['Project ID', 'Project name', 'Client', 'Row type', 'ID', 'Mode / Services', 'Booked rate', 'Actuals', 'Variance', 'Gross profit / Loss'])];
   QUOTES.forEach(q => {
     const insp = isInspectionQuote(q);
     const pt = projectTotals(q);
@@ -1916,6 +1925,7 @@ function renderFacts() {
       [s.blLabel || 'MBL', s.mbl],
       ['Route', s.origin + ' → ' + s.dest],
       ['Incoterm', s.incoterm + ' · ' + s.coverage],
+      ['SMM / Co-loader', s.vendorHint || '-'],
       ['Quote valid till', fmtDate(q.quoteValidTill), 'quoteTillTip'],
       ['Cargo ready date (latest quote)', fmtDate(q.cargoReady), 'crdTip'],
       ['Actual cargo ready date', fmtDate(s.actualCrd), 'actualCrdTip'],
@@ -2044,18 +2054,18 @@ function refreshFxRaisedNote() {
   const when = document.getElementById('fxRaisedWhen');
   const bills = vendorBills(s);
   if (!bills.length) {
-    when.textContent = 'No vendor bill is uploaded on this shipment yet. Enter the date the bill was received. The date the bill was raised is used for Forex conversion once a bill is tied.';
+    when.textContent = 'No Vendor Quoted is uploaded on this shipment yet. Enter the date it was received. The date it was raised is used for Forex conversion once a Vendor Quoted is tied.';
     return;
   }
   const id = document.getElementById('fxBillSelect').value;
   const doc = bills.find(d => d.id === id);
   if (!doc) {
-    when.textContent = 'Pick the bill uploaded on this shipment. Forex uses the date that bill was raised.';
+    when.textContent = 'Pick the Vendor Quoted uploaded on this shipment. Forex uses the date it was raised.';
     return;
   }
   const raised = billRaisedOf(doc, s);
   when.textContent = raised
-    ? 'Forex on this line uses ' + fmtDate(raised) + ', the date this bill was raised.'
+    ? 'Forex on this line uses ' + fmtDate(raised) + ', the date this Vendor Quoted was raised.'
     : 'Set Bill Raised Date on Vendor details. That date is used for Forex conversion.';
 }
 function openFxModal(line, revert) {
@@ -2069,7 +2079,7 @@ function openFxModal(line, revert) {
   const billBlock = document.getElementById('fxBillBlock');
   const dateBlock = document.getElementById('fxDateBlock');
   document.getElementById('fxDateTitle').textContent = 'Forex · ' + line.charge;
-  document.getElementById('fxDateHint').textContent = line.currency + ' on this line. The date the bill was raised is used for Forex conversion.';
+  document.getElementById('fxDateHint').textContent = line.currency + ' on this line. The date the Vendor Quoted was raised is used for Forex conversion.';
   err.hidden = true;
   err.innerHTML = '';
   input.classList.remove('err');
@@ -2126,7 +2136,7 @@ function confirmFxModal() {
     const sel = document.getElementById('fxBillSelect');
     const doc = bills.find(d => d.id === sel.value);
     if (!doc) {
-      fxErr('Select which bill this line is tied to.', sel);
+      fxErr('Select which Vendor Quoted this line is tied to.', sel);
       return;
     }
     const raised = billRaisedOf(doc, s);
@@ -2137,7 +2147,7 @@ function confirmFxModal() {
     line.fxBillId = doc.id;
     line.fxDate = raised;
     persistInvoice();
-    pushHistory(s, line.charge + ' tied to ' + doc.name + '. Forex uses the bill raised date ' + fmtDate(raised) + '.');
+    pushHistory(s, line.charge + ' tied to ' + doc.name + '. Forex uses the raised date ' + fmtDate(raised) + '.');
     fxRevert = null;
     closeFxModal(false);
     toast(line.charge + ' tied to ' + doc.name + '. Raised ' + fmtDate(raised) + ' is used for Forex.');
@@ -2146,16 +2156,16 @@ function confirmFxModal() {
   }
   const val = input.value || '';
   if (!val) {
-    fxErr('Add Date Bill received (used for Forex).', input);
+    fxErr('Add Date Vendor Quoted received (used for Forex).', input);
     return;
   }
   line.fxBillId = null;
   line.fxDate = val;
   persistInvoice();
-  pushHistory(s, line.charge + ' Date Bill received (used for Forex) set to ' + fmtDate(val) + '. The date the bill was raised is used for Forex conversion.');
+  pushHistory(s, line.charge + ' Date Vendor Quoted received (used for Forex) set to ' + fmtDate(val) + '. The date it was raised is used for Forex conversion.');
   fxRevert = null;
   closeFxModal(false);
-  toast('Date Bill received set on ' + line.charge + '. The date the bill was raised is used for Forex.');
+  toast('Date Vendor Quoted received set on ' + line.charge + '. The date it was raised is used for Forex.');
   render();
 }
 function remarkList(l) {
@@ -2231,7 +2241,7 @@ function openCopyModal(line) {
   if (!targets.length) return;
   copyLineId = line.id;
   document.getElementById('copyHint').textContent =
-    'Copies procured UOM, qty, rate, currency, and Bill raised date (for FX) for ' + line.charge + '. Cancelled and archived files are not listed.';
+    'Copies Booked rate UOM, qty, rate, currency, and Bill Raised Date (for FX) for ' + line.charge + '. Cancelled and archived files are not listed.';
   document.getElementById('copyBody').innerHTML =
     `<label class="copy-row copy-all"><input type="checkbox" id="copySelAll" checked> Select all</label>` +
     targets.map(t => {
@@ -2271,7 +2281,7 @@ function openRowMenu(lineId, btn) {
   if (needsFxDate(l) && !l.complete) {
     items.push('<div class="silq-dd-sep"></div>');
     const bills = vendorBills(s);
-    items.push(menuOpt('fxdate', l.id, bills.length ? 'Which bill is this tied to' : 'Date Bill received (used for Forex)', false));
+    items.push(menuOpt('fxdate', l.id, bills.length ? 'Which Vendor Quoted is this tied to' : 'Date Vendor Quoted received (used for Forex)', false));
   }
   if (canCopyAll(l, s, q)) {
     items.push('<div class="silq-dd-sep"></div>');
@@ -2366,7 +2376,7 @@ function renderTable() {
         shut ? 'group-hide' : ''
       ].join(' ');
       const grainTag = l.grain === 'per_quote'
-        ? `<span class="tag tag-blue">Once per quote</span>${elseShip ? `<span class="tag tag-ok">Procured on ${elseShip.shipId}</span>` : ''}${capturedHere ? '<span class="tag tag-ok">Captured here</span>' : ''}`
+        ? `<span class="tag tag-blue">Once per quote</span>${elseShip ? `<span class="tag tag-ok">Booked rate on ${elseShip.shipId}</span>` : ''}${capturedHere ? '<span class="tag tag-ok">Captured here</span>' : ''}`
         : '';
       const ifAppBox = isIfApp(l)
         ? `<label class="ifapp-check"><input type="checkbox" data-applicable="${l.id}" ${l.applicable ? 'checked' : ''}> Applies on this shipment</label>`
@@ -2382,7 +2392,7 @@ function renderTable() {
           ? `<span class="empty">-</span><div class="sub">On ${elseShip.shipId}</div>`
           : (l.grain === 'per_quote' && !l.expSell ? '<span class="empty">Once per quote</span>' : money(l.expSell));
       const buyCell = !quotedLine
-        ? '<span class="empty">-</span><div class="sub">No buy on quote</div>'
+        ? '<span class="empty">-</span><div class="sub">No quoted rate</div>'
         : elseShip
           ? `<span class="empty">-</span><div class="sub">On ${elseShip.shipId}</div>`
           : l.grain === 'per_quote' && !l.quoted
@@ -2411,7 +2421,7 @@ function renderTable() {
             ${queryOpen(l) ? `<button type="button" class="query-flag is-open" data-flag="query" data-id="${l.id}" title="Outstanding query">${ICON_WARN}</button>` : ''}
             <div>
               <div class="charge">${l.charge}${quotedLine ? '' : '<span class="tag tag-review">Not on quote</span>'}${grainTag}</div>
-              <div class="sub">${quotedLine ? money(l.sellUnit) + ' sell / ' + quoteUomOf(l) : 'Added from catalog'}${l.grain === 'per_quote' ? ' · bill once on this quote' : ''}</div>
+              <div class="sub">${quotedLine ? money(l.sellUnit) + ' sell / ' + quoteUomOf(l) : 'Added from catalog'}${l.grain === 'per_quote' ? ' · once on this quote' : ''}</div>
               ${l.absorbed ? '<span class="silq-badge">Absorbed by Silq</span>' : ''}
               ${ifAppBox}
               ${flagCell(l)}
@@ -2438,13 +2448,17 @@ function renderFoot() {
   const q = quote();
   const s = ship();
   const t = totals(s, q);
+  const over = !!t.bookedOver;
+  const alert = over
+    ? `<div class="warn total-warn">Booked rate ${money(t.billedUsd, 'USD')} is greater than the quoted rate ${money(t.quotedOnBooked, quoteCur())} on lines with a Booked rate.</div>`
+    : '';
   document.getElementById('tfoot').innerHTML = `<tr>
-    <td>Total (this quote)<div class="sub">${s.mode === 'Inspections' ? 'Inspection charges only. No shipping lines on this quote.' : 'If applicable only when checked. Once-per-quote billed elsewhere excluded.'}</div><div class="fx-note">* Non-USD lines convert to USD on the date the bill was raised. If no bill is uploaded yet, Date Bill received (used for Forex) is used until a bill is tied.</div></td>
+    <td>Total (this quote)<div class="sub">${s.mode === 'Inspections' ? 'Inspection charges only. No shipping lines on this quote.' : 'If applicable only when checked. Once-per-quote Booked rate elsewhere excluded.'}</div><div class="fx-note">* Non-USD lines convert to USD on the date the Vendor Quoted was raised. If none is uploaded yet, Date Vendor Quoted received (used for Forex) is used until one is tied.</div>${alert}</td>
     <td class="num">${money(t.qSell, quoteCur())}</td>
     <td class="num"><span class="empty">-</span></td>
     <td class="num">${money(t.actualSell, quoteCur())}</td>
     <td class="num">${money(t.buy, quoteCur())}</td>
-    <td class="num">${t.billedN ? money(t.billedUsd, 'USD') : '-'}</td>
+    <td class="num${over ? ' over' : ''}">${t.billedN ? money(t.billedUsd, 'USD') : '-'}</td>
     <td class="num">${t.actualsN ? money(t.actualsUsd, 'USD') : '-'}</td>
     <td class="num">${t.varN ? varHtml(t.varUsd, 'USD') : '-'}</td>
     <td class="num">${t.gpN ? gpUsdHtml(t.gpUsd) : '-'}</td>
@@ -2461,7 +2475,7 @@ function fmtSize(n) {
 function renderDocs() {
   const s = ship();
   if (!s.docs.length) {
-    document.getElementById('docs').innerHTML = '<p class="hint">No vendor bills on this ' + fileNoun(s) + ' yet. Upload from the vendor row above.</p>';
+    document.getElementById('docs').innerHTML = '<p class="hint">No Vendor Quoted on this ' + fileNoun(s) + ' yet. Upload from the vendor row above.</p>';
     return;
   }
   document.getElementById('docs').innerHTML = s.docs.map(d =>
@@ -2483,7 +2497,7 @@ function pushHistory(s, text) {
 function renderHistory() {
   const s = ship();
   if (!s.history || !s.history.length) {
-    document.getElementById('history').innerHTML = '<p class="hint">No edits on this ' + fileNoun(s) + ' yet. Procured changes, queries, uploads, and saves land here.</p>';
+    document.getElementById('history').innerHTML = '<p class="hint">No edits on this ' + fileNoun(s) + ' yet. Booked rate changes, queries, uploads, and saves land here.</p>';
     return;
   }
   document.getElementById('history').innerHTML = s.history.map(h =>
@@ -2612,7 +2626,7 @@ document.getElementById('lineBody').addEventListener('click', e => {
   s.lines.push(enrich(line, s, quote()));
   pushHistory(s, 'Added ' + line.charge + ' from catalog. Not on the quote.');
   document.getElementById('lineModal').classList.remove('open');
-  toast('Added ' + line.charge + '. Procured on this line is all extra cost.');
+  toast('Added ' + line.charge + '. Booked rate on this line is all extra cost.');
   render();
 });
 document.getElementById('tbody').addEventListener('change', e => {
@@ -2646,7 +2660,7 @@ document.getElementById('tbody').addEventListener('change', e => {
   if (uom) {
     line.procUom = uom.value;
     persistInvoice();
-    pushHistory(ship(), line.charge + ' procured UOM set to ' + line.procUom + '. Quote qty unchanged.');
+    pushHistory(ship(), line.charge + ' Booked rate UOM set to ' + line.procUom + '. Quote qty unchanged.');
     render();
     return;
   }
@@ -2676,7 +2690,7 @@ document.getElementById('tbody').addEventListener('change', e => {
     persistInvoice();
     const after = procuredOf(line) == null ? 'cleared' : money(procuredOf(line), line.currency);
     const before = prev == null ? 'empty' : money(prev, line.currency);
-    pushHistory(ship(), line.charge + ' procured ' + before + ' to ' + after + (onQuote(line) ? '' : '. Not on quote, extra cost.'));
+    pushHistory(ship(), line.charge + ' Booked rate ' + before + ' to ' + after + (onQuote(line) ? '' : '. Not on quote, extra cost.'));
     render();
     return;
   }
@@ -2834,7 +2848,7 @@ document.getElementById('copyConfirm').addEventListener('click', () => {
   closeCopyModal();
   if (!n) return;
   persistInvoice();
-  pushHistory(s, 'Copied ' + line.charge + ' procured to ' + n + ' other shipment' + (n === 1 ? '' : 's') + '.');
+  pushHistory(s, 'Copied ' + line.charge + ' Booked rate to ' + n + ' other shipment' + (n === 1 ? '' : 's') + '.');
   toast('Copied ' + line.charge + ' to ' + n + ' other shipment' + (n === 1 ? '' : 's') + '.');
   render();
 });
@@ -2907,12 +2921,12 @@ document.getElementById('billFile').addEventListener('change', e => {
       name: f.name,
       size: f.size,
       when: new Date().toISOString().slice(0, 10),
-      kind: 'Vendor bill'
+      kind: 'Vendor Quoted'
     });
-    pushHistory(s, 'Uploaded vendor bill ' + f.name);
+    pushHistory(s, 'Uploaded Vendor Quoted ' + f.name);
   });
   e.target.value = '';
-  if (files.length) toast(files.length + ' vendor bill' + (files.length === 1 ? '' : 's') + ' added to Documents.');
+  if (files.length) toast(files.length + ' Vendor Quoted added to Documents.');
   render();
 });
 document.getElementById('docs').addEventListener('click', e => {
@@ -2927,7 +2941,7 @@ document.getElementById('docs').addEventListener('click', e => {
       l.fxDate = null;
     }
   });
-  if (doc) pushHistory(s, 'Removed vendor bill ' + doc.name);
+  if (doc) pushHistory(s, 'Removed Vendor Quoted ' + doc.name);
   render();
 });
 document.getElementById('saveBtn').addEventListener('click', () => {
@@ -2942,8 +2956,8 @@ document.getElementById('saveBtn').addEventListener('click', () => {
   showSaveErr([]);
   s.invoice.saved = true;
   if (!s.invoice.invoiceNo) s.invoice.invoiceNo = 'VB-' + s.shipId.slice(-2);
-  pushHistory(s, 'Saved procured on this ' + fileNoun(s) + '. Vendor ' + (s.invoice.vendor || '-') + ', invoice ' + (s.invoice.invoiceNo || '-') + '.');
-  toast('Saved procured on ' + s.shipId + '. ' + quote().quoteId + ' unchanged.');
+  pushHistory(s, 'Saved Booked rate on this ' + fileNoun(s) + '. Vendor ' + (s.invoice.vendor || '-') + ', invoice ' + (s.invoice.invoiceNo || '-') + '.');
+  toast('Saved Booked rate on ' + s.shipId + '. ' + quote().quoteId + ' unchanged.');
   render();
 });
 
