@@ -487,7 +487,7 @@
             </label>
             <div class="quote-fact">Order stage<strong>Production in progress</strong></div>
             <div class="quote-fact">Production complete<strong>28 Nov 2026</strong></div>
-            <div class="quote-fact">Factory<strong>Shenzhen Woodworks</strong></div>
+            <div class="quote-fact">Factory<strong id="quoteFactoryLabel">Shenzhen Woodworks</strong></div>
           </div>
         </div>
         <div class="table-wrap">
@@ -543,6 +543,16 @@
   const STORE_KEY = "silq-inspections-pricing-v6";
   const COUNTRIES = ["Bangladesh", "Cambodia", "China", "India", "Indonesia", "Malaysia", "Pakistan", "Sri Lanka", "Thailand", "Turkey", "Vietnam"];
   const CURRENCIES = ["USD", "EUR", "GBP", "CNY", "INR", "VND", "BDT", "IDR", "THB", "MYR", "PKR", "LKR", "KHR", "TRY"];
+  const CLIENT_NAME = "Harbor & Home";
+  const CLIENT_FACTORIES = [
+    { name: "Shenzhen Woodworks", country: "China" },
+    { name: "Foshan Frame Co", country: "China" },
+    { name: "Dongguan Timber Co", country: "China" }
+  ];
+
+  function clientFactory(name) {
+    return CLIENT_FACTORIES.find(function (factory) { return factory.name === name; }) || CLIENT_FACTORIES[0];
+  }
 
   const SEED_CAT = [
   { category: "Apparel & Garments", product: "T-shirts" },
@@ -1169,6 +1179,7 @@
       country: "China",
       units: 450,
       skus: 5,
+      factory: "Shenzhen Woodworks",
       qcs: 1,
       transport: 100
     },
@@ -1196,6 +1207,7 @@
             country: saved.quote.country || "China",
             units: saved.quote.units,
             skus: saved.quote.skus == null ? 5 : saved.quote.skus,
+            factory: clientFactory(saved.quote.factory).name,
             qcs: saved.quote.qcs || 1,
             transport: saved.quote.transport,
             manDays: saved.quote.manDays,
@@ -1338,11 +1350,13 @@
     return String(rounded);
   }
 
-  function quoteChoices(list, selected) {
-    return ["<option value=\"\">Select</option>"].concat(list.map(function (item) {
+  function quoteChoices(list, selected, createValue, createLabel) {
+    const options = ["<option value=\"\">Select</option>"].concat(list.map(function (item) {
       const on = item === selected ? " selected" : "";
       return "<option value=\"" + esc(item) + "\"" + on + ">" + esc(item) + "</option>";
-    })).join("");
+    }));
+    if (createValue) options.push("<option value=\"" + createValue + "\">" + esc(createLabel) + "</option>");
+    return options.join("");
   }
 
   function quoteInput(field, value, mode) {
@@ -1394,9 +1408,13 @@
         ? "Calc: (total no. of units / no. of units inspectable in a man day) / number of Qcs"
         : "Calc: (total no. of units / no. of units inspectable in a man day)");
     const rows = [
-      ["Category", "<select class=\"input\" data-quote=\"category\">" + quoteChoices(catalogCategories(state.cat), state.quote.category) + "</select>", "From the RFQ form. Product category on the inspection request."],
-      ["Product (under " + categoryName + ")", "<select class=\"input\" data-quote=\"product\">" + quoteChoices(products, state.quote.product) + "</select>", "From the RFQ form. Product under that category."],
+      ["Category", "<select class=\"input\" data-quote=\"category\">" + quoteChoices(catalogCategories(state.cat), state.quote.category, "__new_category__", "Create new category") + "</select>", "From the RFQ form. Product category on the inspection request."],
+      ["Product (under " + categoryName + ")", "<select class=\"input\" data-quote=\"product\">" + quoteChoices(products, state.quote.product, "__new_product__", "Create new product") + "</select>", "From the RFQ form. Product under that category."],
       ["No. of unique SKUs", quoteInput("skus", state.quote.skus, "numeric"), "From the RFQ form. Number of unique SKUs on the inspection request. Does not change the man day calculation."],
+      ["Factory", "<select class=\"input\" data-quote=\"factory\">" + CLIENT_FACTORIES.map(function (factory) {
+        const on = factory.name === state.quote.factory ? " selected" : "";
+        return "<option value=\"" + esc(factory.name) + "\"" + on + ">" + esc(factory.name) + "</option>";
+      }).join("") + "</select>", "From the RFQ form. Factory for " + CLIENT_NAME + ". Can be changed to any factory for this client."],
       ["No. of units of " + productName, quoteInput("units", state.quote.units, "numeric"), "From the RFQ form. Total order quantity."],
       ["No. of man days required to inspect this", quoteInput("manDays", state.quote.manDays), dayNote],
       ["Price per man day Per QC", quoteInput("price", state.quote.price), "From the pricing matrix. Price to inspect any " + categoryName + " category per man day for ONE qc."],
@@ -1404,7 +1422,7 @@
       ["Total QC x Price per man day", quoteInput("qcPrice", state.quote.qcPrice), "Calc: price per man day x number of QCs."],
       ["Total quote price (excl. QC related charges)", quoteInput("labor", state.quote.labor), "Calc: price per man day x no. of man days required."],
       ["QC related charges - Transportation & boarding", quoteInput("transport", state.quote.transport), "Entered on the quote. (Manually added for first version)"],
-      ["Total Quote price", quoteInput("total", state.quote.total), "Calc: quote price excluding QC charges + transportation and boarding."]
+      ["Total Quote price", quoteInput("total", state.quote.total), "Calc: the whole price, including QC charges. Quote price excluding QC related charges + transportation and boarding."]
     ];
     document.getElementById("quoteBody").innerHTML = rows.map(function (row, index) {
       const totalClass = index === rows.length - 1 ? " class=\"sheet-total\"" : "";
@@ -1420,6 +1438,8 @@
     if (serviceSelectEl && document.activeElement !== serviceSelectEl && serviceSelectEl.value !== state.quote.service) serviceSelectEl.value = state.quote.service;
     const countrySelectEl = document.getElementById("quoteCountry");
     if (countrySelectEl && document.activeElement !== countrySelectEl && countrySelectEl.value !== state.quote.country) countrySelectEl.value = state.quote.country;
+    const factoryLabel = document.getElementById("quoteFactoryLabel");
+    if (factoryLabel) factoryLabel.textContent = state.quote.factory || "";
   }
 
   function showResult(id, kind, title, lines) {
@@ -1645,8 +1665,8 @@
     });
   }
 
-  function openTray(kind, row) {
-    trayMode = { kind: kind, id: row ? row.id : null };
+  function openTray(kind, row, fromQuote) {
+    trayMode = { kind: kind, id: row ? row.id : null, fromQuote: !!fromQuote };
     const titles = {
       "new-category": "Add new category",
       "new-product": "Add new Product",
@@ -1900,8 +1920,14 @@
         state.cat.push({ id: "cat-" + (seq++), category: result.category, product: product });
       });
       state.collapsed[normKey(result.category)] = false;
+      if (trayMode.fromQuote) {
+        state.quote.category = result.category;
+        state.quote.product = result.products[0] || "";
+        recalcQuote();
+      }
       saveState();
       renderCat();
+      if (trayMode.fromQuote) renderQuote();
       closeTray();
       toast("Added " + result.category + " with " + result.products.length + (result.products.length === 1 ? " product." : " products."));
       return;
@@ -1916,10 +1942,16 @@
       } else {
         state.cat.push({ id: "cat-" + (seq++), category: result.row.category, product: result.row.product });
         state.collapsed[normKey(result.row.category)] = false;
+        if (trayMode.fromQuote) {
+          state.quote.category = result.row.category;
+          state.quote.product = result.row.product;
+          recalcQuote();
+        }
         toast("Added " + result.row.product + " under " + result.row.category + ".");
       }
       saveState();
       renderCat();
+      if (trayMode.fromQuote) renderQuote();
       closeTray();
       return;
     }
@@ -2048,11 +2080,32 @@
   document.getElementById("quoteBody").addEventListener("change", function (event) {
     const field = event.target.getAttribute("data-quote");
     if (!field) return;
+    if (field === "category" && event.target.value === "__new_category__") {
+      openTray("new-category", null, true);
+      renderQuote();
+      const first = document.getElementById("fCategory");
+      if (first) first.focus();
+      return;
+    }
+    if (field === "product" && event.target.value === "__new_product__") {
+      openTray("new-product", { category: state.quote.category }, true);
+      renderQuote();
+      const first = document.getElementById("fProduct");
+      if (first) first.focus();
+      return;
+    }
     state.quote[field] = event.target.value;
     if (field === "category") {
       const products = productsFor(state.cat, state.quote.category);
       if (!products.some(function (name) { return name === state.quote.product; })) state.quote.product = products[0] || "";
       recalcQuote();
+    } else if (field === "factory") {
+      const factory = clientFactory(state.quote.factory);
+      state.quote.factory = factory.name;
+      if (factory.country !== state.quote.country) {
+        state.quote.country = factory.country;
+        recalcQuote();
+      }
     } else if (field === "product" || field === "units" || field === "qcs") {
       recalcQuote();
     } else if (field === "price") {
