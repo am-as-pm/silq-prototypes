@@ -205,6 +205,13 @@
     font: 700 13px/16px var(--font-body); color: var(--silq-navy);
   }
   .create-plus:hover { color: var(--brand-cta); }
+  #quoteAqlFields { display: contents; }
+  .service-picks { display: flex; flex-direction: column; gap: 4px; min-width: 180px; }
+  .service-picks label { flex-direction: row; align-items: center; gap: 8px; font: 500 13px/16px var(--font-body); color: var(--silq-navy); }
+  .aql-table th, .aql-table td { text-align: center; white-space: nowrap; padding: 6px 8px; }
+  .aql-table th { background: var(--silq-navy); color: var(--silq-white); }
+  .aql-table td.lot, .aql-table td.letter { font-weight: 600; text-align: left; }
+  .aql-caption { padding: 12px 16px 0; font: var(--type-content-small); color: var(--text-secondary); }
   .quote-table td:first-child { width: 32%; font-weight: 500; }
   .quote-table td:nth-child(2), .quote-table th:nth-child(2) { width: 220px; }
   .line-err { display: block; color: var(--error-text); font: var(--type-content-small); margin-top: 4px; }
@@ -320,6 +327,7 @@
   <div class="sidebar-nav">
     <button class="nav-item active" type="button" id="navTables" data-main="tables">Pricing tables</button>
     <button class="nav-item" type="button" id="navQc" data-main="qc">QC database</button>
+    <button class="nav-item" type="button" id="navAql" data-main="aql">AQL table</button>
     <button class="nav-item" type="button" id="navEngine" data-main="engine">Quote engine</button>
   </div>
 </nav>
@@ -333,6 +341,7 @@
     <div class="tabs" role="tablist" aria-label="Inspections pricing">
       <button class="tab" id="tabTables" type="button" role="tab" aria-selected="true" aria-controls="panelTables" data-main="tables">Product category &amp; pricing matrices</button>
       <button class="tab" id="tabQc" type="button" role="tab" aria-selected="false" aria-controls="panelQc" data-main="qc">QC database and matrix</button>
+      <button class="tab" id="tabAql" type="button" role="tab" aria-selected="false" aria-controls="panelAql" data-main="aql">AQL table</button>
       <button class="tab" id="tabEngine" type="button" role="tab" aria-selected="false" aria-controls="panelEngine" data-main="engine">Quoting engine builder</button>
     </div>
 
@@ -467,6 +476,19 @@
       </div>
     </section>
 
+    <section id="panelAql" role="tabpanel" aria-labelledby="tabAql" hidden>
+      <div class="card">
+        <div class="card-hd"><h2>Sample size code letters</h2></div>
+        <p class="aql-caption">ANSI/ASQ Standard Z1.4 - 2008</p>
+        <div class="table-wrap"><table class="aql-table" id="aqlCodeTable"></table></div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><h2>Single sampling plans for normal inspection</h2></div>
+        <div class="table-wrap"><table class="aql-table" id="aqlPlanTable"></table></div>
+        <p class="aql-caption">Up arrow: use the first sampling plan above the arrow. If the sample size equals or exceeds the lot or batch size, do 100 percent inspection.<br>Down arrow: use the first sampling plan below the arrow. Ac is the acceptance number. Re is the rejection number.</p>
+      </div>
+    </section>
+
     <section id="panelEngine" role="tabpanel" aria-labelledby="tabEngine" hidden>
       <div class="card">
         <div class="card-hd">
@@ -484,15 +506,29 @@
           </div>
           <div class="quote-facts">
             <label class="quote-fact">Inspection service
-              <span>From the RFQ form</span>
-              <select class="input" id="quoteService"></select>
+              <span>From the RFQ form. Select every service on the request</span>
+              <div class="service-picks" id="quoteServices"></div>
             </label>
             <label class="quote-fact">Factory country
               <span>From the RFQ form</span>
               <select class="input" id="quoteCountry"></select>
             </label>
-            <div class="quote-fact">Order stage<strong>Production in progress</strong></div>
-            <div class="quote-fact">Production complete<strong>28 Nov 2026</strong></div>
+            <div class="quote-fact">Order stage
+              <select class="input" id="quoteStage"></select>
+            </div>
+            <label class="quote-fact">Production complete
+              <input class="input" id="quoteReady" type="date">
+            </label>
+            <div id="quoteAqlFields" hidden>
+              <label class="quote-fact">AQL level
+                <span>General level II unless the RFQ says otherwise</span>
+                <select class="input" id="quoteAqlLevel"></select>
+              </label>
+              <label class="quote-fact">AQL
+                <span>Acceptable quality level</span>
+                <select class="input" id="quoteAql"></select>
+              </label>
+            </div>
             <label class="quote-fact">Factory
               <span>From the RFQ. Any factory for this client</span>
               <select class="input" id="quoteFactory"></select>
@@ -1137,6 +1173,97 @@
     };
   }
 
+  const AQL_LEVELS = ["I", "II", "III", "S1", "S2", "S3", "S4"];
+  const AQL_VALUES = ["0.065", "0.10", "0.15", "0.25", "0.40", "0.65", "1.0", "1.5", "2.5", "4.0", "6.5"];
+  const AQL_LETTERS = ["A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "P", "Q", "R"];
+  const AQL_SIZES = [2, 3, 5, 8, 13, 20, 32, 50, 80, 125, 200, 315, 500, 800, 1250, 2000];
+  const AQL_LOTS = [
+    { label: "2 to 8", min: 2, max: 8, letters: ["A", "A", "B", "A", "A", "A", "A"] },
+    { label: "9 to 15", min: 9, max: 15, letters: ["A", "B", "C", "A", "A", "A", "A"] },
+    { label: "16 to 25", min: 16, max: 25, letters: ["B", "C", "D", "A", "A", "B", "B"] },
+    { label: "26 to 50", min: 26, max: 50, letters: ["C", "D", "E", "A", "B", "B", "C"] },
+    { label: "51 to 90", min: 51, max: 90, letters: ["C", "E", "F", "B", "B", "C", "C"] },
+    { label: "91 to 150", min: 91, max: 150, letters: ["D", "F", "G", "B", "B", "C", "D"] },
+    { label: "151 to 280", min: 151, max: 280, letters: ["E", "G", "H", "B", "C", "D", "E"] },
+    { label: "281 to 500", min: 281, max: 500, letters: ["F", "H", "J", "B", "C", "D", "E"] },
+    { label: "501 to 1200", min: 501, max: 1200, letters: ["G", "J", "K", "C", "C", "E", "F"] },
+    { label: "1201 to 3200", min: 1201, max: 3200, letters: ["H", "K", "L", "C", "D", "E", "G"] },
+    { label: "3201 to 10000", min: 3201, max: 10000, letters: ["J", "L", "M", "C", "D", "F", "G"] },
+    { label: "10001 to 35000", min: 10001, max: 35000, letters: ["K", "M", "N", "C", "D", "F", "H"] },
+    { label: "35001 to 150000", min: 35001, max: 150000, letters: ["L", "N", "P", "D", "E", "G", "J"] },
+    { label: "150001 to 500000", min: 150001, max: 500000, letters: ["M", "P", "Q", "D", "E", "G", "J"] },
+    { label: "500001 and over", min: 500001, max: Infinity, letters: ["N", "Q", "R", "D", "E", "H", "K"] }
+  ];
+  const AQL_PLANS = [
+    "v v v v v v v v v v 0/1",
+    "v v v v v v v v v 0/1 v",
+    "v v v v v v v v 0/1 v v",
+    "v v v v v v v 0/1 v v 1/2",
+    "v v v v v v 0/1 v v 1/2 2/3",
+    "v v v v v 0/1 v v 1/2 2/3 3/4",
+    "v v v v 0/1 v v 1/2 2/3 3/4 5/6",
+    "v v v 0/1 v v 1/2 2/3 3/4 5/6 7/8",
+    "v v 0/1 v v 1/2 2/3 3/4 5/6 7/8 10/11",
+    "v 0/1 v v 1/2 2/3 3/4 5/6 7/8 10/11 14/15",
+    "0/1 v v 1/2 2/3 3/4 5/6 7/8 10/11 14/15 21/22",
+    "v v 1/2 2/3 3/4 5/6 7/8 10/11 14/15 21/22 ^",
+    "v 1/2 2/3 3/4 5/6 7/8 10/11 14/15 21/22 ^ ^",
+    "1/2 2/3 3/4 5/6 7/8 10/11 14/15 21/22 ^ ^ ^",
+    "2/3 3/4 5/6 7/8 10/11 14/15 21/22 ^ ^ ^ ^",
+    "3/4 5/6 7/8 10/11 14/15 21/22 ^ ^ ^ ^ ^"
+  ].map(function (row) {
+    return row.split(" ").map(function (token) {
+      if (token === "v") return "down";
+      if (token === "^") return "up";
+      const parts = token.split("/");
+      return { ac: Number(parts[0]), re: Number(parts[1]) };
+    });
+  });
+
+  function lookupAql(units, level, aql) {
+    const lot = Number(units);
+    const levelIndex = AQL_LEVELS.indexOf(level);
+    const col = AQL_VALUES.indexOf(String(aql));
+    if (!(lot >= 2) || levelIndex < 0 || col < 0) {
+      return { ok: false, error: "The AQL table starts at lot size 2 and needs a level and an AQL." };
+    }
+    const band = AQL_LOTS.find(function (row) { return lot >= row.min && lot <= row.max; });
+    if (!band) return { ok: false, error: "No lot size band for " + lot + " units." };
+    const letter = band.letters[levelIndex];
+    let index = AQL_LETTERS.indexOf(letter);
+    const start = AQL_PLANS[index][col];
+    let direction = "";
+    if (start === "down" || start === "up") {
+      direction = start;
+      const step = start === "down" ? 1 : -1;
+      index += step;
+      while (index >= 0 && index < AQL_PLANS.length && (AQL_PLANS[index][col] === "down" || AQL_PLANS[index][col] === "up")) index += step;
+    }
+    const plan = index >= 0 && index < AQL_PLANS.length ? AQL_PLANS[index][col] : null;
+    if (!plan || plan === "down" || plan === "up") return { ok: false, error: "No sampling plan for this level and AQL." };
+    const planSize = AQL_SIZES[index];
+    const hundred = planSize >= lot;
+    const quantity = hundred ? lot : planSize;
+    const planLetter = AQL_LETTERS[index];
+    let note = "Lot size " + lot + " at level " + level + " is code letter " + letter + ", sample size " + AQL_SIZES[AQL_LETTERS.indexOf(letter)] + ".";
+    if (direction) note += " AQL " + aql + " on that row is a " + direction + " arrow, so the plan used is letter " + planLetter + ", sample size " + planSize + ".";
+    else note += " AQL " + aql + " uses that sample size.";
+    if (hundred) note += " The sample size equals or exceeds the lot, so the quantity is the full lot, 100 percent inspection.";
+    note += " Accept " + plan.ac + ", reject " + plan.re + ".";
+    return {
+      ok: true,
+      letter: letter,
+      planLetter: planLetter,
+      sampleSize: planSize,
+      quantity: quantity,
+      ac: plan.ac,
+      re: plan.re,
+      hundred: hundred,
+      direction: direction,
+      note: note
+    };
+  }
+
   const api = {
     SERVICES: SERVICES,
     SESSION_USER: SESSION_USER,
@@ -1156,6 +1283,7 @@
     CURRENCIES: CURRENCIES,
     readUpload: readUpload,
     quoteInspection: quoteInspection,
+    lookupAql: lookupAql,
     applyRows: applyRows,
     toCsv: toCsv
   };
@@ -1190,7 +1318,12 @@
       skus: 5,
       factory: "Shenzhen Woodworks",
       qcs: 1,
-      transport: 100
+      transport: 100,
+      services: ["Inline"],
+      orderStage: "Production in progress",
+      productionDate: "2026-11-28",
+      aqlLevel: "II",
+      aql: "2.5"
     },
     collapsed: {}
   };
@@ -1219,6 +1352,12 @@
             factory: clientFactory(saved.quote.factory).name,
             qcs: saved.quote.qcs || 1,
             transport: saved.quote.transport,
+            services: Array.isArray(saved.quote.services) && saved.quote.services.length ? saved.quote.services : [saved.quote.service || "Inline"],
+            orderStage: saved.quote.orderStage || "Production in progress",
+            productionDate: saved.quote.productionDate || "2026-11-28",
+            aqlLevel: saved.quote.aqlLevel || "II",
+            aql: saved.quote.aql || "2.5",
+            aqlQty: saved.quote.aqlQty,
             manDays: saved.quote.manDays,
             price: saved.quote.price,
             qcPrice: saved.quote.qcPrice,
@@ -1430,7 +1569,7 @@
       ["Product (under " + categoryName + ")", quotePick("<select class=\"input\" data-quote=\"product\">" + quoteChoices(products, state.quote.product) + "</select>", "product", "Create Product +"), "From the RFQ form. Product under that category."],
       ["No. of unique SKUs", quoteInput("skus", state.quote.skus, "numeric"), "From the RFQ form. Number of unique SKUs on the inspection request. Does not change the man day calculation."],
       ["Factory", "<select class=\"input\" data-quote=\"factory\">" + factoryOptions(state.quote.factory) + "</select>", "From the RFQ form. Factory for " + CLIENT_NAME + ". Can be changed to any factory for this client."],
-      ["No. of units of " + productName, quoteInput("units", state.quote.units, "numeric"), "From the RFQ form. Total order quantity."],
+      ["No. of units of " + productName, quoteInput("units", state.quote.units, "numeric"), "From the RFQ form. Total order quantity. This is the lot size for the AQL table."],
       ["No. of man days required to inspect this", quoteInput("manDays", state.quote.manDays), dayNote],
       ["Price per man day Per QC", quoteInput("price", state.quote.price), "From the pricing matrix. Price to inspect any " + categoryName + " category per man day for ONE qc."],
       ["No. of QCs on the project", quoteInput("qcs", state.quote.qcs, "numeric"), "Entered on the quote. Number of QCs assigned to this project."],
@@ -1439,6 +1578,10 @@
       ["QC related charges - Transportation & boarding", quoteInput("transport", state.quote.transport), "Entered on the quote. (Manually added for first version)"],
       ["Total Quote price", quoteInput("total", state.quote.total), "Calc: the whole price, including QC charges. Quote price excluding QC related charges + transportation and boarding."]
     ];
+    if ((state.quote.services || []).indexOf("Final") !== -1) {
+      const unitsIndex = rows.findIndex(function (row) { return String(row[0]).indexOf("No. of units") === 0; });
+      rows.splice(unitsIndex + 1, 0, ["AQL Quantity", quoteInput("aqlQty", state.quote.aqlQty), state.quote.aqlNote || "Sample size from the AQL table. Lot size is the number of units."]);
+    }
     document.getElementById("quoteBody").innerHTML = rows.map(function (row, index) {
       const totalClass = index === rows.length - 1 ? " class=\"sheet-total\"" : "";
       return "<tr" + totalClass + "><td>" + esc(row[0]) + "</td><td>" + row[1] + "</td><td class=\"sheet-note\">" + esc(row[2]) + "</td></tr>";
@@ -1455,6 +1598,35 @@
     if (countrySelectEl && document.activeElement !== countrySelectEl && countrySelectEl.value !== state.quote.country) countrySelectEl.value = state.quote.country;
     const factorySelect = document.getElementById("quoteFactory");
     if (factorySelect && document.activeElement !== factorySelect) factorySelect.innerHTML = factoryOptions(state.quote.factory);
+    const serviceBox = document.getElementById("quoteServices");
+    if (serviceBox) {
+      serviceBox.innerHTML = [
+        { value: "Final", label: "Final Inspections" },
+        { value: "Inline", label: "Inline" },
+        { value: "Pre production", label: "Pre production" },
+        { value: "Factory", label: "Factory" },
+        { value: "TOP", label: "TOP" }
+      ].map(function (service) {
+        const on = (state.quote.services || []).indexOf(service.value) !== -1 ? " checked" : "";
+        return "<label><input type=\"checkbox\" data-service=\"" + esc(service.value) + "\"" + on + ">" + esc(service.label) + "</label>";
+      }).join("");
+    }
+    const finalOn = (state.quote.services || []).indexOf("Final") !== -1;
+    document.getElementById("quoteAqlFields").hidden = !finalOn;
+    const stageSelect = document.getElementById("quoteStage");
+    if (stageSelect && document.activeElement !== stageSelect) stageSelect.value = state.quote.orderStage || "Production in progress";
+    const readyInput = document.getElementById("quoteReady");
+    if (readyInput && document.activeElement !== readyInput) readyInput.value = state.quote.productionDate || "";
+    const levelSelect = document.getElementById("quoteAqlLevel");
+    if (levelSelect && document.activeElement !== levelSelect) levelSelect.value = state.quote.aqlLevel || "II";
+    const aqlSelect = document.getElementById("quoteAql");
+    if (aqlSelect && document.activeElement !== aqlSelect) aqlSelect.value = state.quote.aql || "2.5";
+  }
+
+  function applyAql() {
+    const plan = lookupAql(state.quote.units, state.quote.aqlLevel, state.quote.aql);
+    state.quote.aqlNote = plan.ok ? plan.note : plan.error;
+    if (plan.ok) state.quote.aqlQty = String(plan.quantity);
   }
 
   function showResult(id, kind, title, lines) {
@@ -1489,6 +1661,7 @@
     let hash = "#product-category";
     if (state.main === "engine") hash = "#engine";
     else if (state.main === "qc") hash = "#qc";
+    else if (state.main === "aql") hash = "#aql";
     else if (state.sub === "t1") hash = "#man-day";
     else if (state.sub === "t2") hash = "#matrix";
     if (location.hash !== hash) history.replaceState(null, "", hash);
@@ -1498,12 +1671,15 @@
     const main = state.main;
     document.getElementById("tabTables").setAttribute("aria-selected", main === "tables" ? "true" : "false");
     document.getElementById("tabQc").setAttribute("aria-selected", main === "qc" ? "true" : "false");
+    document.getElementById("tabAql").setAttribute("aria-selected", main === "aql" ? "true" : "false");
     document.getElementById("tabEngine").setAttribute("aria-selected", main === "engine" ? "true" : "false");
     document.getElementById("panelTables").hidden = main !== "tables";
     document.getElementById("panelQc").hidden = main !== "qc";
+    document.getElementById("panelAql").hidden = main !== "aql";
     document.getElementById("panelEngine").hidden = main !== "engine";
     document.getElementById("navTables").classList.toggle("active", main === "tables");
     document.getElementById("navQc").classList.toggle("active", main === "qc");
+    document.getElementById("navAql").classList.toggle("active", main === "aql");
     document.getElementById("navEngine").classList.toggle("active", main === "engine");
     ["cat", "t1", "t2"].forEach(function (sub) {
       const on = state.sub === sub;
@@ -1516,7 +1692,7 @@
   }
 
   function openMain(main) {
-    state.main = main === "qc" || main === "engine" ? main : "tables";
+    state.main = main === "qc" || main === "engine" || main === "aql" ? main : "tables";
     closeTray();
     paintTabs();
   }
@@ -1531,6 +1707,7 @@
   function applyHash() {
     const hash = (location.hash || "").replace("#", "");
     if (hash === "engine") openMain("engine");
+    else if (hash === "aql") openMain("aql");
     else if (hash === "qc") openMain("qc");
     else if (hash === "matrix") openSub("t2");
     else if (hash === "man-day" || hash === "mapping") openSub("t1");
@@ -2074,15 +2251,47 @@
   document.querySelectorAll("[data-sub]").forEach(function (el) {
     el.addEventListener("click", function () { openSub(el.getAttribute("data-sub")); });
   });
-  document.getElementById("quoteService").innerHTML = SERVICES.map(function (service) {
-    return "<option value=\"" + esc(service) + "\">" + esc(service) + "</option>";
-  }).join("");
   document.getElementById("quoteCountry").innerHTML = COUNTRIES.map(function (country) {
     return "<option value=\"" + esc(country) + "\">" + esc(country) + "</option>";
   }).join("");
-  document.getElementById("quoteService").addEventListener("change", function (event) {
-    state.quote.service = event.target.value;
-    recalcQuote();
+  document.getElementById("quoteStage").innerHTML = ["Order Placed", "Pre-production", "Production in progress", "Production complete"].map(function (stage) {
+    return "<option value=\"" + esc(stage) + "\">" + esc(stage) + "</option>";
+  }).join("");
+  document.getElementById("quoteAqlLevel").innerHTML = AQL_LEVELS.map(function (level) {
+    return "<option value=\"" + esc(level) + "\">" + esc(level) + "</option>";
+  }).join("");
+  document.getElementById("quoteAql").innerHTML = AQL_VALUES.map(function (value) {
+    return "<option value=\"" + esc(value) + "\">" + esc(value) + "</option>";
+  }).join("");
+  document.getElementById("quoteServices").addEventListener("change", function () {
+    state.quote.services = Array.from(document.querySelectorAll("#quoteServices input:checked")).map(function (input) {
+      return input.getAttribute("data-service");
+    });
+    if (state.quote.services.indexOf(state.quote.service) === -1) {
+      state.quote.service = state.quote.services[0] || "";
+      recalcQuote();
+    }
+    if (state.quote.services.indexOf("Final") !== -1) applyAql();
+    saveState();
+    renderQuote();
+  });
+  document.getElementById("quoteStage").addEventListener("change", function (event) {
+    state.quote.orderStage = event.target.value;
+    saveState();
+  });
+  document.getElementById("quoteReady").addEventListener("change", function (event) {
+    state.quote.productionDate = event.target.value;
+    saveState();
+  });
+  document.getElementById("quoteAqlLevel").addEventListener("change", function (event) {
+    state.quote.aqlLevel = event.target.value;
+    applyAql();
+    saveState();
+    renderQuote();
+  });
+  document.getElementById("quoteAql").addEventListener("change", function (event) {
+    state.quote.aql = event.target.value;
+    applyAql();
     saveState();
     renderQuote();
   });
@@ -2139,6 +2348,7 @@
       }
     } else if (field === "product" || field === "units" || field === "qcs") {
       recalcQuote();
+      if (field === "units") applyAql();
     } else if (field === "price") {
       const price = quoteNumber("price");
       const qcs = quoteNumber("qcs");
@@ -2217,10 +2427,33 @@
     }
   });
 
+  function renderAqlTables() {
+    const codeHead = "<thead><tr><th rowspan=\"2\">Lot Size</th><th colspan=\"3\">General Inspection Levels</th><th colspan=\"4\">Special Inspection Levels</th></tr><tr>" +
+      AQL_LEVELS.map(function (level) { return "<th>" + level + "</th>"; }).join("") + "</tr></thead>";
+    const codeBody = "<tbody>" + AQL_LOTS.map(function (band) {
+      return "<tr><td class=\"lot\">" + esc(band.label) + "</td>" + band.letters.map(function (letter) {
+        return "<td>" + letter + "</td>";
+      }).join("") + "</tr>";
+    }).join("") + "</tbody>";
+    document.getElementById("aqlCodeTable").innerHTML = codeHead + codeBody;
+    const planHead = "<thead><tr><th rowspan=\"3\">Sample Size Code Letter</th><th rowspan=\"3\">Sample Size</th><th colspan=\"11\">Acceptable Quality Levels (Normal Inspection)</th></tr><tr>" +
+      AQL_VALUES.map(function (value) { return "<th>" + value + "</th>"; }).join("") +
+      "</tr><tr>" + AQL_VALUES.map(function () { return "<th>Ac Re</th>"; }).join("") + "</tr></thead>";
+    const planBody = "<tbody>" + AQL_LETTERS.map(function (letter, index) {
+      return "<tr><td class=\"letter\">" + letter + "</td><td>" + AQL_SIZES[index] + "</td>" + AQL_PLANS[index].map(function (cell) {
+        if (cell === "down") return "<td>\u2193</td>";
+        if (cell === "up") return "<td>\u2191</td>";
+        return "<td>" + cell.ac + " " + cell.re + "</td>";
+      }).join("") + "</tr>";
+    }).join("") + "</tbody>";
+    document.getElementById("aqlPlanTable").innerHTML = planHead + planBody;
+  }
+
   loadState();
   renderCat();
   renderT1();
   renderT2();
+  renderAqlTables();
   renderQuote();
   applyHash();
   window.addEventListener("hashchange", applyHash);
