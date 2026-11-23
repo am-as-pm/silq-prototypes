@@ -205,9 +205,26 @@
     font: 700 13px/16px var(--font-body); color: var(--silq-navy);
   }
   .create-plus:hover { color: var(--brand-cta); }
-  #quoteAqlFields { display: contents; }
-  .service-picks { display: flex; flex-direction: column; gap: 4px; min-width: 180px; }
-  .service-picks label { flex-direction: row; align-items: center; gap: 8px; font: 500 13px/16px var(--font-body); color: var(--silq-navy); }
+  .quote-groups { display: flex; flex-direction: column; gap: 16px; }
+  .quote-group { display: flex; flex-direction: column; gap: 8px; }
+  .quote-group h3 {
+    font: var(--type-content-small-semi-bold); letter-spacing: var(--tracking-wide);
+    text-transform: uppercase; color: var(--silq-navy);
+  }
+  .multi { position: relative; min-width: 220px; }
+  .multi-btn { text-align: left; cursor: pointer; width: 100%; }
+  .multi-menu {
+    position: absolute; z-index: 6; top: calc(100% + 4px); left: 0; right: 0;
+    background: var(--silq-white); border: 1px solid var(--border); border-radius: 5px;
+    box-shadow: var(--elevation-small); padding: 8px; display: flex; flex-direction: column; gap: 6px;
+  }
+  .multi-menu label {
+    display: flex; flex-direction: row; align-items: center; gap: 8px;
+    font: 500 13px/16px var(--font-body); color: var(--silq-navy);
+  }
+  select.input:disabled, input.input:disabled {
+    background: var(--silq-grey-100); color: var(--text-secondary); box-shadow: none; cursor: not-allowed;
+  }
   .aql-table th, .aql-table td { text-align: center; white-space: nowrap; padding: 6px 8px; }
   .aql-table th { background: var(--silq-navy); color: var(--silq-white); }
   .aql-table td.lot, .aql-table td.letter { font-weight: 600; text-align: left; }
@@ -504,35 +521,52 @@
             <span class="quote-client">Harbor &amp; Home</span>
             <span class="quote-when">Created <strong>10 Nov 2026</strong><span class="meta-rule"></span><strong>Shivam</strong></span>
           </div>
-          <div class="quote-facts">
-            <label class="quote-fact">Inspection service
-              <span>From the RFQ form. Select every service on the request</span>
-              <div class="service-picks" id="quoteServices"></div>
-            </label>
-            <label class="quote-fact">Factory country
-              <span>From the RFQ form</span>
-              <select class="input" id="quoteCountry"></select>
-            </label>
-            <div class="quote-fact">Order stage
-              <select class="input" id="quoteStage"></select>
-            </div>
-            <label class="quote-fact">Production complete
-              <input class="input" id="quoteReady" type="date">
-            </label>
-            <div id="quoteAqlFields" hidden>
-              <label class="quote-fact">AQL level
-                <span>General level II unless the RFQ says otherwise</span>
-                <select class="input" id="quoteAqlLevel"></select>
-              </label>
-              <label class="quote-fact">AQL
-                <span>Acceptable quality level</span>
-                <select class="input" id="quoteAql"></select>
-              </label>
-            </div>
-            <label class="quote-fact">Factory
-              <span>From the RFQ. Any factory for this client</span>
-              <select class="input" id="quoteFactory"></select>
-            </label>
+          <div class="quote-groups">
+            <section class="quote-group">
+              <h3>Request</h3>
+              <div class="quote-facts">
+                <div class="quote-fact">Inspection service
+                  <span>From the RFQ form</span>
+                  <div class="multi" id="quoteServices">
+                    <button class="input multi-btn" type="button" id="quoteServicesBtn" aria-haspopup="listbox" aria-expanded="false">Inline</button>
+                    <div class="multi-menu" id="quoteServicesMenu" hidden role="listbox">
+                      <label><input type="checkbox" data-service="Final">Final Inspections</label>
+                      <label><input type="checkbox" data-service="Inline" checked>Inline</label>
+                      <label><input type="checkbox" data-service="Pre production">Pre production</label>
+                      <label><input type="checkbox" data-service="Factory">Factory</label>
+                      <label><input type="checkbox" data-service="TOP">TOP</label>
+                    </div>
+                  </div>
+                </div>
+                <label class="quote-fact">Factory country
+                  <span>From the RFQ form</span>
+                  <select class="input" id="quoteCountry"></select>
+                </label>
+                <label class="quote-fact">Factory
+                  <span>From the RFQ. Any factory for this client</span>
+                  <select class="input" id="quoteFactory"></select>
+                </label>
+                <div class="quote-fact">Order stage
+                  <select class="input" id="quoteStage"></select>
+                </div>
+                <label class="quote-fact">Production complete
+                  <input class="input" id="quoteReady" type="date">
+                </label>
+              </div>
+            </section>
+            <section class="quote-group">
+              <h3>AQL</h3>
+              <div class="quote-facts">
+                <label class="quote-fact">AQL level
+                  <span>Used when Final Inspections is selected</span>
+                  <select class="input" id="quoteAqlLevel" disabled><option value="">Null</option></select>
+                </label>
+                <label class="quote-fact">AQL
+                  <span>Used when Final Inspections is selected</span>
+                  <select class="input" id="quoteAql" disabled><option value="">Null</option></select>
+                </label>
+              </div>
+            </section>
           </div>
         </div>
         <div class="table-wrap">
@@ -1592,35 +1626,45 @@
     if (document.activeElement !== rateInput) rateInput.value = String(rate);
     const currencySelect = document.getElementById("quoteCurrency");
     if (currencySelect && currencySelect.value !== state.quote.currency) currencySelect.value = state.quote.currency || "USD";
-    const serviceSelectEl = document.getElementById("quoteService");
-    if (serviceSelectEl && document.activeElement !== serviceSelectEl && serviceSelectEl.value !== state.quote.service) serviceSelectEl.value = state.quote.service;
     const countrySelectEl = document.getElementById("quoteCountry");
     if (countrySelectEl && document.activeElement !== countrySelectEl && countrySelectEl.value !== state.quote.country) countrySelectEl.value = state.quote.country;
     const factorySelect = document.getElementById("quoteFactory");
     if (factorySelect && document.activeElement !== factorySelect) factorySelect.innerHTML = factoryOptions(state.quote.factory);
-    const serviceBox = document.getElementById("quoteServices");
-    if (serviceBox) {
-      serviceBox.innerHTML = [
-        { value: "Final", label: "Final Inspections" },
-        { value: "Inline", label: "Inline" },
-        { value: "Pre production", label: "Pre production" },
-        { value: "Factory", label: "Factory" },
-        { value: "TOP", label: "TOP" }
-      ].map(function (service) {
-        const on = (state.quote.services || []).indexOf(service.value) !== -1 ? " checked" : "";
-        return "<label><input type=\"checkbox\" data-service=\"" + esc(service.value) + "\"" + on + ">" + esc(service.label) + "</label>";
-      }).join("");
+    const selectedServices = state.quote.services || [];
+    document.querySelectorAll("#quoteServicesMenu input").forEach(function (input) {
+      input.checked = selectedServices.indexOf(input.getAttribute("data-service")) !== -1;
+    });
+    const serviceLabels = { Final: "Final Inspections", Inline: "Inline", "Pre production": "Pre production", Factory: "Factory", TOP: "TOP" };
+    const serviceButton = document.getElementById("quoteServicesBtn");
+    if (serviceButton) {
+      const names = selectedServices.map(function (value) { return serviceLabels[value] || value; });
+      serviceButton.textContent = names.length ? names.join(", ") : "Select";
     }
-    const finalOn = (state.quote.services || []).indexOf("Final") !== -1;
-    document.getElementById("quoteAqlFields").hidden = !finalOn;
+    const finalOn = selectedServices.indexOf("Final") !== -1;
+    setChoice(document.getElementById("quoteAqlLevel"), finalOn, state.quote.aqlLevel || "II", AQL_LEVELS);
+    setChoice(document.getElementById("quoteAql"), finalOn, state.quote.aql || "2.5", AQL_VALUES);
     const stageSelect = document.getElementById("quoteStage");
     if (stageSelect && document.activeElement !== stageSelect) stageSelect.value = state.quote.orderStage || "Production in progress";
     const readyInput = document.getElementById("quoteReady");
     if (readyInput && document.activeElement !== readyInput) readyInput.value = state.quote.productionDate || "";
-    const levelSelect = document.getElementById("quoteAqlLevel");
-    if (levelSelect && document.activeElement !== levelSelect) levelSelect.value = state.quote.aqlLevel || "II";
-    const aqlSelect = document.getElementById("quoteAql");
-    if (aqlSelect && document.activeElement !== aqlSelect) aqlSelect.value = state.quote.aql || "2.5";
+  }
+
+  function setChoice(select, enabled, value, options) {
+    if (!select || document.activeElement === select) return;
+    if (!enabled) {
+      select.disabled = true;
+      select.innerHTML = "<option value=\"\">Null</option>";
+      select.value = "";
+      return;
+    }
+    select.disabled = false;
+    const current = Array.from(select.options).map(function (option) { return option.value; }).join("|");
+    if (current !== options.join("|")) {
+      select.innerHTML = options.map(function (option) {
+        return "<option value=\"" + esc(option) + "\">" + esc(option) + "</option>";
+      }).join("");
+    }
+    select.value = value;
   }
 
   function applyAql() {
@@ -2264,7 +2308,7 @@
     return "<option value=\"" + esc(value) + "\">" + esc(value) + "</option>";
   }).join("");
   document.getElementById("quoteServices").addEventListener("change", function () {
-    state.quote.services = Array.from(document.querySelectorAll("#quoteServices input:checked")).map(function (input) {
+    state.quote.services = Array.from(document.querySelectorAll("#quoteServicesMenu input:checked")).map(function (input) {
       return input.getAttribute("data-service");
     });
     if (state.quote.services.indexOf(state.quote.service) === -1) {
@@ -2274,6 +2318,20 @@
     if (state.quote.services.indexOf("Final") !== -1) applyAql();
     saveState();
     renderQuote();
+  });
+  document.getElementById("quoteServicesBtn").addEventListener("click", function (event) {
+    event.stopPropagation();
+    const menu = document.getElementById("quoteServicesMenu");
+    const open = menu.hidden;
+    menu.hidden = !open;
+    this.setAttribute("aria-expanded", open ? "true" : "false");
+  });
+  document.addEventListener("click", function (event) {
+    const wrap = document.getElementById("quoteServices");
+    const menu = document.getElementById("quoteServicesMenu");
+    if (!wrap || !menu || wrap.contains(event.target)) return;
+    menu.hidden = true;
+    document.getElementById("quoteServicesBtn").setAttribute("aria-expanded", "false");
   });
   document.getElementById("quoteStage").addEventListener("change", function (event) {
     state.quote.orderStage = event.target.value;
