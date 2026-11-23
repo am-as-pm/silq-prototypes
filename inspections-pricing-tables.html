@@ -1554,6 +1554,17 @@
     return "<input class=\"input\" data-quote=\"" + field + "\" inputmode=\"" + (mode || "decimal") + "\" value=\"" + esc(value == null ? "" : value) + "\">";
   }
 
+  function isFinalQuote() {
+    return (state.quote.services || []).indexOf("Final") !== -1;
+  }
+
+  function pricedVolume() {
+    if (!isFinalQuote()) return state.quote.units;
+    const qty = Number(state.quote.aqlQty);
+    if (String(state.quote.aqlQty).trim() !== "" && isFinite(qty) && qty > 0) return qty;
+    return state.quote.units;
+  }
+
   function recalcQuote() {
     const qcs = Number(state.quote.qcs);
     const priced = quoteInspection({
@@ -1561,7 +1572,7 @@
       product: state.quote.product,
       service: state.quote.service,
       country: state.quote.country,
-      units: state.quote.units,
+      units: pricedVolume(),
       qcs: String(state.quote.qcs)
     }, { t1: state.t1, t2: state.t2 });
     const transport = Number(state.quote.transport);
@@ -1593,17 +1604,18 @@
     const categoryName = state.quote.category || "category";
     const productName = state.quote.product || "product";
     const products = productsFor(state.cat, state.quote.category);
+    const dayBase = isFinalQuote()
+      ? "(AQL quantity / no. of units inspectable in a man day)"
+      : "(total no. of units / no. of units inspectable in a man day)";
     const dayNote = state.quote.calcError
       ? state.quote.calcError
-      : (qcs > 1
-        ? "Calc: (total no. of units / no. of units inspectable in a man day) / number of Qcs"
-        : "Calc: (total no. of units / no. of units inspectable in a man day)");
+      : ("Calc: " + dayBase + (qcs > 1 ? " / number of Qcs" : "") + (isFinalQuote() ? ". The total order quantity is the lot size only and is not priced." : ""));
     const rows = [
       ["Category", quotePick("<select class=\"input\" data-quote=\"category\">" + quoteChoices(catalogCategories(state.cat), state.quote.category) + "</select>", "category", "Create Category +"), "From the RFQ form. Product category on the inspection request."],
       ["Product (under " + categoryName + ")", quotePick("<select class=\"input\" data-quote=\"product\">" + quoteChoices(products, state.quote.product) + "</select>", "product", "Create Product +"), "From the RFQ form. Product under that category."],
       ["No. of unique SKUs", quoteInput("skus", state.quote.skus, "numeric"), "From the RFQ form. Number of unique SKUs on the inspection request. Does not change the man day calculation."],
       ["Factory", "<select class=\"input\" data-quote=\"factory\">" + factoryOptions(state.quote.factory) + "</select>", "From the RFQ form. Factory for " + CLIENT_NAME + ". Can be changed to any factory for this client."],
-      ["No. of units of " + productName, quoteInput("units", state.quote.units, "numeric"), "From the RFQ form. Total order quantity. This is the lot size for the AQL table."],
+      ["No. of units of " + productName, quoteInput("units", state.quote.units, "numeric"), isFinalQuote() ? "From the RFQ form. Total order quantity. This is the lot size for the AQL table. Final Inspections prices the AQL quantity, not this total." : "From the RFQ form. Total order quantity. This is the lot size for the AQL table."],
       ["No. of man days required to inspect this", quoteInput("manDays", state.quote.manDays), dayNote],
       ["Price per man day Per QC", quoteInput("price", state.quote.price), "From the pricing matrix. Price to inspect any " + categoryName + " category per man day for ONE qc."],
       ["No. of QCs on the project", quoteInput("qcs", state.quote.qcs, "numeric"), "Entered on the quote. Number of QCs assigned to this project."],
@@ -1614,7 +1626,7 @@
     ];
     if ((state.quote.services || []).indexOf("Final") !== -1) {
       const unitsIndex = rows.findIndex(function (row) { return String(row[0]).indexOf("No. of units") === 0; });
-      rows.splice(unitsIndex + 1, 0, ["AQL Quantity", quoteInput("aqlQty", state.quote.aqlQty), state.quote.aqlNote || "Sample size from the AQL table. Lot size is the number of units."]);
+      rows.splice(unitsIndex + 1, 0, ["AQL Quantity", quoteInput("aqlQty", state.quote.aqlQty), (state.quote.aqlNote || "Sample size from the AQL table. Lot size is the number of units.") + " This is the only volume the quote prices."]);
     }
     document.getElementById("quoteBody").innerHTML = rows.map(function (row, index) {
       const totalClass = index === rows.length - 1 ? " class=\"sheet-total\"" : "";
@@ -2313,9 +2325,9 @@
     });
     if (state.quote.services.indexOf(state.quote.service) === -1) {
       state.quote.service = state.quote.services[0] || "";
-      recalcQuote();
     }
     if (state.quote.services.indexOf("Final") !== -1) applyAql();
+    recalcQuote();
     saveState();
     renderQuote();
   });
@@ -2344,12 +2356,14 @@
   document.getElementById("quoteAqlLevel").addEventListener("change", function (event) {
     state.quote.aqlLevel = event.target.value;
     applyAql();
+    recalcQuote();
     saveState();
     renderQuote();
   });
   document.getElementById("quoteAql").addEventListener("change", function (event) {
     state.quote.aql = event.target.value;
     applyAql();
+    recalcQuote();
     saveState();
     renderQuote();
   });
@@ -2404,9 +2418,11 @@
         state.quote.country = factory.country;
         recalcQuote();
       }
-    } else if (field === "product" || field === "units" || field === "qcs") {
+    } else if (field === "units") {
+      applyAql();
       recalcQuote();
-      if (field === "units") applyAql();
+    } else if (field === "product" || field === "qcs" || field === "aqlQty") {
+      recalcQuote();
     } else if (field === "price") {
       const price = quoteNumber("price");
       const qcs = quoteNumber("qcs");
