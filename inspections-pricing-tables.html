@@ -199,6 +199,12 @@
   }
   .quote-fact strong { font: 500 14px/20px var(--font-body); color: var(--silq-navy); }
   .quote-fact .input { min-width: 180px; }
+  .quote-pick { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+  .create-plus {
+    background: none; border: 0; padding: 0; cursor: pointer;
+    font: 700 13px/16px var(--font-body); color: var(--silq-navy);
+  }
+  .create-plus:hover { color: var(--brand-cta); }
   .quote-table td:first-child { width: 32%; font-weight: 500; }
   .quote-table td:nth-child(2), .quote-table th:nth-child(2) { width: 220px; }
   .line-err { display: block; color: var(--error-text); font: var(--type-content-small); margin-top: 4px; }
@@ -487,7 +493,10 @@
             </label>
             <div class="quote-fact">Order stage<strong>Production in progress</strong></div>
             <div class="quote-fact">Production complete<strong>28 Nov 2026</strong></div>
-            <div class="quote-fact">Factory<strong id="quoteFactoryLabel">Shenzhen Woodworks</strong></div>
+            <label class="quote-fact">Factory
+              <span>From the RFQ. Any factory for this client</span>
+              <select class="input" id="quoteFactory"></select>
+            </label>
           </div>
         </div>
         <div class="table-wrap">
@@ -1350,13 +1359,22 @@
     return String(rounded);
   }
 
-  function quoteChoices(list, selected, createValue, createLabel) {
-    const options = ["<option value=\"\">Select</option>"].concat(list.map(function (item) {
+  function factoryOptions(selected) {
+    return CLIENT_FACTORIES.map(function (factory) {
+      const on = factory.name === selected ? " selected" : "";
+      return "<option value=\"" + esc(factory.name) + "\"" + on + ">" + esc(factory.name) + "</option>";
+    }).join("");
+  }
+
+  function quotePick(control, kind, label) {
+    return "<div class=\"quote-pick\">" + control +
+      "<button type=\"button\" class=\"create-plus\" data-create=\"" + kind + "\">" + esc(label) + "</button></div>";
+  }
+  function quoteChoices(list, selected) {
+    return ["<option value=\"\">Select</option>"].concat(list.map(function (item) {
       const on = item === selected ? " selected" : "";
       return "<option value=\"" + esc(item) + "\"" + on + ">" + esc(item) + "</option>";
-    }));
-    if (createValue) options.push("<option value=\"" + createValue + "\">" + esc(createLabel) + "</option>");
-    return options.join("");
+    })).join("");
   }
 
   function quoteInput(field, value, mode) {
@@ -1408,13 +1426,10 @@
         ? "Calc: (total no. of units / no. of units inspectable in a man day) / number of Qcs"
         : "Calc: (total no. of units / no. of units inspectable in a man day)");
     const rows = [
-      ["Category", "<select class=\"input\" data-quote=\"category\">" + quoteChoices(catalogCategories(state.cat), state.quote.category, "__new_category__", "Create new category") + "</select>", "From the RFQ form. Product category on the inspection request."],
-      ["Product (under " + categoryName + ")", "<select class=\"input\" data-quote=\"product\">" + quoteChoices(products, state.quote.product, "__new_product__", "Create new product") + "</select>", "From the RFQ form. Product under that category."],
+      ["Category", quotePick("<select class=\"input\" data-quote=\"category\">" + quoteChoices(catalogCategories(state.cat), state.quote.category) + "</select>", "category", "Create Category +"), "From the RFQ form. Product category on the inspection request."],
+      ["Product (under " + categoryName + ")", quotePick("<select class=\"input\" data-quote=\"product\">" + quoteChoices(products, state.quote.product) + "</select>", "product", "Create Product +"), "From the RFQ form. Product under that category."],
       ["No. of unique SKUs", quoteInput("skus", state.quote.skus, "numeric"), "From the RFQ form. Number of unique SKUs on the inspection request. Does not change the man day calculation."],
-      ["Factory", "<select class=\"input\" data-quote=\"factory\">" + CLIENT_FACTORIES.map(function (factory) {
-        const on = factory.name === state.quote.factory ? " selected" : "";
-        return "<option value=\"" + esc(factory.name) + "\"" + on + ">" + esc(factory.name) + "</option>";
-      }).join("") + "</select>", "From the RFQ form. Factory for " + CLIENT_NAME + ". Can be changed to any factory for this client."],
+      ["Factory", "<select class=\"input\" data-quote=\"factory\">" + factoryOptions(state.quote.factory) + "</select>", "From the RFQ form. Factory for " + CLIENT_NAME + ". Can be changed to any factory for this client."],
       ["No. of units of " + productName, quoteInput("units", state.quote.units, "numeric"), "From the RFQ form. Total order quantity."],
       ["No. of man days required to inspect this", quoteInput("manDays", state.quote.manDays), dayNote],
       ["Price per man day Per QC", quoteInput("price", state.quote.price), "From the pricing matrix. Price to inspect any " + categoryName + " category per man day for ONE qc."],
@@ -1438,8 +1453,8 @@
     if (serviceSelectEl && document.activeElement !== serviceSelectEl && serviceSelectEl.value !== state.quote.service) serviceSelectEl.value = state.quote.service;
     const countrySelectEl = document.getElementById("quoteCountry");
     if (countrySelectEl && document.activeElement !== countrySelectEl && countrySelectEl.value !== state.quote.country) countrySelectEl.value = state.quote.country;
-    const factoryLabel = document.getElementById("quoteFactoryLabel");
-    if (factoryLabel) factoryLabel.textContent = state.quote.factory || "";
+    const factorySelect = document.getElementById("quoteFactory");
+    if (factorySelect && document.activeElement !== factorySelect) factorySelect.innerHTML = factoryOptions(state.quote.factory);
   }
 
   function showResult(id, kind, title, lines) {
@@ -2076,6 +2091,22 @@
     recalcQuote();
     saveState();
     renderQuote();
+  });
+  document.getElementById("quoteFactory").addEventListener("change", function (event) {
+    const factory = clientFactory(event.target.value);
+    state.quote.factory = factory.name;
+    if (factory.country !== state.quote.country) {
+      state.quote.country = factory.country;
+      recalcQuote();
+    }
+    saveState();
+    renderQuote();
+  });
+  document.getElementById("quoteBody").addEventListener("click", function (event) {
+    const create = event.target.closest("[data-create]");
+    if (!create) return;
+    if (create.getAttribute("data-create") === "category") openTray("new-category", null, true);
+    else openTray("new-product", { category: state.quote.category }, true);
   });
   document.getElementById("quoteBody").addEventListener("change", function (event) {
     const field = event.target.getAttribute("data-quote");
