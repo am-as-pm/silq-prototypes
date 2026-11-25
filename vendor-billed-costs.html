@@ -2022,10 +2022,32 @@ function copyTargets(line, s, q) {
     return other.lines.some(x => x.id === line.id);
   });
 }
-function canCopyAll(l, s, q) {
-  if (l.grain === 'per_quote') return false;
-  if (l.procRate == null || l.procRate === '') return false;
-  return copyTargets(l, s, q).length > 0;
+function siblingLines(line, q) {
+  const out = [];
+  if (!q || !line) return out;
+  q.shipments.forEach(sh => {
+    const x = sh.lines.find(y => y.id === line.id);
+    if (x) out.push({ ship: sh, line: x });
+  });
+  return out;
+}
+function setOncePerQuote(line, s, q, on) {
+  siblingLines(line, q).forEach(({ ship, line: x }) => {
+    if (on) {
+      if (x.grain !== 'per_quote') x.priorGrain = x.grain;
+      x.grain = 'per_quote';
+    } else {
+      x.grain = (x.priorGrain && x.priorGrain !== 'per_quote') ? x.priorGrain : 'per_shipment';
+      x.priorGrain = null;
+    }
+    enrich(x, ship, q);
+  });
+  pushHistory(s, line.charge + (on
+    ? ' marked once per quote. Booked rate is entered on one shipment.'
+    : ' unmarked once per quote. Each shipment can enter a Booked rate.'));
+  toast(on
+    ? line.charge + ' is once per quote. Book it on one shipment. The others stay locked.'
+    : line.charge + ' is per shipment again.');
 }
 function copyLineToSiblings(line, s, q, ids) {
   if (!line || !q || !s) return 0;
@@ -2283,10 +2305,9 @@ function openRowMenu(lineId, btn) {
     const bills = vendorBills(s);
     items.push(menuOpt('fxdate', l.id, bills.length ? 'Which Vendor Quoted is this tied to' : 'Date Vendor Quoted received (used for Forex)', false));
   }
-  if (canCopyAll(l, s, q)) {
-    items.push('<div class="silq-dd-sep"></div>');
-    items.push(menuOpt('copy', l.id, 'Copy to all shipments', false));
-  }
+  items.push('<div class="silq-dd-sep"></div>');
+  items.push(menuOpt('copy', l.id, 'Copy to all shipments', false));
+  items.push(menuOpt('quotelevel', l.id, l.grain === 'per_quote' ? 'Unmark once per quote' : 'Mark as once per quote', l.grain === 'per_quote'));
   menu.innerHTML = items.join('');
   menu.classList.add('open');
   menu.setAttribute('aria-hidden', 'false');
@@ -2798,7 +2819,24 @@ document.getElementById('rowMenu').addEventListener('click', e => {
   }
   if (action === 'copy') {
     closeRowMenu();
+    if (line.grain === 'per_quote') {
+      toast(line.charge + ' is once per quote. It is not copied onto other shipments.');
+      return;
+    }
+    if (line.procRate == null || line.procRate === '') {
+      toast('Enter a Booked rate on ' + line.charge + ' before copying.');
+      return;
+    }
+    if (!copyTargets(line, s, q).length) {
+      toast('No other shipments on this quote to copy to.');
+      return;
+    }
     openCopyModal(line);
+    return;
+  }
+  if (action === 'quotelevel') {
+    setOncePerQuote(line, s, q, line.grain !== 'per_quote');
+    render();
   }
 });
 document.getElementById('copyBody').addEventListener('change', e => {
