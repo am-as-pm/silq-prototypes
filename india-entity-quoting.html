@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Silq Pvt Logistics Limited — quoting prototype</title>
+<title>Silq Logistics India Pvt Limited — quoting prototype</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -59,10 +59,16 @@ button { cursor: pointer; }
   display: flex;
   align-items: center;
   gap: var(--space-24);
-  padding: 0 var(--space-24);
-  height: 56px;
+  padding: 8px var(--space-24);
+  min-height: 56px;
 }
 .logo { height: 28px; width: auto; display: block; }
+.brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.brand-mark { height: 28px; width: 36px; display: block; flex: 0 0 auto; }
+.brand-name { color: var(--silq-white); font-weight: 600; font-size: 14px; letter-spacing: -0.01em; line-height: 1.2; max-width: 240px; }
+.pdf-brand { display: flex; align-items: center; gap: 10px; }
+.pdf-entity { font-weight: 600; font-size: 13px; line-height: 1.25; color: #12343B; max-width: 180px; }
+.table-scroll { overflow-x: auto; }
 .tabs { display: flex; gap: var(--space-4); margin-left: var(--space-16); }
 .tab {
   background: transparent;
@@ -157,6 +163,9 @@ td.num, th.num { text-align: right; }
   background: var(--bg-accent); color: var(--silq-navy);
   border-radius: var(--radius-sm); padding: 10px 12px; margin-top: var(--space-12); font-size: 13px;
 }
+.quote-terms { margin-top: var(--space-20); border-top: 1px solid var(--silq-grey-200); padding-top: var(--space-16); }
+.term-line { margin: 8px 0 0; padding: 10px 12px; border-radius: var(--radius-sm); color: var(--silq-grey-600); background: var(--silq-grey-50); }
+.term-line.on { color: var(--silq-navy); background: var(--bg-info); font-weight: 600; }
 .by-ccy { display: flex; gap: var(--space-24); margin-top: var(--space-12); }
 .by-ccy div { font-weight: 600; }
 .sheet {
@@ -191,13 +200,12 @@ td.num, th.num { text-align: right; }
 </head>
 <body>
 <header class="appbar">
-  <svg class="logo" viewBox="0 0 578 202" aria-label="Silq">
+  <div class="brand">
+  <svg class="brand-mark" viewBox="0 0 300 202" aria-hidden="true">
     <path d="M239.568 0.81309C265.068 11.8164 292.068 16.3156 292.068 16.3156C264.068 24.3156 234.068 107.314 190.568 139.314C118.068 199.814 34.0685 181.814 3.0682 201.814C6.54289 191.493 7.84738 185.671 8.2661 175.113C8.2661 175.113 167.068 70.3164 173.862 65.6685C180.655 61.0206 48.5893 125.007 48.5893 125.007L52.5452 118.415C52.5452 118.415 196.568 16.3156 239.568 0.81309Z" fill="#FFFFFF"/>
-    <path d="M552.031 152.716C547.85 158.211 542.415 162.452 535.726 165.438C529.036 168.425 521.63 169.918 513.507 169.918C504.189 169.918 496.066 167.887 489.137 163.826C482.209 159.764 476.833 154.09 473.011 146.803C469.188 139.516 467.277 131.035 467.277 121.359C467.277 111.444 469.248 102.724 473.19 95.1978C477.252 87.672 482.926 81.7589 490.213 77.4585C497.619 73.158 506.22 71.0078 516.015 71.0078C532.261 71.0078 544.506 76.5626 552.748 87.672V74.8748C552.748 73.7702 553.644 72.8748 554.748 72.8748H575.117C576.222 72.8748 577.117 73.7702 577.117 74.8748V199.813C577.117 200.918 576.222 201.813 575.117 201.813H554.031C552.927 201.813 552.031 200.918 552.031 199.813V152.716ZM552.211 123.151V118.313C552.211 110.07 549.523 103.321 544.147 98.0648C538.891 92.8087 531.843 90.1806 523.003 90.1806C513.208 90.1806 505.742 92.8087 500.605 98.0648C495.469 103.321 492.9 110.906 492.9 120.821C492.9 130.258 495.409 137.605 500.426 142.861C505.563 148.117 512.79 150.745 522.108 150.745C527.961 150.745 533.157 149.551 537.697 147.162C542.236 144.772 545.76 141.487 548.269 137.306C550.897 133.125 552.211 128.407 552.211 123.151Z" fill="#FFFFFF"/>
-    <path d="M430.882 41.1133C430.882 40.0087 431.778 39.1133 432.882 39.1133H453.968C455.073 39.1133 455.968 40.0087 455.968 41.1133V165.215C455.968 166.319 455.073 167.215 453.968 167.215H432.882C431.778 167.215 430.882 166.319 430.882 165.215V41.1133Z" fill="#FFFFFF"/>
-    <path d="M389.882 76.8727C389.882 75.2158 391.225 73.8727 392.882 73.8727H412.882C414.539 73.8727 415.882 75.2158 415.882 76.8727V164.049C415.882 165.706 414.539 167.049 412.882 167.049H392.882C391.225 167.049 389.882 165.706 389.882 164.049V76.8727ZM389.882 42.2148C389.882 40.558 391.225 39.2148 392.882 39.2148H412.882C414.539 39.2148 415.882 40.558 415.882 42.2148V61.2148C415.882 62.8717 414.539 64.2148 412.882 64.2148H392.882C391.225 64.2148 389.882 62.8717 389.882 61.2148V42.2148Z" fill="#FFFFFF"/>
-    <path d="M351.215 141.069C351.215 137.844 349.662 135.395 346.556 133.723C343.451 132.05 337.657 130.617 329.175 129.422L317.887 127.81C303.313 125.54 293.558 122.255 286.888 117.954C280.217 113.534 276.882 107.143 276.882 98.7815C276.882 89.9417 281.811 83.1327 289.934 78.3544C298.176 73.4567 309.644 71.0078 324.337 71.0078C339.27 71.0078 350.439 73.2178 357.845 77.6377C364.71 81.6696 369.488 87.5405 372.178 95.2504C372.588 96.4257 371.76 97.6418 370.521 97.7666L351.374 99.6962C350.443 99.79 349.584 99.2195 349.202 98.3657C345.956 91.1171 337.668 87.4928 324.337 87.4928C317.051 87.4928 311.317 88.5082 307.136 90.539C303.074 92.4503 299.882 95.1381 299.882 98.6023C299.882 101.708 302.537 104.097 305.523 105.77C308.509 107.442 314.004 108.876 322.008 110.07L334.193 111.862C344.585 113.296 352.708 115.207 358.562 117.596C364.535 119.866 368.775 122.852 371.284 126.555C373.793 130.139 375.047 134.738 375.047 140.352C375.047 160.063 358.98 169.918 326.846 169.918C312.392 169.918 300.506 167.589 291.188 162.93C282.627 158.482 277.325 151.241 275.284 141.205C275.04 140.008 275.98 138.919 277.202 138.919H297.058C297.936 138.919 298.7 139.498 299.025 140.313C302.366 148.701 311.461 152.895 326.308 152.895C334.312 152.895 340.464 151.88 344.765 149.849C349.065 147.819 351.215 144.892 351.215 141.069Z" fill="#FFFFFF"/>
   </svg>
+  <div class="brand-name">Silq Logistics India Pvt Limited</div>
+  </div>
   <nav class="tabs" aria-label="Areas">
     <button class="tab" data-view="customer" type="button">Customer</button>
     <button class="tab" data-view="rates" type="button">Rates</button>
@@ -227,8 +235,8 @@ const MASTER = [
 
 const RATES = [
   { cat: "Origin", charge: "Origin local charges", container: "40' HC", uom: "Per shipment", rate: "3,000", from: "1 Dec 2026", to: "15 Dec 2026", vendor: "Chennai CFS", currency: "INR" },
-  { cat: "Freight", charge: "OFR", container: "40' HC", uom: "Per container", rate: "1,800", from: "1 Dec 2026", to: "15 Dec 2026", vendor: "Ocean desk", currency: "USD" },
-  { cat: "Freight", charge: "GRI", container: "40' HC", uom: "Per container", rate: "300", from: "1 Dec 2026", to: "15 Dec 2026", vendor: "Ocean desk", currency: "USD" },
+  { cat: "Freight", charge: "OFR", source: "FAK", from: "1 Dec 2026", to: "15 Dec 2026", mode: "Ocean FCL", origin: "INMAA", destination: "USLAX", via: "—", transhipment: "Direct", uom: "Per container", rate: "1,800", container: "40' HC", serviceType: "CY/CY", carrier: "MAEU", serviceCode: "AE7", breaks: ["—", "—", "—", "—", "—"], transit: "28", min: "—", max: "—", client: "—", currency: "USD" },
+  { cat: "Freight", charge: "GRI", source: "FAK", from: "1 Dec 2026", to: "15 Dec 2026", mode: "Ocean FCL", origin: "INMAA", destination: "USLAX", via: "—", transhipment: "Direct", uom: "Per container", rate: "300", container: "40' HC", serviceType: "CY/CY", carrier: "MAEU", serviceCode: "AE7", breaks: ["—", "—", "—", "—", "—"], transit: "28", min: "—", max: "—", client: "—", currency: "USD" },
   { cat: "Destination", charge: "Destination local", container: "40' HC", uom: "Per shipment", rate: "300", from: "1 Dec 2026", to: "15 Dec 2026", vendor: "LA desk", currency: "EUR" },
   { cat: "Customs", charge: "Customs clearance", container: "40' HC", uom: "Per shipment", rate: "150", from: "1 Dec 2026", to: "15 Dec 2026", vendor: "LA broker", currency: "EUR" },
   { cat: "Destination delivery", charge: "Door delivery", container: "40' HC", uom: "Per shipment", rate: "400", from: "1 Dec 2026", to: "15 Dec 2026", vendor: "LA trucker", currency: "USD" }
@@ -273,11 +281,24 @@ function visibleLines() {
     return true;
   });
 }
+const VALID_TILL = "15 Dec 2026";
 function validitySentence() {
   const event = doorOrigin(state.quote.coverage)
     ? "departs the factory"
     : "departs the origin port";
-  return "This quote is valid if the cargo " + event + " on or before the Valid till date above.";
+  return "This quote is valid if the cargo " + event + " on or before " + VALID_TILL + ".";
+}
+function termsLines() {
+  const door = doorOrigin(state.quote.coverage);
+  return `
+    <div class="quote-terms">
+      <div class="cat">Terms and conditions</div>
+      <div class="k">Valid till</div>
+      <div class="v">${VALID_TILL}</div>
+      <p class="term-line${door ? "" : " on"}">Port to port and port to door: this quote is valid if the cargo departs the origin port on or before ${VALID_TILL}.</p>
+      <p class="term-line${door ? " on" : ""}">Door to port and door to door: this quote is valid if the cargo departs the factory on or before ${VALID_TILL}.</p>
+      <p class="hint">The highlighted line is the one this coverage prints. Valid till is the rate valid-end date.</p>
+    </div>`;
 }
 function options(list, selected) {
   return list.map(function (item) {
@@ -310,11 +331,11 @@ function customerView() {
     <div class="page-head">
       <div>
         <h1>Create customer</h1>
-        <p class="sub">Same organization form as today, with GST added for Silq Pvt Logistics Limited.</p>
+        <p class="sub">Same organization form as today, with GST added for Silq Logistics India Pvt Limited.</p>
       </div>
     </div>
     <div class="entity">
-      <div><div class="k">Organization</div><div class="v">Silq Pvt Logistics Limited</div></div>
+      <div><div class="k">Organization</div><div class="v">Silq Logistics India Pvt Limited</div></div>
       <div><div class="k">Base currency</div><div class="v">INR</div></div>
       <div><div class="k">Onboarding</div><div class="v">Finance-controlled</div></div>
     </div>
@@ -365,14 +386,19 @@ function ratesView() {
     const rows = RATES.filter(function (row) {
       return row.cat === cat && (state.rateFilter.currency === "All" || row.currency === state.rateFilter.currency);
     });
+    const freight = cat === "Freight";
+    const head = freight
+      ? `<th>Source</th><th>Valid from</th><th>Valid to</th><th>Mode</th><th>Origin</th><th>Destination</th><th>Via ports</th><th>Transhipments</th><th>Charge name</th><th>UOM</th><th class="num">Standard rate per unit</th><th>Container type</th><th>Service type</th><th>Carrier code</th><th>Service code</th><th class="num">0-18</th><th class="num">18-28</th><th class="num">28-35</th><th class="num">35-48</th><th class="num">48-67</th><th class="num">Transit time</th><th class="num">Min rate</th><th class="num">Max rate</th><th>Client</th><th>Currency <span class="pill pill-new">New</span></th><th>Actions</th>`
+      : `<th>Charge</th><th>Container</th><th>UOM</th><th class="num">Rate</th><th>Valid from</th><th>Valid to</th><th>Vendor</th><th>Currency <span class="pill pill-new">New</span></th>`;
+    const cells = freight
+      ? rows.map(function (row) {
+          return `<tr><td>${row.source}</td><td>${row.from}</td><td>${row.to}</td><td>${row.mode}</td><td>${row.origin}</td><td>${row.destination}</td><td>${row.via}</td><td>${row.transhipment}</td><td>${row.charge}</td><td>${row.uom}</td><td class="num">${row.rate}</td><td>${row.container}</td><td>${row.serviceType}</td><td>${row.carrier}</td><td>${row.serviceCode}</td><td class="num">${row.breaks[0]}</td><td class="num">${row.breaks[1]}</td><td class="num">${row.breaks[2]}</td><td class="num">${row.breaks[3]}</td><td class="num">${row.breaks[4]}</td><td class="num">${row.transit}</td><td class="num">${row.min}</td><td class="num">${row.max}</td><td>${row.client}</td><td>${row.currency}</td><td>—</td></tr>`;
+        }).join("")
+      : rows.map(function (row) {
+          return `<tr><td>${row.charge}</td><td>${row.container}</td><td>${row.uom}</td><td class="num">${row.rate}</td><td>${row.from}</td><td>${row.to}</td><td>${row.vendor}</td><td>${row.currency}</td></tr>`;
+        }).join("");
     body += `<div class="cat">${cat}<span class="muted">${rows.length} row${rows.length === 1 ? "" : "s"}</span></div>
-      <table><thead><tr>
-        <th>Charge</th><th>Container</th><th>UOM</th><th class="num">Rate</th>
-        <th>Valid from</th><th>Valid to</th><th>Vendor</th>
-        <th>Currency <span class="pill pill-new">New</span></th>
-      </tr></thead><tbody>` + rows.map(function (row) {
-        return `<tr><td>${row.charge}</td><td>${row.container}</td><td>${row.uom}</td><td class="num">${row.rate}</td><td>${row.from}</td><td>${row.to}</td><td>${row.vendor}</td><td>${row.currency}</td></tr>`;
-      }).join("") + `</tbody></table>`;
+      <div class="${freight ? "table-scroll" : ""}"><table><thead><tr>${head}</tr></thead><tbody>${cells}</tbody></table></div>`;
   });
   return `
     <div class="page-head">
@@ -447,6 +473,7 @@ function quoteView() {
       ${tables}
       <div class="note">No single quote total. Lines stay in their own currency.</div>
       <div class="by-ccy">${sumHtml}</div>
+      ${termsLines()}
     </div>`;
 }
 
@@ -472,10 +499,12 @@ function pdfView() {
     </div>
     <article class="sheet">
       <div class="pdf-top">
-        <svg width="120" height="42" viewBox="0 0 80 32" aria-label="Silq">
-          <path fill-rule="evenodd" d="M63.9041 4.79999L59.0019 6.29337V25.145H63.9041V4.79999ZM56.9494 11.7106H52.0129V25.145H56.9494V11.7106ZM44.3636 25.2516C43.3279 25.2427 42.2958 25.1304 41.2833 24.9164C40.3848 24.7796 39.5206 24.4787 38.7357 24.0295V20.7624C39.5276 21.2398 40.3856 21.6031 41.2833 21.8413C42.1789 22.1049 43.1077 22.2455 44.0428 22.2588C44.5818 22.2834 45.1212 22.2174 45.6374 22.0637C45.7921 22.0145 45.9255 21.916 46.0163 21.784C46.1072 21.652 46.1503 21.4941 46.1389 21.3353C46.1436 21.2105 46.1201 21.0863 46.07 20.9714C46.02 20.8566 45.9446 20.7539 45.8492 20.6709C45.5872 20.4512 45.2788 20.2909 44.946 20.2016C44.5567 20.0522 43.9027 19.842 42.9839 19.5646C42.1045 19.3103 41.2515 18.9756 40.4362 18.565C39.8723 18.2509 39.398 17.8034 39.0565 17.2636C38.7314 16.6478 38.5758 15.9598 38.6049 15.2673C38.6049 13.8837 39.1239 12.8495 40.1621 12.1648C41.2003 11.48 42.634 11.1285 44.4633 11.1102C45.3823 11.1151 46.2981 11.2173 47.1947 11.415C47.968 11.5364 48.7134 11.7902 49.3967 12.1648V15.3588C48.7811 14.9599 48.0992 14.6691 47.3816 14.4993C46.6045 14.2824 45.8008 14.1706 44.9927 14.1671C44.4183 14.1459 43.8444 14.2201 43.2953 14.3865C43.1174 14.4423 42.9634 14.5542 42.8574 14.7047C42.7514 14.8553 42.6995 15.036 42.7098 15.2186C42.711 15.3916 42.7646 15.5604 42.8638 15.7036C42.963 15.8469 43.1035 15.9581 43.2673 16.0232C43.9641 16.3084 44.6826 16.5397 45.4163 16.715L45.9489 16.8552C46.8615 17.0857 47.7368 17.4396 48.5495 17.9067C49.115 18.2183 49.5685 18.6929 49.8483 19.2659C50.1352 19.8821 50.2717 20.5551 50.2469 21.2317C50.2604 21.8054 50.1294 22.3735 49.8654 22.8859C49.6015 23.3983 49.2126 23.8392 48.7333 24.1697C47.7325 24.889 46.2759 25.2496 44.3636 25.2516ZM54.3612 5.51542C53.7492 5.51259 53.161 5.74781 52.7261 6.16934C52.2913 6.59086 52.0454 7.16416 52.0425 7.76311C52.0396 8.36207 52.28 8.93761 52.7107 9.36314C53.1415 9.78866 53.7274 10.0293 54.3394 10.0321H54.5793C54.8896 10.0446 55.1992 9.9958 55.4898 9.88855C55.7804 9.7813 56.0459 9.61784 56.2705 9.40793C56.4951 9.19802 56.6741 8.94597 56.7969 8.66684C56.9197 8.38771 56.9838 8.08722 56.9852 7.78332C56.9867 7.47942 56.9255 7.17835 56.8054 6.89809C56.6853 6.61784 56.5087 6.36415 56.2862 6.15217C56.0637 5.9402 55.7997 5.77429 55.5102 5.66437C55.2207 5.55444 54.9115 5.50275 54.6011 5.51237L54.3612 5.51542ZM75.294 24.3008C74.3232 24.947 73.1728 25.2854 71.9988 25.2699C68.6445 25.2699 65.5766 23.0634 65.5766 18.1931C65.5766 13.7252 68.6694 11.3053 71.9645 11.3053C73.2904 11.2887 74.5836 11.7084 75.6366 12.497L75.7269 11.5461H80V30H75.3282L75.294 24.3008ZM73.0764 14.7005C73.8955 14.654 74.7002 14.9256 75.3158 15.4563L75.294 21.1555C74.8392 21.5639 74.179 21.8809 73.0764 21.8809C71.351 21.8809 70.1893 20.357 70.1893 18.2785C70.1893 16.2761 71.3728 14.7005 73.0764 14.7005Z" fill="#052868"/>
+        <div class="pdf-brand">
+        <svg width="42" height="32" viewBox="0 0 40 32" aria-hidden="true">
           <path fill-rule="evenodd" d="M38.0324 2.88643L32.9301 2.03122C31.1156 1.19502 6.59601 17.4345 6.59601 17.4345L6.19739 18.5937L34.7988 4.86291C25.9177 10.3489 0.996261 25.6603 0.996261 25.6603C0.776469 25.8058 0.587879 25.9931 0.441388 26.2114C0.24797 26.5744 0.103238 26.9609 0.0108843 27.3612C-0.00272716 27.4116 -0.00358552 27.4646 0.00838441 27.5154C0.0203543 27.5662 0.0447812 27.6133 0.0794948 27.6525C0.114208 27.6917 0.158132 27.7217 0.20736 27.74C0.256588 27.7582 0.309594 27.7641 0.361665 27.7571C2.60985 27.3802 11.8609 25.8155 15.2316 24.8241C23.5483 22.3788 26.8074 19.1702 28.7494 16.2023C30.9976 12.7625 37.1299 3.70362 37.9973 2.94344L38.042 2.89593L38.0324 2.88643ZM26.5778 13.3928C25.94 14.7231 24.91 16.82 22.4322 18.5209C19.8141 20.32 12.403 22.591 8.71983 23.3164L26.6703 13.1806C26.6354 13.2495 26.6045 13.3204 26.5778 13.3928Z" fill="#EF6445"/>
         </svg>
+        <div class="pdf-entity">Silq Logistics India Pvt Limited</div>
+        </div>
         <div>
           <div class="pdf-id">SILQ-IN-10482Q1</div>
           <div class="pdf-sub">${state.customer.name || "Customer"} · INMAA to USLAX</div>
@@ -486,7 +515,7 @@ function pdfView() {
         <div><div class="k">Mode</div><div class="v">Ocean FCL · ${q.container}</div></div>
         <div><div class="k">Incoterm</div><div class="v">${q.incoterm}</div></div>
         <div><div class="k">Coverage</div><div class="v">${q.coverage}</div></div>
-        <div><div class="k">Valid till</div><div class="v">15 Dec 2026</div></div>
+        <div><div class="k">Valid till</div><div class="v">${VALID_TILL}</div></div>
       </div>
       <div style="font-weight:600">Charges</div>
       ${blocks}
@@ -504,23 +533,23 @@ function pdfView() {
 function currencyView() {
   const rows = MASTER.filter(function (row) {
     if (state.masterFilter === "Silq") return row.silq;
-    if (state.masterFilter === "Silq Pvt Logistics Limited") return row.india;
+    if (state.masterFilter === "Silq Logistics India Pvt Limited") return row.india;
     return true;
   });
   return `
     <div class="page-head">
       <div>
         <h1>Currency master</h1>
-        <p class="sub">One list for Silq and Silq Pvt Logistics Limited. A currency is stored once. FX rates are not in this table.</p>
+        <p class="sub">One list for Silq and Silq Logistics India Pvt Limited. A currency is stored once. FX rates are not in this table.</p>
       </div>
     </div>
     <div class="filters">
       <div class="field"><label for="mentity">Show currencies for</label>
-        <select id="mentity">${options(["All", "Silq", "Silq Pvt Logistics Limited"], state.masterFilter)}</select>
+        <select id="mentity">${options(["All", "Silq", "Silq Logistics India Pvt Limited"], state.masterFilter)}</select>
       </div>
     </div>
     <div class="card"><table>
-      <thead><tr><th>Code</th><th>Name</th><th>Silq</th><th>Silq Pvt Logistics Limited</th></tr></thead>
+      <thead><tr><th>Code</th><th>Name</th><th>Silq</th><th>Silq Logistics India Pvt Limited</th></tr></thead>
       <tbody>${rows.map(function (row) {
         return `<tr><td>${row.code}</td><td>${row.name}</td><td class="${row.silq ? "yes" : "no"}">${row.silq ? "Available" : "Not available"}</td><td class="${row.india ? "yes" : "no"}">${row.india ? "Available" : "Not available"}</td></tr>`;
       }).join("")}</tbody>
@@ -554,7 +583,7 @@ function bind() {
       state.customer.gst = gst;
       state.customer.demo = document.getElementById("demo").checked;
       state.customer.test = document.getElementById("test").checked;
-      showToast("Customer saved on Silq Pvt Logistics Limited.");
+      showToast("Customer saved on Silq Logistics India Pvt Limited.");
       setView("rates");
     });
     document.getElementById("cust-cancel").addEventListener("click", function () { setView("customer"); });
