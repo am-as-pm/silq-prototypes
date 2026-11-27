@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Silq Pvt Logistics Limited — quoting prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+:root {
+  --silq-white: #FFFFFF;
+  --silq-navy: #12343B;
+  --silq-sky-blue: #B0D2F5;
+  --bg-brand: #FCE0DA;
+  --brand-cta: #EF6445;
+  --brand-hover: #F17458;
+  --brand-focus: #D75A3E;
+  --bg-accent: #EBEDFF;
+  --accent-cta: #334BFA;
+  --silq-grey-50: #FBFBFB;
+  --silq-grey-100: #F8F8F8;
+  --silq-grey-150: #F2F2F2;
+  --silq-grey-200: #EBEBEB;
+  --silq-grey-250: #E0E0E0;
+  --silq-grey-300: #D5D5D5;
+  --silq-grey-400: #B1B1B1;
+  --silq-grey-500: #909090;
+  --silq-grey-600: #6C6C6C;
+  --silq-grey-700: #464646;
+  --silq-grey-800: #202020;
+  --bg-success: #EAF6ED;
+  --success: #299446;
+  --success-text: #1E7339;
+  --bg-info: #E7F5FF;
+  --info: #1976D3;
+  --elevation-small: 0 1px 25px rgba(10, 10, 10, 0.10);
+  --elevation-ui: 0 1px 2px rgba(12, 12, 12, 0.08);
+  --space-4: 4px; --space-8: 8px; --space-12: 12px; --space-16: 16px;
+  --space-20: 20px; --space-24: 24px; --space-32: 32px; --space-40: 40px;
+  --radius-sm: 5px; --radius-md: 10px;
+  --font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: var(--font);
+  background: var(--silq-grey-50);
+  color: var(--silq-navy);
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 400;
+}
+button, input, select, textarea { font-family: inherit; font-size: 14px; color: var(--silq-navy); }
+button { cursor: pointer; }
+.appbar {
+  background: var(--silq-navy);
+  color: var(--silq-white);
+  display: flex;
+  align-items: center;
+  gap: var(--space-24);
+  padding: 0 var(--space-24);
+  height: 56px;
+}
+.logo { height: 28px; width: auto; display: block; }
+.tabs { display: flex; gap: var(--space-4); margin-left: var(--space-16); }
+.tab {
+  background: transparent;
+  color: var(--silq-sky-blue);
+  border: 0;
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-weight: 500;
+}
+.tab[aria-current="page"] { background: rgba(255,255,255,0.12); color: var(--silq-white); font-weight: 600; }
+.wrap { max-width: 1180px; margin: 0 auto; padding: var(--space-24); }
+.page-head { display: flex; justify-content: space-between; align-items: flex-end; gap: var(--space-16); margin-bottom: var(--space-20); }
+h1 { font-size: 24px; line-height: 32px; font-weight: 600; margin: 0; letter-spacing: -0.005em; }
+.sub { color: var(--silq-grey-600); margin: 4px 0 0; font-size: 14px; }
+.card {
+  background: var(--silq-white);
+  border: 1px solid var(--silq-grey-250);
+  border-radius: var(--radius-md);
+  box-shadow: var(--elevation-small);
+  padding: var(--space-24);
+}
+.card + .card { margin-top: var(--space-16); }
+.grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-16); }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field.wide { grid-column: 1 / -1; }
+label { font-weight: 500; font-size: 14px; }
+.req::after { content: " *"; color: var(--brand-cta); }
+.hint { color: var(--silq-grey-600); font-size: 12px; font-weight: 400; }
+input[type="text"], input[type="email"], input[type="url"], input[type="number"], input[type="date"], select, textarea {
+  height: 36px;
+  border: 1px solid var(--silq-grey-300);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--elevation-ui);
+  padding: 0 12px;
+  background: var(--silq-white);
+  width: 100%;
+}
+textarea { height: 72px; padding: 10px 12px; resize: vertical; }
+input:focus, select:focus, textarea:focus { outline: none; box-shadow: 0 0 0 3px rgba(51, 75, 250, 0.25); border-color: var(--accent-cta); }
+.checks { display: flex; gap: var(--space-20); align-items: center; }
+.checks label { font-weight: 400; display: flex; gap: 8px; align-items: center; }
+.logo-row { display: flex; align-items: center; gap: var(--space-12); margin-bottom: var(--space-16); }
+.avatar {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: var(--silq-grey-150); color: var(--silq-grey-600);
+  display: grid; place-items: center; font-weight: 600; font-size: 12px;
+}
+.actions { display: flex; gap: var(--space-8); margin-top: var(--space-20); }
+.btn {
+  height: 32px; padding: 0 14px; border-radius: var(--radius-sm);
+  border: 1px solid transparent; font-weight: 600; box-shadow: var(--elevation-ui);
+}
+.btn-primary { background: var(--brand-cta); color: white; }
+.btn-primary:hover { background: var(--brand-hover); }
+.btn-secondary { background: white; border-color: var(--silq-grey-300); color: var(--silq-navy); }
+.pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--bg-info); color: var(--info);
+  border-radius: 999px; padding: 2px 8px; font-size: 12px; font-weight: 600;
+}
+.pill-new { background: var(--bg-brand); color: var(--brand-focus); }
+.entity {
+  display: flex; gap: var(--space-16); align-items: center;
+  background: var(--silq-white); border: 1px solid var(--silq-grey-250);
+  border-radius: var(--radius-md); padding: 12px 16px; margin-bottom: var(--space-16);
+}
+.entity strong { font-weight: 600; }
+.filters { display: flex; gap: var(--space-12); align-items: end; margin-bottom: var(--space-16); flex-wrap: wrap; }
+.filters .field { min-width: 180px; }
+table { width: 100%; border-collapse: collapse; }
+th {
+  text-align: left; font-size: 12px; font-weight: 600; letter-spacing: 0.04em;
+  text-transform: uppercase; color: var(--silq-grey-700);
+  background: var(--silq-grey-100); padding: 10px 12px; border-bottom: 1px solid var(--silq-grey-200);
+}
+td { padding: 10px 12px; border-bottom: 1px solid var(--silq-grey-200); vertical-align: middle; }
+td.num, th.num { text-align: right; }
+.cat {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 0 8px; font-weight: 600;
+}
+.cat:first-child { padding-top: 0; }
+.muted { color: var(--silq-grey-600); }
+.quote-meta { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-16); margin-bottom: var(--space-20); }
+.k { font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--silq-grey-600); }
+.v { font-weight: 500; margin-top: 2px; }
+.route { display: flex; gap: var(--space-16); align-items: center; padding: 8px 0 16px; }
+.route .node { min-width: 140px; }
+.arrow { color: var(--silq-grey-400); }
+.row-select { height: 32px; }
+.note {
+  background: var(--bg-accent); color: var(--silq-navy);
+  border-radius: var(--radius-sm); padding: 10px 12px; margin-top: var(--space-12); font-size: 13px;
+}
+.by-ccy { display: flex; gap: var(--space-24); margin-top: var(--space-12); }
+.by-ccy div { font-weight: 600; }
+.sheet {
+  background: white; border: 1px solid var(--silq-grey-300);
+  box-shadow: var(--elevation-small); padding: 28px 36px 36px; max-width: 860px; margin: 0 auto;
+}
+.pdf-top { display: flex; justify-content: space-between; align-items: center; }
+.pdf-id { font-size: 22px; font-weight: 600; text-align: right; }
+.pdf-sub { font-size: 12px; color: #565656; text-align: right; }
+.rule { height: 1px; background: #D5D5D5; margin: 10px 0; }
+.line {
+  display: grid; grid-template-columns: 1.2fr 1fr auto; gap: 24px;
+  align-items: center; padding: 6px 0; font-size: 14px;
+}
+.terms { margin-top: 28px; }
+.terms h2 { font-size: 17px; margin: 0 0 8px; }
+.terms p { color: var(--silq-grey-600); font-size: 13px; line-height: 20px; margin: 0 0 10px; }
+.toast {
+  position: fixed; bottom: 20px; right: 20px;
+  background: var(--silq-navy); color: white;
+  padding: 12px 16px; border-radius: var(--radius-sm);
+  box-shadow: var(--elevation-small); display: none;
+}
+.error { color: #A61B25; font-size: 12px; }
+.yes { color: var(--success-text); font-weight: 600; }
+.no { color: var(--silq-grey-500); }
+@media (max-width: 900px) {
+  .grid, .quote-meta { grid-template-columns: 1fr 1fr; }
+  .tabs { display: none; }
+}
+</style>
+</head>
+<body>
+<header class="appbar">
+  <svg class="logo" viewBox="0 0 578 202" aria-label="Silq">
+    <path d="M239.568 0.81309C265.068 11.8164 292.068 16.3156 292.068 16.3156C264.068 24.3156 234.068 107.314 190.568 139.314C118.068 199.814 34.0685 181.814 3.0682 201.814C6.54289 191.493 7.84738 185.671 8.2661 175.113C8.2661 175.113 167.068 70.3164 173.862 65.6685C180.655 61.0206 48.5893 125.007 48.5893 125.007L52.5452 118.415C52.5452 118.415 196.568 16.3156 239.568 0.81309Z" fill="#FFFFFF"/>
+    <path d="M552.031 152.716C547.85 158.211 542.415 162.452 535.726 165.438C529.036 168.425 521.63 169.918 513.507 169.918C504.189 169.918 496.066 167.887 489.137 163.826C482.209 159.764 476.833 154.09 473.011 146.803C469.188 139.516 467.277 131.035 467.277 121.359C467.277 111.444 469.248 102.724 473.19 95.1978C477.252 87.672 482.926 81.7589 490.213 77.4585C497.619 73.158 506.22 71.0078 516.015 71.0078C532.261 71.0078 544.506 76.5626 552.748 87.672V74.8748C552.748 73.7702 553.644 72.8748 554.748 72.8748H575.117C576.222 72.8748 577.117 73.7702 577.117 74.8748V199.813C577.117 200.918 576.222 201.813 575.117 201.813H554.031C552.927 201.813 552.031 200.918 552.031 199.813V152.716ZM552.211 123.151V118.313C552.211 110.07 549.523 103.321 544.147 98.0648C538.891 92.8087 531.843 90.1806 523.003 90.1806C513.208 90.1806 505.742 92.8087 500.605 98.0648C495.469 103.321 492.9 110.906 492.9 120.821C492.9 130.258 495.409 137.605 500.426 142.861C505.563 148.117 512.79 150.745 522.108 150.745C527.961 150.745 533.157 149.551 537.697 147.162C542.236 144.772 545.76 141.487 548.269 137.306C550.897 133.125 552.211 128.407 552.211 123.151Z" fill="#FFFFFF"/>
+    <path d="M430.882 41.1133C430.882 40.0087 431.778 39.1133 432.882 39.1133H453.968C455.073 39.1133 455.968 40.0087 455.968 41.1133V165.215C455.968 166.319 455.073 167.215 453.968 167.215H432.882C431.778 167.215 430.882 166.319 430.882 165.215V41.1133Z" fill="#FFFFFF"/>
+    <path d="M389.882 76.8727C389.882 75.2158 391.225 73.8727 392.882 73.8727H412.882C414.539 73.8727 415.882 75.2158 415.882 76.8727V164.049C415.882 165.706 414.539 167.049 412.882 167.049H392.882C391.225 167.049 389.882 165.706 389.882 164.049V76.8727ZM389.882 42.2148C389.882 40.558 391.225 39.2148 392.882 39.2148H412.882C414.539 39.2148 415.882 40.558 415.882 42.2148V61.2148C415.882 62.8717 414.539 64.2148 412.882 64.2148H392.882C391.225 64.2148 389.882 62.8717 389.882 61.2148V42.2148Z" fill="#FFFFFF"/>
+    <path d="M351.215 141.069C351.215 137.844 349.662 135.395 346.556 133.723C343.451 132.05 337.657 130.617 329.175 129.422L317.887 127.81C303.313 125.54 293.558 122.255 286.888 117.954C280.217 113.534 276.882 107.143 276.882 98.7815C276.882 89.9417 281.811 83.1327 289.934 78.3544C298.176 73.4567 309.644 71.0078 324.337 71.0078C339.27 71.0078 350.439 73.2178 357.845 77.6377C364.71 81.6696 369.488 87.5405 372.178 95.2504C372.588 96.4257 371.76 97.6418 370.521 97.7666L351.374 99.6962C350.443 99.79 349.584 99.2195 349.202 98.3657C345.956 91.1171 337.668 87.4928 324.337 87.4928C317.051 87.4928 311.317 88.5082 307.136 90.539C303.074 92.4503 299.882 95.1381 299.882 98.6023C299.882 101.708 302.537 104.097 305.523 105.77C308.509 107.442 314.004 108.876 322.008 110.07L334.193 111.862C344.585 113.296 352.708 115.207 358.562 117.596C364.535 119.866 368.775 122.852 371.284 126.555C373.793 130.139 375.047 134.738 375.047 140.352C375.047 160.063 358.98 169.918 326.846 169.918C312.392 169.918 300.506 167.589 291.188 162.93C282.627 158.482 277.325 151.241 275.284 141.205C275.04 140.008 275.98 138.919 277.202 138.919H297.058C297.936 138.919 298.7 139.498 299.025 140.313C302.366 148.701 311.461 152.895 326.308 152.895C334.312 152.895 340.464 151.88 344.765 149.849C349.065 147.819 351.215 144.892 351.215 141.069Z" fill="#FFFFFF"/>
+  </svg>
+  <nav class="tabs" aria-label="Areas">
+    <button class="tab" data-view="customer" type="button">Customer</button>
+    <button class="tab" data-view="rates" type="button">Rates</button>
+    <button class="tab" data-view="quote" type="button">Quote</button>
+    <button class="tab" data-view="currencies" type="button">Currency master</button>
+  </nav>
+</header>
+<main class="wrap" id="app"></main>
+<div class="toast" id="toast" role="status"></div>
+<script>
+const CURRENCIES = ["INR", "USD", "EUR", "GBP", "AED", "SGD", "CNY", "JPY"];
+const INCOTERMS = ["EXW", "FCA", "FAS", "FOB", "CFR", "CIF", "CPT", "CIP", "DAP", "DPU", "DDP"];
+const COVERAGES = ["Port to port", "Port to door", "Door to port", "Door to door"];
+const CONTAINERS = ["20'", "40'", "40' HC", "20' reefer", "40 HQ reefer", "20 Open Top", "40 Open Top", "40 Flat Rack", "20 Flat Rack", "Tank"];
+const ORG_TYPES = ["Client", "Supplier", "Carrier", "Forwarder", "Trucker", "Customs broker", "Rate vendor"];
+
+const MASTER = [
+  { code: "INR", name: "Indian rupee", silq: true, india: true },
+  { code: "USD", name: "US dollar", silq: true, india: true },
+  { code: "EUR", name: "Euro", silq: true, india: true },
+  { code: "GBP", name: "Pound sterling", silq: true, india: false },
+  { code: "AED", name: "UAE dirham", silq: true, india: true },
+  { code: "SGD", name: "Singapore dollar", silq: true, india: false },
+  { code: "CNY", name: "Chinese yuan", silq: true, india: true },
+  { code: "JPY", name: "Japanese yen", silq: true, india: false }
+];
+
+const RATES = [
+  { cat: "Origin", charge: "Origin local charges", container: "40' HC", uom: "Per shipment", rate: "3,000", from: "1 Dec 2026", to: "15 Dec 2026", vendor: "Chennai CFS", currency: "INR" },
+  { cat: "Freight", charge: "OFR", container: "40' HC", uom: "Per container", rate: "1,800", from: "1 Dec 2026", to: "15 Dec 2026", vendor: "Ocean desk", currency: "USD" },
+  { cat: "Freight", charge: "GRI", container: "40' HC", uom: "Per container", rate: "300", from: "1 Dec 2026", to: "15 Dec 2026", vendor: "Ocean desk", currency: "USD" },
+  { cat: "Destination", charge: "Destination local", container: "40' HC", uom: "Per shipment", rate: "300", from: "1 Dec 2026", to: "15 Dec 2026", vendor: "LA desk", currency: "EUR" },
+  { cat: "Customs", charge: "Customs clearance", container: "40' HC", uom: "Per shipment", rate: "150", from: "1 Dec 2026", to: "15 Dec 2026", vendor: "LA broker", currency: "EUR" },
+  { cat: "Destination delivery", charge: "Door delivery", container: "40' HC", uom: "Per shipment", rate: "400", from: "1 Dec 2026", to: "15 Dec 2026", vendor: "LA trucker", currency: "USD" }
+];
+
+const state = {
+  view: "customer",
+  customer: { name: "Harbour Lane Exports", email: "ops@harbourlane.example", website: "https://harbourlane.example", type: "Client", description: "Apparel exporter, Chennai.", gst: "27AABCH1234F1Z5", demo: false, test: false },
+  rateFilter: { currency: "All", category: "All" },
+  masterFilter: "All",
+  quote: {
+    incoterm: "FOB",
+    coverage: "Port to door",
+    container: "40' HC",
+    weight: "18000",
+    volume: "54",
+    requestedFor: "",
+    lines: [
+      { id: "ol", cat: "Origin", name: "Origin local charges", unit: "Shipment", qty: 1, buy: 2800, sell: 3000, currency: "INR", show: "always" },
+      { id: "pu", cat: "Origin pickup", name: "Factory pickup", unit: "Shipment", qty: 1, buy: 220, sell: 250, currency: "USD", show: "door" },
+      { id: "ofr", cat: "Freight", name: "OFR", unit: "Container", qty: 1, buy: 1650, sell: 1800, currency: "USD", show: "always" },
+      { id: "gri", cat: "Freight", name: "GRI", unit: "Container", qty: 1, buy: 300, sell: 300, currency: "USD", show: "always" },
+      { id: "dl", cat: "Destination", name: "Destination local", unit: "Shipment", qty: 1, buy: 260, sell: 300, currency: "EUR", show: "always" },
+      { id: "cu", cat: "Customs", name: "Customs clearance", unit: "Shipment", qty: 1, buy: 130, sell: 150, currency: "EUR", show: "always" },
+      { id: "dd", cat: "Destination delivery", name: "Door delivery", unit: "Shipment", qty: 1, buy: 350, sell: 400, currency: "USD", show: "dest" }
+    ]
+  }
+};
+
+const app = document.getElementById("app");
+const toast = document.getElementById("toast");
+
+function money(n) {
+  return Number(n).toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+}
+function doorOrigin(c) { return c.indexOf("Door") === 0; }
+function doorDest(c) { return c.endsWith("door"); }
+function visibleLines() {
+  return state.quote.lines.filter(function (line) {
+    if (line.show === "door") return doorOrigin(state.quote.coverage);
+    if (line.show === "dest") return doorDest(state.quote.coverage);
+    return true;
+  });
+}
+function validitySentence() {
+  const event = doorOrigin(state.quote.coverage)
+    ? "departs the factory"
+    : "departs the origin port";
+  return "This quote is valid if the cargo " + event + " on or before the Valid till date above.";
+}
+function options(list, selected) {
+  return list.map(function (item) {
+    return '<option' + (item === selected ? " selected" : "") + ">" + item + "</option>";
+  }).join("");
+}
+function ccyOptions(selected) {
+  return CURRENCIES.map(function (c) {
+    return '<option' + (c === selected ? " selected" : "") + ">" + c + "</option>";
+  }).join("");
+}
+function showToast(text) {
+  toast.textContent = text;
+  toast.style.display = "block";
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(function () { toast.style.display = "none"; }, 2400);
+}
+function setView(view) {
+  state.view = view;
+  if (location.hash !== "#" + view) history.replaceState(null, "", "#" + view);
+  document.querySelectorAll(".tab").forEach(function (tab) {
+    tab.setAttribute("aria-current", tab.dataset.view === view ? "page" : "false");
+  });
+  render();
+}
+
+function customerView() {
+  const c = state.customer;
+  return `
+    <div class="page-head">
+      <div>
+        <h1>Create customer</h1>
+        <p class="sub">Same organization form as today, with GST added for Silq Pvt Logistics Limited.</p>
+      </div>
+    </div>
+    <div class="entity">
+      <div><div class="k">Organization</div><div class="v">Silq Pvt Logistics Limited</div></div>
+      <div><div class="k">Base currency</div><div class="v">INR</div></div>
+      <div><div class="k">Onboarding</div><div class="v">Finance-controlled</div></div>
+    </div>
+    <form class="card" id="customer-form">
+      <div class="logo-row">
+        <div class="avatar">Logo</div>
+        <div><div style="font-weight:600">Logo</div><div class="hint">Upload stays as it is today.</div></div>
+      </div>
+      <div class="grid">
+        <div class="field"><label class="req" for="name">Name</label><input id="name" type="text" value="${c.name}" /></div>
+        <div class="field"><label for="type">Type</label><select id="type">${options(ORG_TYPES, c.type)}</select></div>
+        <div class="field"><label class="req" for="email">Email</label><input id="email" type="email" value="${c.email}" /></div>
+        <div class="field"><label for="website">Website</label><input id="website" type="url" value="${c.website}" /></div>
+        <div class="field">
+          <label class="req" for="gst">GST number <span class="pill pill-new">New</span></label>
+          <input id="gst" type="text" value="${c.gst}" />
+          <span class="hint">Filled onto the RFQ from this organization.</span>
+        </div>
+        <div class="field" style="justify-content:flex-end">
+          <div class="checks">
+            <label><input id="demo" type="checkbox" ${c.demo ? "checked" : ""}/> Demo organization</label>
+            <label><input id="test" type="checkbox" ${c.test ? "checked" : ""}/> Test organization</label>
+          </div>
+        </div>
+        <div class="field wide"><label for="desc">Description</label><textarea id="desc">${c.description}</textarea></div>
+      </div>
+      <p class="error" id="cust-error" hidden>Name, email, and GST number are required.</p>
+      <div class="actions">
+        <button class="btn btn-primary" type="submit">Done</button>
+        <button class="btn btn-secondary" type="button" id="cust-cancel">Cancel</button>
+      </div>
+    </form>`;
+}
+
+function ratesView() {
+  const cats = [];
+  RATES.forEach(function (row) {
+    if (state.rateFilter.currency !== "All" && row.currency !== state.rateFilter.currency) return;
+    if (state.rateFilter.category !== "All" && row.cat !== state.rateFilter.category) return;
+    if (cats.indexOf(row.cat) < 0) cats.push(row.cat);
+  });
+  const catOptions = ["All"].concat(["Origin", "Freight", "Destination", "Customs", "Destination delivery"]);
+  let body = "";
+  if (!cats.length) {
+    body = `<p class="muted">No rate rows for this currency.</p>`;
+  }
+  cats.forEach(function (cat) {
+    const rows = RATES.filter(function (row) {
+      return row.cat === cat && (state.rateFilter.currency === "All" || row.currency === state.rateFilter.currency);
+    });
+    body += `<div class="cat">${cat}<span class="muted">${rows.length} row${rows.length === 1 ? "" : "s"}</span></div>
+      <table><thead><tr>
+        <th>Charge</th><th>Container</th><th>UOM</th><th class="num">Rate</th>
+        <th>Valid from</th><th>Valid to</th><th>Vendor</th>
+        <th>Currency <span class="pill pill-new">New</span></th>
+      </tr></thead><tbody>` + rows.map(function (row) {
+        return `<tr><td>${row.charge}</td><td>${row.container}</td><td>${row.uom}</td><td class="num">${row.rate}</td><td>${row.from}</td><td>${row.to}</td><td>${row.vendor}</td><td>${row.currency}</td></tr>`;
+      }).join("") + `</tbody></table>`;
+  });
+  return `
+    <div class="page-head">
+      <div>
+        <h1>Procurement rate rows</h1>
+        <p class="sub">INMAA to USLAX. Same category layout as the rates tables, with a currency on each row.</p>
+      </div>
+    </div>
+    <div class="filters">
+      <div class="field"><label for="rcat">Category</label><select id="rcat">${options(catOptions, state.rateFilter.category)}</select></div>
+      <div class="field"><label for="rccy">Currency <span class="pill pill-new">New</span></label><select id="rccy">${options(["All"].concat(CURRENCIES), state.rateFilter.currency)}</select></div>
+    </div>
+    <div class="card">${body}</div>`;
+}
+
+function quoteView() {
+  const q = state.quote;
+  const lines = visibleLines();
+  const groups = [];
+  lines.forEach(function (line) { if (groups.indexOf(line.cat) < 0) groups.push(line.cat); });
+  let tables = "";
+  groups.forEach(function (cat) {
+    const rows = lines.filter(function (line) { return line.cat === cat; });
+    tables += `<div class="cat">${cat}</div><table><thead><tr>
+      <th>Charge</th><th>Unit</th><th class="num">Quantity</th><th class="num">Buy per unit</th>
+      <th class="num">Total buy</th><th class="num">Markup</th><th class="num">Sell per unit</th>
+      <th class="num">Total sell</th><th>Currency <span class="pill pill-new">New</span></th>
+    </tr></thead><tbody>` + rows.map(function (line) {
+      const markup = line.buy ? (((line.sell - line.buy) / line.buy) * 100).toFixed(1) : "0.0";
+      return `<tr>
+        <td>${line.name}</td><td>${line.unit}</td><td class="num">${line.qty}</td>
+        <td class="num">${money(line.buy)}</td><td class="num">${money(line.buy * line.qty)}</td>
+        <td class="num">${markup}%</td><td class="num">${money(line.sell)}</td>
+        <td class="num">${money(line.sell * line.qty)}</td>
+        <td><select class="row-select" data-line="${line.id}" aria-label="Currency for ${line.name}">${ccyOptions(line.currency)}</select></td>
+      </tr>`;
+    }).join("") + `</tbody></table>`;
+  });
+  const sums = {};
+  lines.forEach(function (line) { sums[line.currency] = (sums[line.currency] || 0) + line.sell * line.qty; });
+  const sumHtml = Object.keys(sums).map(function (c) { return `<div>${c} ${money(sums[c])}</div>`; }).join("");
+  const originLabel = doorOrigin(q.coverage) ? "Harbour Lane mill, Chennai" : "—";
+  const destLabel = doorDest(q.coverage) ? "Buyer DC, Los Angeles" : "—";
+  return `
+    <div class="page-head">
+      <div>
+        <h1>Quoting wizard</h1>
+        <p class="sub">Existing charge lines. Currency is chosen on the row. There is no single quote total.</p>
+      </div>
+      <button class="btn btn-primary" id="submit-quote" type="button">Submit quote</button>
+    </div>
+    <div class="card">
+      <div class="quote-meta">
+        <div class="field"><label for="incoterm">Incoterm</label><select id="incoterm">${options(INCOTERMS, q.incoterm)}</select></div>
+        <div class="field"><label for="coverage">Coverage</label><select id="coverage">${options(COVERAGES, q.coverage)}</select></div>
+        <div class="field"><label for="container">Container</label><select id="container">${options(CONTAINERS, q.container)}</select></div>
+        <div><div class="k">Client</div><div class="v" id="client-name">${state.customer.name || "—"}</div><div class="hint">GST ${state.customer.gst || "—"}</div></div>
+        <div class="field"><label class="req" for="weight">Weight (kg)</label><input id="weight" type="number" value="${q.weight}" /></div>
+        <div class="field"><label class="req" for="volume">Volume (cbm)</label><input id="volume" type="number" value="${q.volume}" /></div>
+        <div><div class="k">Requested date</div><div class="v">27 Nov 2026</div><div class="hint">Set by the system to today.</div></div>
+        <div class="field"><label for="requested-for">Shipment requested for</label><input id="requested-for" type="date" value="${q.requestedFor}" /><span class="hint">Optional. Does not extend past 27 Dec 2026.</span></div>
+      </div>
+      <div class="route">
+        <div class="node"><div class="k">Origin location</div><div class="v">${originLabel}</div></div>
+        <div class="arrow">→</div>
+        <div class="node"><div class="k">Origin port</div><div class="v">Chennai — INMAA</div></div>
+        <div class="arrow">→</div>
+        <div class="node"><div class="k">Destination port</div><div class="v">Los Angeles — USLAX</div></div>
+        <div class="arrow">→</div>
+        <div class="node"><div class="k">Destination location</div><div class="v">${destLabel}</div></div>
+      </div>
+      ${tables}
+      <div class="note">No single quote total. Lines stay in their own currency.</div>
+      <div class="by-ccy">${sumHtml}</div>
+    </div>`;
+}
+
+function pdfView() {
+  const q = state.quote;
+  const lines = visibleLines();
+  const groups = [];
+  lines.forEach(function (line) { if (groups.indexOf(line.cat) < 0) groups.push(line.cat); });
+  let blocks = "";
+  groups.forEach(function (cat) {
+    const rows = lines.filter(function (line) { return line.cat === cat; });
+    blocks += `<div style="font-weight:600;margin-top:16px">${cat}</div><div class="rule"></div>` + rows.map(function (line) {
+      return `<div class="line"><div>${line.name}</div><div class="muted">${line.currency} ${money(line.sell)} x ${line.qty} ${line.unit}</div><div>${line.currency} ${money(line.sell * line.qty)}</div></div>`;
+    }).join("");
+  });
+  return `
+    <div class="page-head">
+      <div>
+        <h1>Quote PDF</h1>
+        <p class="sub">Same charge layout as today. Terms use the coverage sentence, and there is no single total.</p>
+      </div>
+      <button class="btn btn-secondary" id="back-quote" type="button">Back to quote</button>
+    </div>
+    <article class="sheet">
+      <div class="pdf-top">
+        <svg width="120" height="42" viewBox="0 0 80 32" aria-label="Silq">
+          <path fill-rule="evenodd" d="M63.9041 4.79999L59.0019 6.29337V25.145H63.9041V4.79999ZM56.9494 11.7106H52.0129V25.145H56.9494V11.7106ZM44.3636 25.2516C43.3279 25.2427 42.2958 25.1304 41.2833 24.9164C40.3848 24.7796 39.5206 24.4787 38.7357 24.0295V20.7624C39.5276 21.2398 40.3856 21.6031 41.2833 21.8413C42.1789 22.1049 43.1077 22.2455 44.0428 22.2588C44.5818 22.2834 45.1212 22.2174 45.6374 22.0637C45.7921 22.0145 45.9255 21.916 46.0163 21.784C46.1072 21.652 46.1503 21.4941 46.1389 21.3353C46.1436 21.2105 46.1201 21.0863 46.07 20.9714C46.02 20.8566 45.9446 20.7539 45.8492 20.6709C45.5872 20.4512 45.2788 20.2909 44.946 20.2016C44.5567 20.0522 43.9027 19.842 42.9839 19.5646C42.1045 19.3103 41.2515 18.9756 40.4362 18.565C39.8723 18.2509 39.398 17.8034 39.0565 17.2636C38.7314 16.6478 38.5758 15.9598 38.6049 15.2673C38.6049 13.8837 39.1239 12.8495 40.1621 12.1648C41.2003 11.48 42.634 11.1285 44.4633 11.1102C45.3823 11.1151 46.2981 11.2173 47.1947 11.415C47.968 11.5364 48.7134 11.7902 49.3967 12.1648V15.3588C48.7811 14.9599 48.0992 14.6691 47.3816 14.4993C46.6045 14.2824 45.8008 14.1706 44.9927 14.1671C44.4183 14.1459 43.8444 14.2201 43.2953 14.3865C43.1174 14.4423 42.9634 14.5542 42.8574 14.7047C42.7514 14.8553 42.6995 15.036 42.7098 15.2186C42.711 15.3916 42.7646 15.5604 42.8638 15.7036C42.963 15.8469 43.1035 15.9581 43.2673 16.0232C43.9641 16.3084 44.6826 16.5397 45.4163 16.715L45.9489 16.8552C46.8615 17.0857 47.7368 17.4396 48.5495 17.9067C49.115 18.2183 49.5685 18.6929 49.8483 19.2659C50.1352 19.8821 50.2717 20.5551 50.2469 21.2317C50.2604 21.8054 50.1294 22.3735 49.8654 22.8859C49.6015 23.3983 49.2126 23.8392 48.7333 24.1697C47.7325 24.889 46.2759 25.2496 44.3636 25.2516ZM54.3612 5.51542C53.7492 5.51259 53.161 5.74781 52.7261 6.16934C52.2913 6.59086 52.0454 7.16416 52.0425 7.76311C52.0396 8.36207 52.28 8.93761 52.7107 9.36314C53.1415 9.78866 53.7274 10.0293 54.3394 10.0321H54.5793C54.8896 10.0446 55.1992 9.9958 55.4898 9.88855C55.7804 9.7813 56.0459 9.61784 56.2705 9.40793C56.4951 9.19802 56.6741 8.94597 56.7969 8.66684C56.9197 8.38771 56.9838 8.08722 56.9852 7.78332C56.9867 7.47942 56.9255 7.17835 56.8054 6.89809C56.6853 6.61784 56.5087 6.36415 56.2862 6.15217C56.0637 5.9402 55.7997 5.77429 55.5102 5.66437C55.2207 5.55444 54.9115 5.50275 54.6011 5.51237L54.3612 5.51542ZM75.294 24.3008C74.3232 24.947 73.1728 25.2854 71.9988 25.2699C68.6445 25.2699 65.5766 23.0634 65.5766 18.1931C65.5766 13.7252 68.6694 11.3053 71.9645 11.3053C73.2904 11.2887 74.5836 11.7084 75.6366 12.497L75.7269 11.5461H80V30H75.3282L75.294 24.3008ZM73.0764 14.7005C73.8955 14.654 74.7002 14.9256 75.3158 15.4563L75.294 21.1555C74.8392 21.5639 74.179 21.8809 73.0764 21.8809C71.351 21.8809 70.1893 20.357 70.1893 18.2785C70.1893 16.2761 71.3728 14.7005 73.0764 14.7005Z" fill="#052868"/>
+          <path fill-rule="evenodd" d="M38.0324 2.88643L32.9301 2.03122C31.1156 1.19502 6.59601 17.4345 6.59601 17.4345L6.19739 18.5937L34.7988 4.86291C25.9177 10.3489 0.996261 25.6603 0.996261 25.6603C0.776469 25.8058 0.587879 25.9931 0.441388 26.2114C0.24797 26.5744 0.103238 26.9609 0.0108843 27.3612C-0.00272716 27.4116 -0.00358552 27.4646 0.00838441 27.5154C0.0203543 27.5662 0.0447812 27.6133 0.0794948 27.6525C0.114208 27.6917 0.158132 27.7217 0.20736 27.74C0.256588 27.7582 0.309594 27.7641 0.361665 27.7571C2.60985 27.3802 11.8609 25.8155 15.2316 24.8241C23.5483 22.3788 26.8074 19.1702 28.7494 16.2023C30.9976 12.7625 37.1299 3.70362 37.9973 2.94344L38.042 2.89593L38.0324 2.88643ZM26.5778 13.3928C25.94 14.7231 24.91 16.82 22.4322 18.5209C19.8141 20.32 12.403 22.591 8.71983 23.3164L26.6703 13.1806C26.6354 13.2495 26.6045 13.3204 26.5778 13.3928Z" fill="#EF6445"/>
+        </svg>
+        <div>
+          <div class="pdf-id">SILQ-IN-10482Q1</div>
+          <div class="pdf-sub">${state.customer.name || "Customer"} · INMAA to USLAX</div>
+        </div>
+      </div>
+      <div class="rule"></div>
+      <div class="quote-meta">
+        <div><div class="k">Mode</div><div class="v">Ocean FCL · ${q.container}</div></div>
+        <div><div class="k">Incoterm</div><div class="v">${q.incoterm}</div></div>
+        <div><div class="k">Coverage</div><div class="v">${q.coverage}</div></div>
+        <div><div class="k">Valid till</div><div class="v">15 Dec 2026</div></div>
+      </div>
+      <div style="font-weight:600">Charges</div>
+      ${blocks}
+      <div class="terms">
+        <h2>Terms &amp; conditions</h2>
+        <div class="rule"></div>
+        <p>New terms text will be placed here once Product shares it.</p>
+        <p><strong style="color:#202020">${validitySentence()}</strong></p>
+        <p>Currency adjustment factor (CAF) applies on this quote where the terms say it does.</p>
+        <p style="margin-top:24px">* Final routing subject to space availability/carrier approval.</p>
+      </div>
+    </article>`;
+}
+
+function currencyView() {
+  const rows = MASTER.filter(function (row) {
+    if (state.masterFilter === "Silq") return row.silq;
+    if (state.masterFilter === "Silq Pvt Logistics Limited") return row.india;
+    return true;
+  });
+  return `
+    <div class="page-head">
+      <div>
+        <h1>Currency master</h1>
+        <p class="sub">One list for Silq and Silq Pvt Logistics Limited. A currency is stored once. FX rates are not in this table.</p>
+      </div>
+    </div>
+    <div class="filters">
+      <div class="field"><label for="mentity">Show currencies for</label>
+        <select id="mentity">${options(["All", "Silq", "Silq Pvt Logistics Limited"], state.masterFilter)}</select>
+      </div>
+    </div>
+    <div class="card"><table>
+      <thead><tr><th>Code</th><th>Name</th><th>Silq</th><th>Silq Pvt Logistics Limited</th></tr></thead>
+      <tbody>${rows.map(function (row) {
+        return `<tr><td>${row.code}</td><td>${row.name}</td><td class="${row.silq ? "yes" : "no"}">${row.silq ? "Available" : "Not available"}</td><td class="${row.india ? "yes" : "no"}">${row.india ? "Available" : "Not available"}</td></tr>`;
+      }).join("")}</tbody>
+    </table></div>`;
+}
+
+function render() {
+  if (state.view === "customer") app.innerHTML = customerView();
+  else if (state.view === "rates") app.innerHTML = ratesView();
+  else if (state.view === "quote") app.innerHTML = quoteView();
+  else if (state.view === "pdf") app.innerHTML = pdfView();
+  else app.innerHTML = currencyView();
+  bind();
+}
+
+function bind() {
+  const form = document.getElementById("customer-form");
+  if (form) {
+    form.addEventListener("submit", function (event) {
+      event.preventDefault();
+      const name = document.getElementById("name").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const gst = document.getElementById("gst").value.trim();
+      const err = document.getElementById("cust-error");
+      if (!name || !email || !gst) { err.hidden = false; return; }
+      state.customer.name = name;
+      state.customer.email = email;
+      state.customer.website = document.getElementById("website").value.trim();
+      state.customer.type = document.getElementById("type").value;
+      state.customer.description = document.getElementById("desc").value.trim();
+      state.customer.gst = gst;
+      state.customer.demo = document.getElementById("demo").checked;
+      state.customer.test = document.getElementById("test").checked;
+      showToast("Customer saved on Silq Pvt Logistics Limited.");
+      setView("rates");
+    });
+    document.getElementById("cust-cancel").addEventListener("click", function () { setView("customer"); });
+  }
+  const rcat = document.getElementById("rcat");
+  if (rcat) {
+    rcat.addEventListener("change", function () { state.rateFilter.category = rcat.value; render(); });
+    document.getElementById("rccy").addEventListener("change", function (e) { state.rateFilter.currency = e.target.value; render(); });
+  }
+  const incoterm = document.getElementById("incoterm");
+  if (incoterm) {
+    incoterm.addEventListener("change", function () { state.quote.incoterm = incoterm.value; });
+    document.getElementById("coverage").addEventListener("change", function (e) { state.quote.coverage = e.target.value; render(); });
+    document.getElementById("container").addEventListener("change", function (e) { state.quote.container = e.target.value; });
+    document.getElementById("weight").addEventListener("change", function (e) { state.quote.weight = e.target.value; });
+    document.getElementById("volume").addEventListener("change", function (e) { state.quote.volume = e.target.value; });
+    document.getElementById("requested-for").addEventListener("change", function (e) { state.quote.requestedFor = e.target.value; });
+    document.querySelectorAll("[data-line]").forEach(function (select) {
+      select.addEventListener("change", function () {
+        const line = state.quote.lines.find(function (item) { return item.id === select.dataset.line; });
+        if (line) line.currency = select.value;
+        render();
+      });
+    });
+    document.getElementById("submit-quote").addEventListener("click", function () {
+      if (!state.quote.weight || !state.quote.volume) { showToast("Weight and volume are required."); return; }
+      setView("pdf");
+    });
+  }
+  const back = document.getElementById("back-quote");
+  if (back) back.addEventListener("click", function () { setView("quote"); });
+  const mentity = document.getElementById("mentity");
+  if (mentity) mentity.addEventListener("change", function () { state.masterFilter = mentity.value; render(); });
+}
+
+document.querySelectorAll(".tab").forEach(function (tab) {
+  tab.addEventListener("click", function () { setView(tab.dataset.view); });
+});
+const start = (location.hash || "#customer").slice(1);
+setView(["customer", "rates", "quote", "pdf", "currencies"].indexOf(start) >= 0 ? start : "customer");
+</script>
+</body>
+</html>

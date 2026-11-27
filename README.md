@@ -18,6 +18,7 @@ Interactive HTML prototypes for Silq product features. Hosted via GitHub Pages.
 
 | File | Feature | Owner |
 |---|---|---|
+| `india-entity-quoting.html` | India entity quoting (customer GST, currency on rate rows, quote PDF validity, currency master) | VP |
 | `vendor-billed-costs.html` | Vendor Quoted (Booked rate, copy to all shipments, once per quote mark) | VP |
 | `inspections-pricing-tables.html` | Inspections pricing tables (T1 product mapping, T2 pricing matrix, quote tab held) | VP |
 | `pod-priority-board.html` | Pod Priority Board (Kanban + Pod Health + Breadboard view) | — |

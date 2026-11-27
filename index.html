@@ -61,6 +61,21 @@
       margin-bottom: 48px;
     }
 
+    .block {
+      width: 100%;
+      max-width: 780px;
+      margin-bottom: 36px;
+    }
+
+    .block-title {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      margin: 0 0 14px;
+    }
+
     .cards {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
@@ -160,6 +175,9 @@
     .card-billed .card-icon { background: #fdf4e8; color: #a86b1d; }
     .card-billed::before { background: #c8842e; }
     .card-billed { grid-column: 1; }
+
+    .card-india .card-icon { background: #fce0da; color: #d75a3e; }
+    .card-india::before { background: #ef6445; }
 
     .proto-card h2 {
       font-size: 17px;
@@ -274,6 +292,27 @@
 
   <div class="logo">silq</div>
   <div class="subtitle">Interactive Prototypes</div>
+
+  <section class="block">
+    <h2 class="block-title">India Silq entity</h2>
+    <div class="cards">
+      <a class="proto-card card-india" href="india-entity-quoting.html#customer">
+        <span class="owner-tag owner-vp">VP</span>
+        <span class="card-arrow"><svg viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M1 8a.5.5 0 01.5-.5h11.793l-3.147-3.146a.5.5 0 01.708-.708l4 4a.5.5 0 010 .708l-4 4a.5.5 0 01-.708-.708L13.293 8.5H1.5A.5.5 0 011 8z"/></svg></span>
+        <div class="card-icon">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm3 1h6v2H7V5zm0 4h6v2H7V9zm0 4h4v2H7v-2z" clip-rule="evenodd"/></svg>
+        </div>
+        <h2>India entity quoting</h2>
+        <p>Customer GST, rate rows with a currency column, the quote wizard and PDF validity line, and the currency master. Billing is not in this cut.</p>
+        <div class="card-tags">
+          <span class="tag">Customer</span>
+          <span class="tag">Rates</span>
+          <span class="tag">Quote PDF</span>
+          <span class="tag">Currency</span>
+        </div>
+      </a>
+    </div>
+  </section>
 
   <div class="cards">
     <div class="proto-card card-pod">
